@@ -1,0 +1,156 @@
+diff --git a/crates/pal-vm/src/runtime.rs b/crates/pal-vm/src/runtime.rs
+index 94a349b..e16ba09 100644
+--- a/crates/pal-vm/src/runtime.rs
++++ b/crates/pal-vm/src/runtime.rs
+@@ -11031,36 +11031,40 @@ impl ScriptRuntime {
+         handle: SpriteHandle,
+         bytes: &[u8],
+     ) -> bool {
+-        let Some(anim) = parse_named_sprite_animation(bytes) else {
++        let Some(anims) = parse_named_sprite_animation(bytes) else {
+             return false;
+         };
+-        match anim {
+-            NamedSpriteAnimation::MoveBy {
+-                dx,
+-                dy,
+-                dz,
+-                duration_ms,
+-            } => sprites.tween_pos_by(handle, dx as f32, dy as f32, dz as f32, duration_ms),
+-            NamedSpriteAnimation::ScaleBy {
+-                delta_percent,
+-                duration_ms,
+-            } => {
+-                let Some(sprite) = sprites.get(handle) else {
+-                    return false;
+-                };
+-                let to = (sprite.scale + delta_percent as f32 / 100.0).max(0.01);
+-                sprites.tween_scale_to(handle, to, duration_ms)
+-            }
+-            NamedSpriteAnimation::AlphaBy { delta, duration_ms } => {
+-                let Some(sprite) = sprites.get(handle) else {
+-                    return false;
+-                };
+-                let alpha = i32::from(sprite.color.alpha())
+-                    .saturating_add(delta)
+-                    .clamp(0, 255) as u8;
+-                sprites.tween_alpha_to(handle, alpha, duration_ms)
+-            }
++        let mut applied = false;
++        for anim in anims {
++            applied |= match anim {
++                NamedSpriteAnimation::MoveBy {
++                    dx,
++                    dy,
++                    dz,
++                    duration_ms,
++                } => sprites.tween_pos_by(handle, dx as f32, dy as f32, dz as f32, duration_ms),
++                NamedSpriteAnimation::ScaleBy {
++                    delta_percent,
++                    duration_ms,
++                } => match sprites.get(handle) {
++                    Some(sprite) => {
++                        let to = (sprite.scale + delta_percent as f32 / 100.0).max(0.01);
++                        sprites.tween_scale_to(handle, to, duration_ms)
++                    }
++                    None => false,
++                },
++                NamedSpriteAnimation::AlphaBy { delta, duration_ms } => match sprites.get(handle) {
++                    Some(sprite) => {
++                        let alpha = i32::from(sprite.color.alpha())
++                            .saturating_add(delta)
++                            .clamp(0, 255) as u8;
++                        sprites.tween_alpha_to(handle, alpha, duration_ms)
++                    }
++                    None => false,
++                },
++            };
+         }
++        applied
+     }
+ 
+     fn ext_sp_wait_draw(&mut self) -> ExtCallOutcome {
+@@ -16064,39 +16068,53 @@ enum NamedSpriteAnimation {
+     },
+ }
+ 
+-fn parse_named_sprite_animation(bytes: &[u8]) -> Option<NamedSpriteAnimation> {
+-    if bytes.len() >= 0x1a && bytes[0] == 0xfc && bytes[1] == 0x13 && bytes[2] == 0xfd {
+-        let property = bytes[3];
+-        return match property {
+-            0 => Some(NamedSpriteAnimation::MoveBy {
+-                dx: read_i32_le_at(bytes, 0x04)?,
+-                dy: read_i32_le_at(bytes, 0x08)?,
+-                dz: read_i32_le_at(bytes, 0x0c)?,
+-                duration_ms: read_duration_le_at(bytes, 0x10)?,
+-            }),
+-            2 => Some(NamedSpriteAnimation::ScaleBy {
+-                delta_percent: read_i32_le_at(bytes, 0x04)?,
+-                duration_ms: read_duration_le_at(bytes, 0x08)?,
+-            }),
+-            3 => Some(NamedSpriteAnimation::AlphaBy {
+-                delta: read_i32_le_at(bytes, 0x04)?,
+-                duration_ms: read_duration_le_at(bytes, 0x08)?,
+-            }),
++/// The tweens an ANI resource starts with: `[fc 13] fd`, then items run together
++/// until a wait (`fe`) or the end (`ff`). Items: 00 move by (x, y, z, ms),
++/// 01 delay (ms, not modelled), 02 scale by (percent, ms), 03 alpha by (delta, ms),
++/// 12 eased move by (x, y, z, ms). Later blocks and loops are not played.
++fn parse_named_sprite_animation(bytes: &[u8]) -> Option<Vec<NamedSpriteAnimation>> {
++    let mut at = if bytes.starts_with(&[0xfc, 0x13]) { 2 } else { 0 };
++    if bytes.get(at) != Some(&0xfd) {
++        return None;
++    }
++    at += 1;
++    let mut out = Vec::new();
++    loop {
++        let item = *bytes.get(at)?;
++        at += 1;
++        match item {
++            0x00 | 0x12 => {
++                out.push(NamedSpriteAnimation::MoveBy {
++                    dx: read_i32_le_at(bytes, at)?,
++                    dy: read_i32_le_at(bytes, at + 4)?,
++                    dz: read_i32_le_at(bytes, at + 8)?,
++                    duration_ms: read_duration_le_at(bytes, at + 12)?,
++                });
++                at += 16;
++            }
++            0x01 => at += 4,
++            0x02 => {
++                out.push(NamedSpriteAnimation::ScaleBy {
++                    delta_percent: read_i32_le_at(bytes, at)?,
++                    duration_ms: read_duration_le_at(bytes, at + 4)?,
++                });
++                at += 8;
++            }
++            0x03 => {
++                out.push(NamedSpriteAnimation::AlphaBy {
++                    delta: read_i32_le_at(bytes, at)?,
++                    duration_ms: read_duration_le_at(bytes, at + 4)?,
++                });
++                at += 8;
++            }
++            0xfe | 0xff => break,
+             other => {
+-                log::debug!("[trace-sprite] unsupported named animation property={other}");
+-                None
++                log::debug!("[trace-sprite] unsupported named animation item={other:#04x}");
++                break;
+             }
+-        };
+-    }
+-
+-    if bytes.len() >= 0x10 && bytes[0] == 0xfd && bytes[1] == 3 {
+-        return Some(NamedSpriteAnimation::AlphaBy {
+-            delta: i32::from(i8::from_ne_bytes([bytes[2]])),
+-            duration_ms: read_duration_le_at(bytes, 0x06)?,
+-        });
++        }
+     }
+-
+-    None
++    (!out.is_empty()).then_some(out)
+ }
+ 
+ fn read_i32_le_at(bytes: &[u8], offset: usize) -> Option<i32> {
