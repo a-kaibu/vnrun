@@ -3,7 +3,7 @@
 // ../emfs. It hands each frame of its window surface to vnrunPresent (patches/krkrsdl2), which
 // the presenter shows; pointer input goes back in through vnrun_mouse, and SDL reads the keyboard
 // from the window itself.
-import { importEngine, type EngineContext } from "../engine";
+import { engineUrl, importEngine, type EngineContext } from "../engine";
 import { mountGame, Saves, type EmFS } from "../emfs";
 import type { Manifest } from "../gamefs";
 import { Presenter } from "../present";
@@ -22,6 +22,13 @@ const SAVES = "krkr-save";
 const DATA_PATH = "/libsdl/krkrsdl2";
 // SDL_BUTTON_* for the DOM's MouseEvent.button.
 const BUTTONS = [1, 2, 3];
+const POLYFILL = "/vnrun/polyfill";
+const STARTUP = "/vnrun/startup.tjs";
+// ASCII only: the engine reads BOM-less scripts as Shift_JIS.
+const STARTUP_SCRIPT = `global.KirikiriPolyfillRoot = "${POLYFILL}/";
+Scripts.execStorage(global.KirikiriPolyfillRoot + "PolyfillInitialize.tjs");
+Scripts.execStorage("startup.tjs");
+`;
 
 // The project to start: data.xp3 (most releases), else a data folder, else the game folder.
 function project(manifest: Manifest): string {
@@ -33,7 +40,7 @@ function project(manifest: Manifest): string {
   return "/game/";
 }
 
-export async function start({ fs, manifest, ui }: EngineContext): Promise<void> {
+export async function start({ fs, manifest, ui, fonts }: EngineContext): Promise<void> {
   const presenter = await Presenter.create(ui.canvas);
   const create = (await importEngine<{ default: CreateKrkr }>("krkr", "krkr.js")).default;
   const Module = await create({
@@ -76,9 +83,20 @@ export async function start({ fs, manifest, ui }: EngineContext): Promise<void> 
     { passive: false },
   );
 
+  // KiriKiri SDL2 has no menus, KAGParser plugin or default font. Its own stand-ins
+  // (engines/krkr/polyfill, with the player's font) run before the game's startup.tjs.
+  Module.FS.mkdirTree(POLYFILL);
+  for (const name of ["PolyfillInitialize.tjs", "MenuItem_stub.tjs", "KAGParser.tjs"]) {
+    const res = await fetch(engineUrl("krkr", `polyfill/${name}`));
+    if (!res.ok) throw new Error(`polyfill/${name}: HTTP ${res.status}`);
+    Module.FS.writeFile(`${POLYFILL}/${name}`, new Uint8Array(await res.arrayBuffer()));
+  }
+  if (fonts[0]) Module.FS.writeFile(`${POLYFILL}/font.ttf`, fonts[0]);
+  Module.FS.writeFile(STARTUP, new TextEncoder().encode(STARTUP_SCRIPT));
+
   ui.hide();
   canvas.focus();
   // Scripts without a BOM are Shift_JIS in KiriKiri 2/Z games; KiriKiri SDL2 reads them as UTF-8
   // unless told otherwise.
-  Module.callMain([project(manifest), "-readencoding=Shift_JIS"]);
+  Module.callMain([project(manifest), "-readencoding=Shift_JIS", `-startup=${STARTUP}`]);
 }

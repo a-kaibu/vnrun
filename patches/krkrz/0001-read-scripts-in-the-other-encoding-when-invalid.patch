@@ -1,0 +1,34 @@
+diff --git a/base/TextStream.cpp b/base/TextStream.cpp
+index b01b64a8..4cc04ae4 100644
+--- a/base/TextStream.cpp
++++ b/base/TextStream.cpp
+@@ -212,16 +212,21 @@ public:
+ 					{
+ 						Stream->ReadBuffer(nbuf, size);
+ 						nbuf[size] = 0; // terminater
+-						if( encoding == TJS_W("UTF-8") ) {
+-							BufferLen = TVPUtf8ToWideCharString((const char*)nbuf, NULL);
++						// Text that is not valid in the asked encoding is tried in the other
++						// one: the games are Shift_JIS, ports and samples UTF-8, neither with a BOM.
++						bool utf8 = encoding == TJS_W("UTF-8");
++						if( utf8 || encoding == TJS_W("Shift_JIS") ) {
++							BufferLen = utf8 ? TVPUtf8ToWideCharString((const char*)nbuf, NULL)
++								: TJS_narrowtowidelen((tjs_nchar*)nbuf);
++							if(BufferLen == (size_t)-1) {
++								utf8 = !utf8;
++								BufferLen = utf8 ? TVPUtf8ToWideCharString((const char*)nbuf, NULL)
++									: TJS_narrowtowidelen((tjs_nchar*)nbuf);
++							}
+ 							if(BufferLen == (size_t)-1) TVPThrowExceptionMessage(TJSNarrowToWideConversionError);
+ 							Buffer = new tjs_char [ BufferLen +1];
+-							TVPUtf8ToWideCharString((const char*)nbuf, Buffer);
+-						} else if( encoding == TJS_W("Shift_JIS") ) {
+-							BufferLen = TJS_narrowtowidelen((tjs_nchar*)nbuf);
+-							if(BufferLen == (size_t)-1) TVPThrowExceptionMessage(TJSNarrowToWideConversionError);
+-							Buffer = new tjs_char [ BufferLen +1];
+-							TJS_narrowtowide(Buffer, (tjs_nchar*)nbuf, BufferLen);
++							if(utf8) TVPUtf8ToWideCharString((const char*)nbuf, Buffer);
++							else TJS_narrowtowide(Buffer, (tjs_nchar*)nbuf, BufferLen);
+ 						} else {
+ 							TVPThrowExceptionMessage(TVPUnsupportedEncoding, encoding);
+ 						}

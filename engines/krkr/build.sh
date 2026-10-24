@@ -18,6 +18,11 @@ git -C "$SRC" checkout -q -- .
 for p in "$ROOT"/patches/krkrsdl2/*.patch; do
   [[ -e "$p" ]] && git -C "$SRC" apply "$p"
 done
+# And for its KiriKiri Z (a submodule of it), patches/krkrz/*.patch.
+git -C "$SRC/external/krkrz" checkout -q -- .
+for p in "$ROOT"/patches/krkrz/*.patch; do
+  [[ -e "$p" ]] && git -C "$SRC/external/krkrz" apply "$p"
+done
 if ! command -v emcc > /dev/null; then
   # shellcheck disable=SC1091
   source "${EMSDK:?install Emscripten or set EMSDK}/emsdk_env.sh" > /dev/null
@@ -37,4 +42,8 @@ rm -rf "$OUT"
 mkdir -p "$OUT"
 cp "$WORK/krkrsdl2.js" "$OUT/krkr.js"
 cp "$WORK/krkrsdl2.wasm" "$OUT/"
+# KiriKiri SDL2's stand-ins for what it lacks (menus, the KAGParser plugin, a default font),
+# from the KAG3 it ships (KAG3 license: free to modify and distribute). The page runs them
+# before the game's startup.tjs.
+cp -r "$ROOT/engines/krkr/polyfill" "$OUT/"
 git -C "$SRC" rev-parse HEAD > "$OUT/REVISION"
