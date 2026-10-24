@@ -7,6 +7,7 @@ import type { EngineContext } from "../engine";
 import type { GameFS, Manifest } from "../gamefs";
 
 const SAVES = "localStorage";
+const STUDIO = "studio";
 
 // The page to open: package.json's main (NW.js), else www/index.html (RPG Maker MV), else
 // index.html.
@@ -61,13 +62,41 @@ function storage(fs: GameFS): Storage {
   });
 }
 
+// TyranoScript's Electron build (configSave=file) keeps its saves as files next to the exe,
+// through the `studio_api` its preload script exposes (fs-extra and an ipcRenderer that answers
+// getAppPath and getProcess). This one keeps them as save files named after the file.
+function studioApi(fs: GameFS) {
+  const path = (p: string) => `${STUDIO}/${encodeURIComponent(String(p).split(/[\\/]/).pop() || "")}`;
+  const process = {
+    platform: "win32",
+    execPath: "C:\\game\\game.exe",
+    env: {},
+    __dirname: "C:\\game\\resources\\app",
+  };
+  return {
+    fs: {
+      existsSync: (p: string) => !/\.sav$/i.test(p) || fs.saves.has(path(p)),
+      mkdirSync: () => undefined,
+      readFileSync: (p: string) => new TextDecoder().decode(fs.saves.get(path(p)) ?? new Uint8Array()),
+      writeFileSync: (p: string, data: string) => fs.write(path(p), new TextEncoder().encode(String(data))),
+      unlinkSync: (p: string) => fs.saves.has(path(p)) && fs.remove(path(p)),
+    },
+    ipcRenderer: {
+      sendSync: (channel: string) =>
+        channel === "getAppPath" ? process.__dirname : channel === "getProcess" ? process : undefined,
+    },
+  };
+}
+
 export async function start({ fs, manifest, ui }: EngineContext): Promise<void> {
   const localStorage = storage(fs);
+  const studio = studioApi(fs);
   Object.assign(window, {
     vnrunFrame(win: Window) {
       Object.defineProperty(win, "localStorage", { value: localStorage });
       // RPG Maker MZ refuses to start without IndexedDB and keeps its saves there (localforage,
       // keys named after the game id), so it stays the browser's own.
+      Object.assign(win, { studio_api: studio });
     },
   });
 
