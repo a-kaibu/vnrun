@@ -6,7 +6,7 @@ Windows 向けノベルゲームを、Wine を使わずにブラウザの中で�
 
 | エンジン | 実装 | 状態 |
 |---|---|---|
-| SiglusEngine / RealLive / AVG32 / UK2 | [siglus_rs](https://github.com/xmoezzz/siglus_rs) (`third_party/siglus_rs`) | 組み込み済み。実物の作品では未確認 |
+| SiglusEngine / RealLive / AVG32 / UK2 | [siglus_rs](https://github.com/xmoezzz/siglus_rs) (`third_party/siglus_rs`) | 組み込み済み。Siglus 2 本・RealLive 2 本の体験版で確認 ([docs/handoff.md](docs/handoff.md)) |
 
 今後の候補は [docs/handoff.md](docs/handoff.md) の対応表を参照。
 
@@ -22,6 +22,9 @@ web/                 プレイヤーのページ (エンジンに依らない部
 engines/<id>/build.sh  エンジンを wasm にして dist/engines/<id>/ に置く
 third_party/         取り込んだエンジン (git submodule)
 crates/devserver     手元で試すためのサーバー
+crates/prep          ブラウザでできない下ごしらえ (Siglus の二次鍵の復元など)
+patches/<id>/        取り込んだエンジンへの修正
+tools/shot.js        ヘッドレス Chromium で起動・操作・スクショ
 docs/protocol.md     プレイヤーとサーバーの約束事 (vnbox が実装する)
 ```
 
@@ -38,4 +41,12 @@ cargo run --release -p vnrun-devserver -- --game ~/games/シオンの血族_体�
 
 `--game` はエンジンのファイルがある場所 (Siglus なら `Scene.pck` と `Gameexe.dat` のあるフォルダ) を指す。エンジンは自動で判定し、外れたら `--engine siglus|reallive|avg32|uk2` で指定する。別の端末から開くなら `--addr 0.0.0.0:8090`。
 
-SiglusEngine の製品版は暗号の二次鍵が要る。siglus_rs が起動時に総当たりで探し、ゲームのフォルダに `key.toml` を書く (書けなければ毎回探す)。体験版は鍵なしで動くことが多い。
+SiglusEngine の作品には暗号の二次鍵が要るものがある (体験版でも)。ブラウザ版は鍵を探さないので、先に一度だけ `vnrun-prep` を流してゲームのフォルダに `key.toml` を作っておく。
+
+```bash
+cargo run --release -p vnrun-prep -- ~/games/プリマドール/StartData/gamedata
+```
+
+取り込んだエンジンへのブラウザ向けの修正は `patches/<エンジン>/*.patch` に置き、`engines/<id>/build.sh` がビルド前に当てる。
+
+動作の確認には `tools/shot.js` (Playwright) が使える: `node tools/shot.js http://127.0.0.1:8090/ out/sion "wait:40,shot:title,at:1050;120,wait:10,shot:story"`。

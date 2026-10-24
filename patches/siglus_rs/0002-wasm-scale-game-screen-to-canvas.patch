@@ -1,0 +1,90 @@
+diff --git a/crates/siglus_scene_vm/src/wasm_entry.rs b/crates/siglus_scene_vm/src/wasm_entry.rs
+index bf33475..d64db70 100644
+--- a/crates/siglus_scene_vm/src/wasm_entry.rs
++++ b/crates/siglus_scene_vm/src/wasm_entry.rs
+@@ -151,9 +151,9 @@ impl WasmApp {
+                 let renderer = Renderer::new(window)
+                     .await
+                     .map_err(|e| format!("renderer init: {e:#}"))?;
+-                let mut config = SiglusHostConfig::new(PathBuf::from("."));
+-                config.width = Some(1280);
+-                config.height = Some(720);
++                // Leave the size unset so the game's own Gameexe SCREEN_SIZE is the logical
++                // screen; fit_viewport() scales it into the canvas.
++                let config = SiglusHostConfig::new(PathBuf::from("."));
+                 let host = SiglusHost::new_with_renderer(config, renderer)
+                     .await
+                     .map_err(|e| format!("host init: {e:#}"))?;
+@@ -176,7 +176,7 @@ impl WasmApp {
+             }
+             WindowEvent::SurfaceResized(size) => {
+                 let sf = self.window.map(|w| w.scale_factor() as f32).unwrap_or(1.0);
+-                host.resize(size.width.max(1), size.height.max(1), sf);
++                fit_viewport(host, size.width, size.height, sf);
+             }
+             WindowEvent::KeyboardInput {
+                 event:
+@@ -226,12 +226,7 @@ impl WasmApp {
+                 primary: true,
+                 ..
+             } => {
+-                let (x, y) = if let Some(w) = self.window {
+-                    let p = position.to_logical::<f64>(w.scale_factor());
+-                    (p.x, p.y)
+-                } else {
+-                    (position.x, position.y)
+-                };
++                let (x, y) = to_game(host, position.x, position.y);
+                 host.mouse_move(x, y);
+             }
+             WindowEvent::PointerButton {
+@@ -244,9 +239,8 @@ impl WasmApp {
+                 let Some(button) = button.mouse_button() else {
+                     return;
+                 };
+-                let point = position
+-                    .to_logical::<f64>(self.window.map(|w| w.scale_factor()).unwrap_or(1.0));
+-                host.mouse_move(point.x, point.y);
++                let (x, y) = to_game(host, position.x, position.y);
++                host.mouse_move(x, y);
+                 if let Some(b) = map_mouse_button(button) {
+                     match (state, b) {
+                         (ElementState::Pressed, VmMouseButton::Left) => {
+@@ -305,7 +299,11 @@ impl ApplicationHandler for WasmApp {
+             return;
+         };
+         match result {
+-            Ok(host) => {
++            Ok(mut host) => {
++                if let Some(w) = self.window {
++                    let size = w.surface_size();
++                    fit_viewport(&mut host, size.width, size.height, w.scale_factor() as f32);
++                }
+                 self.host = Some(host);
+                 if let Some(w) = self.window {
+                     w.request_redraw();
+@@ -454,3 +452,24 @@ fn map_keycode(code: KeyCode) -> Option<VmKey> {
+         _ => None,
+     }
+ }
++
++/// Scales the game's own screen (its Gameexe size, kept as the logical size) into the canvas,
++/// centred with black bars, as the Android and iOS hosts do.
++fn fit_viewport(host: &mut SiglusHost, surface_w: u32, surface_h: u32, scale_factor: f32) {
++    let (sw, sh) = (surface_w.max(1), surface_h.max(1));
++    let (lw, lh) = host.logical_size();
++    let scale = (sw as f64 / lw as f64).min(sh as f64 / lh as f64);
++    let vw = ((lw as f64 * scale).round() as u32).clamp(1, sw);
++    let vh = ((lh as f64 * scale).round() as u32).clamp(1, sh);
++    host.resize_with_logical_viewport(sw, sh, scale_factor, lw, lh, (sw - vw) / 2, (sh - vh) / 2, vw, vh);
++}
++
++/// Maps a pointer position in canvas pixels to game screen coordinates.
++fn to_game(host: &mut SiglusHost, x: f64, y: f64) -> (f64, f64) {
++    let (vx, vy, vw, vh) = host.renderer_mut().surface_viewport();
++    let (lw, lh) = host.logical_size();
++    (
++        ((x - vx as f64) / vw.max(1) as f64 * lw as f64).clamp(0.0, lw as f64),
++        ((y - vy as f64) / vh.max(1) as f64 * lh as f64).clamp(0.0, lh as f64),
++    )
++}

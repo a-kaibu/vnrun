@@ -1,0 +1,24 @@
+diff --git a/crates/siglus_scene_vm/src/audio/sfx_engine.rs b/crates/siglus_scene_vm/src/audio/sfx_engine.rs
+index f2e34f8..649f129 100644
+--- a/crates/siglus_scene_vm/src/audio/sfx_engine.rs
++++ b/crates/siglus_scene_vm/src/audio/sfx_engine.rs
+@@ -1266,12 +1266,17 @@ impl KoeEngine {
+         let project_dir = self.inner.project_dir.clone();
+         let append_dir = current_append_dir.to_string();
+         let (tx, rx) = std::sync::mpsc::channel();
+-        std::thread::spawn(move || {
++        let work = move || {
+             let result = decode_koe_no_for_project(&project_dir, koe_no)
+                 .and_then(|wav| crate::audio::jitan::convert_koe_wav(wav, jitan_rate))
+                 .map_err(|err| format!("{err:#}"));
+             let _ = tx.send(result);
+-        });
++        };
++        // The browser build has no threads: decode in place, tick() picks it up.
++        #[cfg(target_arch = "wasm32")]
++        work();
++        #[cfg(not(target_arch = "wasm32"))]
++        std::thread::spawn(work);
+         self.pending_decode = Some((cache_key, append_dir, rx));
+         Ok(())
+     }

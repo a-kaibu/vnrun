@@ -46,9 +46,21 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 
 ## 確認済みのこと / まだのこと
 
-- 確認済み: siglus_rs の wasm ビルド (約 19MB、gzip で約 8MB)。devserver と vnbox のポータルの両方で、Chromium から「マニフェスト → wasm 起動 → VFS 経由のファイル読み込み → セーブの PUT」まで通る。ダミーのゲームなので Siglus のパースで止まる (想定通り)。
-- **まだ: 実物のゲームでの動作は一度も確認していない**。最初のスレッドの環境は suezou.dyndns.org / va-trialdist.azureedge.net に繋がらなかった。2026-10-24 にプロジェクトの環境でこの 2 つを許可したので、新しいスレッドでは体験版を落とせるはず。
-- 試すとよい体験版 (vnbox の results/batch/*.tsv より): Siglus『シオンの血族』 `http://suezou.dyndns.org/dl2011/catwalk/sion/sion_try.zip`、Siglus『プリマドール』 `https://va-trialdist.azureedge.net/trial-primadoll-1.zip`、RealLive『お姉さん×すくらっち』 `http://suezou.dyndns.org/dl2008/hadashi/scratch2/trial.lzh`。
+- 確認済み: siglus_rs の wasm ビルド (約 19MB、gzip で約 8MB)。devserver と vnbox のポータルの両方で、Chromium から「マニフェスト → wasm 起動 → VFS 経由のファイル読み込み → セーブの PUT」まで通る。
+- **実物の体験版での確認 (2026-10-24、devserver + ヘッドレス Chromium、`tools/shot.js`)**:
+
+  | 作品 | エンジン | 結果 |
+  |---|---|---|
+  | シオンの血族 体験版 (`http://suezou.dyndns.org/dl2011/catwalk/sion/sion_try.zip`) | Siglus | 本編の文章まで。ボイスあり |
+  | プリマドール 体験版 (`https://va-trialdist.azureedge.net/trial-primadoll-1.zip`) | Siglus | タイトル画面まで。二次鍵が要る (vnrun-prep で用意) |
+  | お姉さん×すくらっち 体験版 (`http://suezou.dyndns.org/dl2008/hadashi/scratch2/trial.lzh`) | RealLive | 本編の文章まで |
+  | 聖炎天使エレアノール 体験版 (`http://suezou.dyndns.org/dl2007/sagaplanets/eleanor/EleanorTrial.lzh`) | RealLive | タイトル画面まで。メニューのボタンがクリックにもキーにも反応しない (未調査、siglus_rs 側) |
+
+- 実物で見つかって直したもの (`patches/siglus_rs/`、build.sh が適用する):
+  - `0001`: ボイスの時間圧縮 (JITAN) を `std::thread::spawn` でやっていて、wasm では panic してタイトル画面で落ちた。wasm ではその場で処理する。
+  - `0002`: wasm の起動部が画面を 1280x720 に固定し、キャンバスの大きさをそのままゲームの座標にしていた (1024x576 の作品は左上に小さく、1920x1080 の作品は切れる)。Gameexe の SCREEN_SIZE をゲームの座標にして、キャンバスに縦横比を保って拡大し、ポインタの座標も換算する (Android / iOS 版と同じやり方)。
+- **Siglus の二次鍵はブラウザでは探さない** (siglus_rs の wasm ビルドは key.toml を読むだけ)。`vnrun-prep <ゲームのフォルダ>` (crates/prep、ネイティブ) が鍵を復元して key.toml を書く。プリマドールで 1 秒以下。vnbox は `vnbox add` のときにこれを呼ぶ想定 (未実装)。
+- movie (OMV / MPEG2 / WMV) の再生も siglus_rs の中で `thread::spawn` を使う箇所が残っている。ムービーのある作品で同じ panic が出るはずなので、出たら同様に直す。
 - 気にしておくこと: 丸ごと読みなので、大きい音声アーカイブ (Siglus の .ovk など) で同期 XHR が重くなる可能性。必要なら siglus_rs 側に範囲読みを足す。音声の自動再生制限 (最初のタップ) の扱いも未確認。
 
 ## エンジンと実装の対応

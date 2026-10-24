@@ -11,6 +11,11 @@ WASM_BINDGEN_VERSION="$(awk '/^name = "wasm-bindgen"$/ {getline; gsub(/[^0-9.]/,
 if [[ ! -f "$SRC/Cargo.toml" ]]; then
   git -C "$ROOT" submodule update --init third_party/siglus_rs
 fi
+# Our fixes for the browser build (patches/siglus_rs/*.patch), applied to a clean checkout.
+git -C "$SRC" checkout -q -- .
+for p in "$ROOT"/patches/siglus_rs/*.patch; do
+  [[ -e "$p" ]] && git -C "$SRC" apply "$p"
+done
 if [[ "$(wasm-bindgen --version 2>/dev/null | awk '{print $2}')" != "$WASM_BINDGEN_VERSION" ]]; then
   cargo install -f wasm-bindgen-cli --version "$WASM_BINDGEN_VERSION" --locked
 fi
