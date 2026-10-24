@@ -8,7 +8,8 @@ Windows 向けノベルゲームを、Wine を使わずにブラウザの中で�
 |---|---|---|
 | SiglusEngine / RealLive / AVG32 / UK2 | [siglus_rs](https://github.com/xmoezzz/siglus_rs) (`third_party/siglus_rs`) | 組み込み済み。Siglus 2 本・RealLive 2 本の体験版で確認 ([docs/handoff.md](docs/handoff.md)) |
 | Softpal (PAL) | [sena-rs](https://github.com/xmoezzz/sena-rs) (`third_party/sena-rs`、MPL-2.0) | 組み込み済み。ただし sena-rs は「恋×シンアイ彼女」向けで、試したエレクトリップの体験版は注意書き画面の後で止まる |
-| BGI / Ethornell | [ethornell-rs](https://github.com/xmoezzz/ethornell-rs) (`third_party/ethornell-rs`、MPL-2.0) | 組み込み済み。BGI 1 本の体験版で本編の文章まで確認 |
+| BGI / Ethornell | [ethornell-rs](https://github.com/xmoezzz/ethornell-rs) (`third_party/ethornell-rs`、MPL-2.0) | 組み込み済み。2013 年以降の BGI 1.654 系も修正済み (patches/ethornell-rs/0003)。結果は [docs/verification.md](docs/verification.md) |
+| YU-RIS | 自作 (`crates/yuris`、ブラウザ用の出口は `crates/yuris-web`) | 組み込み済み。レイヤーは WebGPU で合成。「彼女が異種族だった場合」体験版で本編・立ち絵まで確認 |
 | FVP | [rfvp](https://github.com/xmoezzz/rfvp) (`third_party/rfvp`) | 組み込み済み。さくら、もゆ。体験版で本編の文章とセーブまで確認 |
 | Artemis | [art3m1s-core](https://github.com/Alphaly2K/art3m1s-core) (`third_party/art3m1s-core`、MPL-2.0) | 組み込み中。描画はまだ WebGL2 経由、試した体験版は E-Mote の読み込みで止まる |
 | NScripter | [ONScripter-Yuri](https://github.com/YuriSizuku/OnscripterYuri) (`third_party/onscripter-yuri`、GPL-2.0) | 組み込み済み。自作のテストスクリプトで文章・選択肢・セーブまで確認 (実物の作品は未確認) |

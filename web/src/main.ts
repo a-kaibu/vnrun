@@ -17,6 +17,7 @@ const ENGINES: Record<string, () => Promise<EngineModule>> = {
   artemis: () => import("./engines/art3m1s"),
   nscripter: () => import("./engines/onscripter"),
   kirikiri: () => import("./engines/krkr"),
+  yuris: () => import("./engines/yuris"),
   html: () => import("./engines/html"),
 };
 

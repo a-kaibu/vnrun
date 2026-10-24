@@ -105,6 +105,8 @@ fn detect(game: &Path) -> Option<String> {
         Some("reallive".into())
     } else if has("system.arc") {
         Some("bgi".into())
+    } else if has("ysbin.ypf") || has("ysbin") {
+        Some("yuris".into())
     } else if has("data.pac") {
         Some("softpal".into())
     } else if names.iter().any(|n| n.ends_with(".hcb")) {

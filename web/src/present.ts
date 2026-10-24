@@ -46,12 +46,14 @@ export class Presenter {
   private texture: GPUTexture | null = null;
   private bindGroup: GPUBindGroup | null = null;
   private nearest = true;
+  private shown: GPUTexture | null = null;
+  private shownGroup: GPUBindGroup | null = null;
 
   private constructor(
     readonly canvas: HTMLCanvasElement,
     // Held so the browser keeps the GPU instance alive (Chromium loses the device otherwise).
     readonly adapter: GPUAdapter,
-    private readonly device: GPUDevice,
+    readonly device: GPUDevice,
     private readonly context: GPUCanvasContext,
     private readonly pipeline: GPURenderPipeline,
     private readonly samplers: { nearest: GPUSampler; linear: GPUSampler },
@@ -146,6 +148,26 @@ export class Presenter {
       { bytesPerRow },
       [width, height],
     );
+    this.draw(this.bindGroup!);
+  }
+
+  /** Shows a frame an engine drew on the GPU (a texture of this presenter's device). */
+  showTexture(texture: GPUTexture): void {
+    this.layout(texture.width, texture.height);
+    if (texture !== this.shown) {
+      this.shown = texture;
+      this.shownGroup = this.device.createBindGroup({
+        layout: this.pipeline.getBindGroupLayout(0),
+        entries: [
+          { binding: 0, resource: texture.createView() },
+          { binding: 1, resource: this.samplers.linear },
+        ],
+      });
+    }
+    this.draw(this.shownGroup!);
+  }
+
+  private draw(bindGroup: GPUBindGroup): void {
     const encoder = this.device.createCommandEncoder();
     const pass = encoder.beginRenderPass({
       colorAttachments: [
@@ -160,7 +182,7 @@ export class Presenter {
     const r = this.rect;
     pass.setViewport(r.x, r.y, r.w, r.h, 0, 1);
     pass.setPipeline(this.pipeline);
-    pass.setBindGroup(0, this.bindGroup);
+    pass.setBindGroup(0, bindGroup);
     pass.draw(3);
     pass.end();
     this.device.queue.submit([encoder.finish()]);

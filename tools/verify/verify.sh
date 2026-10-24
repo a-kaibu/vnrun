@@ -59,6 +59,7 @@ game_root() {
     softpal) m=(-iname data.pac) ;;
     artemis) m=(-iname '*.pfs') ;;
     kirikiri) m=(-iname '*.xp3') ;;
+    yuris) m=(-iname ysbin.ypf) ;;
     nscripter) m=(-iname nscript.dat -o -iname 0.txt -o -iname 00.txt -o -iname '*.nsa' -o -iname '*.sar') ;;
     html) m=(-iname package.json -o -iname index.html -o -iname package.nw) ;;
   esac

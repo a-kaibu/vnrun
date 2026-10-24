@@ -28,7 +28,7 @@
 }
 ```
 
-- `engine`: `siglus` / `reallive` / `avg32` / `uk2` (siglus_rs で動かすもの)、`bgi` (ethornell-rs)、`softpal` (sena-rs)、`fvp` (rfvp)。`artemis` (art3m1s-core)、`nscripter` (ONScripter-Yuri)、`kirikiri` (吉里吉里SDL2)。`html` (TyranoScript、RPGツクール MV/MZ など、元から Web ページのゲーム)。
+- `engine`: `siglus` / `reallive` / `avg32` / `uk2` (siglus_rs で動かすもの)、`bgi` (ethornell-rs)、`softpal` (sena-rs)、`fvp` (rfvp)。`artemis` (art3m1s-core)、`nscripter` (ONScripter-Yuri)、`kirikiri` (吉里吉里SDL2)、`yuris` (crates/yuris)。`html` (TyranoScript、RPGツクール MV/MZ など、元から Web ページのゲーム)。
 - BGI (ethornell-rs) はアーカイブを `Range` で少しずつ読む (256KB 単位)。
 - `nls`: 省略可。RealLive / AVG32 の文字コード (`sjis` など)。Siglus では使わない。
 - `files`: ゲームの根以下の全ファイル。大文字小文字はそのまま (プレイヤー側で区別せずに引く)。
