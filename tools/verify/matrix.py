@@ -17,6 +17,7 @@ ENGINES = {
     "nscripter": "NScripter (ONScripter-Yuri)",
     "html": "HTML (TyranoScript、RPGツクール MV/MZ)",
     "kirikiri": "吉里吉里 (KiriKiri SDL2)",
+    "yuris": "YU-RIS (vnrun)",
 }
 RESULTS = ["本編", "タイトル", "起動", "要再確認", "NG", "対象外", "未確認"]
 
