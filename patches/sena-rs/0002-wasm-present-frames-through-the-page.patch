@@ -1,0 +1,108 @@
+diff --git a/crates/pal-vm/src/wasm_entry.rs b/crates/pal-vm/src/wasm_entry.rs
+index b6e3ff5..cfcadf0 100644
+--- a/crates/pal-vm/src/wasm_entry.rs
++++ b/crates/pal-vm/src/wasm_entry.rs
+@@ -7,9 +7,8 @@ use std::rc::Rc;
+ use js_sys::Function;
+ use pal_asset::Nls;
+ use wasm_bindgen::prelude::*;
+-use wasm_bindgen::Clamped;
+ use wasm_bindgen::JsCast;
+-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, ImageData, KeyboardEvent, MouseEvent};
++use web_sys::{HtmlCanvasElement, KeyboardEvent, MouseEvent};
+ 
+ use crate::app::build_engine;
+ use crate::audio::AudioConfig;
+@@ -63,12 +62,19 @@ extern "C" {
+ 
+     #[wasm_bindgen(js_name = senaKnownFileCount)]
+     fn js_sena_known_file_count() -> u32;
++
++    // The page shows each RGBA frame (with WebGPU) and maps client coordinates to frame pixels.
++    #[wasm_bindgen(js_name = senaPresent)]
++    fn js_sena_present(rgba: &[u8], width: u32, height: u32);
++
++    #[wasm_bindgen(js_name = senaToFrame)]
++    fn js_sena_to_frame(client_x: f64, client_y: f64) -> Vec<f64>;
+ }
+ 
+ struct WasmPlayer {
+     engine: crate::Engine,
+     canvas: HtmlCanvasElement,
+-    context: CanvasRenderingContext2d,
++    frame_size: (u32, u32),
+     last_frame_ms: Option<f64>,
+ }
+ 
+@@ -87,13 +93,8 @@ impl WasmPlayer {
+         }
+ 
+         let canvas = lookup_canvas(&canvas_id)?;
+-        let context = canvas
+-            .get_context("2d")?
+-            .ok_or_else(|| JsValue::from_str("2D canvas context is unavailable"))?
+-            .dyn_into::<CanvasRenderingContext2d>()
+-            .map_err(|_| JsValue::from_str("canvas context is not 2D"))?;
+ 
+-        let mut engine = build_engine(&SenaConfig {
++        let engine = build_engine(&SenaConfig {
+             game_root: Some(PathBuf::from(".")),
+             nls,
+             audio: AudioConfig::default(),
+@@ -101,14 +102,10 @@ impl WasmPlayer {
+         })
+         .map_err(|e| JsValue::from_str(&format!("create engine: {e:#}")))?;
+ 
+-        let width = canvas.width().max(1);
+-        let height = canvas.height().max(1);
+-        engine.handle_event(PalEvent::Resized { width, height });
+-
+         let player = Rc::new(RefCell::new(Self {
+             engine,
+             canvas,
+-            context,
++            frame_size: (0, 0),
+             last_frame_ms: None,
+         }));
+         attach_input_handlers(&player)?;
+@@ -128,18 +125,13 @@ impl WasmPlayer {
+             .update_with_delta(Duration::from_millis(dt_ms))
+             .map_err(|e| JsValue::from_str(&format!("engine step: {e:#}")))?;
+         let rgba = rasterize_scene_rgba(&frame.scene);
+-        if self.canvas.width() != frame.scene.logical_width
+-            || self.canvas.height() != frame.scene.logical_height
+-        {
+-            self.canvas.set_width(frame.scene.logical_width);
+-            self.canvas.set_height(frame.scene.logical_height);
++        let size = (frame.scene.logical_width, frame.scene.logical_height);
++        if self.frame_size != size {
++            // Pointer coordinates arrive in frame pixels (senaToFrame).
++            self.frame_size = size;
++            self.engine.handle_event(PalEvent::Resized { width: size.0, height: size.1 });
+         }
+-        let data = ImageData::new_with_u8_clamped_array_and_sh(
+-            Clamped(&rgba),
+-            frame.scene.logical_width,
+-            frame.scene.logical_height,
+-        )?;
+-        self.context.put_image_data(&data, 0.0, 0.0)?;
++        js_sena_present(&rgba, size.0, size.1);
+         self.engine.input_begin_frame();
+         match &frame.runtime_status {
+             RuntimeStatus::Halted { .. } => Ok(true),
+@@ -154,13 +146,8 @@ impl WasmPlayer {
+     }
+ 
+     fn pointer_position(&self, event: &MouseEvent) -> (f64, f64) {
+-        let rect = self.canvas.get_bounding_client_rect();
+-        let sx = self.canvas.width() as f64 / rect.width().max(1.0);
+-        let sy = self.canvas.height() as f64 / rect.height().max(1.0);
+-        (
+-            (event.client_x() as f64 - rect.left()) * sx,
+-            (event.client_y() as f64 - rect.top()) * sy,
+-        )
++        let at = js_sena_to_frame(event.client_x() as f64, event.client_y() as f64);
++        (at[0], at[1])
+     }
+ }
+ 

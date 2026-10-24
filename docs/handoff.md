@@ -74,6 +74,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
   - sena-rs は README のとおり「恋×シンアイ彼女」(2017) を対象に作られていて、ほかの作品は命令の引数の数や戻り値の扱いが少し違うところで止まる。エレクトリップ (Softpal の体験版が 2011〜2025 年に毎年ある) で 2 本試してどちらも止まった。直すには、止まった箇所ごとに旧版の Pal.dll の動きを確かめて sena-rs に版の違いを足す必要がある。
   - ブラウザ版のつなぎ (`web/src/engines/sena.ts`) は描画・入力・ファイルの範囲読みまで。上流の Web 版にはセーブと音声が無い (セーブは std::fs に書いていて wasm では失敗する) ので、動く作品が出てきたら足す。
   - `patches/sena-rs/0001`: スクリプトが止まったとき、上流の Web 版は最後の画面のまま黙って止まっていた。理由をページのエラーとして出す。
+  - `patches/sena-rs/0002`: sena-rs は CPU で画面を合成する。できたフレームは Canvas2D ではなくページの Presenter (WebGPU) に渡し、ポインタの座標もページがフレームの座標に直して渡す。
   - 確認には sena のネイティブ版 (`cargo build --release -p pal-vm --bin sena`) の `--headless --diagnostic-png-at <frame>:<png> --trace-script` が便利。
 - **Siglus の二次鍵はブラウザでは探さない** (siglus_rs の wasm ビルドは key.toml を読むだけ)。`vnrun-prep <ゲームのフォルダ>` (crates/prep、ネイティブ) が鍵を復元して key.toml を書く。プリマドールで 1 秒以下。vnrun のサーバーがゲームを取り込むときにこれを呼ぶ想定 (未実装)。
 - movie (OMV / MPEG2 / WMV) の再生も siglus_rs の中で `thread::spawn` を使う箇所が残っている。ムービーのある作品で同じ panic が出るはずなので、出たら同様に直す。

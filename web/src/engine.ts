@@ -40,17 +40,3 @@ export function engineUrl(id: string, file: string): string {
 export function importEngine<T>(id: string, file: string): Promise<T> {
   return import(/* @vite-ignore */ engineUrl(id, file)) as Promise<T>;
 }
-
-/** Fits the canvas into the area the page gives it, keeping its aspect ratio (CSS size only). */
-export function fitCanvas(canvas: HTMLCanvasElement): void {
-  const area = canvas.parentElement!.getBoundingClientRect();
-  const bar = document.getElementById("bar");
-  const height = window.innerHeight - (bar ? bar.offsetHeight : 0);
-  const scale = Math.min(area.width / canvas.width, height / canvas.height);
-  const w = Math.floor(canvas.width * scale);
-  const h = Math.floor(canvas.height * scale);
-  canvas.style.width = `${w}px`;
-  canvas.style.height = `${h}px`;
-  canvas.style.left = `${Math.floor((area.width - w) / 2)}px`;
-  canvas.style.top = `${Math.floor((height - h) / 2)}px`;
-}

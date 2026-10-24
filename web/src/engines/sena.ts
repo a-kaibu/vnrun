@@ -1,9 +1,9 @@
 // Softpal (PAL) through sena-rs (third_party/sena-rs), built by engines/sena/build.sh into
-// public/engines/sena/. The engine draws its frame into the canvas at the game's own size and
-// reads the pointer against the canvas's on-screen box, so the canvas is kept at the game's
-// aspect ratio here instead of being stretched over the page.
-import { fitCanvas, importEngine, type EngineContext } from "../engine";
+// public/engines/sena/. The engine hands each RGBA frame to senaPresent, which the presenter
+// shows, and asks senaToFrame for pointer positions in frame pixels (patches/sena-rs/0002).
+import { importEngine, type EngineContext } from "../engine";
 import type { GameFS } from "../gamefs";
+import { Presenter } from "../present";
 
 interface PalVm {
   default(): Promise<unknown>;
@@ -11,8 +11,11 @@ interface PalVm {
 }
 
 // sena-rs reads files through these globals (crates/pal-asset/src/vfs.rs).
-function bind(fs: GameFS): void {
+function bind(fs: GameFS, presenter: Presenter): void {
   Object.assign(globalThis, {
+    senaPresent: (rgba: Uint8Array, width: number, height: number) => presenter.show(rgba, width, height),
+    senaToFrame: (clientX: number, clientY: number) =>
+      Float64Array.from(presenter.toFrame({ clientX, clientY })),
     senaFileExists: (path: string) => fs.exists(path),
     senaFileSize: (path: string) => fs.size(path),
     senaReadFile: (path: string) => fs.read(path),
@@ -24,17 +27,10 @@ function bind(fs: GameFS): void {
 }
 
 export async function start({ fs, manifest, ui }: EngineContext): Promise<void> {
-  bind(fs);
+  bind(fs, await Presenter.create(ui.canvas));
   const vm = await importEngine<PalVm>("sena", "pal_vm.js");
   await vm.default();
-  const { canvas } = ui;
-  // The engine sets the canvas size to the game's size on its first frame.
-  new MutationObserver(() => fitCanvas(canvas)).observe(canvas, {
-    attributes: true,
-    attributeFilter: ["width", "height"],
-  });
-  window.addEventListener("resize", () => fitCanvas(canvas));
   ui.hide();
-  canvas.focus();
-  vm.start_sena_from_directory(canvas.id, "", manifest.nls || "sjis");
+  ui.canvas.focus();
+  vm.start_sena_from_directory(ui.canvas.id, "", manifest.nls || "sjis");
 }
