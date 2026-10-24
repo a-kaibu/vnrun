@@ -1,0 +1,32 @@
+b2011_catwalk	本編	
+r1_siglus_primadoll	タイトル	9fd1333 で「最初から」→エピソード選択まで進むようになった
+dl_VJ01000468	タイトル	プリマドール体験版と同じ中身
+b2015_hamham	本編	体験版メニュー画面まで
+dl_VJ01006181	タイトル	
+dl_VJ01006709	本編	プロローグの文章が自動で流れる
+dl_VJ01006640	タイトル	9fd1333 でクラッシュが直りタイトルまで (開発スレッドでは本編まで確認)
+s2017_sagaplanets_kinkoi	本編	プロローグの文章
+b2007_sagaplanets	本編	fonts/ が要る
+b2007_hadashi	本編	
+b2008_hadashi	本編	
+s2014_hadashi_3pl	本編	最初の選択肢まで
+r1_reallive_five	対象外	インストーラ形式 (展開できない)
+dl_VJ01000672	タイトル	
+dl_VJ01005116	タイトル	黒画面のまま待つ。クリックでタイトル
+dl_VJ01003134	タイトル	黒画面のまま待つ。クリックでタイトル
+dl_VJ01006176	タイトル	注意画面まで (6181 と同じ作品)
+dl_VJ01006508	タイトル	黒画面のまま待つ。クリックでタイトル
+dl_VJ01005112	タイトル	最初は黒画面、クリックでタイトル
+dl_VJ01006708	本編	プロローグの文章が自動で流れる
+dl_VJ01002167	タイトル	
+s2013_sagaplanets_karumaruka	タイトル	
+dl_VJ01000673	タイトル	
+s2023_hadashi_harem_shangrila	タイトル	タイトルの後に「siglus wasm step failed: unhandled form command chain [38, 2, 3]」
+s2008_sagaplanets_cominghumming	タイトル	
+s2009_hadashi_cool	タイトル	
+r1_bgi_kudan	タイトル	本編まで進むことは前回確認済み (handoff)
+s2010_sagaplanets_kisaragi	要再確認	展開後にエンジンの印のファイル (Seen.txt) が見つからない
+b2019_hooksoft	NG	起動時に「VM stopped: 無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました / メモリサイズは最大で 67108864 byte」
+b2015_hooksoft	NG	起動時に「VM stopped: 無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました / メモリサイズは最大で 67108864 byte」
+b2020_sukerasomero	NG	起動時に「VM stopped: 無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました / メモリサイズは最大で 67108864 byte」
+b2006_lumpofsugar	タイトル	
