@@ -17,6 +17,7 @@ const ENGINES: Record<string, () => Promise<EngineModule>> = {
   artemis: () => import("./engines/art3m1s"),
   nscripter: () => import("./engines/onscripter"),
   kirikiri: () => import("./engines/krkr"),
+  html: () => import("./engines/html"),
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;

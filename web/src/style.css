@@ -95,3 +95,12 @@ button.active {
     transform: rotate(360deg);
   }
 }
+#frame {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: calc(100dvh - var(--bar));
+  border: 0;
+  background: #000;
+}

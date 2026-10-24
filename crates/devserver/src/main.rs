@@ -2,7 +2,7 @@
 //! so a game can be played in a browser.
 //!
 //!     vnrun-devserver --game <ゲームのフォルダ> [--dist dist] [--saves <dir>] [--addr 127.0.0.1:8090]
-//!                     [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter|kirikiri] [--title T] [--nls sjis]
+//!                     [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter|kirikiri|html] [--title T] [--nls sjis]
 
 use std::fs::{self, File};
 use std::io::{Read, Seek, SeekFrom};
@@ -44,7 +44,7 @@ struct Manifest<'a> {
 fn usage() -> ! {
     eprintln!(
         "usage: vnrun-devserver --game <dir> [--dist dist] [--saves <dir>] [--addr 127.0.0.1:8090] \
-         [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter|kirikiri] [--title T] [--nls sjis]"
+         [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter|kirikiri|html] [--title T] [--nls sjis]"
     );
     exit(2)
 }
@@ -117,6 +117,8 @@ fn detect(game: &Path) -> Option<String> {
         || names.iter().any(|n| n.ends_with(".nsa") || n.ends_with(".sar"))
     {
         Some("nscripter".into())
+    } else if has("package.json") || has("index.html") || has("www") || has("package.nw") {
+        Some("html".into())
     } else if names.iter().any(|n| n.ends_with(".xp3")) || has("startup.tjs") || has("data") {
         Some("kirikiri".into())
     } else {
@@ -189,6 +191,22 @@ fn content_type(path: &Path) -> &'static str {
         "json" => "application/json",
         "wasm" => "application/wasm",
         "png" => "image/png",
+        "htm" => "text/html; charset=utf-8",
+        "mjs" => "text/javascript",
+        "jpg" | "jpeg" => "image/jpeg",
+        "gif" => "image/gif",
+        "webp" => "image/webp",
+        "svg" => "image/svg+xml",
+        "ogg" => "audio/ogg",
+        "m4a" => "audio/mp4",
+        "mp3" => "audio/mpeg",
+        "wav" => "audio/wav",
+        "mp4" => "video/mp4",
+        "webm" => "video/webm",
+        "woff" => "font/woff",
+        "woff2" => "font/woff2",
+        "ttf" => "font/ttf",
+        "otf" => "font/otf",
         _ => "application/octet-stream",
     }
 }
@@ -269,6 +287,55 @@ fn send_file(req: Request, path: &Path) {
     let _ = req.respond(resp);
 }
 
+/// The game file at rel, matching names without regard to case when there is no exact match
+/// (games made on Windows do not keep the case of their names consistent).
+fn fold_case(root: &Path, rel: &Path) -> PathBuf {
+    let mut out = root.to_path_buf();
+    for part in rel.iter() {
+        let exact = out.join(part);
+        if exact.exists() {
+            out = exact;
+            continue;
+        }
+        let want = part.to_string_lossy().to_lowercase();
+        let found = fs::read_dir(&out).ok().and_then(|rd| {
+            rd.flatten()
+                .find(|e| e.file_name().to_string_lossy().to_lowercase() == want)
+        });
+        out = found.map_or(exact, |e| e.path());
+    }
+    out
+}
+
+/// Whether the browser is loading the request as the page of an iframe.
+fn is_frame(req: &Request) -> bool {
+    req.headers()
+        .iter()
+        .any(|h| h.field.equiv("Sec-Fetch-Dest") && h.value.as_str() == "iframe")
+}
+
+/// Serves a page of a game made as a web page (engine `html`) with the player's hook as its
+/// first script (docs/protocol.md).
+fn send_frame_page(req: Request, path: &Path) {
+    const HOOK: &str = "<script>parent.vnrunFrame&&parent.vnrunFrame(window)</script>";
+    let Ok(page) = fs::read_to_string(path) else {
+        return status(req, 404, "not found");
+    };
+    let lower = page.to_ascii_lowercase();
+    // After <head ...>, else after the doctype (before it would put the page in quirks mode).
+    let at = lower
+        .find("<head")
+        .or_else(|| lower.find("<!doctype"))
+        .and_then(|i| lower[i..].find('>').map(|j| i + j + 1))
+        .unwrap_or(0);
+    let body = format!("{}{HOOK}{}", &page[..at], &page[at..]);
+    let _ = req.respond(
+        Response::from_string(body)
+            .with_header(header("Content-Type", "text/html; charset=utf-8"))
+            .with_header(header("Cache-Control", "no-store")),
+    );
+}
+
 fn handle(cfg: &Config, mut req: Request) {
     let url = req.url().split('?').next().unwrap_or("").to_string();
     let method = req.method().clone();
@@ -294,7 +361,11 @@ fn handle(cfg: &Config, mut req: Request) {
         let Some(rel) = safe_rel(rest) else {
             return status(req, 400, "bad path");
         };
-        return send_file(req, &cfg.game.join(rel));
+        let path = fold_case(&cfg.game, &rel);
+        if is_frame(&req) && matches!(content_type(&path), "text/html; charset=utf-8") {
+            return send_frame_page(req, &path);
+        }
+        return send_file(req, &path);
     }
     if url == "/game/saves/" {
         let mut list = Vec::new();

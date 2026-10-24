@@ -13,6 +13,7 @@ Windows 向けノベルゲームを、Wine を使わずにブラウザの中で�
 | Artemis | [art3m1s-core](https://github.com/Alphaly2K/art3m1s-core) (`third_party/art3m1s-core`、MPL-2.0) | 組み込み中。描画はまだ WebGL2 経由、試した体験版は E-Mote の読み込みで止まる |
 | NScripter | [ONScripter-Yuri](https://github.com/YuriSizuku/OnscripterYuri) (`third_party/onscripter-yuri`、GPL-2.0) | 組み込み済み。自作のテストスクリプトで文章・選択肢・セーブまで確認 (実物の作品は未確認) |
 | 吉里吉里 (KAG) | [KiriKiri SDL2](https://github.com/krkrsdl2/krkrsdl2) (`third_party/krkrsdl2`、MIT ほか) | 組み込み済み。KAG3 のサンプルを改変したテストで文章・選択肢・セーブまで確認 (商用作品は暗号化 xp3 とプラグイン DLL があり未確認) |
+| TyranoScript、RPGツクール MV/MZ など (NW.js) | ゲーム自身 (iframe で開くだけ) | 組み込み済み。TyranoScript の公式サンプルでタイトル・本編・セーブ・ロードまで確認 (RPGツクールは未確認、package.nw に固めた作品は未対応) |
 
 今後の候補は [docs/handoff.md](docs/handoff.md) の対応表を参照。
 

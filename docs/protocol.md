@@ -28,10 +28,20 @@
 }
 ```
 
-- `engine`: `siglus` / `reallive` / `avg32` / `uk2` (siglus_rs で動かすもの)、`bgi` (ethornell-rs)、`softpal` (sena-rs)、`fvp` (rfvp)。`artemis` (art3m1s-core)、`nscripter` (ONScripter-Yuri)、`kirikiri` (吉里吉里SDL2)。
+- `engine`: `siglus` / `reallive` / `avg32` / `uk2` (siglus_rs で動かすもの)、`bgi` (ethornell-rs)、`softpal` (sena-rs)、`fvp` (rfvp)。`artemis` (art3m1s-core)、`nscripter` (ONScripter-Yuri)、`kirikiri` (吉里吉里SDL2)。`html` (TyranoScript、RPGツクール MV/MZ など、元から Web ページのゲーム)。
 - BGI (ethornell-rs) はアーカイブを `Range` で少しずつ読む (256KB 単位)。
 - `nls`: 省略可。RealLive / AVG32 の文字コード (`sjis` など)。Siglus では使わない。
 - `files`: ゲームの根以下の全ファイル。大文字小文字はそのまま (プレイヤー側で区別せずに引く)。
+
+## Web ページのゲーム (`html`)
+
+プレイヤーはゲームのページ (`files/<path>.html`) を iframe で開き、ゲームは自分で描く。サーバーは iframe として読まれるページ (要求に `Sec-Fetch-Dest: iframe` がある `.html`/`.htm`) の `<head>` の直後に次の 1 行を足して返す。`<head>` が無ければ doctype の直後、それも無ければ先頭。
+
+```html
+<script>parent.vnrunFrame&&parent.vnrunFrame(window)</script>
+```
+
+ゲームのどのスクリプトより先にプレイヤーが動き、localStorage をセーブ (`saves/localStorage/<キーを URL エンコード>`) に差し替える。ページ内からの読み込みは大文字小文字の違うパスでも届くように、`files/` は完全一致が無いときに大文字小文字を無視して探す。
 
 ## セーブ
 
