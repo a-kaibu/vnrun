@@ -1,0 +1,145 @@
+diff --git a/crates/ethornell-vm/src/lib.rs b/crates/ethornell-vm/src/lib.rs
+index c571214..9b9d6ea 100644
+--- a/crates/ethornell-vm/src/lib.rs
++++ b/crates/ethornell-vm/src/lib.rs
+@@ -9732,11 +9732,19 @@ impl Vm {
+                 let mode = self.pop_int()?;
+                 let path = self.pop_string_lossy()?;
+                 let handle_destination = self.pop_ptr()?;
+-                let bytes = api.load_file_bytes("", &path).or_else(|| {
+-                    api.allow_direct_filesystem_fallback()
+-                        .then(|| std::fs::read(&path).ok())
+-                        .flatten()
+-                });
++                // sub_401400: 0 reads an existing file; 1 creates or truncates
++                // and 2 opens or creates it for writing.
++                let bytes = if mode == 1 {
++                    Some(Vec::new())
++                } else {
++                    api.load_file_bytes("", &path)
++                        .or_else(|| {
++                            api.allow_direct_filesystem_fallback()
++                                .then(|| std::fs::read(&path).ok())
++                                .flatten()
++                        })
++                        .or_else(|| (mode == 2).then(Vec::new))
++                };
+                 let status = if !(0..=2).contains(&mode) {
+                     1
+                 } else if let Some(bytes) = bytes {
+@@ -9761,15 +9769,19 @@ impl Vm {
+             (0x81, 0x29) => {
+                 let handle = self.pop_int()?;
+                 let status_destination = self.pop_ptr()?;
+-                let removed = self
++                let stream = self
+                     .system81_shared
+                     .lock()
+                     .expect("system81 state poisoned")
+                     .resource_streams
+-                    .remove(&(handle as u32))
+-                    .is_some();
+-                if status_destination != 0 {
+-                    self.write_int(status_destination, 2, if removed { 0 } else { 4 })?;
++                    .remove(&(handle as u32));
++                if let Some(stream) = stream.as_ref().filter(|stream| stream.mode != 0) {
++                    api.write_file_bytes(&stream.path, &stream.bytes);
++                }
++                let removed = stream.is_some();
++                // The stream worker (sub_401720) reports a finished close as 1.
++                if removed && status_destination != 0 {
++                    self.write_int(status_destination, 2, 1)?;
+                 }
+                 Value::Int(if removed { 0 } else { 4 })
+             }
+@@ -9778,6 +9790,37 @@ impl Vm {
+                 let destination = self.pop_ptr()?;
+                 let handle = self.pop_int()? as u32;
+                 let status_destination = self.pop_ptr()?;
++                let writing = self
++                    .system81_shared
++                    .lock()
++                    .expect("system81 state poisoned")
++                    .resource_streams
++                    .get(&handle)
++                    .is_some_and(|stream| stream.mode != 0);
++                if writing {
++                    let range = self.resolve_range(destination, length)?;
++                    let data = self.memory[range].to_vec();
++                    if let Some(stream) = self
++                        .system81_shared
++                        .lock()
++                        .expect("system81 state poisoned")
++                        .resource_streams
++                        .get_mut(&handle)
++                    {
++                        let end = stream.cursor + data.len();
++                        if stream.bytes.len() < end {
++                            stream.bytes.resize(end, 0);
++                        }
++                        stream.bytes[stream.cursor..end].copy_from_slice(&data);
++                        stream.cursor = end;
++                    }
++                    // sub_401720: bytes moved, or -1 when none were.
++                    if status_destination != 0 {
++                        let status = if length > 0 { length as u32 } else { u32::MAX };
++                        self.write_int(status_destination, 2, status)?;
++                    }
++                    return Ok(Some(Value::Int(0)));
++                }
+                 let result = {
+                     let mut state = self
+                         .system81_shared
+@@ -9798,7 +9841,8 @@ impl Vm {
+                     self.memory[range].copy_from_slice(&bytes);
+                     self.clear_shadow_values(destination, bytes.len());
+                     if status_destination != 0 {
+-                        self.write_int(status_destination, 2, bytes.len() as u32)?;
++                        let status = if bytes.is_empty() { u32::MAX } else { bytes.len() as u32 };
++                        self.write_int(status_destination, 2, status)?;
+                     }
+                     Value::Int(0)
+                 } else {
+@@ -9806,7 +9850,7 @@ impl Vm {
+                 }
+             }
+             (0x81, 0x2b) => {
+-                let offset = self.pop_int()?.max(0) as usize;
++                let offset = self.pop_int()?;
+                 let handle = self.pop_int()? as u32;
+                 let status_destination = self.pop_ptr()?;
+                 let status = {
+@@ -9814,17 +9858,25 @@ impl Vm {
+                         .system81_shared
+                         .lock()
+                         .expect("system81 state poisoned");
+-                    if let Some(stream) = state.resource_streams.get_mut(&handle) {
+-                        stream.cursor = offset.min(stream.bytes.len());
+-                        stream.cursor as i32
+-                    } else {
+-                        -1
+-                    }
++                    // sub_401720: -1 seeks to the end, past the end fails;
++                    // the worker reports 1 or -1.
++                    state.resource_streams.get_mut(&handle).map(|stream| {
++                        let size = stream.bytes.len();
++                        let target = if offset == -1 { size } else { offset as u32 as usize };
++                        if target > size {
++                            -1
++                        } else {
++                            stream.cursor = target;
++                            1
++                        }
++                    })
+                 };
+-                if status_destination != 0 {
++                if let Some(status) = status
++                    && status_destination != 0
++                {
+                     self.write_int(status_destination, 2, status as u32)?;
+                 }
+-                Value::Int(if status >= 0 { 0 } else { 4 })
++                Value::Int(if status.is_some() { 0 } else { 4 })
+             }
+             (0x81, 0x2c) => {
+                 let path = self.pop_string_lossy()?;
