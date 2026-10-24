@@ -10,8 +10,8 @@ pub trait Files {
     /// The size of a file of the game, if it exists.
     fn size(&mut self, path: &str) -> Option<u64>;
     fn read_range(&mut self, path: &str, offset: u64, len: usize) -> Option<Vec<u8>>;
-    /// The files at the top of the game folder.
-    fn root(&mut self) -> Vec<String>;
+    /// The names in a folder of the game ("" is the top).
+    fn list(&mut self, dir: &str) -> Vec<String>;
     fn read_save(&mut self, name: &str) -> Option<Vec<u8>>;
     fn write_save(&mut self, name: &str, bytes: &[u8]);
     fn remove_save(&mut self, name: &str);
@@ -37,12 +37,18 @@ pub struct Archives {
 }
 
 impl Archives {
-    /// Reads the index of every .ypf at the top of the game folder.
+    /// Reads the index of every .ypf at the top of the game folder and in pac/, where older
+    /// games keep them (pac/data.ypf).
     pub fn open(files: &mut dyn Files) -> Archives {
         let mut a = Archives { packs: Vec::new(), names: HashMap::new() };
-        let mut root = files.root();
-        root.sort();
-        for name in root {
+        let mut found = Vec::new();
+        for dir in ["", "pac"] {
+            let mut names = files.list(dir);
+            names.sort();
+            let prefix = if dir.is_empty() { String::new() } else { format!("{dir}/") };
+            found.extend(names.into_iter().map(|n| format!("{prefix}{n}")));
+        }
+        for name in found {
             if !name.to_lowercase().ends_with(".ypf") {
                 continue;
             }
@@ -124,8 +130,8 @@ impl Files for Disk {
         out.truncate(n);
         Some(out)
     }
-    fn root(&mut self) -> Vec<String> {
-        std::fs::read_dir(&self.game)
+    fn list(&mut self, dir: &str) -> Vec<String> {
+        std::fs::read_dir(self.path(dir))
             .map(|d| d.flatten().map(|e| e.file_name().to_string_lossy().into_owned()).collect())
             .unwrap_or_default()
     }

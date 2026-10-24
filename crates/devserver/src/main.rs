@@ -105,7 +105,7 @@ fn detect(game: &Path) -> Option<String> {
         Some("reallive".into())
     } else if has("system.arc") {
         Some("bgi".into())
-    } else if has("ysbin.ypf") || has("ysbin") {
+    } else if has("ysbin.ypf") || has("ysbin") || has("yscfg.dat") {
         Some("yuris".into())
     } else if has("data.pac") {
         Some("softpal".into())

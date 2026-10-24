@@ -52,7 +52,7 @@ function bind(fs: GameFS): void {
     yurisFileSize: (path: string) => (fs.exists(path) ? fs.size(path) : -1),
     yurisReadRange: (path: string, offset: number, length: number) =>
       fs.exists(path) ? fs.readRange(path, offset, length) : undefined,
-    yurisRoot: () => fs.list(""),
+    yurisList: (dir: string) => fs.list(dir),
     yurisReadSave: (name: string) => (fs.exists(save(name)) ? fs.read(save(name)) : undefined),
     yurisWriteSave: (name: string, bytes: Uint8Array) => fs.write(save(name), bytes.slice()),
     yurisRemoveSave: (name: string) => {

@@ -14,9 +14,9 @@ extern "C" {
     fn file_size(path: &str) -> f64;
     #[wasm_bindgen(js_name = yurisReadRange)]
     fn read_range(path: &str, offset: f64, length: f64) -> Option<Vec<u8>>;
-    /// The names at the top of the game folder.
-    #[wasm_bindgen(js_name = yurisRoot)]
-    fn root() -> Vec<String>;
+    /// The names in a folder of the game ("" is the top).
+    #[wasm_bindgen(js_name = yurisList)]
+    fn list(dir: &str) -> Vec<String>;
     #[wasm_bindgen(js_name = yurisReadSave)]
     fn read_save(name: &str) -> Option<Vec<u8>>;
     #[wasm_bindgen(js_name = yurisWriteSave)]
@@ -38,8 +38,8 @@ impl Files for Host {
     fn read_range(&mut self, path: &str, offset: u64, len: usize) -> Option<Vec<u8>> {
         read_range(path, offset as f64, len as f64)
     }
-    fn root(&mut self) -> Vec<String> {
-        root()
+    fn list(&mut self, dir: &str) -> Vec<String> {
+        list(dir)
     }
     fn read_save(&mut self, name: &str) -> Option<Vec<u8>> {
         read_save(name)

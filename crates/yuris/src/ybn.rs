@@ -108,6 +108,8 @@ pub enum VarType {
 pub struct VarDecl {
     /// 1: global (G_INT...), 2: in one script (INT... at the top level)
     pub scope: u8,
+    /// 482: which of G_INT, G_INT2, G_INT3, G_INT4 (0..3) declared a global
+    pub group: u8,
     pub script: u16,
     pub id: u16,
     pub ty: VarType,
@@ -117,12 +119,18 @@ pub struct VarDecl {
 }
 
 pub fn variables(b: &[u8]) -> Result<Vec<VarDecl>, String> {
+    // 482 has one more byte before the script number; the layout that ends with the file is it.
+    variables_with(b, false).or_else(|e| variables_with(b, true).map_err(|_| e))
+}
+
+fn variables_with(b: &[u8], wide: bool) -> Result<Vec<VarDecl>, String> {
     magic(b, b"YSVR")?;
     let mut r = Reader::new(b, 8);
     let count = r.u16()? as usize;
     let mut out = Vec::with_capacity(count);
     for _ in 0..count {
         let scope = r.u8()?;
+        let group = if wide { r.u8()? } else { 0 };
         let script = r.u16()?;
         let id = r.u16()?;
         let ty = match r.u8()? {
@@ -144,9 +152,38 @@ pub fn variables(b: &[u8]) -> Result<Vec<VarDecl>, String> {
             }
             VarType::None => Vec::new(),
         };
-        out.push(VarDecl { scope, script, id, ty, dims, init });
+        let id = if wide { sysvar_482(id) } else { id };
+        out.push(VarDecl { scope, group, script, id, ty, dims, init });
+    }
+    if r.at != b.len() {
+        return Err("variables do not end with the file".into());
     }
     Ok(out)
+}
+
+/// 482 put new system variables among the old ones; this gives them the 466 numbers the VM
+/// knows (and moves the new ones out of the way). User variables are 541 and up.
+fn sysvar_482(id: u16) -> u16 {
+    match id {
+        0..=49 | 541.. => id,
+        53..=61 => id - 3,
+        97..=98 => id - 25,
+        106..=540 => id - 28,
+        _ => 10000 + id,
+    }
+}
+
+/// Renumbers the variables in expression bytes (op u8, size u16, payload) for 482.
+fn remap_expr(e: &mut [u8]) {
+    let mut i = 0;
+    while i + 3 <= e.len() {
+        let (op, n) = (e[i], u16::from_le_bytes([e[i + 1], e[i + 2]]) as usize);
+        if matches!(op, b'H' | b'V') && n == 3 && i + 6 <= e.len() && matches!(e[i + 3], b'@' | b'$') {
+            let id = sysvar_482(u16::from_le_bytes([e[i + 4], e[i + 5]]));
+            e[i + 4..i + 6].copy_from_slice(&id.to_le_bytes());
+        }
+        i += 3 + n;
+    }
 }
 
 /// The script files in compile order (yst_list.ybn): the index is the N of yst0000N.ybn.
@@ -155,11 +192,19 @@ pub fn script_names(b: &[u8]) -> Result<Vec<String>, String> {
     let mut r = Reader::new(b, 8);
     let count = r.u32()? as usize;
     let mut out = Vec::with_capacity(count);
-    for _ in 0..count {
+    // Each name is followed by 16 bytes (466) or 20 (482): the one where entry i + 1 starts.
+    let mut tail = 16;
+    for i in 0..count {
         r.u32()?;
         let n = r.u32()? as usize;
         out.push(sjis::decode(r.bytes(n)?));
-        r.bytes(16)?;
+        if i == 0 && count > 1 {
+            let next = |skip: usize| b.get(r.at + skip..r.at + skip + 4).map(|v| u32::from_le_bytes(v.try_into().unwrap()));
+            if next(16) != Some(1) && next(20) == Some(1) {
+                tail = 20;
+            }
+        }
+        r.bytes(tail)?;
     }
     Ok(out)
 }
@@ -213,6 +258,7 @@ const DEFAULT_KEY: [u8; 4] = [0xd3, 0x6f, 0xac, 0x96];
 
 pub fn script(b: &[u8]) -> Result<Script, String> {
     magic(b, b"YSTB")?;
+    let v482 = b.len() >= 8 && u32::from_le_bytes(b[4..8].try_into().unwrap()) >= 482;
     let mut r = Reader::new(b, 8);
     let count = r.u32()? as usize;
     let code_size = r.u32()? as usize;
@@ -241,7 +287,10 @@ pub fn script(b: &[u8]) -> Result<Script, String> {
             let ty = u16::from_le_bytes([a[2], a[3]]);
             let size = u32::from_le_bytes(a[4..8].try_into().unwrap());
             let off = u32::from_le_bytes(a[8..12].try_into().unwrap()) as usize;
-            let value = res.get(off..off + size as usize).map(<[u8]>::to_vec).unwrap_or_default();
+            let mut value = res.get(off..off + size as usize).map(<[u8]>::to_vec).unwrap_or_default();
+            if v482 {
+                remap_expr(&mut value);
+            }
             list.push(Arg { keyword, ty, value, jump: size });
         }
         out.push(Instr { op, args: list, line });

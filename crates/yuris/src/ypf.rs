@@ -7,6 +7,8 @@
 //!           offset:u32 checksum:u32 }
 //! ```
 //!
+//! Later versions (482 has it, 466 not) store the offset as a u64.
+//!
 //! Names are stored with every byte inverted, in Shift_JIS, with `\` between folders. The length
 //! byte is inverted too and then mapped through a table of swapped pairs.
 
@@ -72,6 +74,10 @@ pub fn fold(name: &str) -> String {
 impl Index {
     /// Reads the index from the start of an archive (the first `data_start` bytes are enough).
     pub fn parse(head: &[u8]) -> Result<Index, String> {
+        Index::parse_with(head, false).or_else(|e| Index::parse_with(head, true).map_err(|_| e))
+    }
+
+    fn parse_with(head: &[u8], wide_offsets: bool) -> Result<Index, String> {
         if head.get(..4) != Some(b"YPF\0") {
             return Err("not a YPF archive".into());
         }
@@ -89,13 +95,13 @@ impl Index {
             let size = u32_at(head, p + 2).ok_or("short index")?;
             let packed_size = u32_at(head, p + 6).ok_or("short index")?;
             let offset = u32_at(head, p + 10).ok_or("short index")?;
-            if (offset as usize) < data_start {
+            if (offset as usize) < data_start || wide_offsets && u32_at(head, p + 14).ok_or("short index")? != 0 {
                 return Err(format!("entry {} points into the index", index.entries.len()));
             }
             let name = sjis::decode(&raw);
             index.by_name.insert(fold(&name), index.entries.len());
             index.entries.push(Entry { name, compressed, size, packed_size, offset });
-            at = p + 18;
+            at = p + if wide_offsets { 22 } else { 18 };
         }
         Ok(index)
     }

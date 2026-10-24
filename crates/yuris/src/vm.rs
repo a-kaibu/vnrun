@@ -42,10 +42,11 @@ impl Program {
         let need = |read: &mut dyn FnMut(&str) -> Option<Vec<u8>>, name: &str| {
             read(name).ok_or_else(|| format!("ysbin/{name} is missing"))
         };
-        let commands = ybn::commands(&need(read, "ysc.ybn")?)?;
-        let script_names = ybn::script_names(&need(read, "yst_list.ybn")?)?;
-        let decls = ybn::variables(&need(read, "ysv.ybn")?)?;
-        let config = ybn::config(&need(read, "yscfg.ybn")?)?;
+        let ctx = |name: &'static str| move |e: String| format!("{name}: {e}");
+        let commands = ybn::commands(&need(read, "ysc.ybn")?).map_err(ctx("ysc.ybn"))?;
+        let script_names = ybn::script_names(&need(read, "yst_list.ybn")?).map_err(ctx("yst_list.ybn"))?;
+        let decls = ybn::variables(&need(read, "ysv.ybn")?).map_err(ctx("ysv.ybn"))?;
+        let config = ybn::config(&need(read, "yscfg.ybn")?).map_err(ctx("yscfg.ybn"))?;
         let mut scripts = Vec::with_capacity(script_names.len());
         for i in 0..script_names.len() {
             scripts.push(match read(&format!("yst{i:05}.ybn")) {
@@ -54,7 +55,7 @@ impl Program {
             });
         }
         let mut labels = HashMap::new();
-        for l in ybn::labels(&need(read, "ysl.ybn")?)? {
+        for l in ybn::labels(&need(read, "ysl.ybn")?).map_err(ctx("ysl.ybn"))? {
             labels.insert(l.name.to_uppercase(), Pos { script: l.script as usize, ip: l.ip as usize });
         }
         let mut op = HashMap::new();
@@ -285,6 +286,21 @@ impl State {
         })
     }
 
+    /// Gives a variable the size and value ysv.ybn declares.
+    fn declare_from(&mut self, d: &VarDecl) -> Result<(), String> {
+        let id = VarId { id: d.id, str: d.ty == VarType::Str };
+        let kind = kind_of(d.ty, id);
+        let init = match d.ty {
+            VarType::Int => Value::Int(i64::from_le_bytes(d.init[..8].try_into().unwrap())),
+            VarType::Flt => Value::Flt(f64::from_le_bytes(d.init[..8].try_into().unwrap())),
+            VarType::Str if d.init.is_empty() => Value::Str(Vec::new()),
+            VarType::Str => self.eval(&d.init)?,
+            VarType::None => return Ok(()),
+        };
+        self.declare(id, kind, d.dims.iter().map(|&n| n as usize).collect(), init);
+        Ok(())
+    }
+
     pub fn declare(&mut self, id: VarId, kind: Kind, dims: Vec<usize>, init: Value) {
         let i = id.id as usize;
         if self.vars.len() <= i {
@@ -338,16 +354,7 @@ impl Vm {
     pub fn new(prog: Program) -> Result<Vm, String> {
         let mut state = State { vars: Vec::new(), tasks: Vec::new(), current: 0, now: 0.0, trace: false, restart: false };
         for d in &prog.decls {
-            let id = VarId { id: d.id, str: d.ty == VarType::Str };
-            let kind = kind_of(d.ty, id);
-            let init = match d.ty {
-                VarType::Int => Value::Int(i64::from_le_bytes(d.init[..8].try_into().unwrap())),
-                VarType::Flt => Value::Flt(f64::from_le_bytes(d.init[..8].try_into().unwrap())),
-                VarType::Str if d.init.is_empty() => Value::Str(Vec::new()),
-                VarType::Str => state.eval(&d.init)?,
-                VarType::None => continue,
-            };
-            state.declare(id, kind, d.dims.iter().map(|&n| n as usize).collect(), init);
+            state.declare_from(d)?;
         }
         sys::init(&mut state);
         let start = prog.label("SYSTEM_START").ok_or("no SYSTEM_START label")?;
@@ -827,6 +834,23 @@ impl Vm {
     fn var_act(&mut self, ins: &Instr, name: &str, pos: Pos) -> Result<(), String> {
         let call = Self::call(&self.prog, ins, name, pos);
         let st = &mut self.state;
+        if call.arg("INIT").is_some_and(|e| st.int(e).is_ok_and(|v| v != 0)) {
+            // 482: VARACT[INIT=1 G_INT3=1]: the G_INT3 variables get their declared values again
+            for (ty, kw) in [(VarType::Int, "G_INT"), (VarType::Flt, "G_FLT"), (VarType::Str, "G_STR")] {
+                for group in 0..4u8 {
+                    let k = if group == 0 { kw.to_string() } else { format!("{kw}{}", group + 1) };
+                    if !call.arg(&k).is_some_and(|e| st.int(e).is_ok_and(|v| v != 0)) {
+                        continue;
+                    }
+                    for d in self.prog.decls.iter().filter(|d| d.scope == 1 && d.group == group && d.ty == ty) {
+                        if (541..10000).contains(&d.id) {
+                            st.declare_from(d)?;
+                        }
+                    }
+                }
+            }
+            return Ok(());
+        }
         let set = st.place(call.arg("SET").ok_or("VARACT without SET")?)?;
         let num = |k: &str| call.arg(k).map(|e| st.int(e)).transpose();
         let on = |k: &str| num(k).map(|v| v.unwrap_or(0) != 0);
