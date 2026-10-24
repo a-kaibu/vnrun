@@ -27,7 +27,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 - **vnbox の「FVP」4 本は FVP ではない** (らぶでれーしょん!、いたずら極リアル、小悪魔発育チュ～!、お姉ちゃんのあまエロレッスン 2。どれも `.hcb` が無い)。vnbox の台帳には FVP の作品が無いので、FVP は表に入れていない (さくら、もゆ。の体験版で別に確認済み)。
 - Siglus: サヤガタリの起動直後の `RuntimeError: unreachable` (1080p のムービーを全フレーム一括でデコードしてメモリが尽きていた) と、プリマドールのタイトルの「最初から」が効かない件は 9fd1333 で直った。
 - Siglus: 起動して黒画面のまま待ち、クリックで初めてタイトルが出る作品がある (魔法少女アリサ、淫紋闘技都市ソドム、娼姫レティシア、魔法少女コノカ)。
-- BGI: 起動時に BGI 自身のエラー「無効なサイズ [ 0 ] byte のメモリ領域を確保しようとしました / メモリサイズは最大で 67108864 byte までしか確保できません」で止まる作品が多い (HOOKSOFT、すけべらそめろ)。
+- BGI: 21 本中 11 本が、起動時に BGI 自身のエラー「無効なサイズ [ 0 ] byte のメモリ領域を確保しようとしました / メモリサイズは最大で 67108864 byte までしか確保できません」で止まる。2013 年以降の作品 (HOOKSOFT、Lump of Sugar、SMEE、すけべらそめろ) に多く、タイトルまで出たのは 2006〜2011 年の作品とクダンノフォークロア。ほかに黒画面のまま進まないもの 2 本、`UnknownDispatch` で止まるもの 1 本。PrismRhythm (800x600) は画面が拡大されず左上に小さく出る。
+- Artemis: E-Mote を使う作品 (フユキス) は PSB の読み込み (`truncated_width`) で止まる。
 - RealLive: `fonts/` が無いと文章の窓が空になる。
 
 ## 結果
@@ -37,9 +38,9 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|---|---|---|---|---|
 | SiglusEngine (siglus_rs) | 19 | 5 | 14 |  |  |  |  |  |
 | RealLive (siglus_rs) | 8 | 4 | 2 |  | 1 |  | 1 |  |
-| BGI (ethornell-rs) | 21 |  | 2 |  |  | 3 |  | 16 |
+| BGI (ethornell-rs) | 21 |  | 7 |  |  | 14 |  |  |
 | Softpal (sena-rs) | 28 |  |  |  |  |  |  | 28 |
-| Artemis (art3m1s-core) | 6 |  |  |  |  |  |  | 6 |
+| Artemis (art3m1s-core) | 6 |  | 3 |  |  | 1 |  | 2 |
 | NScripter (ONScripter-Yuri) | 5 |  |  |  |  |  |  | 5 |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 |  |  |  |  |  |  | 33 |
 | 吉里吉里 (KiriKiri SDL2) | 135 |  |  |  |  |  |  | 135 |
@@ -86,26 +87,26 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2006_lumpofsugar | [いつか、届く、あの空に。【体験版】](http://suezou.dyndns.org/dl2006/lumpofsugar/itsusora/itsusora_trial.lzh) | タイトル |  |
+| b2010_lumpofsugar | [Hello,good-bye 体験版](http://suezou.dyndns.org/dl2010/lumpofsugar/hello_good-bye/Hello_goodbye_trial_web.zip) | タイトル |  |
+| b2011_lumpofsugar | [DiamicDays_Trial.zip](http://suezou.dyndns.org/dl2011/lumpofsugar/diamicdays/DiamicDays_Trial.zip) | タイトル |  |
+| b2019_sukerasparo | [kudan_trial.zip](http://suezou.dyndns.org/dl2019/sukerasparo/kudan/kudan_trial.zip) | タイトル |  |
 | r1_bgi_kudan | [クダンノフォークロア 体験版](http://sukerasparo.com/data/kudan_trial.zip) | タイトル | 本編まで進むことは前回確認済み (handoff) |
-| b2015_hooksoft | [トラベリングスターズ 体験版02 Ver1.00](http://suezou.dyndns.org/dl2015/hooksoft/traveling_stars/travelingstars_trial_02.zip) | NG | 起動時に「VM stopped: 無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました / メモリサイズは最大で 67108864 byte」 |
-| b2019_hooksoft | [どっちのｉが好きですか？　Ｈシーン体験版　Ver1.00](http://suezou.dyndns.org/dl2019/hooksoft/isuki/isuki_h_trial.zip) | NG | 起動時に「VM stopped: 無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました / メモリサイズは最大で 67108864 byte」 |
-| b2020_sukerasomero | [oshilove_trial.zip](http://suezou.dyndns.org/dl2020/sukerasomero/oshi_love/oshilove_trial.zip) | NG | 起動時に「VM stopped: 無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました / メモリサイズは最大で 67108864 byte」 |
-| b2010_lumpofsugar | [Hello,good-bye 体験版](http://suezou.dyndns.org/dl2010/lumpofsugar/hello_good-bye/Hello_goodbye_trial_web.zip) | 未確認 |  |
-| b2011_lumpofsugar | [DiamicDays_Trial.zip](http://suezou.dyndns.org/dl2011/lumpofsugar/diamicdays/DiamicDays_Trial.zip) | 未確認 |  |
-| b2013_lumpofsugar | [sekachu_trial_WEB2.zip](http://suezou.dyndns.org/dl2013/lumpofsugar/sekachu/sekachu_trial_WEB2.zip) | 未確認 |  |
-| b2015_lump_of_sugar | [rensou_trial_WEB.zip](http://suezou.dyndns.org/dl2015/lump-of-sugar/rensourelation/rensou_trial_WEB.zip) | 未確認 |  |
-| b2019_sukerasparo | [kudan_trial.zip](http://suezou.dyndns.org/dl2019/sukerasparo/kudan/kudan_trial.zip) | 未確認 |  |
-| dl_VJ01004381 | [顔のない月 -待宵の双椿-](https://trial.dlsite.com/professional/VJ01005000/VJ01004381_trial.zip) | 未確認 |  |
-| s2010_lumpofsugar_prismrhythm | [PrismRhythm-プリズムリズム- Web特別体験版](http://suezou.dyndns.org/dl2010/lumpofsugar/prismrhythm/PrismRhythm_trial_Web.lzh) | 未確認 |  |
-| s2011_lumpofsugar_gackoh | [学☆王 - THE ROYAL SEVEN STARS - 体験入学版](http://suezou.dyndns.org/dl2011/lumpofsugar/gackoh/Gackoh_Trial.zip) | 未確認 |  |
-| s2014_hooksoft_meltymoment | [MeltyMoment 体験版 Ver1.00](http://suezou.dyndns.org/dl2014/hooksoft/meltymoment/MeltyMoment_trial.zip) | 未確認 |  |
-| s2015_smee_pure_connect | [ピュア×コネクト  Ver1.00](http://suezou.dyndns.org/dl2015/smee/pure_connect/pureconnect_trial.zip) | 未確認 |  |
-| s2016_hooksoft_amenitys_life | [AmenitysLife Ver1.00](http://suezou.dyndns.org/dl2016/hooksoft/amenitys_life/AmenitysLife_trial_02.zip) | 未確認 |  |
-| s2019_lump_of_sugar_wakabairono_quartet | [若葉色のカルテット 体験版](http://suezou.dyndns.org/dl2019/lump-of-sugar/wakabairono_quartet/WakabaironoQuartet_trial.zip) | 未確認 |  |
-| s2020_hooksoft_houkago | [放課後シンデレラ 体験版 Ver1.00](http://suezou.dyndns.org/dl2020/hooksoft/houkago/houkago_trial.zip) | 未確認 |  |
-| s2021_smee_pureconnect_hd | [pureconnect_fhd_trial.zip](http://suezou.dyndns.org/dl2021/smee/pureconnect_hd/pureconnect_fhd_trial.zip) | 未確認 |  |
-| s2022_hooksoft_houkago2 | [放課後シンデレラ２ 体験版 Ver1.01](http://suezou.dyndns.org/dl2022/hooksoft/houkago2/HoukagoCinderella2_trial_v1.01.zip) | 未確認 |  |
-| s2023_quince_soft_little_proncess_go | [リトルプリンセスＧＯ！ 体験版](http://suezou.dyndns.org/dl2023/quince-soft/little-proncess_go/LittlePrincessGO_TR.zip) | 未確認 |  |
+| s2010_lumpofsugar_prismrhythm | [PrismRhythm-プリズムリズム- Web特別体験版](http://suezou.dyndns.org/dl2010/lumpofsugar/prismrhythm/PrismRhythm_trial_Web.lzh) | タイトル | 画面が拡大されず左上に小さく出る (800x600 の作品) |
+| s2011_lumpofsugar_gackoh | [学☆王 - THE ROYAL SEVEN STARS - 体験入学版](http://suezou.dyndns.org/dl2011/lumpofsugar/gackoh/Gackoh_Trial.zip) | タイトル |  |
+| b2013_lumpofsugar | [sekachu_trial_WEB2.zip](http://suezou.dyndns.org/dl2013/lumpofsugar/sekachu/sekachu_trial_WEB2.zip) | NG | 起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」 |
+| b2015_hooksoft | [トラベリングスターズ 体験版02 Ver1.00](http://suezou.dyndns.org/dl2015/hooksoft/traveling_stars/travelingstars_trial_02.zip) | NG | 起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」 |
+| b2015_lump_of_sugar | [rensou_trial_WEB.zip](http://suezou.dyndns.org/dl2015/lump-of-sugar/rensourelation/rensou_trial_WEB.zip) | NG | 起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」 |
+| b2019_hooksoft | [どっちのｉが好きですか？　Ｈシーン体験版　Ver1.00](http://suezou.dyndns.org/dl2019/hooksoft/isuki/isuki_h_trial.zip) | NG | 起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」 |
+| b2020_sukerasomero | [oshilove_trial.zip](http://suezou.dyndns.org/dl2020/sukerasomero/oshi_love/oshilove_trial.zip) | NG | 起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」 |
+| dl_VJ01004381 | [顔のない月 -待宵の双椿-](https://trial.dlsite.com/professional/VJ01005000/VJ01004381_trial.zip) | NG | 4 分待っても黒画面のまま (エラーなし) |
+| s2014_hooksoft_meltymoment | [MeltyMoment 体験版 Ver1.00](http://suezou.dyndns.org/dl2014/hooksoft/meltymoment/MeltyMoment_trial.zip) | NG | 起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」 |
+| s2015_smee_pure_connect | [ピュア×コネクト  Ver1.00](http://suezou.dyndns.org/dl2015/smee/pure_connect/pureconnect_trial.zip) | NG | 起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」 |
+| s2016_hooksoft_amenitys_life | [AmenitysLife Ver1.00](http://suezou.dyndns.org/dl2016/hooksoft/amenitys_life/AmenitysLife_trial_02.zip) | NG | 起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」 |
+| s2019_lump_of_sugar_wakabairono_quartet | [若葉色のカルテット 体験版](http://suezou.dyndns.org/dl2019/lump-of-sugar/wakabairono_quartet/WakabaironoQuartet_trial.zip) | NG | 起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」 |
+| s2020_hooksoft_houkago | [放課後シンデレラ 体験版 Ver1.00](http://suezou.dyndns.org/dl2020/hooksoft/houkago/houkago_trial.zip) | NG | 起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」 |
+| s2021_smee_pureconnect_hd | [pureconnect_fhd_trial.zip](http://suezou.dyndns.org/dl2021/smee/pureconnect_hd/pureconnect_fhd_trial.zip) | NG | 起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」 |
+| s2022_hooksoft_houkago2 | [放課後シンデレラ２ 体験版 Ver1.01](http://suezou.dyndns.org/dl2022/hooksoft/houkago2/HoukagoCinderella2_trial_v1.01.zip) | NG | 4 分待っても黒画面のまま (エラーなし) |
+| s2023_quince_soft_little_proncess_go | [リトルプリンセスＧＯ！ 体験版](http://suezou.dyndns.org/dl2023/quince-soft/little-proncess_go/LittlePrincessGO_TR.zip) | NG | 起動時に「VM stopped: UnknownDispatch; host_runtime_diag:14:1:17:4294967295:4294967295:0」 |
 
 ### Softpal (sena-rs)
 
@@ -144,10 +145,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| r1_artemis | [遥かなるニライカナイ 体験版](https://project-navel.com/niraikanai/niraikanai_Trial.zip) | 未確認 |  |
-| s2020_wonder_fool_maokatsu | [まおかつ！　体験版 - Ver1.1](http://suezou.dyndns.org/dl2020/wonder-fool/maokatsu/maokatsu_webtrial1.1.zip) | 未確認 |  |
-| s2021_giga_fuyukiss | [フユキス　体験版 - Ver1.0.0](http://suezou.dyndns.org/dl2021/giga/fuyukiss/fuyukiss_trial.zip) | 未確認 |  |
-| s2023_j_studio_reaero_dt | [リアルエロゲシチュエーション！DT　体験版 - Ver1.0.0](http://suezou.dyndns.org/dl2023/j-studio/reaero_dt/reaerodt_Trial2.7z) | 未確認 |  |
+| r1_artemis | [遥かなるニライカナイ 体験版](https://project-navel.com/niraikanai/niraikanai_Trial.zip) | タイトル |  |
+| s2020_wonder_fool_maokatsu | [まおかつ！　体験版 - Ver1.1](http://suezou.dyndns.org/dl2020/wonder-fool/maokatsu/maokatsu_webtrial1.1.zip) | タイトル |  |
+| s2023_j_studio_reaero_dt | [リアルエロゲシチュエーション！DT　体験版 - Ver1.0.0](http://suezou.dyndns.org/dl2023/j-studio/reaero_dt/reaerodt_Trial2.7z) | タイトル |  |
+| s2021_giga_fuyukiss | [フユキス　体験版 - Ver1.0.0](http://suezou.dyndns.org/dl2021/giga/fuyukiss/fuyukiss_trial.zip) | NG | E-Mote の読み込みで止まる (image/fg/tok_0.psb: missing integer field truncated_width) |
 | s2024_madosoft_selectoblige | [セレクトオブリージュ　体験版 - Ver1.0.0](http://suezou.dyndns.org/dl2024/madosoft/selectoblige/selectoblige_Trial.zip) | 未確認 |  |
 | s2025_j_studio_galsfiction | [GALSFICTION_Trial.zip](http://suezou.dyndns.org/dl2025/j-studio/galsfiction/GALSFICTION_Trial.zip) | 未確認 |  |
 

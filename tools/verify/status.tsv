@@ -26,7 +26,27 @@ s2008_sagaplanets_cominghumming	タイトル
 s2009_hadashi_cool	タイトル	
 r1_bgi_kudan	タイトル	本編まで進むことは前回確認済み (handoff)
 s2010_sagaplanets_kisaragi	要再確認	展開後にエンジンの印のファイル (Seen.txt) が見つからない
-b2019_hooksoft	NG	起動時に「VM stopped: 無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました / メモリサイズは最大で 67108864 byte」
-b2015_hooksoft	NG	起動時に「VM stopped: 無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました / メモリサイズは最大で 67108864 byte」
-b2020_sukerasomero	NG	起動時に「VM stopped: 無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました / メモリサイズは最大で 67108864 byte」
+b2019_hooksoft	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
+b2015_hooksoft	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
+b2020_sukerasomero	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
 b2006_lumpofsugar	タイトル	
+b2013_lumpofsugar	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
+b2019_sukerasparo	タイトル	
+b2011_lumpofsugar	タイトル	
+b2015_lump_of_sugar	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
+b2010_lumpofsugar	タイトル	
+s2015_smee_pure_connect	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
+s2014_hooksoft_meltymoment	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
+s2021_smee_pureconnect_hd	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
+s2016_hooksoft_amenitys_life	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
+s2020_hooksoft_houkago	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
+s2010_lumpofsugar_prismrhythm	タイトル	画面が拡大されず左上に小さく出る (800x600 の作品)
+dl_VJ01004381	NG	4 分待っても黒画面のまま (エラーなし)
+s2022_hooksoft_houkago2	NG	4 分待っても黒画面のまま (エラーなし)
+s2011_lumpofsugar_gackoh	タイトル	
+s2023_quince_soft_little_proncess_go	NG	起動時に「VM stopped: UnknownDispatch; host_runtime_diag:14:1:17:4294967295:4294967295:0」
+s2019_lump_of_sugar_wakabairono_quartet	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
+r1_artemis	タイトル	
+s2023_j_studio_reaero_dt	タイトル	
+s2020_wonder_fool_maokatsu	タイトル	
+s2021_giga_fuyukiss	NG	E-Mote の読み込みで止まる (image/fg/tok_0.psb: missing integer field truncated_width)
