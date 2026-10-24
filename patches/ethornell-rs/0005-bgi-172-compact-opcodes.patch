@@ -1,0 +1,1456 @@
+diff --git a/crates/ethornell-app/src/lib.rs b/crates/ethornell-app/src/lib.rs
+index 8f1f20b..ff1a784 100644
+--- a/crates/ethornell-app/src/lib.rs
++++ b/crates/ethornell-app/src/lib.rs
+@@ -195,7 +195,8 @@ fn detect_game_id_from_bootstrap(program: &ethornell_script::BpProgram) -> Optio
+             continue;
+         }
+ 
+-        let following = program.instructions.iter().skip(index + 1).take(6);
++        // BGI 1.7x scripts spend more (smaller) instructions between the two.
++        let following = program.instructions.iter().skip(index + 1).take(16);
+         let mut candidate = None;
+         for instruction in following {
+             if instruction.opcode.name() == "streq" {
+@@ -214,15 +215,62 @@ fn detect_game_id_from_bootstrap(program: &ethornell_script::BpProgram) -> Optio
+     None
+ }
+ 
+-fn configured_game_id(manager: &ResourceManager) -> (String, &'static str) {
++/// dword_506B8C / dword_506BAC.
++const BGI_DISPLAY_MODES: [Option<(i32, i32)>; 16] = [
++    Some((320, 240)),
++    Some((640, 480)),
++    Some((800, 600)),
++    Some((1024, 768)),
++    Some((1024, 576)),
++    Some((1024, 600)),
++    Some((1280, 720)),
++    Some((1920, 1080)),
++    None,
++    None,
++    None,
++    None,
++    None,
++    None,
++    None,
++    None,
++];
++
++/// BGI 1.686 has sixteen display modes (x64 tables at 0x1C9780/0x1C97C0).
++const BGI172_DISPLAY_MODES: [Option<(i32, i32)>; 16] = [
++    Some((320, 240)),
++    Some((640, 480)),
++    Some((800, 600)),
++    Some((1024, 768)),
++    Some((1024, 576)),
++    Some((1280, 960)),
++    Some((1280, 720)),
++    Some((1920, 1440)),
++    Some((1920, 1080)),
++    Some((2560, 1920)),
++    Some((2560, 1440)),
++    Some((3840, 2880)),
++    Some((3840, 2160)),
++    Some((1600, 900)),
++    Some((1366, 768)),
++    Some((960, 540)),
++];
++
++/// The game id, where it came from, and whether the bootstrap uses the
++/// compact opcodes of BGI 1.677+ (script compatibility 1.72).
++fn configured_game_id(manager: &ResourceManager) -> (String, &'static str, bool) {
+     if let Ok(bytes) = manager.read_decoded_from_archive("system.arc", "ipl._bp") {
+         let program = ethornell_script::parse_bp_program(Some("system.arc:ipl._bp".into()), &bytes);
++        let compact = program
++            .instructions
++            .iter()
++            .any(|instruction| ethornell_script::is_compact_opcode(instruction.opcode.code()));
+         if let Some(game_id) = detect_game_id_from_bootstrap(&program) {
+-            return (game_id, "system.arc:ipl._bp");
++            return (game_id, "system.arc:ipl._bp", compact);
+         }
++        return (DEFAULT_GAME_ID.into(), "fallback", compact);
+     }
+ 
+-    (DEFAULT_GAME_ID.into(), "fallback")
++    (DEFAULT_GAME_ID.into(), "fallback", false)
+ }
+ fn confirmed_native_profile(
+     manager: &ResourceManager,
+@@ -774,7 +822,7 @@ struct RuntimeTraceApi {
+     window_mode: i32,
+     screen_width: i32,
+     screen_height: i32,
+-    display_mode_sizes: [Option<(i32, i32)>; 8],
++    display_mode_sizes: [Option<(i32, i32)>; 16],
+     /// dword_506B88 / dword_518614: the Sys80:60 size index and pixel mode.
+     display_size_index: i32,
+     /// GetAdapterDisplayMode width/height (dword_5177C0/C4); 0 when unknown.
+@@ -1240,7 +1288,7 @@ impl RuntimeTraceApi {
+     }
+ 
+     fn new_with_native_root(manager: ResourceManager, native_root: PathBuf) -> Self {
+-        let (game_id, source) = configured_game_id(&manager);
++        let (game_id, source, compact) = configured_game_id(&manager);
+         tracing::info!(%game_id, source, "configured native game identifier");
+         // system.arc:ipl._bp ends the interpreter at once when a file named
+         // after the game identifier exists in the game directory, which looks
+@@ -1270,16 +1318,7 @@ impl RuntimeTraceApi {
+             screen_width: 800,
+             screen_height: 600,
+             // dword_506B8C / dword_506BAC.
+-            display_mode_sizes: [
+-                Some((320, 240)),
+-                Some((640, 480)),
+-                Some((800, 600)),
+-                Some((1024, 768)),
+-                Some((1024, 576)),
+-                Some((1024, 600)),
+-                Some((1280, 720)),
+-                Some((1920, 1080)),
+-            ],
++            display_mode_sizes: if compact { BGI172_DISPLAY_MODES } else { BGI_DISPLAY_MODES },
+             display_size_index: 2,
+             desktop_display_size: (0, 0),
+             display_adapter_description: String::new(),
+@@ -23988,7 +24027,7 @@ impl ethornell_vm::SysApi for RuntimeTraceApi {
+                         "無効なピクセルモードが設定されました".into(),
+                     ));
+                 }
+-                if !(0..8).contains(&mode) {
++                if self.display_mode_sizes.get(mode as usize).copied().flatten().is_none() {
+                     return Err(ethornell_vm::VmError::Runtime(
+                         "無効なスクリーンサイズが設定されました".into(),
+                     ));
+diff --git a/crates/ethornell-script/src/lib.rs b/crates/ethornell-script/src/lib.rs
+index 7e85c3b..12f3a51 100644
+--- a/crates/ethornell-script/src/lib.rs
++++ b/crates/ethornell-script/src/lib.rs
+@@ -944,7 +944,18 @@ pub fn parse_bp_program(script_name: Option<String>, buf: &[u8]) -> BpProgram {
+                     operands.push(BpOperand::U8(count));
+                 }
+             }
+-            0x15 | 0x80 | 0x81 | 0x90 | 0x91 | 0x92 | 0xa0 | 0xb0 | 0xc0 | 0xd0 | 0xe0 => {
++            0x15 => {
++                // BGI 1.7x: bit 3 of the condition puts the target inline.
++                if let Some(value) = read_u8_operand(&mut cursor, &mut raw_len, &mut warning) {
++                    operands.push(BpOperand::U8(value));
++                    if value & 8 != 0
++                        && let Some(rel) = read_u16_operand(&mut cursor, &mut raw_len, &mut warning)
++                    {
++                        operands.push(BpOperand::Offset((offset as i64 + rel as i16 as i64) as u32));
++                    }
++                }
++            }
++            0x80 | 0x81 | 0x90 | 0x91 | 0x92 | 0xa0 | 0xb0 | 0xc0 | 0xd0 | 0xe0 => {
+                 if let Some(value) = read_u8_operand(&mut cursor, &mut raw_len, &mut warning) {
+                     operands.push(BpOperand::U8(value));
+                     if !matches!(opcode_byte, 0xd0 | 0xe0) {
+@@ -964,6 +975,16 @@ pub fn parse_bp_program(script_name: Option<String>, buf: &[u8]) -> BpProgram {
+                 }
+             }
+             0x14 | 0x16 | 0x17 => {}
++            _ if is_compact_opcode(opcode_byte) => {
++                let mut reader = CompactOperands {
++                    cursor: &mut cursor,
++                    raw_len: &mut raw_len,
++                    warning: &mut warning,
++                    operands: &mut operands,
++                    offset,
++                };
++                reader.read(opcode_byte);
++            }
+             _ => {}
+         }
+ 
+@@ -1071,6 +1092,207 @@ fn detect_bp_code_end(buf: &[u8], start: usize, nominal_end: usize) -> usize {
+     start + last_ret_relative + 1
+ }
+ 
++/// Opcodes added by BGI 1.677 (script compatibility 1.72): fused loads,
++/// stores, arithmetic and branches.
++pub fn is_compact_opcode(code: u8) -> bool {
++    matches!(
++        code,
++        0x03 | 0x0d | 0x0e | 0x0f | 0x12 | 0x13 | 0x18..=0x1f | 0x2c..=0x2f | 0x36 | 0x37
++            | 0x3b | 0x3c | 0x3e | 0x3f | 0x45 | 0x46 | 0x47 | 0x55 | 0x73 | 0xe2..=0xea
++            | 0xec..=0xf2 | 0xf4 | 0xf5 | 0xf7..=0xfb
++    )
++}
++
++/// Reads a compact opcode's operands. Numbers become `I32`; a width-tagged
++/// literal becomes `U8(width)` then `I32(value)`; a relative target becomes
++/// the absolute `Offset` it names.
++struct CompactOperands<'a, 'b> {
++    cursor: &'a mut Cursor<&'b [u8]>,
++    raw_len: &'a mut usize,
++    warning: &'a mut Option<String>,
++    operands: &'a mut Vec<BpOperand>,
++    offset: u64,
++}
++
++impl CompactOperands<'_, '_> {
++    fn byte(&mut self) -> u8 {
++        read_u8_operand(self.cursor, self.raw_len, self.warning).unwrap_or_default()
++    }
++    fn u8(&mut self) {
++        let value = self.byte();
++        self.operands.push(BpOperand::U8(value));
++    }
++    fn i8(&mut self) {
++        let value = self.byte() as i8;
++        self.operands.push(BpOperand::I32(value.into()));
++    }
++    fn u16(&mut self) {
++        let value = read_u16_operand(self.cursor, self.raw_len, self.warning).unwrap_or_default();
++        self.operands.push(BpOperand::I32(value.into()));
++    }
++    fn i16(&mut self) {
++        let value = read_u16_operand(self.cursor, self.raw_len, self.warning).unwrap_or_default();
++        self.operands.push(BpOperand::I32((value as i16).into()));
++    }
++    fn u32(&mut self) {
++        let value = read_u32_operand(self.cursor, self.raw_len, self.warning).unwrap_or_default();
++        self.operands.push(BpOperand::I32(value as i32));
++    }
++    fn target(&mut self) {
++        let rel = read_u16_operand(self.cursor, self.raw_len, self.warning).unwrap_or_default();
++        self.operands.push(BpOperand::Offset((self.offset as i64 + rel as i16 as i64) as u32));
++    }
++    fn sleb_value(&mut self) -> i32 {
++        let (mut value, mut shift) = (0u32, 0u32);
++        loop {
++            let byte = self.byte();
++            if shift < 32 {
++                value |= u32::from(byte & 0x7f) << shift;
++            }
++            shift += 7;
++            if byte & 0x80 == 0 {
++                if byte & 0x40 != 0 && shift < 32 {
++                    value |= u32::MAX << shift;
++                }
++                return value as i32;
++            }
++            if self.warning.is_some() {
++                return value as i32;
++            }
++        }
++    }
++    fn sleb(&mut self) {
++        let value = self.sleb_value();
++        self.operands.push(BpOperand::I32(value));
++    }
++    /// A literal whose low two bits are a store width (target sub_88050).
++    fn typed(&mut self) {
++        let value = self.sleb_value();
++        self.operands.push(BpOperand::U8((value & 3) as u8));
++        self.operands.push(BpOperand::I32(value >> 2));
++    }
++
++    fn read(&mut self, code: u8) {
++        match code {
++            0x03 => {
++                let head = self.byte();
++                if head & 0x80 == 0 {
++                    for _ in 0..=head {
++                        self.sleb();
++                    }
++                } else {
++                    let value = match head & 3 {
++                        0 => self.byte() as i8 as i32,
++                        1 => read_u16_operand(self.cursor, self.raw_len, self.warning)
++                            .unwrap_or_default() as i16 as i32,
++                        2 => read_u32_operand(self.cursor, self.raw_len, self.warning)
++                            .unwrap_or_default() as i32,
++                        _ => {
++                            let low = read_u32_operand(self.cursor, self.raw_len, self.warning)
++                                .unwrap_or_default();
++                            let _ = read_u32_operand(self.cursor, self.raw_len, self.warning);
++                            low as i32
++                        }
++                    };
++                    self.operands.push(BpOperand::I32(value));
++                }
++            }
++            0x0d | 0x1f => self.typed(),
++            0x0e | 0xe4..=0xe7 => {
++                self.u16();
++                self.typed();
++            }
++            0x0f | 0x19 | 0x1d | 0x1e | 0xe8 => self.u16(),
++            0x12 | 0x2c..=0x2f | 0xec => self.sleb(),
++            0x13 | 0xee => self.target(),
++            0x18 | 0xef => self.u32(),
++            0x1a | 0x1b => {
++                self.u16();
++                self.sleb();
++            }
++            0x1c => {
++                self.u16();
++                self.i8();
++            }
++            0x36 | 0x3f => {
++                self.u8();
++                self.sleb();
++            }
++            0x37 => {
++                self.u8();
++                self.target();
++                self.sleb();
++            }
++            0x3b => {
++                self.u8();
++                self.target();
++            }
++            0x3c => self.i8(),
++            0x3e => self.u8(),
++            0xe2 | 0xe3 => {
++                let count = self.byte();
++                for _ in 0..=count {
++                    self.u16();
++                }
++            }
++            0xe9 => {
++                self.u16();
++                self.u16();
++            }
++            0xea | 0xf1 => {
++                self.u16();
++                self.u16();
++                self.sleb();
++            }
++            0xed => {
++                self.u16();
++                self.sleb();
++            }
++            0xf0 => {
++                self.u32();
++                self.u16();
++                self.sleb();
++            }
++            0xf2 => {
++                self.u16();
++                self.u16();
++                self.u16();
++                self.sleb();
++            }
++            0xf4 => {
++                self.u16();
++                self.u32();
++                self.u16();
++                self.i16();
++            }
++            0xf5 => {
++                self.u16();
++                self.u16();
++                self.i16();
++                self.u16();
++                self.i16();
++            }
++            0xf7 | 0xfb => {
++                self.u16();
++                self.u16();
++                self.i16();
++            }
++            0xf8 | 0xfa => {
++                self.u32();
++                self.u16();
++                self.i16();
++            }
++            0xf9 => {
++                self.u16();
++                self.i16();
++                self.u16();
++                self.i16();
++            }
++            _ => {}
++        }
++    }
++}
++
+ fn read_u8_operand(
+     cursor: &mut Cursor<&[u8]>,
+     raw_len: &mut usize,
+@@ -1190,7 +1412,7 @@ mod tests {
+ 
+     #[test]
+     fn compact_instructions_preserve_disassembler_json() {
+-        let instructions = disassemble_bp(&[0xff, 0xf0, 0x03, 0x17]);
++        let instructions = disassemble_bp(&[0xff, 0xf0, 0x07, 0x17]);
+         let json = serde_json::to_value(&instructions).unwrap();
+         assert_eq!(
+             json[0],
+@@ -1206,7 +1428,7 @@ mod tests {
+             })
+         );
+         assert_eq!(json[1]["opcode_name"], "unknown");
+-        assert_eq!(json[1]["opcode_hex"], "0x03");
++        assert_eq!(json[1]["opcode_hex"], "0x07");
+         assert_eq!(json[2]["raw"], serde_json::json!([23]));
+     }
+ 
+diff --git a/crates/ethornell-script/src/vm_opcode.rs b/crates/ethornell-script/src/vm_opcode.rs
+index 1754f2e..95d2260 100644
+--- a/crates/ethornell-script/src/vm_opcode.rs
++++ b/crates/ethornell-script/src/vm_opcode.rs
+@@ -1003,6 +1003,526 @@ pub const BP_OPCODE_SPECS: &[BpOpcodeSpec] = &[
+         confidence: "low",
+         evidence: "registered handler only",
+     },
++    // 0x03 push_list: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x03,
++        symbol: "push_list",
++        stack_effect: "0 -> n",
++        immediate: "u8 count or width, then literals",
++        description: "Push n+1 signed LEB128 literals, or one literal of the width in the low two bits.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x0D store_imm: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x0D,
++        symbol: "store_imm",
++        stack_effect: "1 -> 0",
++        immediate: "width-tagged sleb",
++        description: "Store a literal through the popped pointer.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x0E store_local_imm: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x0E,
++        symbol: "store_local_imm",
++        stack_effect: "0 -> 0",
++        immediate: "u16 frame offset, width-tagged sleb",
++        description: "Store a literal into a frame slot.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x0F store_local: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x0F,
++        symbol: "store_local",
++        stack_effect: "1 -> 0",
++        immediate: "u16 frame slot",
++        description: "Pop a value into a frame slot (offset in the low 14 bits, width in the top 2).",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x12 add_base: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x12,
++        symbol: "add_base",
++        stack_effect: "0 -> 0",
++        immediate: "sleb",
++        description: "Move the frame pointer by a literal.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x13 jmp_rel: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x13,
++        symbol: "jmp_rel",
++        stack_effect: "0 -> 0",
++        immediate: "i16 relative target",
++        description: "Jump to the instruction start plus a literal.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x18 load_abs: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x18,
++        symbol: "load_abs",
++        stack_effect: "0 -> 1",
++        immediate: "u32 address with width in the top 2 bits",
++        description: "Push a value read from a fixed address.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x19 load_local: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x19,
++        symbol: "load_local",
++        stack_effect: "0 -> 1",
++        immediate: "u16 frame slot",
++        description: "Push a frame slot.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x1A load_local_add: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x1A,
++        symbol: "load_local_add",
++        stack_effect: "0 -> 1",
++        immediate: "u16 frame slot, sleb",
++        description: "Push a frame slot plus a literal.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x1B madd_local: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x1B,
++        symbol: "madd_local",
++        stack_effect: "1 -> 1",
++        immediate: "u16 frame slot, sleb",
++        description: "Push top + slot * literal.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x1C shift_local: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x1C,
++        symbol: "shift_local",
++        stack_effect: "0 -> 1",
++        immediate: "u16 frame slot, i8 shift",
++        description: "Push a frame slot shifted left (or arithmetically right when negative).",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x1D mul_local: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x1D,
++        symbol: "mul_local",
++        stack_effect: "1 -> 1",
++        immediate: "u16 frame slot",
++        description: "Push top * slot.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x1E div_local: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x1E,
++        symbol: "div_local",
++        stack_effect: "1 -> 1",
++        immediate: "u16 frame slot",
++        description: "Push top / slot (0x80000000 for a zero slot).",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x1F load_offset: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x1F,
++        symbol: "load_offset",
++        stack_effect: "1 -> 1",
++        immediate: "width-tagged sleb",
++        description: "Push the value at the popped pointer plus a literal.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x2C add_imm: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x2C,
++        symbol: "add_imm",
++        stack_effect: "1 -> 1",
++        immediate: "sleb",
++        description: "Add a literal.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x2D mul_imm: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x2D,
++        symbol: "mul_imm",
++        stack_effect: "1 -> 1",
++        immediate: "sleb",
++        description: "Multiply by a literal.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x2E madd_imm: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x2E,
++        symbol: "madd_imm",
++        stack_effect: "2 -> 1",
++        immediate: "sleb",
++        description: "Push below + top * literal.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x2F div_imm: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x2F,
++        symbol: "div_imm",
++        stack_effect: "1 -> 1",
++        immediate: "sleb",
++        description: "Divide by a literal (0x80000000 for zero).",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x36 compare_imm: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x36,
++        symbol: "compare_imm",
++        stack_effect: "1 -> 1",
++        immediate: "u8 comparison, sleb",
++        description: "Compare the top with a literal.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x37 branch_imm: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x37,
++        symbol: "branch_imm",
++        stack_effect: "1 -> 0",
++        immediate: "u8 comparison and polarity, i16 target, sleb",
++        description: "Compare the top with a literal and branch.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x3B branch_compare: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x3B,
++        symbol: "branch_compare",
++        stack_effect: "2 -> 0",
++        immediate: "u8 comparison and polarity, i16 target",
++        description: "Compare two values and branch.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x3C shift_imm: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x3C,
++        symbol: "shift_imm",
++        stack_effect: "1 -> 1",
++        immediate: "i8 shift",
++        description: "Shift left, or arithmetically right when negative.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x3E op_store: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x3E,
++        symbol: "op_store",
++        stack_effect: "3 -> 0",
++        immediate: "u8 operation and width",
++        description: "Store the result of an arithmetic or comparison operation through a pointer.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x3F op_store_imm: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x3F,
++        symbol: "op_store_imm",
++        stack_effect: "2 -> 0",
++        immediate: "u8 operation and width, sleb",
++        description: "Store op(top, literal) through a pointer.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x45 vec3_rotate: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x45,
++        symbol: "vec3_rotate",
++        stack_effect: "5 -> 0",
++        immediate: "none",
++        description: "Rotate an integer vector about X, Y and Z (16.16 degrees).",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x46 lerp_ratio: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x46,
++        symbol: "lerp_ratio",
++        stack_effect: "4 -> 1",
++        immediate: "none",
++        description: "Interpolate between two integers by num/den, as 16.16.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x47 lerp_fixed: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x47,
++        symbol: "lerp_fixed",
++        stack_effect: "3 -> 1",
++        immediate: "none",
++        description: "Interpolate between two 16.16 values by a 16.16 factor.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x55 fixed_pow: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x55,
++        symbol: "fixed_pow",
++        stack_effect: "2 -> 1",
++        immediate: "none",
++        description: "16.16 power.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0x73 drop: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0x73,
++        symbol: "drop",
++        stack_effect: "1 -> 0",
++        immediate: "none",
++        description: "Discard the top value.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xE2 store_locals: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xE2,
++        symbol: "store_locals",
++        stack_effect: "n -> 0",
++        immediate: "u8 count, u16 frame slots",
++        description: "Pop values into n+1 frame slots.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xE3 load_locals: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xE3,
++        symbol: "load_locals",
++        stack_effect: "0 -> n",
++        immediate: "u8 count, u16 frame slots",
++        description: "Push n+1 frame slots.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xE4 load_local_index: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xE4,
++        symbol: "load_local_index",
++        stack_effect: "0 -> 1",
++        immediate: "u16 frame slot, width-tagged sleb",
++        description: "Push the value at slot + literal.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xE5 load_scaled_index: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xE5,
++        symbol: "load_scaled_index",
++        stack_effect: "1 -> 1",
++        immediate: "u16 frame slot, width-tagged sleb",
++        description: "Push the value at top + slot * literal.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xE6 store_local_add: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xE6,
++        symbol: "store_local_add",
++        stack_effect: "1 -> 0",
++        immediate: "u16 frame slot, width-tagged sleb",
++        description: "Store slot + literal through the popped pointer.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xE7 store_madd_local: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xE7,
++        symbol: "store_madd_local",
++        stack_effect: "2 -> 0",
++        immediate: "u16 frame slot, width-tagged sleb",
++        description: "Store top + slot * literal through a pointer.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xE8 select_local: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xE8,
++        symbol: "select_local",
++        stack_effect: "3 -> 0",
++        immediate: "u16 frame slot",
++        description: "Store cond ? a : b into a frame slot.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xE9 store_field: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xE9,
++        symbol: "store_field",
++        stack_effect: "1 -> 0",
++        immediate: "u16 frame slot, u16 offset",
++        description: "Store the top at the slot's pointer plus an offset.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xEA store_field_imm: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xEA,
++        symbol: "store_field_imm",
++        stack_effect: "0 -> 0",
++        immediate: "u16 frame slot, u16 offset, sleb",
++        description: "Store a literal at the slot's pointer plus an offset.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xEC memcpy_imm: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xEC,
++        symbol: "memcpy_imm",
++        stack_effect: "2 -> 0",
++        immediate: "sleb size",
++        description: "Copy a literal number of bytes.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xED memcpy_local: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xED,
++        symbol: "memcpy_local",
++        stack_effect: "1 -> 0",
++        immediate: "u16 frame offset, sleb size",
++        description: "Copy bytes from a frame address.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xEE call_rel: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xEE,
++        symbol: "call_rel",
++        stack_effect: "0 -> call frame",
++        immediate: "i16 relative target",
++        description: "Call the instruction start plus a literal.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xEF call_abs: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xEF,
++        symbol: "call_abs",
++        stack_effect: "0 -> call frame",
++        immediate: "u32 address with width in the top 2 bits",
++        description: "Call the function whose address is stored at a fixed address.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xF0 store_abs_local_add: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xF0,
++        symbol: "store_abs_local_add",
++        stack_effect: "0 -> 0",
++        immediate: "u32 address, u16 frame slot, sleb",
++        description: "Store slot + literal at a fixed address.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xF1 copy_local_add: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xF1,
++        symbol: "copy_local_add",
++        stack_effect: "0 -> 0",
++        immediate: "u16 frame offset, u16 frame slot, sleb",
++        description: "Store slot + literal into another frame slot.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xF2 store_field_local_add: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xF2,
++        symbol: "store_field_local_add",
++        stack_effect: "0 -> 0",
++        immediate: "u16 frame offset, u16 offset, u16 frame slot, sleb",
++        description: "Store slot + literal at a frame pointer plus an offset.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xF4 index_local: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xF4,
++        symbol: "index_local",
++        stack_effect: "0 -> 0",
++        immediate: "u16 frame offset, u32 base, u16 frame slot, i16 scale",
++        description: "Store base + slot * scale into a frame slot.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xF5 index_local_local: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xF5,
++        symbol: "index_local_local",
++        stack_effect: "0 -> 0",
++        immediate: "u16 frame offset, u16 frame offset, i16, u16 frame slot, i16 scale",
++        description: "Store slot2 + c + slot * scale into a frame slot.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xF7 madd_field: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xF7,
++        symbol: "madd_field",
++        stack_effect: "1 -> 1",
++        immediate: "u16 frame slot, u16 offset, i16 scale",
++        description: "Push top + field * scale.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xF8 index_abs: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xF8,
++        symbol: "index_abs",
++        stack_effect: "0 -> 1",
++        immediate: "u32 base, u16 frame offset, i16 scale",
++        description: "Push base + slot * scale.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xF9 index_locals: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xF9,
++        symbol: "index_locals",
++        stack_effect: "0 -> 1",
++        immediate: "u16 frame offset, i16, u16 frame offset, i16 scale",
++        description: "Push slot1 + c + slot2 * scale.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xFA load_abs_index: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xFA,
++        symbol: "load_abs_index",
++        stack_effect: "0 -> 1",
++        immediate: "u32 base, u16 frame slot, i16 scale",
++        description: "Push the value at base + slot * scale.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
++    // 0xFB load_local_array: BGI 1.677+ (compatibility 1.72).
++    BpOpcodeSpec {
++        code: 0xFB,
++        symbol: "load_local_array",
++        stack_effect: "0 -> 1",
++        immediate: "u16 frame offset, u16 frame slot, i16 scale",
++        description: "Push the value at a frame array element.",
++        confidence: "high",
++        evidence: "BGI 1.686.6 x64 interpreter handler table",
++    },
+ ];
+ 
+ pub fn lookup_bp_opcode(code: u8) -> Option<&'static BpOpcodeSpec> {
+diff --git a/crates/ethornell-vm/src/lib.rs b/crates/ethornell-vm/src/lib.rs
+index 8bd0dfd..c571214 100644
+--- a/crates/ethornell-vm/src/lib.rs
++++ b/crates/ethornell-vm/src/lib.rs
+@@ -3359,7 +3359,14 @@ impl Vm {
+             }
+             BpOpcode::Known { code: 0x15, .. } => {
+                 let kind = read_op_u8(instruction);
+-                let dest = self.pop_int()? as u32;
++                // BGI 1.7x: bit 3 puts the target inline instead of on the stack.
++                let inline = kind & 8 != 0;
++                let dest = if inline {
++                    self.code_offset_of(program_index, op_offset(instruction, 1))
++                } else {
++                    self.pop_int()? as u32
++                };
++                let kind = kind & 7;
+                 let value = self.pop_int()?;
+                 let take = match kind {
+                     0 => value != 0,
+@@ -3942,6 +3949,14 @@ impl Vm {
+             BpOpcode::Known { code: 0x7f, .. } => {
+                 self.execute_resource_blend()?;
+             }
++            BpOpcode::Known { code: 0x81 | 0x91 | 0x92 | 0xb0, .. }
++                if bgi172_call_arity(code, read_op_u8(instruction)).is_some()
++                    && self.effective_arg_count(code, u16::from(read_op_u8(instruction))).is_none() =>
++            {
++                let id = read_op_u8(instruction);
++                self.note_call("bgi172", code, u16::from(id));
++                self.execute_bgi172_call(code, id)?;
++            }
+             BpOpcode::Known { code: 0x80 | 0x81, .. } => {
+                 let id = instruction.raw.get(1).copied().unwrap_or_default() as u16;
+                 self.note_call("sys", code, id);
+@@ -5936,6 +5951,23 @@ impl Vm {
+                 self.note_call("debug", code, u16::from(id));
+                 self.execute_debug_inspect(id)?;
+             }
++            BpOpcode::Known { code, .. } if ethornell_script::is_compact_opcode(code) => {
++                if let Some(redirect) = self.execute_compact(program_index, instruction)? {
++                    return match redirect {
++                        CompactNext::Jump(target) => {
++                            self.trim_operand_stack();
++                            self.pc = self.jump_target_index(program_index, target)?;
++                            Ok(())
++                        }
++                        CompactNext::As(code) => {
++                            let mut synthetic = instruction.clone();
++                            synthetic.opcode = BpOpcode::from_byte(code);
++                            synthetic.operands = Box::new([]);
++                            self.dispatch_program(program_index, &synthetic, api, fail_on_stub, trace_events)
++                        }
++                    };
++                }
++            }
+             BpOpcode::Unknown(code) => {
+                 self.note_stub("opcode", code, 0);
+                 if fail_on_stub {
+@@ -7261,6 +7293,356 @@ impl Vm {
+         }
+     }
+ 
++    fn frame_ptr(&self, offset: u32) -> u32 {
++        FRAME_SEGMENT | self.mem_ptr.saturating_sub(offset)
++    }
++
++    fn read_number(&mut self, ptr: u32, width: u8) -> VmResult<i32> {
++        let value = self.read_value(ptr, width)?;
++        self.value_as_numeric_operand(value)
++    }
++
++    /// A frame slot operand: offset in the low 14 bits, width in the top 2.
++    fn slot(&self, slot: i32) -> (u32, u8) {
++        (self.frame_ptr((slot & 0x3fff) as u32), compact_width(slot >> 14))
++    }
++
++    /// The dword in the frame slot named by the low 14 bits (the 1.7x pointer
++    /// and index opcodes read it whatever the slot's width bits say).
++    fn slot_dword(&mut self, slot: i32) -> VmResult<i32> {
++        self.read_number(self.frame_ptr((slot & 0x3fff) as u32), 2)
++    }
++
++    fn pop_number(&mut self) -> VmResult<i32> {
++        let value = self.pop_value()?;
++        self.value_as_numeric_operand(value)
++    }
++
++    fn write_number(&mut self, ptr: u32, width: u8, value: i32) -> VmResult<()> {
++        self.write_value(ptr, width, &Value::Int(value))
++    }
++
++    /// The opcodes BGI 1.677 added (target x64 handler table). Each fuses a
++    /// few classic opcodes; frame slots are `FRAME_SEGMENT | (base - offset)`
++    /// like opcode 0x04, and narrow loads sign-extend like opcode 0x08.
++    fn execute_compact(
++        &mut self,
++        program_index: usize,
++        instruction: &BpInstruction,
++    ) -> VmResult<Option<CompactNext>> {
++        let op = |index: usize| op_i32_at(instruction, index);
++        let code = instruction.opcode.code();
++        match code {
++            0x03 => {
++                for index in 0..instruction.operands.len() {
++                    self.push_value(Value::Int(op(index)));
++                }
++            }
++            0x0d => {
++                let ptr = self.pop_ptr()?;
++                self.write_number(ptr, compact_width(op(0)), op(1))?;
++            }
++            0x0e => {
++                let ptr = self.frame_ptr(op(0) as u32);
++                self.write_number(ptr, compact_width(op(1)), op(2))?;
++            }
++            0x0f => {
++                let value = self.pop_value()?;
++                let (ptr, width) = self.slot(op(0));
++                self.write_value(ptr, width, &value)?;
++            }
++            0x12 => {
++                // Finishes as store_base so the frame checks stay in one place.
++                self.push_value(Value::Int((self.mem_ptr as i32).wrapping_add(op(0))));
++                return Ok(Some(CompactNext::As(0x11)));
++            }
++            0x13 => return Ok(Some(CompactNext::Jump(op_offset(instruction, 0)))),
++            0x18 => {
++                let value = self.read_value(op(0) as u32 & 0x3fff_ffff, compact_width(op(0) >> 30))?;
++                self.push_value(value);
++            }
++            0x19 => {
++                let (ptr, width) = self.slot(op(0));
++                let value = self.read_value(ptr, width)?;
++                self.push_value(value);
++            }
++            0x1a => {
++                let (ptr, width) = self.slot(op(0));
++                let value = self.read_number(ptr, width)?.wrapping_add(op(1));
++                self.push_value(Value::Int(value));
++            }
++            0x1b | 0x1d | 0x1e => {
++                let top = self.pop_number()?;
++                let (ptr, width) = self.slot(op(0));
++                let value = self.read_number(ptr, width)?;
++                self.push_value(Value::Int(match code {
++                    0x1b => value.wrapping_mul(op(1)).wrapping_add(top),
++                    0x1d => value.wrapping_mul(top),
++                    _ => compact_div(top, value),
++                }));
++            }
++            0x1c => {
++                let (ptr, width) = self.slot(op(0));
++                let value = self.read_number(ptr, width)?;
++                self.push_value(Value::Int(compact_shift(value, op(1))));
++            }
++            0x1f => {
++                let base = self.pop_number()?;
++                let value = self.read_value(base.wrapping_add(op(1)) as u32, compact_width(op(0)))?;
++                self.push_value(value);
++            }
++            0x2c | 0x2d | 0x2f | 0x3c => {
++                let top = self.pop_number()?;
++                self.push_value(Value::Int(match code {
++                    0x2c => top.wrapping_add(op(0)),
++                    0x2d => top.wrapping_mul(op(0)),
++                    0x2f => compact_div(top, op(0)),
++                    _ => compact_shift(top, op(0)),
++                }));
++            }
++            0x2e => {
++                let top = self.pop_number()?;
++                let below = self.pop_number()?;
++                self.push_value(Value::Int(below.wrapping_add(top.wrapping_mul(op(0)))));
++            }
++            0x36 => {
++                let top = self.pop_number()?;
++                self.push_value(Value::Int(compact_compare(op(0), top, op(1))));
++            }
++            0x37 | 0x3b => {
++                let flags = op(0);
++                let (a, b) = if code == 0x37 {
++                    (self.pop_number()?, op(2))
++                } else {
++                    let b = self.pop_number()?;
++                    (self.pop_number()?, b)
++                };
++                let hit = compact_compare(flags & 0xf, a, b) != 0;
++                // Bit 7 set branches when the comparison holds, clear when it fails.
++                if hit == (flags & 0x80 != 0) {
++                    return Ok(Some(CompactNext::Jump(op_offset(instruction, 1))));
++                }
++            }
++            0x3e | 0x3f => {
++                let flags = op(0);
++                let (a, b) = if code == 0x3e {
++                    let b = self.pop_number()?;
++                    (self.pop_number()?, b)
++                } else {
++                    (self.pop_number()?, op(1))
++                };
++                let ptr = self.pop_ptr()?;
++                let value = if flags & 0x20 != 0 {
++                    compact_compare(flags & 0x1f, a, b)
++                } else {
++                    compact_arith(flags & 0x1f, a, b)
++                };
++                self.write_number(ptr, compact_width(flags >> 6), value)?;
++            }
++            0x45 => {
++                let degrees = |value: i32| f64::from(value) * std::f64::consts::PI / 11_796_480.0;
++                let z_angle = degrees(self.pop_number()?);
++                let y_angle = degrees(self.pop_number()?);
++                let x_angle = degrees(self.pop_number()?);
++                let src = self.pop_ptr()?;
++                let dst = self.pop_ptr()?;
++                let x = f64::from(self.read_number(src, 2)?);
++                let y = f64::from(self.read_number(src.wrapping_add(4), 2)?);
++                let z = f64::from(self.read_number(src.wrapping_add(8), 2)?);
++                let (s, c) = x_angle.sin_cos();
++                let (y, z) = (c * y - s * z, c * z + s * y);
++                let (s, c) = y_angle.sin_cos();
++                let (x, z) = (c * x + s * z, c * z - s * x);
++                let (s, c) = z_angle.sin_cos();
++                let (x, y) = (c * x - s * y, c * y + s * x);
++                for (index, value) in [x, y, z].into_iter().enumerate() {
++                    self.write_number(dst.wrapping_add(4 * index as u32), 2, (value + 0.5).floor() as i32)?;
++                }
++            }
++            0x46 => {
++                let den = self.pop_number()?;
++                let num = self.pop_number()?;
++                let b = self.pop_number()?;
++                let a = self.pop_number()?;
++                let t = if den == 0 { 0.0 } else { num as f32 / den as f32 };
++                self.push_value(Value::Int(compact_lerp(a as f32, b as f32, t)));
++            }
++            0x47 => {
++                let fixed = |value: i32| value as f32 * (1.0 / 65_536.0);
++                let t = fixed(self.pop_number()?);
++                let b = fixed(self.pop_number()?);
++                let a = fixed(self.pop_number()?);
++                self.push_value(Value::Int(compact_lerp(a, b, t)));
++            }
++            0x55 => {
++                let exponent = self.pop_number()? as f32 * (1.0 / 65_536.0);
++                let base = self.pop_number()? as f32 * (1.0 / 65_536.0);
++                self.push_value(Value::Int(compact_round(base.powf(exponent) * 65_536.0)));
++            }
++            0x73 => {
++                self.pop_value()?;
++            }
++            0xe2 => {
++                for index in 0..instruction.operands.len() {
++                    let value = self.pop_value()?;
++                    let (ptr, width) = self.slot(op(index));
++                    self.write_value(ptr, width, &value)?;
++                }
++            }
++            0xe3 => {
++                for index in 0..instruction.operands.len() {
++                    let (ptr, width) = self.slot(op(index));
++                    let value = self.read_value(ptr, width)?;
++                    self.push_value(value);
++                }
++            }
++            0xe4 | 0xe5 => {
++                let top = if code == 0xe5 { Some(self.pop_number()?) } else { None };
++                let (ptr, width) = self.slot(op(0));
++                let index = self.read_number(ptr, width)?;
++                let address = match top {
++                    Some(top) => index.wrapping_mul(op(2)).wrapping_add(top),
++                    None => index.wrapping_add(op(2)),
++                };
++                let value = self.read_value(address as u32, compact_width(op(1)))?;
++                self.push_value(value);
++            }
++            0xe6 | 0xe7 => {
++                let top = if code == 0xe7 { Some(self.pop_number()?) } else { None };
++                let dst = self.pop_ptr()?;
++                let (ptr, width) = self.slot(op(0));
++                let index = self.read_number(ptr, width)?;
++                let value = match top {
++                    Some(top) => index.wrapping_mul(op(2)).wrapping_add(top),
++                    None => index.wrapping_add(op(2)),
++                };
++                self.write_number(dst, compact_width(op(1)), value)?;
++            }
++            0xe8 => {
++                let if_false = self.pop_value()?;
++                let if_true = self.pop_value()?;
++                let condition = self.pop_number()?;
++                let (ptr, width) = self.slot(op(0));
++                self.write_value(ptr, width, if condition != 0 { &if_true } else { &if_false })?;
++            }
++            0xe9 | 0xea => {
++                let value = if code == 0xe9 { self.pop_value()? } else { Value::Int(op(2)) };
++                let base = self.slot_dword(op(0))?;
++                self.write_value(base.wrapping_add(op(1)) as u32, compact_width(op(0) >> 14), &value)?;
++            }
++            0xec => {
++                // memcpy(dst, src, size) with the size inline.
++                self.push_value(Value::Int(op(0)));
++                return Ok(Some(CompactNext::As(0x60)));
++            }
++            0xed => {
++                self.push_value(Value::Ptr(self.frame_ptr(op(0) as u32)));
++                self.push_value(Value::Int(op(1)));
++                return Ok(Some(CompactNext::As(0x60)));
++            }
++            0xee => {
++                let target = self.code_offset_of(program_index, op_offset(instruction, 0));
++                self.push_value(Value::Int(target as i32));
++                return Ok(Some(CompactNext::As(0x16)));
++            }
++            0xef => {
++                let target = self.read_value(op(0) as u32 & 0x3fff_ffff, compact_width(op(0) >> 30))?;
++                self.push_value(target);
++                return Ok(Some(CompactNext::As(0x16)));
++            }
++            0xf0 => {
++                let value = self.slot_dword(op(1))?.wrapping_add(op(2));
++                self.write_number(op(0) as u32, compact_width(op(1) >> 14), value)?;
++            }
++            0xf1 => {
++                let value = self.slot_dword(op(1))?.wrapping_add(op(2));
++                self.write_number(self.frame_ptr(op(0) as u32), compact_width(op(1) >> 14), value)?;
++            }
++            0xf2 => {
++                let base = self.read_number(self.frame_ptr(op(0) as u32), 2)?;
++                let value = self.slot_dword(op(2))?.wrapping_add(op(3));
++                self.write_number(base.wrapping_add(op(1)) as u32, compact_width(op(2) >> 14), value)?;
++            }
++            0xf4 => {
++                let value = self.slot_dword(op(2))?.wrapping_mul(op(3)).wrapping_add(op(1));
++                self.write_number(self.frame_ptr(op(0) as u32), compact_width(op(2) >> 14), value)?;
++            }
++            0xf5 => {
++                let other = self.read_number(self.frame_ptr(op(1) as u32), 2)?;
++                let value = self.slot_dword(op(3))?.wrapping_mul(op(4)).wrapping_add(op(2)).wrapping_add(other);
++                self.write_number(self.frame_ptr(op(0) as u32), compact_width(op(3) >> 14), value)?;
++            }
++            0xf7 => {
++                let top = self.pop_number()?;
++                let base = self.slot_dword(op(0))?;
++                let value = self.read_number(base.wrapping_add(op(1)) as u32, compact_width(op(0) >> 14))?;
++                self.push_value(Value::Int(value.wrapping_mul(op(2)).wrapping_add(top)));
++            }
++            0xf8 => {
++                let index = self.read_number(self.frame_ptr(op(1) as u32), 2)?;
++                self.push_value(Value::Int(index.wrapping_mul(op(2)).wrapping_add(op(0))));
++            }
++            0xf9 => {
++                let first = self.read_number(self.frame_ptr(op(0) as u32), 2)?;
++                let index = self.read_number(self.frame_ptr(op(2) as u32), 2)?;
++                self.push_value(Value::Int(index.wrapping_mul(op(3)).wrapping_add(first).wrapping_add(op(1))));
++            }
++            0xfa | 0xfb => {
++                let index = self.slot_dword(op(1))?.wrapping_mul(op(2));
++                let base = if code == 0xfa { op(0) as u32 } else { self.frame_ptr(op(0) as u32) };
++                let value = self.read_value(base.wrapping_add(index as u32), compact_width(op(1) >> 14))?;
++                self.push_value(value);
++            }
++            _ => return Err(VmError::UnsupportedInstruction(code)),
++        }
++        Ok(None)
++    }
++
++    /// Native calls BGI 1.677+ added that ethornell does not model. Most
++    /// select engine languages, UTF-8 text or window limits; they get their
++    /// target stack effect and a neutral result so the scripts stay aligned.
++    fn execute_bgi172_call(&mut self, group: u8, id: u8) -> VmResult<()> {
++        match (group, id) {
++            // Sys81:21 converts CP932 text to UTF-8 (MultiByteToWideChar 932).
++            // ethornell keeps text in CP932, so the conversion is a copy, and
++            // Sys81:27 reports that no conversion is needed.
++            (0x81, 0x21) => {
++                let src = self.pop_value()?;
++                let dst = self.pop_ptr()?;
++                self.copy_c_string_value(dst, src)?;
++            }
++            // UserB0:C5 enumerates fonts like UserB0:C4 into (buffer, size).
++            (0xb0, 0xc5) => {
++                let _size = self.pop_int()?;
++                let destination = self.pop_ptr()?;
++                let result = if destination == 0 {
++                    JAPANESE_FONT_FAMILIES
++                        .iter()
++                        .map(|name| self.encode_native_string(name).len() + 1)
++                        .sum::<usize>()
++                } else {
++                    let mut at = destination;
++                    for name in JAPANESE_FONT_FAMILIES {
++                        self.write_c_string(at, name)?;
++                        at = at.wrapping_add(self.encode_native_string(name).len() as u32 + 1);
++                    }
++                    JAPANESE_FONT_FAMILIES.len()
++                };
++                self.push_value(Value::Int(result as i32));
++            }
++            _ => {
++                let (pops, pushes) = bgi172_call_arity(group, id).unwrap_or_default();
++                for _ in 0..pops {
++                    self.pop_value()?;
++                }
++                if pushes {
++                    self.push_value(Value::Int(0));
++                }
++            }
++        }
++        Ok(())
++    }
++
+     fn pop_int(&mut self) -> VmResult<i32> {
+         Ok(self.pop_value()?.as_i32())
+     }
+@@ -12736,6 +13118,116 @@ fn read_op_i32(instruction: &BpInstruction) -> i32 {
+     }
+ }
+ 
++fn op_i32_at(instruction: &BpInstruction, index: usize) -> i32 {
++    match instruction.operands.get(index) {
++        Some(BpOperand::U8(v)) => *v as i32,
++        Some(BpOperand::U16(v)) => *v as i32,
++        Some(BpOperand::U32(v)) => *v as i32,
++        Some(BpOperand::I32(v)) => *v,
++        Some(BpOperand::Offset(v)) => *v as i32,
++        _ => 0,
++    }
++}
++
++fn op_offset(instruction: &BpInstruction, index: usize) -> u32 {
++    op_i32_at(instruction, index) as u32
++}
++
++
++/// (arguments, pushes a result) of the native calls BGI 1.677+ added, from
++/// the x64 handler tables.
++fn bgi172_call_arity(group: u8, id: u8) -> Option<(usize, bool)> {
++    Some(match (group, id) {
++        (0x81, 0x00) | (0x81, 0x02) | (0x81, 0x27) => (1, true),
++        (0x81, 0x21) => (2, false),
++        (0x81, 0x66) | (0x81, 0x67) => (1, false),
++        (0x81, 0x6c) | (0x81, 0xd8) => (2, true),
++        (0x81, 0xda) => (3, true),
++        (0x91, 0x00) => (1, false),
++        (0x91, 0x09) | (0x91, 0xbc) => (1, true),
++        (0x91, 0x0a) => (2, true),
++        (0x91, 0xbd) => (11, true),
++        (0x92, 0x0e) => (3, false),
++        (0xb0, 0xc5) => (2, true),
++        _ => return None,
++    })
++}
++
++/// How a compact opcode continues when it does not fall through.
++enum CompactNext {
++    /// Jump to a parser offset of the same program.
++    Jump(u32),
++    /// Finish as this plain opcode, with the operands it left on the stack.
++    As(u8),
++}
++
++/// The 2-bit width of compact operands: 2 = dword, 1 = word, else byte.
++fn compact_width(bits: i32) -> u8 {
++    match bits & 3 {
++        2 => 2,
++        1 => 1,
++        _ => 0,
++    }
++}
++
++/// Comparison selector of the 1.7x branch and compare opcodes (sub_CF9D0).
++fn compact_compare(kind: i32, a: i32, b: i32) -> i32 {
++    match kind {
++        0 => (a == b) as i32,
++        1 => (a != b) as i32,
++        2 => (a < b) as i32,
++        3 => (a <= b) as i32,
++        4 => (a >= b) as i32,
++        5 => (a > b) as i32,
++        6 => a & b,
++        7 => a | b,
++        8 => (a != 0 && b != 0) as i32,
++        9 => (a != 0 || b != 0) as i32,
++        _ => 0,
++    }
++}
++
++/// Arithmetic selector of the 1.7x store opcodes (sub_CFA80); a zero divisor
++/// and unknown selectors give 0x80000000.
++fn compact_arith(kind: i32, a: i32, b: i32) -> i32 {
++    match kind {
++        0 => a.wrapping_add(b),
++        1 => a.wrapping_sub(b),
++        2 => a.wrapping_mul(b),
++        3 if b != 0 => a.wrapping_div(b),
++        4 if b != 0 => a.wrapping_rem(b),
++        5 => a & b,
++        6 => a | b,
++        7 => a ^ b,
++        8 => a.wrapping_shl(b as u32),
++        9 => (a as u32).wrapping_shr(b as u32) as i32,
++        10 => a.wrapping_shr(b as u32),
++        _ => i32::MIN,
++    }
++}
++
++fn compact_shift(value: i32, shift: i32) -> i32 {
++    if shift >= 0 {
++        value.wrapping_shl(shift as u32)
++    } else {
++        value.wrapping_shr(shift.unsigned_abs())
++    }
++}
++
++fn compact_div(a: i32, b: i32) -> i32 {
++    if b == 0 { i32::MIN } else { a.wrapping_div(b) }
++}
++
++/// f32 to the nearest integer as cvtps2dq does (ties to even, saturating).
++fn compact_round(value: f32) -> i32 {
++    if value.is_nan() { i32::MIN } else { value.round_ties_even() as i32 }
++}
++
++fn compact_lerp(a: f32, b: f32, t: f32) -> i32 {
++    let t = if t < 0.0 { 0.0 } else { t.min(1.0) };
++    compact_round(((b - a) * t + a) * 65_536.0)
++}
++
+ #[derive(Debug, Default)]
+ pub struct TraceApi;
+ 
