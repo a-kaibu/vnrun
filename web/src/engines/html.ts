@@ -2,6 +2,7 @@
 // page runs as it is in an iframe and draws itself; the player only keeps its saves. The
 // server starts each page of the game with a call to vnrunFrame (docs/protocol.md), which
 // swaps the page's localStorage for one kept in the GameFS, before any script of the game runs.
+// IndexedDB is left as it is.
 import type { EngineContext } from "../engine";
 import type { GameFS, Manifest } from "../gamefs";
 
@@ -65,8 +66,8 @@ export async function start({ fs, manifest, ui }: EngineContext): Promise<void> 
   Object.assign(window, {
     vnrunFrame(win: Window) {
       Object.defineProperty(win, "localStorage", { value: localStorage });
-      // Without IndexedDB, localforage (RPG Maker MZ) keeps its saves in localStorage too.
-      Object.defineProperty(win, "indexedDB", { value: undefined });
+      // RPG Maker MZ refuses to start without IndexedDB and keeps its saves there (localforage,
+      // keys named after the game id), so it stays the browser's own.
     },
   });
 
