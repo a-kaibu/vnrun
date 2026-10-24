@@ -20,9 +20,19 @@ if (!url || !out) {
 }
 
 (async () => {
+  // WebGL and WebGPU through SwiftShader on machines without a GPU. WebGPU needs the full
+  // Chromium (the headless shell cannot present a WebGPU canvas) with Vulkan and Graphite.
   const browser = await chromium.launch({
-    // WebGL/WebGPU through SwiftShader on machines without a GPU.
-    args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--autoplay-policy=no-user-gesture-required"],
+    executablePath: process.env.VNRUN_CHROMIUM || "/opt/pw-browsers/chromium-1243/chrome-linux64/chrome",
+    args: [
+      "--headless=new",
+      "--enable-unsafe-webgpu",
+      "--enable-features=Vulkan,SkiaGraphite",
+      "--use-vulkan=swiftshader",
+      "--use-angle=swiftshader",
+      "--enable-unsafe-swiftshader",
+      "--autoplay-policy=no-user-gesture-required",
+    ],
   });
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   const log = [];

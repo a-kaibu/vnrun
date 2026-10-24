@@ -1,0 +1,17 @@
+{
+  "name": "vnrun-web",
+  "private": true,
+  "description": "The vnrun player page. Engines are built into public/engines/ by engines/<id>/build.sh.",
+  "type": "module",
+  "scripts": {
+    "dev": "vp dev",
+    "build": "vp build",
+    "check": "vp check"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@webgpu/types": "^0.1.60",
+    "typescript": "^5.9.0",
+    "vite-plus": "1.4.0"
+  }
+}

@@ -17,11 +17,12 @@ DRM (PlayDRM、ソフト電池など) の付いた製品版は扱わない。そ
 ## 構成
 
 ```
-web/                 プレイヤーのページ (エンジンに依らない部分)
-  player.js          ?game=<URL> のゲームを開き、エンジンに渡す
-  vfs.js             ゲームのファイルとセーブを HTTP で読み書きする
-  engines/<id>.js    エンジンごとのつなぎ
-engines/<id>/build.sh  エンジンを wasm にして dist/engines/<id>/ に置く
+web/                 プレイヤーのページ (Vite+ + TypeScript、エンジンに依らない部分)
+  src/main.ts        ?game=<URL> のゲームを開き、エンジンに渡す
+  src/gamefs.ts      ゲームのファイルとセーブを HTTP で読み書きする
+  src/present.ts     CPU で描いたフレームを WebGPU で画面に出す
+  src/engines/<id>.ts  エンジンごとのつなぎ
+engines/<id>/build.sh  エンジンを wasm にして web/public/engines/<id>/ に置く
 third_party/         取り込んだエンジン (git submodule)
 crates/devserver     手元で試すためのサーバー
 crates/prep          ブラウザでできない下ごしらえ (Siglus の二次鍵の復元など)
@@ -32,11 +33,11 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 
 ## ビルドと試し方
 
-Rust (rustup) が要る。
+Rust (rustup) と Node.js が要る。Artemis には Emscripten (emcc) も要る。描画はすべて WebGPU で、WebGPU の無いブラウザには対応しない。
 
 ```bash
 git submodule update --init
-./build.sh                                   # → dist/
+./build.sh                                   # → dist/ (エンジンを作り、web/ を vp build)
 cargo run --release -p vnrun-devserver -- --game ~/games/シオンの血族_体験版/StartData/GameData
 # → http://127.0.0.1:8090/ をブラウザで開く。セーブは ./saves/<フォルダ名>/ に残る
 ```
@@ -51,4 +52,6 @@ cargo run --release -p vnrun-prep -- ~/games/プリマドール/StartData/gameda
 
 取り込んだエンジンへのブラウザ向けの修正は `patches/<エンジン>/*.patch` に置き、`engines/<id>/build.sh` がビルド前に当てる。
 
-動作の確認には `tools/shot.js` (Playwright) が使える: `node tools/shot.js http://127.0.0.1:8090/ out/sion "wait:40,shot:title,at:1050;120,wait:10,shot:story"`。
+ページだけ直すなら `cd web && npx vp dev` (/game/ は 127.0.0.1:8090 の devserver に流す。`VNRUN_DEVSERVER` で変更可)、確認は `npx vp check`。
+
+動作の確認には `tools/shot.js` (Playwright。WebGPU のためにフル版 Chromium を Vulkan SwiftShader で動かす) が使える: `node tools/shot.js http://127.0.0.1:8090/ out/sion "wait:40,shot:title,at:1050;120,wait:10,shot:story"`。

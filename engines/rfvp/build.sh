@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Builds rfvp (third_party/rfvp, FVP) for the browser into dist/engines/rfvp/.
+# Builds rfvp (third_party/rfvp, FVP) for the browser into web/public/engines/rfvp/.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SRC="$ROOT/third_party/rfvp"
-OUT="$ROOT/dist/engines/rfvp"
+OUT="$ROOT/web/public/engines/rfvp"
 
 if [[ ! -f "$SRC/Cargo.toml" ]]; then
   git -C "$ROOT" submodule update --init third_party/rfvp

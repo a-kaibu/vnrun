@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Builds siglus_rs (third_party/siglus_rs) for the browser into dist/engines/siglus_rs/.
+# Builds siglus_rs (third_party/siglus_rs) for the browser into web/public/engines/siglus_rs/.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SRC="$ROOT/third_party/siglus_rs"
-OUT="$ROOT/dist/engines/siglus_rs"
+OUT="$ROOT/web/public/engines/siglus_rs"
 if [[ ! -f "$SRC/Cargo.toml" ]]; then
   git -C "$ROOT" submodule update --init third_party/siglus_rs
 fi

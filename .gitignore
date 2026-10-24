@@ -1,2 +1,7 @@
 /target
 /dist
+/web/node_modules
+# Built by engines/<id>/build.sh
+/web/public/engines
+# Fonts the player registers (docs/protocol.md), put here by hand
+/web/public/fonts

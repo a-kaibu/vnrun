@@ -1,51 +1,54 @@
 // The player page: opens the game named by ?game=<base> (docs/protocol.md) and hands it to
 // the engine module for its engine.
-import { GameFS } from "./vfs.js";
+import "./style.css";
+import type { EngineModule, Ui } from "./engine";
+import { GameFS, type SaveErrorDetail } from "./gamefs";
 
 // engine id in manifest.json -> module under engines/ that runs it
-const ENGINES = {
-  siglus: "siglus_rs",
-  reallive: "siglus_rs",
-  avg32: "siglus_rs",
-  uk2: "siglus_rs",
-  bgi: "ethornell",
-  softpal: "sena",
-  fvp: "rfvp",
-  artemis: "art3m1s",
+const ENGINES: Record<string, () => Promise<EngineModule>> = {
+  siglus: () => import("./engines/siglus_rs"),
+  reallive: () => import("./engines/siglus_rs"),
+  avg32: () => import("./engines/siglus_rs"),
+  uk2: () => import("./engines/siglus_rs"),
+  bgi: () => import("./engines/ethornell"),
+  softpal: () => import("./engines/sena"),
+  fvp: () => import("./engines/rfvp"),
+  artemis: () => import("./engines/art3m1s"),
 };
 
-const $ = (id) => document.getElementById(id);
+const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const overlay = $("overlay");
 
-function show(message) {
+function show(message: string): void {
   $("message").textContent = message;
   overlay.hidden = false;
 }
 
-function fail(error) {
+function fail(error: unknown): void {
   console.error(error);
   overlay.classList.add("failed");
-  show(`起動できませんでした。\n\n${error && error.stack ? error.stack : error}`);
+  const text = error instanceof Error && error.stack ? error.stack : String(error);
+  show(`起動できませんでした。\n\n${text}`);
 }
 
 // Loads every font listed in fonts/fonts.json next to the page (none when it is missing).
-async function fonts() {
+async function fonts(): Promise<Uint8Array[]> {
   try {
     const res = await fetch("fonts/fonts.json");
     if (!res.ok) return [];
-    const names = await res.json();
-    const out = [];
+    const names = (await res.json()) as string[];
+    const out: Uint8Array[] = [];
     for (const name of names) {
       const r = await fetch(`fonts/${encodeURIComponent(name)}`);
       if (r.ok) out.push(new Uint8Array(await r.arrayBuffer()));
     }
     return out;
-  } catch (_) {
+  } catch {
     return [];
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   const params = new URLSearchParams(location.search);
   const base = params.get("game");
   if (!base) throw new Error("URL に ?game=<ゲームの URL> がありません");
@@ -55,13 +58,13 @@ async function main() {
   const title = manifest.title || base;
   document.title = title;
   $("title").textContent = title;
-  const id = ENGINES[manifest.engine];
-  if (!id) throw new Error(`このエンジンにはまだ対応していません: ${manifest.engine}`);
+  const load = ENGINES[manifest.engine];
+  if (!load) throw new Error(`このエンジンにはまだ対応していません: ${manifest.engine}`);
 
-  const ui = {
-    canvas: $("screen"),
-    menu: $("menu"),
-    skip: $("skip"),
+  const ui: Ui = {
+    canvas: $<HTMLCanvasElement>("screen"),
+    menu: $<HTMLButtonElement>("menu"),
+    skip: $<HTMLButtonElement>("skip"),
     show,
     hide: () => {
       overlay.hidden = true;
@@ -75,24 +78,27 @@ async function main() {
       else show("終了しました。このタブは閉じて構いません。");
     },
   };
-  $("exit").addEventListener("click", () => ui.exit());
+  $("exit").addEventListener("click", () => void ui.exit());
   window.addEventListener("vnrun-save-error", (e) => {
-    $("title").textContent = `${title} (セーブの送信に失敗: ${e.detail.path})`;
+    const { path } = (e as CustomEvent<SaveErrorDetail>).detail;
+    $("title").textContent = `${title} (セーブの送信に失敗: ${path})`;
   });
 
   show("エンジンを読み込み中…");
-  const engine = await import(`./engines/${id}.js`);
+  const engine = await load();
   await engine.start({ fs, manifest, ui, fonts: await fonts() });
 }
 
 // winit leaves its event loop by throwing this on purpose; it is not a failure.
-const controlFlow = (e) => String(e && (e.message || e)).includes("Using exceptions for control flow");
+const controlFlow = (e: unknown) =>
+  String(e instanceof Error ? e.message : e).includes("Using exceptions for control flow");
 window.addEventListener("error", (e) => {
-  if (!controlFlow(e.error || e.message)) fail(e.error || e.message);
+  const error: unknown = e.error ?? e.message;
+  if (!controlFlow(error)) fail(error);
 });
 window.addEventListener("unhandledrejection", (e) => {
   if (!controlFlow(e.reason)) fail(e.reason);
 });
-main().catch((e) => {
+main().catch((e: unknown) => {
   if (!controlFlow(e)) fail(e);
 });

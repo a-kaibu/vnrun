@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# Builds the player into dist/: the page (web/) and every engine (engines/*/build.sh).
+# Builds the player into dist/: every engine (engines/*/build.sh, into web/public/engines/),
+# then the page (web/, with Vite+).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-mkdir -p "$ROOT/dist"
 for b in "$ROOT"/engines/*/build.sh; do
   "$b"
 done
-cp -r "$ROOT/web/." "$ROOT/dist/"
+cd "$ROOT/web"
+npm ci
+npx vp build

@@ -1,20 +1,24 @@
 <!doctype html>
 <html lang="ja">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>vnrun</title>
-  <link rel="stylesheet" href="./style.css" />
-</head>
-<body>
-  <canvas id="screen" tabindex="0"></canvas>
-  <div id="bar">
-    <div id="title"></div>
-    <button id="skip" class="secondary" hidden>» スキップ</button>
-    <button id="menu" class="secondary" hidden>≡ メニュー</button>
-    <button id="exit">終了</button>
-  </div>
-  <div id="overlay"><div id="card"><div class="spinner"></div><div id="message">読み込み中…</div></div></div>
-  <script type="module" src="./player.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>vnrun</title>
+  </head>
+  <body>
+    <canvas id="screen" tabindex="0"></canvas>
+    <div id="bar">
+      <div id="title"></div>
+      <button id="skip" class="secondary" hidden>» スキップ</button>
+      <button id="menu" class="secondary" hidden>≡ メニュー</button>
+      <button id="exit">終了</button>
+    </div>
+    <div id="overlay">
+      <div id="card">
+        <div class="spinner"></div>
+        <div id="message">読み込み中…</div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>

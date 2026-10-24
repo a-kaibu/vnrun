@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Builds ethornell-rs (third_party/ethornell-rs, BGI/Ethornell) for the browser into
-# dist/engines/ethornell/: the wasm-bindgen module and the upstream audio worklet. The worker
+# web/public/engines/ethornell/: the wasm-bindgen module and the upstream audio worklet. The worker
 # that runs it is ours (web/engines/ethornell.worker.js) because it reads files over HTTP.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SRC="$ROOT/third_party/ethornell-rs"
-OUT="$ROOT/dist/engines/ethornell"
+OUT="$ROOT/web/public/engines/ethornell"
 
 if [[ ! -f "$SRC/Cargo.toml" ]]; then
   git -C "$ROOT" submodule update --init third_party/ethornell-rs

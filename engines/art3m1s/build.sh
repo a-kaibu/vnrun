@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Builds art3m1s-core (third_party/art3m1s-core, Artemis) with its browser host
-# (engines/art3m1s/host) for the browser into dist/engines/art3m1s/. Needs Emscripten (emcc on
+# (engines/art3m1s/host) for the browser into web/public/engines/art3m1s/. Needs Emscripten (emcc on
 # PATH, or EMSDK set); art3m1s-core embeds Lua 5.1, which is C.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SRC="$ROOT/third_party/art3m1s-core"
 HOST="$ROOT/engines/art3m1s/host"
-OUT="$ROOT/dist/engines/art3m1s"
+OUT="$ROOT/web/public/engines/art3m1s"
 
 if [[ ! -f "$SRC/Cargo.toml" ]]; then
   git -C "$ROOT" submodule update --init third_party/art3m1s-core

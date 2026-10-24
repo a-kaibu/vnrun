@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Builds sena-rs (third_party/sena-rs, Softpal / PAL) for the browser into dist/engines/sena/.
+# Builds sena-rs (third_party/sena-rs, Softpal / PAL) for the browser into web/public/engines/sena/.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SRC="$ROOT/third_party/sena-rs"
-OUT="$ROOT/dist/engines/sena"
+OUT="$ROOT/web/public/engines/sena"
 
 if [[ ! -f "$SRC/Cargo.toml" ]]; then
   git -C "$ROOT" submodule update --init third_party/sena-rs
