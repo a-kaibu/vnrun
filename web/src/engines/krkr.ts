@@ -78,5 +78,7 @@ export async function start({ fs, manifest, ui }: EngineContext): Promise<void> 
 
   ui.hide();
   canvas.focus();
-  Module.callMain([project(manifest)]);
+  // Scripts without a BOM are Shift_JIS in KiriKiri 2/Z games; KiriKiri SDL2 reads them as UTF-8
+  // unless told otherwise.
+  Module.callMain([project(manifest), "-readencoding=Shift_JIS"]);
 }
