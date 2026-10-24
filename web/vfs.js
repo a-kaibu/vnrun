@@ -36,17 +36,20 @@ function baseOf(path) {
 }
 
 // Reads a URL synchronously as bytes. Synchronous XHR cannot use responseType in a window,
-// so the body comes back as a binary string.
-function getSync(url) {
+// so the body comes back as a binary string. `range` is [start, end) of the file; a server
+// that ignores it sends the whole file.
+function getSync(url, range) {
   const xhr = new XMLHttpRequest();
   xhr.open("GET", url, false);
   xhr.overrideMimeType("text/plain; charset=x-user-defined");
+  if (range) xhr.setRequestHeader("Range", `bytes=${range[0]}-${range[1] - 1}`);
   xhr.send(null);
-  if (xhr.status !== 200) throw new Error(`GET ${url}: HTTP ${xhr.status}`);
+  const ok = xhr.status === 200 || (range && xhr.status === 206);
+  if (!ok) throw new Error(`GET ${url}: HTTP ${xhr.status}`);
   const text = xhr.responseText || "";
   const out = new Uint8Array(text.length);
   for (let i = 0; i < text.length; i += 1) out[i] = text.charCodeAt(i) & 0xff;
-  return out;
+  return range && xhr.status === 200 ? out.subarray(range[0], range[1]) : out;
 }
 
 export class GameFS {
@@ -132,6 +135,24 @@ export class GameFS {
       this.cached -= v.length;
     }
     return bytes;
+  }
+
+  size(path) {
+    const p = this.resolve(path);
+    const saved = this.saves.get(p);
+    if (saved) return saved.length;
+    return this.sizes.has(p) ? this.sizes.get(p) : -1;
+  }
+
+  // Part of a file, without fetching the rest of a large archive.
+  readRange(path, offset, length) {
+    const p = this.resolve(path);
+    const whole = this.saves.get(p) || this.cache.get(p);
+    if (whole) return whole.subarray(offset, offset + length);
+    if (!this.sizes.has(p)) throw new Error(`file not found: ${path}`);
+    const end = Math.min(this.sizes.get(p), offset + length);
+    if (end <= offset) return new Uint8Array(0);
+    return getSync(`${this.base}files/${encodePath(p)}`, [offset, end]);
   }
 
   list(path) {

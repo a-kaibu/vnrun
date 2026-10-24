@@ -9,6 +9,7 @@ const ENGINES = {
   avg32: "siglus_rs",
   uk2: "siglus_rs",
   bgi: "ethornell",
+  softpal: "sena",
 };
 
 const $ = (id) => document.getElementById(id);

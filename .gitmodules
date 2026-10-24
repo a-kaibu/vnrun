@@ -4,3 +4,6 @@
 [submodule "third_party/ethornell-rs"]
 	path = third_party/ethornell-rs
 	url = https://github.com/xmoezzz/ethornell-rs
+[submodule "third_party/sena-rs"]
+	path = third_party/sena-rs
+	url = https://github.com/xmoezzz/sena-rs.git

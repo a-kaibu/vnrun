@@ -7,6 +7,7 @@ Windows 向けノベルゲームを、Wine を使わずにブラウザの中で�
 | エンジン | 実装 | 状態 |
 |---|---|---|
 | SiglusEngine / RealLive / AVG32 / UK2 | [siglus_rs](https://github.com/xmoezzz/siglus_rs) (`third_party/siglus_rs`) | 組み込み済み。Siglus 2 本・RealLive 2 本の体験版で確認 ([docs/handoff.md](docs/handoff.md)) |
+| Softpal (PAL) | [sena-rs](https://github.com/xmoezzz/sena-rs) (`third_party/sena-rs`、MPL-2.0) | 組み込み済み。ただし sena-rs は「恋×シンアイ彼女」向けで、試したエレクトリップの体験版は注意書き画面の後で止まる |
 | BGI / Ethornell | [ethornell-rs](https://github.com/xmoezzz/ethornell-rs) (`third_party/ethornell-rs`、MPL-2.0) | 組み込み済み。BGI 1 本の体験版で本編の文章まで確認 |
 
 今後の候補は [docs/handoff.md](docs/handoff.md) の対応表を参照。
