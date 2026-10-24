@@ -108,3 +108,15 @@ dl_RJ01648691	NG	「Your browser does not support IndexedDB」
 dl_RJ01618221	NG	「Your browser does not support IndexedDB」
 dl_RJ357058	NG	「Unexpected end of JSON input」
 dl_RJ01720493	NG	「Cannot read properties of undefined (reading 'fs')」(NW.js の Node API)
+dl_RJ01722380	NG	「Your browser does not support IndexedDB」
+dl_RJ01727123	NG	「Your browser does not support IndexedDB」
+s2016_no_strike_jyogaku	NG	「ysbin/ysc.ybn is missing」
+dl_RJ01612664	タイトル	RPGツクール。画面が拡大されない
+dl_RJ01721024	タイトル	
+dl_RJ01686418	起動	黒画面のまま (エラーなし)
+dl_RJ01706991	タイトル	RPGツクール
+s2021_casket_bellaca	タイトル	
+dl_RJ01699765	起動	読み込み中の表示のまま進まない
+dl_RJ01702392	起動	灰色の画面に大きすぎるタイトル文字だけが出て進まない
+dl_RJ01618747	起動	読み込み中の表示のまま進まない
+dl_VJ01001309	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)
