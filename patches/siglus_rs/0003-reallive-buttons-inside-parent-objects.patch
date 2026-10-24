@@ -1,0 +1,136 @@
+diff --git a/crates/reallive/src/select.rs b/crates/reallive/src/select.rs
+index 190cf30..bad4785 100644
+--- a/crates/reallive/src/select.rs
++++ b/crates/reallive/src/select.rs
+@@ -10,9 +10,11 @@
+ use anyhow::Result;
+ 
+ use crate::bytecode::{Select, select_effect};
++use crate::graphics::ObjectRef;
+ use crate::input::{Button, InputEvent, Key};
+ use crate::machine::{LongOp, Machine};
+ use crate::nls::cell_width;
++use crate::object::ObjectData;
+ use crate::surface::{Rect, Surface};
+ use crate::system::System;
+ use crate::textout;
+@@ -605,7 +607,7 @@ pub fn draw_buttons(sys: &mut System, frame: &mut Surface) {
+ pub struct ObjectButtonSelect {
+     group: i32,
+     cancelable: bool,
+-    hovered: Option<(usize, i32)>,
++    hovered: Option<(ObjectRef, i32)>,
+     pressed: bool,
+ }
+ 
+@@ -619,40 +621,85 @@ impl ObjectButtonSelect {
+         }
+     }
+ 
+-    fn buttons(&self, sys: &mut System) -> Vec<(usize, i32, Rect)> {
++    fn buttons(&self, sys: &mut System) -> Vec<(ObjectRef, i32, Rect)> {
+         group_buttons(sys, self.group)
+     }
+ 
+-    fn set_state(sys: &mut System, slot: usize, state: i32) {
++    fn set_state(sys: &mut System, slot: ObjectRef, state: i32) {
+         set_button_state(sys, slot, state);
+     }
+ }
+ 
+-/// Button objects of a group, topmost first: (object slot, button number,
+-/// bounds).
+-fn group_buttons(sys: &mut System, group: i32) -> Vec<(usize, i32, Rect)> {
++/// Button objects of a group, topmost first: (object, button number,
++/// bounds). Buttons may also be children of a visible parent object.
++fn group_buttons(sys: &mut System, group: i32) -> Vec<(ObjectRef, i32, Rect)> {
+     let now = sys.now();
+     let gfx = &mut sys.gfx;
+     let mut out = Vec::new();
+     for (slot, object) in gfx.fg.iter().enumerate() {
+         let Some(object) = object else { continue };
++        let buf = slot as i32;
+         let b = &object.params.button;
+-        if b.is_button == 0 || b.group != group || !object.params.visible {
++        if b.is_button != 0 && b.group == group && object.params.visible {
++            let bounds = object.bounds(now, &mut gfx.fonts, &gfx.colours, (0, 0));
++            let r = ObjectRef {
++                bg: false,
++                buf,
++                child: None,
++            };
++            out.push((
++                (
++                    object.params.z_order,
++                    object.params.z_layer,
++                    object.params.z_depth,
++                    buf,
++                    -1,
++                ),
++                r,
++                b.number,
++                bounds,
++            ));
++        }
++        let Some(ObjectData::Parent(children)) = object.data.as_ref() else {
+             continue;
++        };
++        if !object.params.visible {
++            continue;
++        }
++        let (ax, ay) = object.params.adjust_sum();
++        let offset = (object.params.x + ax, object.params.y + ay);
++        for (index, child) in children.iter().enumerate() {
++            let Some(child) = child else { continue };
++            let b = &child.params.button;
++            if b.is_button == 0 || b.group != group || !child.params.visible {
++                continue;
++            }
++            let bounds = child.bounds(now, &mut gfx.fonts, &gfx.colours, offset);
++            let r = ObjectRef {
++                bg: false,
++                buf,
++                child: Some(index as i32),
++            };
++            let p = &object.params;
++            out.push((
++                (p.z_order, p.z_layer, p.z_depth, buf, index as i32),
++                r,
++                b.number,
++                bounds,
++            ));
+         }
+-        let bounds = object.bounds(now, &mut gfx.fonts, &gfx.colours, (0, 0));
+-        out.push((slot, b.number, bounds));
+     }
+-    out.sort_by_key(|&(slot, ..)| {
+-        let p = &gfx.fg[slot].as_ref().expect("present").params;
+-        std::cmp::Reverse((p.z_order, p.z_layer, p.z_depth, slot))
+-    });
+-    out
++    out.sort_by_key(|&(key, ..)| std::cmp::Reverse(key));
++    out.into_iter()
++        .map(|(_, r, number, bounds)| (r, number, bounds))
++        .collect()
+ }
+ 
+-fn set_button_state(sys: &mut System, slot: usize, state: i32) {
+-    if let Some(object) = sys.gfx.fg.get_mut(slot).and_then(Option::as_mut) {
+-        object.params.button.state = state;
++fn set_button_state(sys: &mut System, r: ObjectRef, state: i32) {
++    if sys.gfx.object(r).is_some() {
++        if let Ok(object) = sys.gfx.object_mut(r) {
++            object.params.button.state = state;
++        }
+     }
+ }
+ 
+@@ -662,7 +709,7 @@ fn set_button_state(sys: &mut System, slot: usize, state: i32) {
+ #[derive(Debug, Clone, PartialEq, Default)]
+ pub struct PolledButtons {
+     pub group: i32,
+-    hovered: Option<(usize, i32)>,
++    hovered: Option<(ObjectRef, i32)>,
+     /// The button held down, and whether with the right button.
+     pushed: Option<(i32, bool)>,
+     /// A click on a button not yet collected by `now_decide`, and whether

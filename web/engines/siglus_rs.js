@@ -55,6 +55,21 @@ function framebuffer(web, ui) {
   let rect = { x: 0, y: 0, w: 1, h: 1 };
   let skipping = false;
   let last = 0;
+  // Input waits for the next frame, and a release never lands in the same frame as its
+  // press: the engine reads button and key state once per frame, so a quick click or key
+  // tap would otherwise come and go between two reads.
+  const queue = [];
+  const input = (fn, edge) => queue.push({ fn, edge });
+  function applyInput() {
+    const pressed = new Set();
+    while (queue.length > 0) {
+      const { fn, edge } = queue[0];
+      if (edge && !edge.down && pressed.has(edge.id)) break;
+      queue.shift();
+      fn();
+      if (edge && edge.down) pressed.add(edge.id);
+    }
+  }
   ui.menu.hidden = false;
   ui.skip.hidden = false;
 
@@ -85,6 +100,7 @@ function framebuffer(web, ui) {
   function frame(now) {
     const dt = last ? Math.max(0, Math.min(100, Math.round(now - last))) : 0;
     last = now;
+    applyInput();
     if (!web.step(dt)) {
       web.free();
       ui.exit();
@@ -110,18 +126,22 @@ function framebuffer(web, ui) {
     requestAnimationFrame(frame);
   }
 
-  canvas.addEventListener("pointermove", (e) => web.pointerMove(...toFrame(e)));
-  canvas.addEventListener("pointerdown", (e) => {
-    canvas.focus();
-    web.pointerMove(...toFrame(e));
-    if (e.button === 0 || e.button === 2) web.pointerButton(e.button === 2 ? 1 : 0, true);
+  const button = (down) => (e) => {
+    if (down) canvas.focus();
+    const at = toFrame(e);
+    input(() => web.pointerMove(...at));
+    if (e.button === 0 || e.button === 2) {
+      const id = e.button === 2 ? 1 : 0;
+      input(() => web.pointerButton(id, down), { id: `b${id}`, down });
+    }
     e.preventDefault();
+  };
+  canvas.addEventListener("pointermove", (e) => {
+    const at = toFrame(e);
+    input(() => web.pointerMove(...at));
   });
-  canvas.addEventListener("pointerup", (e) => {
-    web.pointerMove(...toFrame(e));
-    if (e.button === 0 || e.button === 2) web.pointerButton(e.button === 2 ? 1 : 0, false);
-    e.preventDefault();
-  });
+  canvas.addEventListener("pointerdown", button(true));
+  canvas.addEventListener("pointerup", button(false));
   canvas.addEventListener("contextmenu", (e) => e.preventDefault());
   canvas.addEventListener("wheel", (e) => {
     web.wheel(e.deltaY < 0);
@@ -130,14 +150,17 @@ function framebuffer(web, ui) {
   window.addEventListener("keydown", (e) => {
     if (e.metaKey) return;
     const code = keyCode(e);
-    if (code) web.key(code, true);
-    if (!e.ctrlKey && !e.altKey && e.key && [...e.key].length === 1) web.text(e.key);
+    if (code) input(() => web.key(code, true), { id: `k${code}`, down: true });
+    if (!e.ctrlKey && !e.altKey && e.key && [...e.key].length === 1) {
+      const { key } = e;
+      input(() => web.text(key));
+    }
     if (code) e.preventDefault();
   });
   window.addEventListener("keyup", (e) => {
     const code = keyCode(e);
     if (code) {
-      web.key(code, false);
+      input(() => web.key(code, false), { id: `k${code}`, down: false });
       e.preventDefault();
     }
   });
@@ -146,8 +169,8 @@ function framebuffer(web, ui) {
     web.key(KEY_SHIFT, false);
   });
   ui.menu.addEventListener("click", () => {
-    web.pointerButton(1, true);
-    web.pointerButton(1, false);
+    input(() => web.pointerButton(1, true), { id: "b1", down: true });
+    input(() => web.pointerButton(1, false), { id: "b1", down: false });
     canvas.focus();
   });
   ui.skip.addEventListener("click", () => {
