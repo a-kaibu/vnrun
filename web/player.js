@@ -10,6 +10,8 @@ const ENGINES = {
   uk2: "siglus_rs",
   bgi: "ethornell",
   softpal: "sena",
+  fvp: "rfvp",
+  artemis: "art3m1s",
 };
 
 const $ = (id) => document.getElementById(id);

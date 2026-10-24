@@ -2,7 +2,7 @@
 //! so a game can be played in a browser.
 //!
 //!     vnrun-devserver --game <ゲームのフォルダ> [--dist dist] [--saves <dir>] [--addr 127.0.0.1:8090]
-//!                     [--engine siglus|reallive|avg32|uk2|bgi|softpal] [--title T] [--nls sjis]
+//!                     [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis] [--title T] [--nls sjis]
 
 use std::fs::{self, File};
 use std::io::{Read, Seek, SeekFrom};
@@ -44,7 +44,7 @@ struct Manifest<'a> {
 fn usage() -> ! {
     eprintln!(
         "usage: vnrun-devserver --game <dir> [--dist dist] [--saves <dir>] [--addr 127.0.0.1:8090] \
-         [--engine siglus|reallive|avg32|uk2|bgi|softpal] [--title T] [--nls sjis]"
+         [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis] [--title T] [--nls sjis]"
     );
     exit(2)
 }
@@ -107,6 +107,10 @@ fn detect(game: &Path) -> Option<String> {
         Some("bgi".into())
     } else if has("data.pac") {
         Some("softpal".into())
+    } else if names.iter().any(|n| n.ends_with(".hcb")) {
+        Some("fvp".into())
+    } else if has("root.pfs") || has("system.ini") {
+        Some("artemis".into())
     } else {
         None
     }

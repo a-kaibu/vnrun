@@ -1,0 +1,67 @@
+diff --git a/crates/rfvp/src/app.rs b/crates/rfvp/src/app.rs
+index e787846..3830125 100644
+--- a/crates/rfvp/src/app.rs
++++ b/crates/rfvp/src/app.rs
+@@ -2236,6 +2236,9 @@ impl AppBuilder {
+     #[cfg(target_arch = "wasm32")]
+     pub fn with_wasm_vfs(mut self, vfs: crate::subsystem::resources::vfs::Vfs) -> Self {
+         self.world.vfs = vfs;
++        self.world
++            .save_manager
++            .set_storage(Some(std::sync::Arc::new(crate::wasm_app_path::WasmSaveStorage)));
+         self
+     }
+ 
+diff --git a/crates/rfvp/src/wasm_app_path.rs b/crates/rfvp/src/wasm_app_path.rs
+index 811388a..aa23b18 100644
+--- a/crates/rfvp/src/wasm_app_path.rs
++++ b/crates/rfvp/src/wasm_app_path.rs
+@@ -13,6 +13,48 @@ use wasm_bindgen::prelude::*;
+ extern "C" {
+     #[wasm_bindgen(js_name = rfvpReadFileRange)]
+     fn rfvp_read_file_range(file_id: u32, offset: f64, len: u32) -> Uint8Array;
++
++    // Saves live with the page, which persists them: `undefined` when there is no such file.
++    #[wasm_bindgen(js_name = rfvpSaveRead)]
++    fn rfvp_save_read(path: &str) -> Option<Uint8Array>;
++    #[wasm_bindgen(js_name = rfvpSaveWrite)]
++    fn rfvp_save_write(path: &str, bytes: &[u8]);
++    #[wasm_bindgen(js_name = rfvpSaveRemove)]
++    fn rfvp_save_remove(path: &str) -> bool;
++    #[wasm_bindgen(js_name = rfvpSaveList)]
++    fn rfvp_save_list(dir: &str) -> Vec<String>;
++}
++
++/// Save slots and global save data, kept by the page through the `rfvpSave*` globals.
++pub struct WasmSaveStorage;
++
++impl RfvpStorage for WasmSaveStorage {
++    fn read(&self, path: &str) -> RfvpResult<Vec<u8>> {
++        rfvp_save_read(path)
++            .map(|bytes| bytes.to_vec())
++            .ok_or(RfvpError::NotFound)
++    }
++
++    fn write(&self, path: &str, bytes: &[u8]) -> RfvpResult<()> {
++        rfvp_save_write(path, bytes);
++        Ok(())
++    }
++
++    fn exists(&self, path: &str) -> bool {
++        rfvp_save_read(path).is_some()
++    }
++
++    fn remove(&self, path: &str) -> RfvpResult<()> {
++        if rfvp_save_remove(path) {
++            Ok(())
++        } else {
++            Err(RfvpError::NotFound)
++        }
++    }
++
++    fn list(&self, dir: &str) -> RfvpResult<Vec<String>> {
++        Ok(rfvp_save_list(dir))
++    }
+ }
+ 
+ #[derive(Debug, Clone)]

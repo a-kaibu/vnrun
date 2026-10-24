@@ -1,0 +1,20 @@
+# The browser host of art3m1s-core (Artemis), built for wasm32-unknown-emscripten by
+# engines/art3m1s/build.sh. Not part of the vnrun workspace: it only builds for the web.
+[package]
+name = "vnrun-art3m1s"
+version = "0.1.0"
+edition = "2024"
+license = "MPL-2.0"
+publish = false
+
+[[bin]]
+name = "art3m1s"
+path = "src/main.rs"
+
+[dependencies]
+art3m1s-core = { path = "../../../third_party/art3m1s-core", default-features = false, features = ["gl-backend"] }
+
+[profile.release]
+panic = "unwind"
+
+[workspace]
