@@ -120,3 +120,16 @@ dl_RJ01699765	起動	読み込み中の表示のまま進まない
 dl_RJ01702392	起動	灰色の画面に大きすぎるタイトル文字だけが出て進まない
 dl_RJ01618747	起動	読み込み中の表示のまま進まない
 dl_VJ01001309	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)
+dl_RJ01720958	NG	「Your browser does not support IndexedDB」
+dl_RJ01703802	NG	「Your browser does not support IndexedDB」
+dl_RJ01699647	NG	「Your browser does not support IndexedDB」
+dl_RJ01701172	NG	「Your browser does not support IndexedDB」
+dl_RJ01696742	NG	「Your browser does not support IndexedDB」
+dl_RJ01529614	NG	「Your browser does not support IndexedDB」
+dl_RJ01746541	起動	黒画面のまま (エラーなし)
+dl_RJ01701742	起動	読み込み中の表示のまま進まない
+dl_RJ01623688	起動	読み込み中の表示のまま進まない
+dl_RJ01650072	タイトル	
+dl_RJ01702800	タイトル	
+dl_RJ01720685	本編	クリックで最初の会話まで
+r1_kag3	要再確認	KAG3 のサンプル (xp3 にまとめていない data フォルダ)。開発スレッドでは確認済み
