@@ -1,0 +1,8 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+exclude = ["third_party"]
+
+[workspace.package]
+edition = "2024"
+license = "MPL-2.0"

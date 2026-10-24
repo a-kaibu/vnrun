@@ -1,0 +1,27 @@
+name: build
+on:
+  push:
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/bin/wasm-bindgen
+            target
+            third_party/siglus_rs/target
+          key: cargo-${{ hashFiles('Cargo.lock', 'third_party/siglus_rs/Cargo.lock') }}
+      - run: cargo fmt --check
+      - run: cargo clippy --release -- -D warnings
+      - run: ./build.sh
+      - run: cargo build --release -p vnrun-devserver
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vnrun-dist
+          path: dist

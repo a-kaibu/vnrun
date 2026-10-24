@@ -1,0 +1,16 @@
+:root { color-scheme: dark; --bar: 40px; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #000; color: #eee; font-family: system-ui, sans-serif; overflow: hidden; }
+#screen { position: fixed; left: 0; top: 0; width: 100vw; height: calc(100dvh - var(--bar)); display: block; touch-action: none; outline: none; }
+#bar { position: fixed; left: 0; right: 0; bottom: 0; height: var(--bar); display: flex; gap: 8px; align-items: center; padding: 0 8px env(safe-area-inset-bottom); background: #111; }
+#title { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; opacity: .8; }
+button { font: inherit; font-size: 14px; padding: 4px 12px; border: 0; border-radius: 6px; background: #3b6fd8; color: #fff; }
+button.secondary { background: #333; }
+button.active { background: #b5651d; }
+#overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, .85); }
+#overlay[hidden] { display: none; }
+#card { max-width: min(90vw, 720px); text-align: center; }
+#message { white-space: pre-wrap; text-align: left; font-size: 14px; }
+.spinner { width: 32px; height: 32px; margin: 0 auto 12px; border: 3px solid #555; border-top-color: #eee; border-radius: 50%; animation: spin 1s linear infinite; }
+.failed .spinner { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
