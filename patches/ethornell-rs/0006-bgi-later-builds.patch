@@ -1,0 +1,158 @@
+diff --git a/crates/ethornell-app/src/lib.rs b/crates/ethornell-app/src/lib.rs
+index ff1a784..7ed8c22 100644
+--- a/crates/ethornell-app/src/lib.rs
++++ b/crates/ethornell-app/src/lib.rs
+@@ -285,6 +285,16 @@ fn confirmed_native_profile(
+             (h ^ u64::from(*b)).wrapping_mul(0x100000001b3)
+         })
+     }
++    // Later builds (推しのラブより恋のラブ) register a UTF-8 sentence table from
++    // ipl with 81:D8 and show its lines by id; that is the Amachoco behaviour.
++    let program = ethornell_script::parse_bp_program(None, bootstrap);
++    if program
++        .instructions
++        .iter()
++        .any(|instruction| instruction.opcode.code() == 0x81 && instruction.raw.get(1) == Some(&0xD8))
++    {
++        return ethornell_vm::NativeAbiProfile::Amachoco;
++    }
+     if bootstrap.len() == 10176 && fingerprint(bootstrap) == CONFIRMED_BOOTSTRAP_FNV {
+         if let Ok(title) = manager.read_decoded_from_archive("sysprg.arc", "title._bp") {
+             if title.len() == CONFIRMED_TITLE_LEN && fingerprint(&title) == CONFIRMED_TITLE_FNV {
+@@ -1290,15 +1300,6 @@ impl RuntimeTraceApi {
+     fn new_with_native_root(manager: ResourceManager, native_root: PathBuf) -> Self {
+         let (game_id, source, compact) = configured_game_id(&manager);
+         tracing::info!(%game_id, source, "configured native game identifier");
+-        // system.arc:ipl._bp ends the interpreter at once when a file named
+-        // after the game identifier exists in the game directory, which looks
+-        // like a window that opens and closes. Say so instead of exiting silently.
+-        if native_root.join(&game_id).is_file() {
+-            tracing::warn!(
+-                path = %native_root.join(&game_id).display(),
+-                "a file named after the game id exists; ipl._bp terminates immediately when it is present"
+-            );
+-        }
+         Self {
+             host: host_runtime::HostServices::default(),
+             manager,
+@@ -2369,7 +2370,16 @@ impl RuntimeTraceApi {
+             .contains_key(&format!("{archive}:{file}"))
+     }
+ 
++    /// The install media carries a file named after the game id, and ipl
++    /// leaves for the installer when it sees it; we run as an installed copy.
++    fn is_install_media_marker(&self, path: &str) -> bool {
++        path.rsplit(['/', '\\']).next().is_some_and(|name| name.eq_ignore_ascii_case(&self.game_id))
++    }
++
+     fn cached_file_exists(&mut self, archive: &str, file: &str) -> bool {
++        if is_empty_archive_arg(archive) && self.is_install_media_marker(file) {
++            return false;
++        }
+         if let Some(policy) = file_policy::active() {
+             let _ = policy;
+             return runtime_file_exists_from_root(&self.manager, &self.native_root, archive, file);
+@@ -21922,6 +21932,9 @@ impl ethornell_vm::SysApi for RuntimeTraceApi {
+     }
+ 
+     fn disk_file_exists(&mut self, path: &str) -> bool {
++        if self.is_install_media_marker(path) {
++            return false;
++        }
+         if let Some(policy) = file_policy::active() {
+             return policy.metadata(path).is_some_and(|meta| !meta.is_dir());
+         }
+@@ -24027,6 +24040,11 @@ impl ethornell_vm::SysApi for RuntimeTraceApi {
+                         "無効なピクセルモードが設定されました".into(),
+                     ));
+                 }
++                // 1.654-era builds with 16 modes (ピュア×コネクトHD asks for 8) keep the old
++                // bytecode, so a mode past the old table switches to the 16-mode one.
++                if mode >= 8 && self.display_mode_sizes[8].is_none() {
++                    self.display_mode_sizes = BGI172_DISPLAY_MODES;
++                }
+                 if self.display_mode_sizes.get(mode as usize).copied().flatten().is_none() {
+                     return Err(ethornell_vm::VmError::Runtime(
+                         "無効なスクリーンサイズが設定されました".into(),
+diff --git a/crates/ethornell-app/src/native_graph_resource.rs b/crates/ethornell-app/src/native_graph_resource.rs
+index c3d3689..6549198 100644
+--- a/crates/ethornell-app/src/native_graph_resource.rs
++++ b/crates/ethornell-app/src/native_graph_resource.rs
+@@ -35,7 +35,7 @@ impl RuntimeTraceApi {
+                 ethornell_vm::Value::None
+             }
+             // sub_487150 -> sub_433210: a glyph image for a character code
+-            // in 0xFF01..=0xFFFF (sub_433200). Bitmap -1 clears it; otherwise
++            // in 0xFF01..=0xFFFF (sub_433200), or 0xF001..=0xF7FF in newer builds. Bitmap -1 clears it; otherwise
+             // the bitmap must exist and the size be nonzero. The image is the
+             // (x, y, width, height) crop of the bitmap.
+             0x98 => {
+@@ -43,7 +43,10 @@ impl RuntimeTraceApi {
+                 let values = args.iter().map(value_to_i32).collect::<Vec<_>>();
+                 if let [height, width, y, x, source, code] = values.as_slice() {
+                     let fail = |text: String| Some(Err(ethornell_vm::VmError::Runtime(text)));
+-                    if (*code as u32).wrapping_sub(0xFF01) > 0xFE {
++                    // Newer builds (sub_49FF90) in Unicode text mode take 0xF001..=0xF7FF.
++                    if (*code as u32).wrapping_sub(0xFF01) > 0xFE
++                        && (*code as u32).wrapping_sub(0xF001) > 0x7FE
++                    {
+                         return fail(format!("無効な文字コード [ {code} ] が指定されました"));
+                     }
+                     if *source == -1 {
+diff --git a/crates/ethornell-image/src/lib.rs b/crates/ethornell-image/src/lib.rs
+index d01ec88..0b37d4b 100644
+--- a/crates/ethornell-image/src/lib.rs
++++ b/crates/ethornell-image/src/lib.rs
+@@ -250,10 +250,13 @@ fn looks_like_raw_bgi_image(buf: &[u8]) -> bool {
+     let Ok(bpp) = cursor.read_u32::<LittleEndian>() else {
+         return false;
+     };
+-    if width == 0 || height == 0 || width > 8192 || height > 8192 {
++    // Animation strips can be wider than 8192 (若葉色のカルテット's caret is 12048x54);
++    // the exact size check below is what rejects other data.
++    if width == 0 || height == 0 {
+         return false;
+     }
+     let pixel_bytes = match bpp {
++        8 => 1usize,
+         24 => 3usize,
+         32 => 4usize,
+         _ => return false,
+@@ -267,7 +270,7 @@ fn decode_raw_bgi_image(data: &[u8]) -> Result<DecodedImage> {
+     let width = cursor.read_u16::<LittleEndian>()? as u32;
+     let height = cursor.read_u16::<LittleEndian>()? as u32;
+     let bpp = cursor.read_u32::<LittleEndian>()?;
+-    if !matches!(bpp, 24 | 32) {
++    if !matches!(bpp, 8 | 24 | 32) {
+         return Err(EthornellError::UnsupportedFormat(format!(
+             "raw BGI image bpp {bpp} is not implemented"
+         )));
+@@ -283,6 +286,11 @@ fn decode_raw_bgi_image(data: &[u8]) -> Result<DecodedImage> {
+     }
+     let mut rgba = Vec::with_capacity(width as usize * height as usize * 4);
+     for pixel in pixels.chunks_exact(pixel_bytes) {
++        // 8 bpp is grey, like an 8-bpp CBG.
++        if pixel_bytes == 1 {
++            rgba.extend_from_slice(&[pixel[0], pixel[0], pixel[0], 0xff]);
++            continue;
++        }
+         let b = pixel[0];
+         let g = pixel[1];
+         let r = pixel[2];
+diff --git a/crates/ethornell-vm/src/resource_io.rs b/crates/ethornell-vm/src/resource_io.rs
+index 2bb769f..b36998f 100644
+--- a/crates/ethornell-vm/src/resource_io.rs
++++ b/crates/ethornell-vm/src/resource_io.rs
+@@ -17,7 +17,11 @@ const RESOURCE_SIZE_LIMIT: usize = 0x0400_0000;
+ /// sub_464EE0.
+ pub(crate) fn is_absolute_resource_path(path: &str) -> bool {
+     let bytes = path.as_bytes();
+-    bytes.first() == Some(&b'\\') || bytes.get(1) == Some(&b':')
++    // A restricted (browser) host roots the game folder at bgi-resource\.
++    bytes.first() == Some(&b'\\')
++        || bytes.get(1) == Some(&b':')
++        || path.starts_with("bgi-resource\\")
++        || path.starts_with("bgi-user\\")
+ }
+ 
+ /// sub_470070(src, dst, n): copies `src` up to and including its n-th
