@@ -41,8 +41,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|---|---|---|---|---|
 | SiglusEngine (siglus_rs) | 19 | 5 | 14 |  |  |  |  |  |
 | RealLive (siglus_rs) | 8 | 4 | 2 |  | 1 |  | 1 |  |
-| BGI (ethornell-rs) | 21 | 1 | 13 |  |  | 7 |  |  |
-| Softpal (sena-rs) | 28 | 2 | 10 |  |  | 7 |  | 9 |
+| BGI (ethornell-rs) | 21 | 1 | 14 |  | 2 | 4 |  |  |
+| Softpal (sena-rs) | 28 | 3 | 14 |  |  | 10 |  | 1 |
 | Artemis (art3m1s-core) | 6 |  | 4 |  |  | 2 |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 2 | 1 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 |  |  |  |  |  |  | 33 |
@@ -98,19 +98,19 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2015_hooksoft | [トラベリングスターズ 体験版02 Ver1.00](http://suezou.dyndns.org/dl2015/hooksoft/traveling_stars/travelingstars_trial_02.zip) | タイトル | c27e445 で直った |
 | b2019_hooksoft | [どっちのｉが好きですか？　Ｈシーン体験版　Ver1.00](http://suezou.dyndns.org/dl2019/hooksoft/isuki/isuki_h_trial.zip) | タイトル | c27e445 で直った |
 | b2019_sukerasparo | [kudan_trial.zip](http://suezou.dyndns.org/dl2019/sukerasparo/kudan/kudan_trial.zip) | タイトル |  |
+| dl_VJ01004381 | [顔のない月 -待宵の双椿-](https://trial.dlsite.com/professional/VJ01005000/VJ01004381_trial.zip) | タイトル | 4c341a3 で直った (体験版の印のファイル NSM_MYST_trial を消して確認) |
 | r1_bgi_kudan | [クダンノフォークロア 体験版](http://sukerasparo.com/data/kudan_trial.zip) | タイトル | 本編まで進むことは前回確認済み (handoff) |
 | s2010_lumpofsugar_prismrhythm | [PrismRhythm-プリズムリズム- Web特別体験版](http://suezou.dyndns.org/dl2010/lumpofsugar/prismrhythm/PrismRhythm_trial_Web.lzh) | タイトル | 画面が拡大されず左上に小さく出る (800x600 の作品) |
 | s2011_lumpofsugar_gackoh | [学☆王 - THE ROYAL SEVEN STARS - 体験入学版](http://suezou.dyndns.org/dl2011/lumpofsugar/gackoh/Gackoh_Trial.zip) | タイトル |  |
 | s2014_hooksoft_meltymoment | [MeltyMoment 体験版 Ver1.00](http://suezou.dyndns.org/dl2014/hooksoft/meltymoment/MeltyMoment_trial.zip) | タイトル | c27e445 で直った |
 | s2015_smee_pure_connect | [ピュア×コネクト  Ver1.00](http://suezou.dyndns.org/dl2015/smee/pure_connect/pureconnect_trial.zip) | タイトル | c27e445 で直った |
 | s2020_hooksoft_houkago | [放課後シンデレラ 体験版 Ver1.00](http://suezou.dyndns.org/dl2020/hooksoft/houkago/houkago_trial.zip) | タイトル | c27e445 で直った |
+| b2020_sukerasomero | [oshilove_trial.zip](http://suezou.dyndns.org/dl2020/sukerasomero/oshi_love/oshilove_trial.zip) | 要再確認 |  |
+| s2023_quince_soft_little_proncess_go | [リトルプリンセスＧＯ！ 体験版](http://suezou.dyndns.org/dl2023/quince-soft/little-proncess_go/LittlePrincessGO_TR.zip) | 要再確認 |  |
 | b2015_lump_of_sugar | [rensou_trial_WEB.zip](http://suezou.dyndns.org/dl2015/lump-of-sugar/rensourelation/rensou_trial_WEB.zip) | NG | c27e445 の後は「unsupported filesystem/platform/installer host capability」(host_runtime_diag:15:2439:5005) |
-| b2020_sukerasomero | [oshilove_trial.zip](http://suezou.dyndns.org/dl2020/sukerasomero/oshi_love/oshilove_trial.zip) | NG | c27e445 の後も「無効なサイズ [ 0 ] byte」(host_runtime_diag:15:3410:6821) |
-| dl_VJ01004381 | [顔のない月 -待宵の双椿-](https://trial.dlsite.com/professional/VJ01005000/VJ01004381_trial.zip) | NG | 4 分待っても黒画面のまま (エラーなし) |
 | s2019_lump_of_sugar_wakabairono_quartet | [若葉色のカルテット 体験版](http://suezou.dyndns.org/dl2019/lump-of-sugar/wakabairono_quartet/WakabaironoQuartet_trial.zip) | NG | c27e445 の後は「指定されたファイル [ sysgrp.arc : caret ] は存在しません」 |
 | s2021_smee_pureconnect_hd | [pureconnect_fhd_trial.zip](http://suezou.dyndns.org/dl2021/smee/pureconnect_hd/pureconnect_fhd_trial.zip) | NG | c27e445 の後は「無効なスクリーンサイズが設定されました」(host_runtime_diag:15:232:498) |
-| s2022_hooksoft_houkago2 | [放課後シンデレラ２ 体験版 Ver1.01](http://suezou.dyndns.org/dl2022/hooksoft/houkago2/HoukagoCinderella2_trial_v1.01.zip) | NG | 4 分待っても黒画面のまま (エラーなし) |
-| s2023_quince_soft_little_proncess_go | [リトルプリンセスＧＯ！ 体験版](http://suezou.dyndns.org/dl2023/quince-soft/little-proncess_go/LittlePrincessGO_TR.zip) | NG | 起動時に「VM stopped: UnknownDispatch; host_runtime_diag:14:1:17:4294967295:4294967295:0」 |
+| s2022_hooksoft_houkago2 | [放課後シンデレラ２ 体験版 Ver1.01](http://suezou.dyndns.org/dl2022/hooksoft/houkago2/HoukagoCinderella2_trial_v1.01.zip) | NG | 4c341a3 の後は「サポートされていないパラメータ番号 [ 0x0000008E ]」(host_runtime_diag:15:1931:5475) |
 
 ### Softpal (sena-rs)
 
@@ -118,6 +118,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|
 | b2024_milimili | [ちょっとナマイキなトイレの花子さん ～えっちぃ学園のおばけとエロエロ搾精性活～ 【体験版】](http://suezou.dyndns.org/dl2024/milimili/hanako/hanako_try.zip) | 本編 | プロローグの文章 (r1_softpal_hanako と同じ作品) |
 | r1_softpal_hanako | [トイレの花子さん 体験版](https://amusecraft.com/milimili/try/hanako_try.zip) | 本編 | プロローグの文章 |
+| s2015_erectlip_maou | [巨乳魔王の敗北 魔王の挑戦](http://suezou.dyndns.org/dl2015/erectlip/maou/maou_try.zip) | 本編 | 最初の文章 |
 | b2017_unisonshift | [あなたに恋する恋愛ルセット　【体験版】](http://suezou.dyndns.org/dl2017/unisonshift/recette/recette_try.zip) | タイトル |  |
 | b2018_erectlip | [爆乳催眠女教師　【体験版】](http://suezou.dyndns.org/dl2018/erectlip/bakusai/bakusai_try.zip) | タイトル |  |
 | b2020_erectlip | [爆乳淫辱霊媒師　【体験版】](http://suezou.dyndns.org/dl2020/erectlip/injyoku_reibaishi/injyoku_reibaishi_try.zip) | タイトル |  |
@@ -126,6 +127,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2022_amuse_craft_erotica | [黒ギャル子ちゃんとしっぽり温泉旅行 ～Hしまくり三泊四日の旅～　【体験版】](http://suezou.dyndns.org/dl2022/amuse_craft-erotica/kurogal_onsen/kurogal_onsen_try.zip) | タイトル |  |
 | b2025_unisonshift | [小日向柚月と初夜したいっ！　【体験版】](http://suezou.dyndns.org/dl2025/unisonshift/kohinata/kohinata_try.zip) | タイトル |  |
 | b2026_crystalia | [ディメンション凸ラバース!! 【体験版】](http://suezou.dyndns.org/dl2026/crystalia/totsu_lover/totsulover_try.zip) | タイトル |  |
+| s2013_erectlip_katekyo | [爆乳淫乱家庭教師　【体験版】](http://suezou.dyndns.org/dl2013/erectlip/katekyo/KATEKYO_try.zip) | タイトル |  |
+| s2014_erectlip_furyou | [学園の生贄――慰み者と化した巨乳不良少女 ～白濁に侵される褐色＆堕肉の狂宴～【体験版】](http://suezou.dyndns.org/dl2014/erectlip/furyou/furyou_try.zip) | タイトル |  |
+| s2020_amuse_craft_erotica_kinbaku | [緊縛性奴会長 ～カレに知られたワタシの秘密～　【体験版】](http://suezou.dyndns.org/dl2020/amuse_craft-erotica/kinbaku/kinbaku_s_try.zip) | タイトル |  |
+| s2022_amuse_craft_erotica_tsumamomi | [つまもみ ～欲求不満の奥さんとなし崩しオイルマッサージ～　【体験版】](http://suezou.dyndns.org/dl2022/amuse_craft-erotica/tsumamomi/tsumamomi_try.zip) | タイトル |  |
 | s2025_crystalia_crack_trick | [CRACK≡TRICK!](http://suezou.dyndns.org/dl2025/crystalia/crack_trick/cratri_try.zip) | タイトル |  |
 | s2026_amuse_craft_erotica_youkashi | [養花師の背徳愛～純真天使は抱かれて色めく～ 【体験版】](http://suezou.dyndns.org/dl2026/amuse_craft-erotica/youkashi/youkashi_try.zip) | タイトル |  |
 | b2011_erectlip | [りとる†びっち ～Little Bitch Girls in Hog Farm～ 体験版](http://suezou.dyndns.org/dl2011/erectlip/littlebitch/LittleBitch_trial.zip) | NG | 最初の命令 sp_set_ex の引数の形が違い何も出ない (unsupported extcall) |
@@ -133,16 +138,11 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2015_erectlip | [巨乳大魔王のドスケベクエスト ～完全敗北した少年勇者クンＵＣ～　【体験版】](http://suezou.dyndns.org/dl2015/erectlip/dosukebe/dosukebe_try.zip) | NG | panic: pal-vm runtime.rs:14727 is_char_boundary |
 | b2023_erectlip | [爆乳遊廓 ～癒され太夫孕ませの夜鶴～　【体験版】](http://suezou.dyndns.org/dl2023/erectlip/bakunyu_yukaku/yukaku_try.zip) | NG | 「script stack underflow」で止まる (pc=0x00066AE8) |
 | b2025_erectlip | [爆乳淫乱ビーチ　体験版](http://suezou.dyndns.org/dl2025/erectlip/inran_beach/inran_beach_try.zip) | NG | 「script stack underflow」で止まる (pc=0x00071B44) |
+| dl_VJ01002655 | [爆乳メイド調教 ～夜姦緊縛教育～](https://trial.dlsite.com/professional/VJ01003000/VJ01002655_trial.zip) | NG | 「script stack underflow」で止まる (pc=0x000687DC) |
 | dl_VJ01004424 | [爆乳淫乱ビーチ](https://trial.dlsite.com/professional/VJ01005000/VJ01004424_trial.zip) | NG | 「script stack underflow」で止まる (pc=0x00071B44、b2025_erectlip と同じ作品) |
 | r1_softpal_tenmao | [転性魔王さま 体験版](https://kumanomi-soft.amusecraft.com/tenmao/dl/tenmao_try.zip) | NG | 起動時に panic (capacity overflow) |
-| dl_VJ01002655 | [爆乳メイド調教 ～夜姦緊縛教育～](https://trial.dlsite.com/professional/VJ01003000/VJ01002655_trial.zip) | 未確認 |  |
-| s2013_erectlip_katekyo | [爆乳淫乱家庭教師　【体験版】](http://suezou.dyndns.org/dl2013/erectlip/katekyo/KATEKYO_try.zip) | 未確認 |  |
-| s2014_erectlip_furyou | [学園の生贄――慰み者と化した巨乳不良少女 ～白濁に侵される褐色＆堕肉の狂宴～【体験版】](http://suezou.dyndns.org/dl2014/erectlip/furyou/furyou_try.zip) | 未確認 |  |
-| s2014_erectlip_gyokumajyo | [逆転魔女裁判－痴女な魔女に裁かれちゃう－　【体験版】](http://suezou.dyndns.org/dl2014/erectlip/gyokumajyo/gyakumajyo_try.zip) | 未確認 |  |
-| s2014_qoobrand_majokoi | [魔女こいにっき 体験版 (第一弾)](http://suezou.dyndns.org/dl2014/qoobrand/mazyokoi/MAJOKOI_try.zip) | 未確認 |  |
-| s2015_erectlip_maou | [巨乳魔王の敗北 魔王の挑戦](http://suezou.dyndns.org/dl2015/erectlip/maou/maou_try.zip) | 未確認 |  |
-| s2020_amuse_craft_erotica_kinbaku | [緊縛性奴会長 ～カレに知られたワタシの秘密～　【体験版】](http://suezou.dyndns.org/dl2020/amuse_craft-erotica/kinbaku/kinbaku_s_try.zip) | 未確認 |  |
-| s2022_amuse_craft_erotica_tsumamomi | [つまもみ ～欲求不満の奥さんとなし崩しオイルマッサージ～　【体験版】](http://suezou.dyndns.org/dl2022/amuse_craft-erotica/tsumamomi/tsumamomi_try.zip) | 未確認 |  |
+| s2014_erectlip_gyokumajyo | [逆転魔女裁判－痴女な魔女に裁かれちゃう－　【体験版】](http://suezou.dyndns.org/dl2014/erectlip/gyokumajyo/gyakumajyo_try.zip) | NG | 「script stack underflow」で止まる (pc=0x0005121C) |
+| s2014_qoobrand_majokoi | [魔女こいにっき 体験版 (第一弾)](http://suezou.dyndns.org/dl2014/qoobrand/mazyokoi/MAJOKOI_try.zip) | NG | 「script stack underflow」で止まる (pc=0x0004F640) |
 | s2023_milimili_onaho_yokai | [巨乳オナホ妖怪と田舎ライフもHも満喫生活　【体験版】](http://suezou.dyndns.org/dl2023/milimili/onaho_yokai/onaho_yokai_try.zip) | 未確認 |  |
 
 ### Artemis (art3m1s-core)
