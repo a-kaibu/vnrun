@@ -1,0 +1,26 @@
+diff --git a/crates/rfvp/Cargo.toml b/crates/rfvp/Cargo.toml
+index 17396c7..b46dd9e 100644
+--- a/crates/rfvp/Cargo.toml
++++ b/crates/rfvp/Cargo.toml
+@@ -331,7 +331,7 @@ web-sys = { version = "0.3.72", optional = true, features = [
+     "Blob",
+     "console",
+ ] }
+-wgpu = { version = "0.19.1", features = ["webgl"], optional = true }
++wgpu = { version = "0.19.1", features = ["webgpu"], optional = true }
+ 
+ [target.'cfg(target_os = "android")'.dependencies]
+ android-activity = { version = "0.6", features = ["game-activity"], optional = true }
+diff --git a/crates/rfvp/src/app.rs b/crates/rfvp/src/app.rs
+index 3830125..d2184c1 100644
+--- a/crates/rfvp/src/app.rs
++++ b/crates/rfvp/src/app.rs
+@@ -2290,7 +2290,7 @@ impl AppBuilder {
+     ) {
+         let size = window.inner_size();
+         #[cfg(target_arch = "wasm32")]
+-        let backends = wgpu::Backends::GL;
++        let backends = wgpu::Backends::BROWSER_WEBGPU;
+ 
+         #[cfg(not(target_arch = "wasm32"))]
+         let backends = wgpu::util::backend_bits_from_env().unwrap_or(wgpu::Backends::all());

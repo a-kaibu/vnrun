@@ -1,0 +1,16 @@
+diff --git a/crates/rfvp/src/app.rs b/crates/rfvp/src/app.rs
+index d2184c1..d0d59ba 100644
+--- a/crates/rfvp/src/app.rs
++++ b/crates/rfvp/src/app.rs
+@@ -779,6 +779,11 @@ impl App {
+         let Some(flag) = requested else {
+             return;
+         };
++        // In the browser the page owns the canvas size and fullscreen.
++        if cfg!(target_arch = "wasm32") {
++            let _ = flag;
++            return;
++        }
+ 
+         let Some(w) = self.window.as_ref() else {
+             // Host-driven iOS mode can run without a winit window; ignore WindowMode requests.

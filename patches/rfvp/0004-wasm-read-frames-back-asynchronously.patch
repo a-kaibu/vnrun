@@ -1,0 +1,276 @@
+diff --git a/crates/rfvp/src/app.rs b/crates/rfvp/src/app.rs
+index d0d59ba..168e6ab 100644
+--- a/crates/rfvp/src/app.rs
++++ b/crates/rfvp/src/app.rs
+@@ -4,7 +4,10 @@ use std::{
+     fs::File,
+     path::{Path, PathBuf},
+     slice::Windows,
+-    sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard},
++    sync::{
++        atomic::{AtomicU8, Ordering},
++        Arc, RwLock, RwLockReadGuard, RwLockWriteGuard,
++    },
+ };
+ 
+ use crate::platform_time::{Duration, Instant};
+@@ -43,6 +46,7 @@ use crate::rendering::render_tree::RenderTree;
+ use crate::vm_worker::VmWorker;
+ 
+ use crate::rfvp_render::vertices::{PosVertex, VertexSource};
++use crate::rfvp_render::render_target::{RenderTargetReadback, READBACK_MAPPED, READBACK_PENDING};
+ use crate::rfvp_render::{BindGroupLayouts, GpuCommonResources, Pipelines, RenderTarget};
+ use crate::subsystem::scene::{Scene, SceneAction, SceneMachine};
+ use crate::subsystem::scheduler::Scheduler;
+@@ -155,6 +159,10 @@ pub struct App {
+     last_fullscreen_flag: i32,
+ 
+     render_target: RenderTarget,
++    /// A readback of the frame last shown (save thumbnail, mask dissolve) that the current frame
++    /// waits for. Buffer mapping is asynchronous (and on the web can only complete between
++    /// frames), so the frame is finished once the pixels arrive, without stepping the game again.
++    last_frame_readback: Option<(RenderTargetReadback, Arc<AtomicU8>)>,
+     resources: Arc<GpuCommonResources>,
+     surface: wgpu::Surface<'static>,
+     surface_config: wgpu::SurfaceConfiguration,
+@@ -406,6 +414,9 @@ impl App {
+                         // );
+                     }
+                     WindowEvent::RedrawRequested => {
++                        if self.resume_frame() {
++                            return;
++                        }
+                         self.mem_report();
+                         // Drive the simulation from redraws so we do not busy-spin.
+                         // The VM is cooperative and now advances until script/syscall yield points
+@@ -909,6 +920,45 @@ impl App {
+         }
+     }
+ 
++    /// The pixels of the frame last shown, once a readback of it has completed; `None` while it is
++    /// in flight (one is started if none is).
++    fn read_last_frame(&mut self) -> Option<(u32, u32, Vec<u8>)> {
++        let _ = self.resources.device.poll(wgpu::Maintain::Poll);
++        if let Some((readback, state)) = &self.last_frame_readback {
++            match state.load(Ordering::Acquire) {
++                READBACK_PENDING => return None,
++                READBACK_MAPPED => {
++                    let rgba = readback.read_mapped_rgba8();
++                    let frame = (readback.width, readback.height, rgba);
++                    self.last_frame_readback = None;
++                    return Some(frame);
++                }
++                _ => log::warn!("frame readback failed; retrying"),
++            }
++        }
++        let mut encoder = self.resources.device.create_command_encoder(
++            &wgpu::CommandEncoderDescriptor { label: Some("rfvp last frame readback") },
++        );
++        let readback = self
++            .render_target
++            .encode_readback_rgba8(&self.resources.device, &mut encoder);
++        self.resources.queue.submit(Some(encoder.finish()));
++        let state = readback.begin_map();
++        self.last_frame_readback = Some((readback, state));
++        None
++    }
++
++    /// Finishes a frame that was waiting on `last_frame_readback`; false when none was.
++    fn resume_frame(&mut self) -> bool {
++        if self.last_frame_readback.is_none() {
++            return false;
++        }
++        if let Err(e) = self.render_frame() {
++            log::error!("render_frame: {e:?}");
++        }
++        true
++    }
++
+     fn render_frame(&mut self) -> anyhow::Result<()> {
+         self.sync_render_target_backing();
+ 
+@@ -951,17 +1001,18 @@ impl App {
+         // Save thumbnail: as in the original engine (SaveCreate(3) reads its render target back
+         // when called), the frame last shown, before the script's new state (a menu) is drawn.
+         let save_capture = gd_read(&self.game_data).save_manager.pending_save_capture();
+-        let save_frame = save_capture.map(|_| {
+-            let mut encoder = self.resources.device.create_command_encoder(
+-                &wgpu::CommandEncoderDescriptor { label: Some("rfvp save capture") },
+-            );
+-            let readback = self
+-                .render_target
+-                .encode_readback_rgba8(&self.resources.device, &mut encoder);
+-            self.resources.queue.submit(Some(encoder.finish()));
+-            let rgba = readback.map_to_rgba8(&self.resources.device);
+-            (readback.width, readback.height, rgba)
+-        });
++        let wants_snapshot = self
++            .prim_renderer
++            .mask_wants_snapshot(&gd_read(&self.game_data).motion_manager);
++        let last_frame = if save_capture.is_some() || wants_snapshot {
++            match self.read_last_frame() {
++                Some(frame) => Some(frame),
++                None => return Ok(()),
++            }
++        } else {
++            None
++        };
++        let save_frame = save_capture.and(last_frame.clone());
+ 
+         let dissolve_color: Option<glam::Vec4>;
+         let dissolve2_color: Option<glam::Vec4>;
+@@ -970,16 +1021,8 @@ impl App {
+ 
+             // A mask dissolve that just started wipes away the frame last shown, which is still
+             // in the render target.
+-            if self.prim_renderer.mask_wants_snapshot(&gd.motion_manager) {
+-                let mut encoder = self.resources.device.create_command_encoder(
+-                    &wgpu::CommandEncoderDescriptor { label: Some("rfvp dissolve snapshot") },
+-                );
+-                let readback = self
+-                    .render_target
+-                    .encode_readback_rgba8(&self.resources.device, &mut encoder);
+-                self.resources.queue.submit(Some(encoder.finish()));
+-                let rgba = readback.map_to_rgba8(&self.resources.device);
+-                if let Some(frame) = image::RgbaImage::from_raw(readback.width, readback.height, rgba) {
++            if let (true, Some((width, height, rgba))) = (wants_snapshot, last_frame) {
++                if let Some(frame) = image::RgbaImage::from_raw(width, height, rgba) {
+                     self.prim_renderer.set_mask_snapshot(&gd.motion_manager, frame);
+                 }
+             }
+@@ -1632,6 +1675,10 @@ impl App {
+             }
+         }
+ 
++        if self.resume_frame() {
++            return false;
++        }
++
+         let (frame_ms, notify_dissolve_done) = self.next_frame();
+ 
+         if notify_dissolve_done {
+@@ -2898,6 +2945,7 @@ impl AppBuilder {
+                 ptr::addr_of_mut!((*p).render_tree).write(render_tree);
+ 
+                 ptr::addr_of_mut!((*p).dissolve_vertex_buffer).write(dissolve_vertex_buffer);
++                ptr::addr_of_mut!((*p).last_frame_readback).write(None);
+                 ptr::addr_of_mut!((*p).dissolve_index_buffer).write(dissolve_index_buffer);
+                 ptr::addr_of_mut!((*p).dissolve_num_indices).write(dissolve_num_indices);
+                 ptr::addr_of_mut!((*p).last_dissolve_type).write(DissolveType::None);
+@@ -3083,6 +3131,7 @@ impl AppBuilder {
+                 ptr::addr_of_mut!((*p).render_tree).write(render_tree);
+ 
+                 ptr::addr_of_mut!((*p).dissolve_vertex_buffer).write(dissolve_vertex_buffer);
++                ptr::addr_of_mut!((*p).last_frame_readback).write(None);
+                 ptr::addr_of_mut!((*p).dissolve_index_buffer).write(dissolve_index_buffer);
+                 ptr::addr_of_mut!((*p).dissolve_num_indices).write(dissolve_num_indices);
+                 ptr::addr_of_mut!((*p).last_dissolve_type).write(DissolveType::None);
+@@ -3294,6 +3343,7 @@ impl AppBuilder {
+                 ptr::addr_of_mut!((*p).render_tree).write(render_tree);
+ 
+                 ptr::addr_of_mut!((*p).dissolve_vertex_buffer).write(dissolve_vertex_buffer);
++                ptr::addr_of_mut!((*p).last_frame_readback).write(None);
+                 ptr::addr_of_mut!((*p).dissolve_index_buffer).write(dissolve_index_buffer);
+                 ptr::addr_of_mut!((*p).dissolve_num_indices).write(dissolve_num_indices);
+                 ptr::addr_of_mut!((*p).last_dissolve_type).write(DissolveType::None);
+@@ -3489,6 +3539,7 @@ impl AppBuilder {
+                 ptr::addr_of_mut!((*p).render_tree).write(render_tree);
+ 
+                 ptr::addr_of_mut!((*p).dissolve_vertex_buffer).write(dissolve_vertex_buffer);
++                ptr::addr_of_mut!((*p).last_frame_readback).write(None);
+                 ptr::addr_of_mut!((*p).dissolve_index_buffer).write(dissolve_index_buffer);
+                 ptr::addr_of_mut!((*p).dissolve_num_indices).write(dissolve_num_indices);
+                 ptr::addr_of_mut!((*p).last_dissolve_type).write(DissolveType::None);
+diff --git a/crates/rfvp/src/rfvp_render/render_target.rs b/crates/rfvp/src/rfvp_render/render_target.rs
+index f5af965..84c2732 100644
+--- a/crates/rfvp/src/rfvp_render/render_target.rs
++++ b/crates/rfvp/src/rfvp_render/render_target.rs
+@@ -1,3 +1,6 @@
++use std::sync::atomic::{AtomicU8, Ordering};
++use std::sync::Arc;
++
+ use glam::{mat4, vec4, Mat4, Vec4};
+ use wgpu::util::DeviceExt;
+ 
+@@ -13,50 +16,48 @@ pub struct RenderTargetReadback {
+     pub padded_bytes_per_row: u32,
+ }
+ 
++/// `RenderTargetReadback::begin_map` states.
++pub const READBACK_PENDING: u8 = 0;
++pub const READBACK_MAPPED: u8 = 1;
++pub const READBACK_FAILED: u8 = 2;
++
+ impl RenderTargetReadback {
+-    // get pixels as RGBA8 slice
+-    pub fn map_to_rgba8(&self, device: &wgpu::Device) -> Vec<u8> {
++    /// Starts mapping the buffer. The state turns `READBACK_MAPPED` (then `read_mapped_rgba8`)
++    /// or `READBACK_FAILED` once the map completes, which needs the device polled natively and
++    /// the browser's event loop on the web.
++    pub fn begin_map(&self) -> Arc<AtomicU8> {
++        let state = Arc::new(AtomicU8::new(READBACK_PENDING));
++        let done = state.clone();
++        self.buffer.slice(..).map_async(wgpu::MapMode::Read, move |res| {
++            let value = if res.is_ok() { READBACK_MAPPED } else { READBACK_FAILED };
++            done.store(value, Ordering::Release);
++        });
++        state
++    }
++
++    /// The mapped pixels as RGBA8 rows without padding; unmaps the buffer.
++    pub fn read_mapped_rgba8(&self) -> Vec<u8> {
+         let height = self.height as usize;
+         let dst_bpr = self.bytes_per_row as usize;
+         let src_bpr = self.padded_bytes_per_row as usize;
+-
+-        if height == 0 || dst_bpr == 0 {
+-            return Vec::new();
+-        }
+-
+-        let slice = self.buffer.slice(..);
+-
+-        // wgpu::Buffer::map_async is async; block here without extra crates.
+-        let (tx, rx) = std::sync::mpsc::channel();
+-        slice.map_async(wgpu::MapMode::Read, move |res| {
+-            let _ = tx.send(res);
+-        });
+-
+-        // Ensure the mapping completes.
+-        device.poll(wgpu::Maintain::Wait);
+-
+-        // Propagate mapping failure loudly (you can change to Result if preferred).
+-        rx.recv()
+-            .expect("map_async callback dropped")
+-            .expect("buffer map failed");
+-
+-        let mapped = slice.get_mapped_range();
+-
+-        // Strip per-row padding.
++        let mapped = self.buffer.slice(..).get_mapped_range();
+         let mut out = vec![0u8; height * dst_bpr];
+         for y in 0..height {
+-            let src0 = y * src_bpr;
+-            let src1 = src0 + dst_bpr;
+-            let dst0 = y * dst_bpr;
+-            let dst1 = dst0 + dst_bpr;
+-            out[dst0..dst1].copy_from_slice(&mapped[src0..src1]);
++            out[y * dst_bpr..(y + 1) * dst_bpr]
++                .copy_from_slice(&mapped[y * src_bpr..y * src_bpr + dst_bpr]);
+         }
+-
+         drop(mapped);
+         self.buffer.unmap();
+-
+         out
+     }
++
++    /// Blocks until mapped (native only: a map never completes inside a blocking wait on the web).
++    pub fn map_to_rgba8(&self, device: &wgpu::Device) -> Vec<u8> {
++        let state = self.begin_map();
++        device.poll(wgpu::Maintain::Wait);
++        assert_eq!(state.load(Ordering::Acquire), READBACK_MAPPED, "buffer map failed");
++        self.read_mapped_rgba8()
++    }
+ }
+ 
+ pub struct RenderTarget {

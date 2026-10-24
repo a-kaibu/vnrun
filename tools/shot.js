@@ -54,7 +54,13 @@ if (!url || !out) {
       log.push(`[shot ${arg} @${at()}]`);
     } else if (cmd === "at") {
       const [x, y] = arg.split(";").map(Number);
-      await page.mouse.click(x, y);
+      // Hover first and hold the button briefly, as a person would: engines highlight a
+      // button on hover and read button state once per frame.
+      await page.mouse.move(x, y);
+      await page.waitForTimeout(500);
+      await page.mouse.down();
+      await page.waitForTimeout(150);
+      await page.mouse.up();
     } else if (cmd === "key") {
       await page.keyboard.press(arg);
     } else if (cmd === "files") {
