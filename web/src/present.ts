@@ -103,20 +103,30 @@ export class Presenter {
     this.rect = letterbox(cw, ch, width, height);
   }
 
-  /** Shows a frame (`rgba` is width*height*4 bytes, top row first). */
-  show(rgba: Uint8Array, width: number, height: number): void {
+  /**
+   * Shows a frame: `pixels` holds `height` rows of `bytesPerRow` bytes, top row first, in
+   * `format` (BGRA is the in-memory order of SDL's ARGB8888).
+   */
+  show(
+    pixels: Uint8Array,
+    width: number,
+    height: number,
+    format: "rgba8unorm" | "bgra8unorm" = "rgba8unorm",
+    bytesPerRow = width * 4,
+  ): void {
     this.layout(width, height);
     const nearest = this.rect.w % width === 0 && this.rect.h % height === 0;
     if (
       !this.texture ||
       this.texture.width !== width ||
       this.texture.height !== height ||
+      this.texture.format !== format ||
       nearest !== this.nearest
     ) {
       this.texture?.destroy();
       this.texture = this.device.createTexture({
         size: [width, height],
-        format: "rgba8unorm",
+        format,
         usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
       });
       this.nearest = nearest;
@@ -130,8 +140,8 @@ export class Presenter {
     }
     this.device.queue.writeTexture(
       { texture: this.texture },
-      rgba as Uint8Array<ArrayBuffer>,
-      { bytesPerRow: width * 4 },
+      pixels as Uint8Array<ArrayBuffer>,
+      { bytesPerRow },
       [width, height],
     );
     const encoder = this.device.createCommandEncoder();

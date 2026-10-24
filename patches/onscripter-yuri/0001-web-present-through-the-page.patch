@@ -1,0 +1,115 @@
+diff --git a/src/onsyuri/ONScripter.cpp b/src/onsyuri/ONScripter.cpp
+index 582c6eb..21e6ee0 100644
+--- a/src/onsyuri/ONScripter.cpp
++++ b/src/onsyuri/ONScripter.cpp
+@@ -54,6 +54,8 @@ static void SDL_Quit_Wrapper()
+ 
+ #ifdef WEB
+ #include <emscripten.h>
++// The page shows a frame of ARGB8888 pixels (engines/onscripter/library.js).
++extern "C" void vnrun_present(const void *pixels, int pitch, int width, int height);
+ #endif
+ 
+ inline void alignAspectRatio(const int &sw, const int &sh, int &dw, int &dh) {
+@@ -227,7 +229,7 @@ void ONScripter::initSDL()
+ #if defined(ANDROID) || defined(IOS) || defined(WINRT)
+     window_flag |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_FULLSCREEN;
+ #endif
+-#if SDL_VERSION_ATLEAST(2,0,1)
++#if SDL_VERSION_ATLEAST(2,0,1) && !defined(WEB) // on web the renderer output stays at the screen size
+     window_flag |= SDL_WINDOW_ALLOW_HIGHDPI;
+ #endif
+ 
+@@ -248,6 +250,11 @@ void ONScripter::initSDL()
+         utils::printError("Could not create window: %s\n", SDL_GetError());
+         exit(-1);
+     }
++#if defined(WEB)
++    // vnrun shows accumulation_surface itself (vnrun_present, WebGPU); the SDL renderer only
++    // has to exist, so it gets no GL context.
++    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
++#endif
+     Uint32 render_flag = SDL_RENDERER_ACCELERATED;
+     if (vsync) render_flag |= SDL_RENDERER_PRESENTVSYNC;
+     renderer = SDL_CreateRenderer(window, -1, render_flag);
+@@ -288,14 +295,6 @@ void ONScripter::initSDL()
+     underline_value = script_h.screen_height;
+ 
+     utils::printInfo("Display: %d x %d (%d bpp)\n", screen_width, screen_height, screen_bpp);
+-#ifdef WEB
+-    EM_ASM(
+-        self.g_screen_width = $0;
+-        self.g_screen_height = $1;
+-        let canvas = document.getElementById('canvas');
+-        if(scale_full && canvas) scale_full(canvas, self.g_screen_width/self.g_screen_height);
+-    , screen_width, screen_height);
+-#endif
+     dirty_rect.setDimension(screen_width, screen_height);
+     
+     screen_rect.x = screen_rect.y = 0;
+@@ -871,6 +870,11 @@ void ONScripter::flushDirect( SDL_Rect &rect, int refresh_mode )
+     SDL_UnlockSurface(accumulation_surface);
+ 
+     screen_dirty_flag = false;
++#if defined(WEB)
++    vnrun_present(accumulation_surface->pixels, accumulation_surface->pitch,
++                  accumulation_surface->w, accumulation_surface->h);
++    return;
++#endif
+ #if defined(ANDROID) || defined(WEB) // See sdl2 DOCS/README-android.md for more information on this
+     SDL_RenderClear(renderer);
+     SDL_Rect *rect_ptr = nullptr;
+diff --git a/src/onsyuri/ONScripter_command.cpp b/src/onsyuri/ONScripter_command.cpp
+index 583144f..d9248f7 100644
+--- a/src/onsyuri/ONScripter_command.cpp
++++ b/src/onsyuri/ONScripter_command.cpp
+@@ -3725,7 +3725,7 @@ int ONScripter::bltCommand()
+         }
+ #endif
+         
+-#if defined(ANDROID) // dirty fix for android flash problem 
++#if defined(ANDROID) || defined(WEB) // dirty fix for android flash problem; the page presents on web
+         SDL_BlitScaled(btndef_info.image_surface, &src_rect, bg_info.image_surface, &dst_rect);
+         flushDirect(dst_rect, REFRESH_NORMAL_MODE);
+ #else
+diff --git a/src/onsyuri/onscripter_main.cpp b/src/onsyuri/onscripter_main.cpp
+index c8711e9..4832958 100644
+--- a/src/onsyuri/onscripter_main.cpp
++++ b/src/onsyuri/onscripter_main.cpp
+@@ -336,6 +336,36 @@ FILE *fopen_ons(const char *path, const char *mode)
+     return fp;
+ }
+ 
++// Pointer input from the page, in screen pixels (the page maps its canvas to the frame).
++// button: 0 = move only, else SDL_BUTTON_*.
++extern "C" EMSCRIPTEN_KEEPALIVE void vnrun_mouse(int x, int y, int button, int down)
++{
++    SDL_Event event;
++    SDL_zero(event);
++    if (button == 0) {
++        event.type = SDL_MOUSEMOTION;
++        event.motion.x = x;
++        event.motion.y = y;
++    } else {
++        event.type = down ? SDL_MOUSEBUTTONDOWN : SDL_MOUSEBUTTONUP;
++        event.button.button = button;
++        event.button.state = down ? SDL_PRESSED : SDL_RELEASED;
++        event.button.clicks = 1;
++        event.button.x = x;
++        event.button.y = y;
++    }
++    SDL_PushEvent(&event);
++}
++
++extern "C" EMSCRIPTEN_KEEPALIVE void vnrun_wheel(int dy)
++{
++    SDL_Event event;
++    SDL_zero(event);
++    event.type = SDL_MOUSEWHEEL;
++    event.wheel.y = dy;
++    SDL_PushEvent(&event);
++}
++
+ extern "C" void playVideoWeb(const char *path, bool click_flag, bool loop_flag)
+ {
+     EM_ASM(

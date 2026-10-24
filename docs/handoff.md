@@ -70,6 +70,12 @@ docs/protocol.md     プレイヤーとサーバーの約束事
   - `0003`: ページがウィンドウの大きさを決めるので、スクリプトの全画面切り替えは wasm では無視する (exitFullscreen が例外で落ちた)。
   - `0004`: 直前の画面の読み戻し (セーブのサムネイル、マスク付きディゾルブ) がバッファのマップを同期で待っていて、WebGPU ではマップがフレームの間にしか終わらないのでページが固まった。読み戻しを非同期にして、終わるまでそのフレームを保留する (ゲームは進めない)。
   - ヘッドレスでは最初のクリックがフォーカス取得として捨てられる (rfvp が Focused でクリックを 1 回食う)。実ブラウザでは起動時にキャンバスにフォーカスするので問題になりにくいはず。
+- NScripter (ONScripter-Yuri、GPL-2.0、`engines/onscripter/`):
+  - Emscripten + Asyncify で SDL のループをそのまま動かす。`patches/onscripter-yuri/0001` で、合成済みの画面 (accumulation_surface、ARGB8888) をページの Presenter (WebGPU) に渡し、SDL のレンダラはソフトウェアにして何も描かせない。ポインタはページがフレームの座標に直して `vnrun_mouse` で SDL のイベントとして入れる。キーボードは SDL が window から読む。
+  - ゲームのファイルは `web/src/emfs.ts` の遅延ファイル (Artemis と共用)。Windows 向けの作品はファイル名の大小文字が揃っていないので、小文字のパスでも引けるようにしている。セーブは `/saves` に書かせて GameFS に送る。
+  - フォントは作品に入っていないので、ページのフォント (fonts/fonts.json の先頭) を渡す。スクリプトは既定で Shift_JIS (`--enc:sjis`)。
+  - 動画は未対応 (飛ばす)。確認は自作の 0.txt (文章・選択肢・savegame) だけで、実物の作品はまだ。
+  - この環境のプロキシは GitHub の archive (zip/tarball) を拒むので、Emscripten の ports は `tools/emscripten-ports.sh` で git から用意した。Lua は lua.org に届かないので GitHub のミラーから。
 - Softpal (sena-rs):
   - sena-rs は README のとおり「恋×シンアイ彼女」(2017) を対象に作られていて、ほかの作品は命令の引数の数や戻り値の扱いが少し違うところで止まる。エレクトリップ (Softpal の体験版が 2011〜2025 年に毎年ある) で 2 本試してどちらも止まった。直すには、止まった箇所ごとに旧版の Pal.dll の動きを確かめて sena-rs に版の違いを足す必要がある。
   - ブラウザ版のつなぎ (`web/src/engines/sena.ts`) は描画・入力・ファイルの範囲読みまで。上流の Web 版にはセーブと音声が無い (セーブは std::fs に書いていて wasm では失敗する) ので、動く作品が出てきたら足す。

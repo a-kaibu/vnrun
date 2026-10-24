@@ -1,28 +1,13 @@
 // Artemis through art3m1s-core (third_party/art3m1s-core), built with its browser host
 // (engines/art3m1s/host) by engines/art3m1s/build.sh into public/engines/art3m1s/. The engine
-// is an Emscripten module: game files appear under /game as lazy files read in blocks from the
-// GameFS, saves live under /saves and are copied back to the GameFS, and the engine renders
+// is an Emscripten module whose game files and saves come from ../emfs, and the engine renders
 // with WebGL2 into its own framebuffer whose pixels the presenter shows on the page's canvas.
 // Sound is the host's job in art3m1s (media events), played here with Web Audio.
 import { importEngine, type EngineContext } from "../engine";
-import type { GameFS, Manifest } from "../gamefs";
+import { mountGame, Saves, type EmFS } from "../emfs";
+import type { Manifest } from "../gamefs";
 import { Presenter } from "../present";
 
-// The parts of the Emscripten module and its file system used here.
-interface FSNode {
-  contents: unknown;
-  stream_ops: Record<string, unknown>;
-}
-interface EmFS {
-  mkdirTree(path: string): void;
-  createFile(parent: string, name: string, properties: object, canRead: boolean, canWrite: boolean): FSNode;
-  writeFile(path: string, data: Uint8Array): void;
-  readFile(path: string): Uint8Array;
-  readdir(path: string): string[];
-  stat(path: string): { mode: number; mtime: Date };
-  isDir(mode: number): boolean;
-  ErrnoError: new (errno: number) => Error;
-}
 interface Art3m1sModule {
   FS: EmFS;
   HEAPU8: Uint8Array;
@@ -47,122 +32,9 @@ interface Art3m1sModule {
 }
 type CreateArt3m1s = (options: object) => Promise<Art3m1sModule>;
 type Engine = ReturnType<typeof bindEngine>;
-type ReadInto = (buffer: Uint8Array, offset: number, length: number, position: number) => number;
 
 // Saves get their own folder so they never shadow a game file of the same name.
 const SAVES = "art3m1s-save";
-const BLOCK = 256 * 1024;
-const CACHE_BLOCKS = 512; // 128MB
-
-// --- Files ------------------------------------------------------------------
-
-// Reads game files in blocks, keeping the most recently used ones.
-function blockReader(fs: GameFS) {
-  const blocks = new Map<string, Uint8Array>(); // `${path}\n${index}`
-  return (path: string, size: number, position: number, out: Uint8Array, offset: number, length: number) => {
-    const end = Math.min(size, position + length);
-    let at = position;
-    while (at < end) {
-      const index = Math.floor(at / BLOCK);
-      const key = `${path}\n${index}`;
-      let block = blocks.get(key);
-      if (block) {
-        blocks.delete(key);
-      } else {
-        block = fs.readRange(path, index * BLOCK, BLOCK).slice();
-        if (blocks.size >= CACHE_BLOCKS) blocks.delete(blocks.keys().next().value!);
-      }
-      blocks.set(key, block);
-      const from = at - index * BLOCK;
-      const count = Math.min(end - at, block.length - from);
-      if (count <= 0) break;
-      out.set(block.subarray(from, from + count), offset + (at - position));
-      at += count;
-    }
-    return at - position;
-  };
-}
-
-function parentDir(path: string): string {
-  return path.slice(0, path.lastIndexOf("/"));
-}
-
-// A read-only file of `size` bytes whose reads go to `read` (after Emscripten's createLazyFile,
-// which only works in workers).
-function lazyFile(FS: EmFS, path: string, size: number, read: ReadInto): void {
-  FS.mkdirTree(parentDir(path));
-  const node = FS.createFile(parentDir(path), path.slice(path.lastIndexOf("/") + 1), {}, true, false);
-  node.contents = { length: size }; // never read: the stream ops below replace MEMFS's
-  Object.defineProperties(node, { usedBytes: { get: () => size } });
-  const ops = { ...node.stream_ops };
-  ops.read = (_stream: unknown, buffer: Uint8Array, offset: number, length: number, position: number) =>
-    read(buffer, offset, length, position);
-  ops.mmap = () => {
-    throw new FS.ErrnoError(28); // EINVAL
-  };
-  node.stream_ops = ops;
-}
-
-function mountGame(FS: EmFS, fs: GameFS, manifest: Manifest): void {
-  const read = blockReader(fs);
-  for (const f of manifest.files || []) {
-    const size = f.s || 0;
-    lazyFile(FS, `/game/${f.p}`, size, (buffer, offset, length, position) =>
-      read(f.p, size, position, buffer, offset, length),
-    );
-  }
-}
-
-// The saves folder, copied from the GameFS at start and back whenever a file changes.
-class Saves {
-  private seen = new Map<string, number>(); // path under /saves -> mtime
-
-  constructor(
-    private readonly FS: EmFS,
-    private readonly fs: GameFS,
-  ) {
-    FS.mkdirTree("/saves");
-    const prefix = `${SAVES}/`;
-    for (const [path, bytes] of fs.saves) {
-      if (!path.startsWith(prefix)) continue;
-      const local = `/saves/${path.slice(prefix.length)}`;
-      FS.mkdirTree(parentDir(local));
-      FS.writeFile(local, bytes);
-    }
-    this.scan(false);
-  }
-
-  private files(dir = "/saves", out: [string, number][] = []): [string, number][] {
-    for (const name of this.FS.readdir(dir)) {
-      if (name === "." || name === "..") continue;
-      const path = `${dir}/${name}`;
-      const stat = this.FS.stat(path);
-      if (this.FS.isDir(stat.mode)) this.files(path, out);
-      else out.push([path, stat.mtime.getTime()]);
-    }
-    return out;
-  }
-
-  // Sends files written or removed since the last scan.
-  scan(send = true) {
-    const now = new Map(this.files());
-    for (const [path, mtime] of now) {
-      if (send && this.seen.get(path) !== mtime) {
-        this.fs.write(`${SAVES}/${path.slice("/saves/".length)}`, this.FS.readFile(path));
-      }
-    }
-    for (const path of this.seen.keys()) {
-      if (send && !now.has(path)) {
-        try {
-          this.fs.remove(`${SAVES}/${path.slice("/saves/".length)}`);
-        } catch (error) {
-          console.warn(error);
-        }
-      }
-    }
-    this.seen = now;
-  }
-}
 
 // --- Sound (media events, doc/FFI_REFERENCE.md "媒体命令协议") ---------------
 
@@ -512,7 +384,7 @@ export async function start({ fs, manifest, ui }: EngineContext): Promise<void> 
     },
   });
   mountGame(Module.FS, fs, manifest);
-  const saves = new Saves(Module.FS, fs);
+  const saves = new Saves(Module.FS, fs, SAVES);
   const engine = bindEngine(Module);
   const size = engine.start(archiveOf(manifest), manifest.platform || "WINDOWS");
   if (!size) throw new Error(engine.error() || logs.slice(-3).join("\n") || "art3m1s を起動できません");

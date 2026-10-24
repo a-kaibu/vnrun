@@ -9,6 +9,9 @@ Windows 向けノベルゲームを、Wine を使わずにブラウザの中で�
 | SiglusEngine / RealLive / AVG32 / UK2 | [siglus_rs](https://github.com/xmoezzz/siglus_rs) (`third_party/siglus_rs`) | 組み込み済み。Siglus 2 本・RealLive 2 本の体験版で確認 ([docs/handoff.md](docs/handoff.md)) |
 | Softpal (PAL) | [sena-rs](https://github.com/xmoezzz/sena-rs) (`third_party/sena-rs`、MPL-2.0) | 組み込み済み。ただし sena-rs は「恋×シンアイ彼女」向けで、試したエレクトリップの体験版は注意書き画面の後で止まる |
 | BGI / Ethornell | [ethornell-rs](https://github.com/xmoezzz/ethornell-rs) (`third_party/ethornell-rs`、MPL-2.0) | 組み込み済み。BGI 1 本の体験版で本編の文章まで確認 |
+| FVP | [rfvp](https://github.com/xmoezzz/rfvp) (`third_party/rfvp`) | 組み込み済み。さくら、もゆ。体験版で本編の文章とセーブまで確認 |
+| Artemis | [art3m1s-core](https://github.com/Alphaly2K/art3m1s-core) (`third_party/art3m1s-core`、MPL-2.0) | 組み込み中。描画はまだ WebGL2 経由、試した体験版は E-Mote の読み込みで止まる |
+| NScripter | [ONScripter-Yuri](https://github.com/YuriSizuku/OnscripterYuri) (`third_party/onscripter-yuri`、GPL-2.0) | 組み込み済み。自作のテストスクリプトで文章・選択肢・セーブまで確認 (実物の作品は未確認) |
 
 今後の候補は [docs/handoff.md](docs/handoff.md) の対応表を参照。
 
@@ -33,7 +36,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 
 ## ビルドと試し方
 
-Rust (rustup) と Node.js が要る。Artemis には Emscripten (emcc) も要る。描画はすべて WebGPU で、WebGPU の無いブラウザには対応しない。
+Rust (rustup) と Node.js が要る。Artemis と NScripter には Emscripten (emcc) も要る。Emscripten が GitHub の archive からの取得を拒まれる環境では、先に `tools/emscripten-ports.sh` で依存ライブラリを git から用意する。描画はすべて WebGPU で、WebGPU の無いブラウザには対応しない。
 
 ```bash
 git submodule update --init
@@ -42,7 +45,7 @@ cargo run --release -p vnrun-devserver -- --game ~/games/シオンの血族_体�
 # → http://127.0.0.1:8090/ をブラウザで開く。セーブは ./saves/<フォルダ名>/ に残る
 ```
 
-`--game` はエンジンのファイルがある場所 (Siglus なら `Scene.pck` と `Gameexe.dat` のあるフォルダ) を指す。エンジンは自動で判定し、外れたら `--engine siglus|reallive|avg32|uk2` で指定する。別の端末から開くなら `--addr 0.0.0.0:8090`。
+`--game` はエンジンのファイルがある場所 (Siglus なら `Scene.pck` と `Gameexe.dat` のあるフォルダ) を指す。エンジンは自動で判定し、外れたら `--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter` で指定する。別の端末から開くなら `--addr 0.0.0.0:8090`。
 
 SiglusEngine の作品には暗号の二次鍵が要るものがある (体験版でも)。ブラウザ版は鍵を探さないので、先に一度だけ `vnrun-prep` を流してゲームのフォルダに `key.toml` を作っておく。
 

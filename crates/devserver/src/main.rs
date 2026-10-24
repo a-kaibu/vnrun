@@ -2,7 +2,7 @@
 //! so a game can be played in a browser.
 //!
 //!     vnrun-devserver --game <ゲームのフォルダ> [--dist dist] [--saves <dir>] [--addr 127.0.0.1:8090]
-//!                     [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis] [--title T] [--nls sjis]
+//!                     [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter] [--title T] [--nls sjis]
 
 use std::fs::{self, File};
 use std::io::{Read, Seek, SeekFrom};
@@ -44,7 +44,7 @@ struct Manifest<'a> {
 fn usage() -> ! {
     eprintln!(
         "usage: vnrun-devserver --game <dir> [--dist dist] [--saves <dir>] [--addr 127.0.0.1:8090] \
-         [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis] [--title T] [--nls sjis]"
+         [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter] [--title T] [--nls sjis]"
     );
     exit(2)
 }
@@ -111,6 +111,12 @@ fn detect(game: &Path) -> Option<String> {
         Some("fvp".into())
     } else if has("root.pfs") || has("system.ini") {
         Some("artemis".into())
+    } else if has("nscript.dat")
+        || has("0.txt")
+        || has("00.txt")
+        || names.iter().any(|n| n.ends_with(".nsa") || n.ends_with(".sar"))
+    {
+        Some("nscripter".into())
     } else {
         None
     }

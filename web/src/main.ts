@@ -15,6 +15,7 @@ const ENGINES: Record<string, () => Promise<EngineModule>> = {
   softpal: () => import("./engines/sena"),
   fvp: () => import("./engines/rfvp"),
   artemis: () => import("./engines/art3m1s"),
+  nscripter: () => import("./engines/onscripter"),
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
