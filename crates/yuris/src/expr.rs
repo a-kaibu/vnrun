@@ -19,11 +19,13 @@
 
 use crate::sjis;
 
+/// Strings are Shift_JIS bytes, as in the scripts: they are joined, cut and compared as
+/// bytes, and only decoded to be shown.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
     Int(i64),
     Flt(f64),
-    Str(String),
+    Str(Vec<u8>),
 }
 
 impl Default for Value {
@@ -33,25 +35,36 @@ impl Default for Value {
 }
 
 impl Value {
+    /// A string value from text.
+    pub fn text(s: &str) -> Value {
+        Value::Str(sjis::encode(s))
+    }
     pub fn int(&self) -> i64 {
         match self {
             Value::Int(i) => *i,
             Value::Flt(f) => *f as i64,
-            Value::Str(s) => parse_int(s),
+            Value::Str(s) => parse_int(&String::from_utf8_lossy(s)),
         }
     }
     pub fn flt(&self) -> f64 {
         match self {
             Value::Int(i) => *i as f64,
             Value::Flt(f) => *f,
-            Value::Str(s) => s.trim().parse().unwrap_or(0.0),
+            Value::Str(s) => String::from_utf8_lossy(s).trim().parse().unwrap_or(0.0),
         }
     }
+    pub fn bytes(&self) -> Vec<u8> {
+        match self {
+            Value::Int(i) => i.to_string().into_bytes(),
+            Value::Flt(f) => fmt_flt(*f).into_bytes(),
+            Value::Str(s) => s.clone(),
+        }
+    }
+    /// The value as text (strings decoded from Shift_JIS).
     pub fn str(&self) -> String {
         match self {
-            Value::Int(i) => i.to_string(),
-            Value::Flt(f) => fmt_flt(*f),
-            Value::Str(s) => s.clone(),
+            Value::Str(s) => sjis::decode(s),
+            v => String::from_utf8_lossy(&v.bytes()).into_owned(),
         }
     }
     pub fn truthy(&self) -> bool {
@@ -88,7 +101,7 @@ impl Kind {
         match self {
             Kind::Int => Value::Int(0),
             Kind::Flt => Value::Flt(0.0),
-            Kind::Str => Value::Str(String::new()),
+            Kind::Str => Value::Str(Vec::new()),
         }
     }
     pub fn coerce(self, v: Value) -> Value {
@@ -97,7 +110,7 @@ impl Kind {
             (Kind::Int, v) => Value::Int(v.int()),
             (Kind::Flt, v @ Value::Flt(_)) => v,
             (Kind::Flt, v) => Value::Flt(v.flt()),
-            (Kind::Str, v) => Value::Str(v.str()),
+            (Kind::Str, v) => Value::Str(v.bytes()),
         }
     }
 }
@@ -217,7 +230,7 @@ fn run(e: &[u8], vars: &dyn Vars) -> Result<Item, String> {
                 Value::Int(i) => Item::Val(Value::Int(i.wrapping_neg())),
                 v => Item::Val(Value::Flt(-v.flt())),
             },
-            b's' => Item::Val(Value::Str(val(pop(&mut st)?, vars).str())),
+            b's' => Item::Val(Value::Str(val(pop(&mut st)?, vars).bytes())),
             b'i' => Item::Val(Value::Int(val(pop(&mut st)?, vars).int())),
             op => {
                 let b = val(pop(&mut st)?, vars);
@@ -234,10 +247,13 @@ fn run(e: &[u8], vars: &dyn Vars) -> Result<Item, String> {
     }
 }
 
-fn unquote(d: &[u8]) -> String {
-    let d = d.strip_prefix(b"\"").unwrap_or(d);
-    let d = d.strip_suffix(b"\"").unwrap_or(d);
-    sjis::decode(d)
+fn unquote(d: &[u8]) -> Vec<u8> {
+    for q in [b'"', b'\''] {
+        if d.len() >= 2 && d[0] == q && d[d.len() - 1] == q {
+            return d[1..d.len() - 1].to_vec();
+        }
+    }
+    d.to_vec()
 }
 
 pub(crate) fn binary(op: u8, a: Value, b: Value) -> Result<Value, String> {
@@ -255,10 +271,10 @@ pub(crate) fn binary(op: u8, a: Value, b: Value) -> Result<Value, String> {
         } as i64)
     };
     Ok(match op {
-        b'+' if strs => Str(a.str() + &b.str()),
+        b'+' if strs => Str([a.bytes(), b.bytes()].concat()),
         b'=' | b'!' | b'<' | b'>' | b'S' | b'Z' => {
             if strs {
-                cmp(a.str().cmp(&b.str()))
+                cmp(a.bytes().cmp(&b.bytes()))
             } else if flt {
                 cmp(a.flt().partial_cmp(&b.flt()).unwrap_or(std::cmp::Ordering::Equal))
             } else {

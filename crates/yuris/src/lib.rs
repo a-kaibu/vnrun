@@ -4,8 +4,14 @@
 //! [`expr`] (expressions). [`vm`] runs the scripts and hands everything that is not control
 //! flow to a [`vm::Host`].
 
+pub mod engine;
 pub mod expr;
+pub mod files;
+pub mod image;
+pub mod layers;
 pub mod sjis;
+pub mod sysvar;
+pub mod text;
 pub mod vm;
 pub mod ybn;
 pub mod ypf;

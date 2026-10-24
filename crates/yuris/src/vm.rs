@@ -7,23 +7,9 @@
 use std::collections::HashMap;
 
 use crate::expr::{self, Kind, Place, Value, Var, VarId};
+use crate::sjis;
+use crate::sysvar as sys;
 use crate::ybn::{self, Command, Instr, Script, VarDecl, VarType};
-
-/// System variables the VM itself keeps.
-pub mod sys {
-    /// @_LC: counter of the innermost LOOP (1..)
-    pub const LC: u16 = 48;
-    /// @_PINT(n) @_PFLT(n) $_PSTR(n) @_PFLG(n): what GOSUB passed
-    pub const PINT: u16 = 50;
-    pub const PFLT: u16 = 51;
-    pub const PSTR: u16 = 52;
-    pub const PFLG: u16 = 53;
-    /// @_RINT(n) @_RFLT(n) $_RSTR(n) @_RFLG(n): what RETURN passed back
-    pub const RINT: u16 = 54;
-    pub const RFLT: u16 = 55;
-    pub const RSTR: u16 = 56;
-    pub const RFLG: u16 = 57;
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Pos {
@@ -90,7 +76,7 @@ impl Program {
         self.commands.get(i.op as usize).map_or("?", |c| &c.name)
     }
 
-    /// Matches block commands: IFBLEND/IFBREAK -> their IFEND, LOOPEND -> its LOOP,
+    /// Matches block commands: ELSE/IFBLEND/IFBREAK -> their IFEND, LOOPEND -> its LOOP,
     /// LOOPBREAK/LOOPCONTINUE -> the LOOPEND of their loop.
     fn link(&self, s: &Script) -> Vec<u32> {
         let mut out = vec![u32::MAX; s.code.len()];
@@ -99,7 +85,7 @@ impl Program {
         for (i, ins) in s.code.iter().enumerate() {
             if self.is(ins, "IF") {
                 ifs.push(Vec::new());
-            } else if self.is(ins, "IFBLEND") || self.is(ins, "IFBREAK") {
+            } else if self.is(ins, "ELSE") || self.is(ins, "IFBLEND") || self.is(ins, "IFBREAK") {
                 if let Some(t) = ifs.last_mut() {
                     t.push(i);
                 }
@@ -209,8 +195,8 @@ pub enum Flow {
 
 pub trait Host {
     fn command(&mut self, vm: &mut State, call: &Call) -> Result<Flow, String>;
-    /// Text written in the script (WORD) and `_[...]`.
-    fn text(&mut self, vm: &mut State, text: &str) -> Result<Flow, String>;
+    /// Text written in the script (WORD) and `_[...]`, in Shift_JIS.
+    fn text(&mut self, vm: &mut State, text: &[u8]) -> Result<Flow, String>;
 }
 
 #[derive(Debug, Clone, Default)]
@@ -254,7 +240,7 @@ pub struct State {
 impl expr::Vars for State {
     fn get(&self, p: &Place) -> Value {
         let Some(Some(v)) = self.vars.get(p.var.id as usize) else {
-            return if p.var.str { Value::Str(String::new()) } else { Value::Int(0) };
+            return if p.var.str { Value::Str(Vec::new()) } else { Value::Int(0) };
         };
         v.slot(&p.index).and_then(|i| v.vals.get(i)).cloned().unwrap_or_else(|| v.kind.zero())
     }
@@ -353,11 +339,13 @@ impl Vm {
             let init = match d.ty {
                 VarType::Int => Value::Int(i64::from_le_bytes(d.init[..8].try_into().unwrap())),
                 VarType::Flt => Value::Flt(f64::from_le_bytes(d.init[..8].try_into().unwrap())),
+                VarType::Str if d.init.is_empty() => Value::Str(Vec::new()),
                 VarType::Str => state.eval(&d.init)?,
                 VarType::None => continue,
             };
             state.declare(id, kind, d.dims.iter().map(|&n| n as usize).collect(), init);
         }
+        sys::init(&mut state);
         let start = prog.label("SYSTEM_START").ok_or("no SYSTEM_START label")?;
         state.tasks.push(Task::new("SYSTEM", start));
         Ok(Vm { prog, state, ended: false })
@@ -467,9 +455,19 @@ impl Vm {
                 if !has_cond || st.eval(a(0))?.truthy() {
                     return Ok(Flow::Next);
                 }
+                // the next ELSE, else the IFEND; the last ELSE of a chain has neither
                 let next = ins.args.get(1).map_or(NO_JUMP, |a| a.jump);
                 let end = ins.args.get(2).map_or(NO_JUMP, |a| a.jump);
-                self.jump(if next != NO_JUMP { next } else { end });
+                let to = if next != NO_JUMP {
+                    next
+                } else if end != NO_JUMP {
+                    end
+                } else {
+                    self.prog.partner[pos.script][pos.ip]
+                };
+                if to != u32::MAX {
+                    self.jump(to);
+                }
             }
             "IFEND" => {}
             "IFBLEND" | "IFBREAK" => {
@@ -576,12 +574,9 @@ impl Vm {
                 }
                 return Ok(Flow::Yield);
             }
-            "WORD" => {
-                let text = crate::sjis::decode(a(0));
-                return host.text(&mut self.state, &text);
-            }
+            "WORD" => return host.text(&mut self.state, a(0)),
             "_" => {
-                let text = st.str(a(0))?;
+                let text = st.eval(a(0))?.bytes();
                 return host.text(&mut self.state, &text);
             }
             "TASK" => self.task_cmd(ins, name, pos)?,
@@ -611,6 +606,8 @@ impl Vm {
                     self.state.assign(&e, Value::Int(exists as i64))?;
                 }
             }
+            "VARACT" => self.var_act(ins, name, pos)?,
+            "VARINFO" => self.var_info(ins, name, pos)?,
             "END" => return Ok(Flow::End),
             _ => {
                 let call = Self::call(&self.prog, ins, name, pos);
@@ -776,9 +773,9 @@ impl Vm {
         } else if on("LOOPNEST")? {
             Value::Int(t.and_then(|t| t.frames.last()).map_or(0, |f| f.loops.len() as i64))
         } else if on("SCRIPTPOS")? {
-            Value::Str(t.map_or(String::new(), |t| format!("{}:{}", t.pos.script, t.pos.ip)))
+            Value::text(&t.map_or(String::new(), |t| format!("{}:{}", t.pos.script, t.pos.ip)))
         } else if on("FILE")? {
-            Value::Str(t.map_or(String::new(), |t| self.prog.script_names[t.pos.script].clone()))
+            Value::text(&t.map_or(String::new(), |t| self.prog.script_names[t.pos.script].clone()))
         } else if on("LINE")? {
             let line = t.and_then(|t| self.prog.scripts[t.pos.script].code.get(t.pos.ip)).map_or(0, |i| i.line);
             Value::Int(line as i64)
@@ -786,6 +783,121 @@ impl Vm {
             Value::Int(0)
         };
         self.state.assign(&let_, v)
+    }
+}
+
+impl Vm {
+    fn var_act(&mut self, ins: &Instr, name: &str, pos: Pos) -> Result<(), String> {
+        let call = Self::call(&self.prog, ins, name, pos);
+        let st = &mut self.state;
+        let set = st.place(call.arg("SET").ok_or("VARACT without SET")?)?;
+        let num = |k: &str| call.arg(k).map(|e| st.int(e)).transpose();
+        let on = |k: &str| num(k).map(|v| v.unwrap_or(0) != 0);
+        if let Some((op, e)) = call.arg_op("DIMSIZE") {
+            let n = st.int(e)?;
+            let var = st.var_mut(set.var);
+            let old = var.dims.first().copied().unwrap_or(var.vals.len()) as i64;
+            let size = op.apply(Value::Int(old), Value::Int(n)).int().max(0) as usize;
+            let zero = var.kind.zero();
+            var.vals.resize(size.max(1), zero);
+            var.dims = vec![size];
+            return Ok(());
+        }
+        if let Some(at) = num("PUSH")? {
+            let var = st.var_mut(set.var);
+            let at = (at.max(0) as usize).min(var.vals.len());
+            let zero = var.kind.zero();
+            var.vals.insert(at, zero);
+            var.dims = vec![var.vals.len()];
+            return Ok(());
+        }
+        if let Some(at) = num("POP")? {
+            let var = st.var_mut(set.var);
+            if (at.max(0) as usize) < var.vals.len() {
+                var.vals.remove(at as usize);
+                let zero = var.kind.zero();
+                var.vals.push(zero);
+            }
+            return Ok(());
+        }
+        let from = expr::Vars::get(st, &set);
+        let out = if on("TYPE")? {
+            match from {
+                Value::Str(_) => Value::Int(from.int()),
+                v => Value::Str(v.bytes()),
+            }
+        } else if on("COPY")? || on("CUT")? {
+            let bytes = from.bytes();
+            let chars = sjis::chars(&bytes);
+            let start = (num("POS")?.unwrap_or(1).max(1) - 1) as usize;
+            let len = num("LENGTH")?.map_or(chars.len(), |l| l.max(0) as usize);
+            let end = (start + len).min(chars.len());
+            let start = start.min(end);
+            if on("CUT")? {
+                Value::Str([&chars[..start], &chars[end..]].concat().concat())
+            } else {
+                Value::Str(chars[start..end].concat())
+            }
+        } else if on("UPPER")? || on("UPPER2")? {
+            Value::text(&from.str().to_uppercase())
+        } else if on("LOWER")? || on("LOWER2")? {
+            Value::text(&from.str().to_lowercase())
+        } else if on("HANTOZEN")? {
+            Value::text(&from.str().chars().map(sjis::to_zen).collect::<String>())
+        } else if on("ZENTOHAN")? {
+            Value::text(&from.str().chars().map(sjis::to_han).collect::<String>())
+        } else {
+            return Ok(());
+        };
+        match call.arg("LET") {
+            Some(e) => {
+                let e = e.to_vec();
+                self.state.assign(&e, out)
+            }
+            None => {
+                self.state.set(&set, out);
+                Ok(())
+            }
+        }
+    }
+
+    fn var_info(&mut self, ins: &Instr, name: &str, pos: Pos) -> Result<(), String> {
+        let call = Self::call(&self.prog, ins, name, pos);
+        let st = &self.state;
+        let set = st.place(call.arg("SET").ok_or("VARINFO without SET")?)?;
+        let on = |k: &str| call.arg(k).map(|e| st.int(e)).transpose().map(|v| v.unwrap_or(0) != 0);
+        let var = st.vars.get(set.var.id as usize).and_then(Option::as_ref);
+        let v = if on("TYPE")? {
+            var.map_or(0, |v| match v.kind {
+                Kind::Int => 1,
+                Kind::Flt => 2,
+                Kind::Str => 3,
+            })
+        } else if on("LENGTH")? {
+            sjis::chars(&expr::Vars::get(st, &set).bytes()).len() as i64
+        } else if on("DIMNUM")? {
+            var.map_or(0, |v| v.dims.len() as i64)
+        } else if on("SEARCH")? {
+            let want = ["INT", "FLT", "STR"].iter().find_map(|k| call.arg(k)).map(|e| st.eval(e)).transpose()?;
+            let from = call.arg("NO").map(|e| st.int(e)).transpose()?.unwrap_or(0).max(0) as usize;
+            match (var, want) {
+                (Some(v), Some(want)) => {
+                    let want = v.kind.coerce(want);
+                    v.vals.iter().skip(from).position(|x| *x == want).map_or(-1, |i| (i + from) as i64)
+                }
+                _ => -1,
+            }
+        } else if let Some(k) = (1..=8).find(|k| on(&if *k == 1 { "DIMSIZE".into() } else { format!("DIMSIZE{k}") }).unwrap_or(false)) {
+            var.and_then(|v| v.dims.get(k - 1)).map_or(0, |&d| d as i64)
+        } else if on("STRTYPE")? {
+            // 1 when every character is a digit
+            let b = expr::Vars::get(st, &set).bytes();
+            (!b.is_empty() && b.iter().all(u8::is_ascii_digit)) as i64
+        } else {
+            0
+        };
+        let e = call.arg("LET").ok_or("VARINFO without LET")?.to_vec();
+        self.state.assign(&e, Value::Int(v))
     }
 }
 

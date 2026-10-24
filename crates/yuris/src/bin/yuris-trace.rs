@@ -16,13 +16,21 @@ impl Host for Trace {
         let args: Vec<String> = call
             .args
             .iter()
-            .map(|(k, _, e)| format!("{k}={}", vm.eval(e).map(|v| format!("{v:?}")).unwrap_or_else(|_| "?".into())))
+            .map(|(k, _, e)| format!("{k}={}", vm.eval(e).map(|v| match v {
+                yuris::expr::Value::Str(_) => format!("{:?}", v.str()),
+                v => format!("{v:?}"),
+            }).unwrap_or_else(|_| "?".into())))
             .collect();
         println!("[{}] {}[{}]", vm.task().id, call.name, args.join(" "));
+        if let Ok(ids) = std::env::var("YURIS_SHOW") {
+            for id in ids.split(',').filter_map(|s| s.parse::<u16>().ok()) {
+                println!("    var {id}: {:?}", vm.vars.get(id as usize));
+            }
+        }
         Ok(Flow::Next)
     }
-    fn text(&mut self, vm: &mut State, text: &str) -> Result<Flow, String> {
-        println!("[{}] TEXT {text:?}", vm.task().id);
+    fn text(&mut self, vm: &mut State, text: &[u8]) -> Result<Flow, String> {
+        println!("[{}] TEXT {:?}", vm.task().id, yuris::sjis::decode(text));
         Ok(Flow::Next)
     }
 }

@@ -8,3 +8,5 @@ description = "A YU-RIS engine for the browser: reads YPF archives and compiled 
 [dependencies]
 miniz_oxide = "0.8"
 encoding_rs = "0.8"
+fontdue = "0.9"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "bmp", "gif"] }
