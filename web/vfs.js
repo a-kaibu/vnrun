@@ -191,7 +191,7 @@ export class GameFS {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
       } catch (error) {
         console.error(`${method} ${url}:`, error);
-        window.dispatchEvent(new CustomEvent("vnbox-save-error", { detail: { path, error } }));
+        window.dispatchEvent(new CustomEvent("vnrun-save-error", { detail: { path, error } }));
       }
     });
   }

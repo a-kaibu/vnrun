@@ -1,5 +1,5 @@
 //! Serves the built player (dist/) and one game folder over the protocol in docs/protocol.md,
-//! so a game can be tried in a browser without vnbox.
+//! so a game can be played in a browser.
 //!
 //!     vnrun-devserver --game <ゲームのフォルダ> [--dist dist] [--saves <dir>] [--addr 127.0.0.1:8090]
 //!                     [--engine siglus|reallive|avg32|uk2|bgi] [--title T] [--nls sjis]

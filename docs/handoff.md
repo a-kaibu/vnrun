@@ -52,10 +52,16 @@ docs/protocol.md     プレイヤーとサーバーの約束事
   | プリマドール 体験版 (`https://va-trialdist.azureedge.net/trial-primadoll-1.zip`) | Siglus | タイトル画面まで。二次鍵が要る (vnrun-prep で用意) |
   | お姉さん×すくらっち 体験版 (`http://suezou.dyndns.org/dl2008/hadashi/scratch2/trial.lzh`) | RealLive | 本編の文章まで |
   | 聖炎天使エレアノール 体験版 (`http://suezou.dyndns.org/dl2007/sagaplanets/eleanor/EleanorTrial.lzh`) | RealLive | タイトル画面まで。メニューのボタンがクリックにもキーにも反応しない (未調査、siglus_rs 側) |
+  | クダンノフォークロア 体験版 (b2019_sukerasparo) | BGI (ethornell-rs) | 本編の文章まで。SwiftShader だとタイトルまで 60〜95 秒かかる (実 GPU なら速いはず) |
 
 - 実物で見つかって直したもの (`patches/siglus_rs/`、build.sh が適用する):
   - `0001`: ボイスの時間圧縮 (JITAN) を `std::thread::spawn` でやっていて、wasm では panic してタイトル画面で落ちた。wasm ではその場で処理する。
   - `0002`: wasm の起動部が画面を 1280x720 に固定し、キャンバスの大きさをそのままゲームの座標にしていた (1024x576 の作品は左上に小さく、1920x1080 の作品は切れる)。Gameexe の SCREEN_SIZE をゲームの座標にして、キャンバスに縦横比を保って拡大し、ポインタの座標も換算する (Android / iOS 版と同じやり方)。
+- BGI (ethornell-rs) で直したもの:
+  - `patches/ethornell-rs/0001`: ブラウザ版はゲームのフォルダ (`bgi-resource/`) への書き込みを拒否していて、BGI.gdb が書けず「データフォルダを作成することができませんでした」で止まった。ゲームのフォルダへの書き込みはユーザー側の同じ相対パスに置き、読むときはユーザー側を先に見る (コピーオンライト)。
+  - `web/engines/ethornell.worker.js`: 押してすぐ離すクリックが 1 フレームに収まると、エンジンはボタンから外れたと読み、タイトルの START でゲームが最初からやり直しになった。同じフレームの「離す」は次のフレームに回す。
+  - ethornell-rs は wasm でワーカーに置き、ファイルは同期 XHR の Range 読み (256KB ブロック、128MB の LRU)。上流の Web 版 (platform/wasm) のつなぎを元にしている。
+  - 体験版の中には「インストール用メディア」の形のものがある (ゲーム ID と同じ名前の印のファイル、Setup.exe、installer.arc)。ネイティブのデスクトップ版は印のファイルがあると即終了するが、ブラウザ版 (hosted の方針) では問題なく動く。
 - **Siglus の二次鍵はブラウザでは探さない** (siglus_rs の wasm ビルドは key.toml を読むだけ)。`vnrun-prep <ゲームのフォルダ>` (crates/prep、ネイティブ) が鍵を復元して key.toml を書く。プリマドールで 1 秒以下。vnrun のサーバーがゲームを取り込むときにこれを呼ぶ想定 (未実装)。
 - movie (OMV / MPEG2 / WMV) の再生も siglus_rs の中で `thread::spawn` を使う箇所が残っている。ムービーのある作品で同じ panic が出るはずなので、出たら同様に直す。
 - 気にしておくこと: 丸ごと読みなので、大きい音声アーカイブ (Siglus の .ovk など) で同期 XHR が重くなる可能性。必要なら siglus_rs 側に範囲読みを足す。音声の自動再生制限 (最初のタップ) の扱いも未確認。
@@ -103,7 +109,7 @@ Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softp
 ## 決まった順番と次にやること
 
 1. **実物の体験版で siglus_rs を確認** (Siglus と RealLive)。
-2. **ethornell-rs (BGI) と sena-rs (Softpal) を取り込む**。submodule + `engines/<id>/build.sh` + `web/engines/<id>.js`。
+2. ~~ethornell-rs (BGI)~~ (済) と sena-rs (Softpal) を取り込む。submodule + `engines/<id>/build.sh` + `web/engines/<id>.js`。
 3. rfvp (FVP)、NScripter (OnscripterYuri を Emscripten で)。
 4. 吉里吉里: krkrz を Emscripten で wasm にし、xmoezzz の eluna / xp3 / AMV などで商用作品のプラグインを埋める。まず 133 本が使うプラグイン DLL を数えて多い順に。
 5. Artemis (art3m1s-core に Web のつなぎを書く)。

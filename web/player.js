@@ -73,7 +73,7 @@ async function main() {
     },
   };
   $("exit").addEventListener("click", () => ui.exit());
-  window.addEventListener("vnbox-save-error", (e) => {
+  window.addEventListener("vnrun-save-error", (e) => {
     $("title").textContent = `${title} (セーブの送信に失敗: ${e.detail.path})`;
   });
 
