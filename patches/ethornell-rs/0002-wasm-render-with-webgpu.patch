@@ -1,0 +1,172 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index d525c5b..cfeae13 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1184,7 +1184,7 @@ dependencies = [
+  "serde_json",
+  "tracing",
+  "vitasdk-sys",
+- "wgpu 0.19.4",
++ "wgpu 27.0.1",
+  "winit 0.31.0-beta.3",
+ ]
+ 
+@@ -1263,7 +1263,7 @@ dependencies = [
+  "raw-window-handle 0.6.2",
+  "tracing",
+  "web-sys",
+- "wgpu 0.19.4",
++ "wgpu 27.0.1",
+  "winit 0.31.0-beta.3",
+ ]
+ 
+diff --git a/Cargo.toml b/Cargo.toml
+index ce98ff9..1c90a43 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -39,7 +39,7 @@ encoding_rs = "0.8"
+ # Backends are chosen per target in the crates: dx12/metal natively, WebGL2
+ # on the web (ruffle's newer wgpu owns the WebGPU bindings there; linking
+ # both makes wasm-bindgen reject the duplicate WebGPU enums).
+-wgpu = { version = "0.19", default-features = false, features = ["wgsl"] }
++wgpu = { version = "27", default-features = false, features = ["wgsl"] }
+ winit = "0.31.0-beta.3"
+ kira = "0.8"
+ pollster = "0.3"
+diff --git a/crates/ethornell-app/Cargo.toml b/crates/ethornell-app/Cargo.toml
+index 6d4753f..1327cfb 100644
+--- a/crates/ethornell-app/Cargo.toml
++++ b/crates/ethornell-app/Cargo.toml
+@@ -41,7 +41,7 @@ features = ["dx12", "metal", "webgpu"]
+ 
+ [target.'cfg(target_arch = "wasm32")'.dependencies.wgpu]
+ workspace = true
+-features = ["webgl"]
++features = ["webgpu"]
+ 
+ [target.'cfg(target_os = "vita")'.dependencies]
+ vitasdk-sys = { version = "=0.3.3", default-features = false, features = ["SceSysmem_stub"] }
+diff --git a/crates/ethornell-render/Cargo.toml b/crates/ethornell-render/Cargo.toml
+index 98b8980..4e765d7 100644
+--- a/crates/ethornell-render/Cargo.toml
++++ b/crates/ethornell-render/Cargo.toml
+@@ -19,7 +19,7 @@ ethornell-image = { path = "../ethornell-image" }
+ ab_glyph.workspace = true
+ 
+ [target.'cfg(target_arch = "wasm32")'.dependencies]
+-wgpu = { workspace = true, features = ["webgl"] }
++wgpu = { workspace = true, features = ["webgpu"] }
+ web-sys = { version = "0.3", features = ["OffscreenCanvas"] }
+ 
+ [target.'cfg(not(any(target_arch = "wasm32",target_os="vita",target_os="horizon")))'.dependencies.wgpu]
+diff --git a/crates/ethornell-render/src/wgpu_renderer.rs b/crates/ethornell-render/src/wgpu_renderer.rs
+index f954871..774ce96 100644
+--- a/crates/ethornell-render/src/wgpu_renderer.rs
++++ b/crates/ethornell-render/src/wgpu_renderer.rs
+@@ -249,7 +249,7 @@ impl<'w> Renderer<'w> {
+                 force_fallback_adapter: false,
+             })
+             .await
+-            .ok_or_else(|| EthornellError::Other("no compatible wgpu adapter".into()))?;
++            .map_err(|err| EthornellError::Other(format!("no compatible wgpu adapter: {err}")))?;
+         let adapter_name = adapter.get_info().name;
+         let adapter_limits = adapter.limits();
+         let required_limits = renderer_limits(&adapter_limits)?;
+@@ -259,8 +259,8 @@ impl<'w> Renderer<'w> {
+                     label: Some("ethornell-device"),
+                     required_features: wgpu::Features::empty(),
+                     required_limits,
++                    ..Default::default()
+                 },
+-                None,
+             )
+             .await
+             .map_err(|err| EthornellError::Other(format!("request device failed: {err}")))?;
+@@ -272,7 +272,7 @@ impl<'w> Renderer<'w> {
+             }
+         });
+         let validation_fault = gpu_fault.clone();
+-        device.on_uncaptured_error(Box::new(move |error| {
++        device.on_uncaptured_error(std::sync::Arc::new(move |error| {
+             if let Ok(mut fault) = validation_fault.lock() {
+                 *fault = Some(format!("GPU error: {error}"));
+             }
+@@ -323,12 +323,14 @@ impl<'w> Renderer<'w> {
+                 layout: Some(&pipeline_layout),
+                 vertex: wgpu::VertexState {
+                     module: &shader,
+-                    entry_point: "vs_main",
++                    entry_point: Some("vs_main"),
+                     buffers: &[Vertex::layout()],
++                    compilation_options: Default::default(),
+                 },
+                 fragment: Some(wgpu::FragmentState {
+                     module: &shader,
+-                    entry_point: "fs_main",
++                    entry_point: Some("fs_main"),
++                    compilation_options: Default::default(),
+                     targets: &[Some(wgpu::ColorTargetState {
+                         format,
+                         blend,
+@@ -339,6 +341,7 @@ impl<'w> Renderer<'w> {
+                 depth_stencil: None,
+                 multisample: wgpu::MultisampleState::default(),
+                 multiview: None,
++                cache: None,
+             })
+         };
+         let alpha_pipeline = create_pipeline(
+@@ -481,7 +484,7 @@ impl<'w> Renderer<'w> {
+     }
+ 
+     /// A renderer on a canvas the page transferred to the engine's worker,
+-    /// drawn with WebGL2.
++    /// drawn with WebGPU.
+     #[cfg(target_arch = "wasm32")]
+     pub async fn new_web(
+         canvas: web_sys::OffscreenCanvas,
+@@ -490,8 +493,8 @@ impl<'w> Renderer<'w> {
+         font: FontArc,
+     ) -> Result<Self> {
+         validate_surface_size(width, height, u32::MAX)?;
+-        let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
+-            backends: wgpu::Backends::GL,
++        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor {
++            backends: wgpu::Backends::BROWSER_WEBGPU,
+             ..Default::default()
+         });
+         let surface = instance
+@@ -665,7 +668,7 @@ impl<'w> Renderer<'w> {
+     /// A lost device/validation/OOM fault is terminal for this renderer. The
+     /// host must report it and stop, or drop/rebuild and re-upload all textures.
+     pub fn check_gpu(&self) -> Result<()> {
+-        self.device.poll(wgpu::Maintain::Poll);
++        let _ = self.device.poll(wgpu::PollType::Poll);
+         let fault = self
+             .gpu_fault
+             .lock()
+@@ -733,14 +736,14 @@ impl<'w> Renderer<'w> {
+ 
+     fn write_texture(&self, texture: &wgpu::Texture, image: &DecodedImage) {
+         self.queue.write_texture(
+-            wgpu::ImageCopyTexture {
++            wgpu::TexelCopyTextureInfo {
+                 texture,
+                 mip_level: 0,
+                 origin: wgpu::Origin3d::ZERO,
+                 aspect: wgpu::TextureAspect::All,
+             },
+             &image.rgba,
+-            wgpu::ImageDataLayout {
++            wgpu::TexelCopyBufferLayout {
+                 offset: 0,
+                 bytes_per_row: Some(image.width * 4),
+                 rows_per_image: Some(image.height),
+@@ -1033,6 +1036,7 @@ impl<'w> Renderer<'w> {
+                 label: Some("ethornell-render-pass"),
+                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                     view: &view,
++                    depth_slice: None,
+                     resolve_target: None,
+                     ops: wgpu::Operations {
+                         load: wgpu::LoadOp::Clear(self.clear_color),
