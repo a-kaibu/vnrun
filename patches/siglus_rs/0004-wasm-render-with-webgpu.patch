@@ -1,0 +1,49 @@
+diff --git a/crates/siglus_scene_vm/Cargo.toml b/crates/siglus_scene_vm/Cargo.toml
+index 24af58e..aa03905 100644
+--- a/crates/siglus_scene_vm/Cargo.toml
++++ b/crates/siglus_scene_vm/Cargo.toml
+@@ -71,7 +71,7 @@ android_logger = "0.14"
+ winit = { workspace = true, features = ["android-game-activity"] }
+ 
+ [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
+-wgpu = { workspace = true, features = ["webgl"] }
++wgpu = { workspace = true, features = ["webgpu"] }
+ js-sys = "0.3"
+ wasm-bindgen = "0.2"
+ wasm-bindgen-futures = "0.4"
+diff --git a/crates/siglus_scene_vm/src/render/mod.rs b/crates/siglus_scene_vm/src/render/mod.rs
+index 7948872..65a03ac 100644
+--- a/crates/siglus_scene_vm/src/render/mod.rs
++++ b/crates/siglus_scene_vm/src/render/mod.rs
+@@ -452,7 +452,7 @@ impl Renderer {
+         W: std::ops::Deref<Target = dyn Window> + Into<wgpu::SurfaceTarget<'static>>,
+     {
+         #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+-        let backends = wgpu::Backends::GL;
++        let backends = wgpu::Backends::BROWSER_WEBGPU;
+         #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+         let backends = wgpu::Backends::all();
+ 
+@@ -573,9 +573,6 @@ impl Renderer {
+                 &wgpu::DeviceDescriptor {
+                     label: Some("siglus-bg-device"),
+                     required_features: wgpu::Features::empty(),
+-                    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+-                    required_limits: wgpu::Limits::downlevel_webgl2_defaults(),
+-                    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+                     required_limits: wgpu::Limits::default(),
+                 },
+                 None,
+diff --git a/crates/siglus_scene_vm/src/render/shaders/sprite.wgsl b/crates/siglus_scene_vm/src/render/shaders/sprite.wgsl
+index c7b49eb..e666cf2 100644
+--- a/crates/siglus_scene_vm/src/render/shaders/sprite.wgsl
++++ b/crates/siglus_scene_vm/src/render/shaders/sprite.wgsl
+@@ -518,7 +518,7 @@ fn sample_toon_tex(value: f32) -> vec3<f32> {
+ 
+ fn apply_parallax_uv(base_n: vec3<f32>, base_t: vec3<f32>, base_b: vec3<f32>, uv: vec2<f32>, view_dir_world: vec3<f32>, max_height: f32) -> vec2<f32> {
+   let dims_u = textureDimensions(tex5, 0);
+-  if (dims_u.x <= 1u && dims_u.y <= 1u || max_height <= 1e-6) {
++  if ((dims_u.x <= 1u && dims_u.y <= 1u) || max_height <= 1e-6) {
+     return uv;
+   }
+   let N = normalize(base_n);

@@ -4,6 +4,8 @@
 // synchronous Range requests (allowed in workers) through a block cache instead of from picked
 // File objects, and saves go back to the page, which sends them to the server.
 
+import "../wgpu-compat";
+
 // The part of the wasm-bindgen module (public/engines/ethornell/ethornell_web.js) used here.
 interface EngineEvent {
   kind: number;

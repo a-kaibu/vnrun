@@ -1,6 +1,7 @@
 // The player page: opens the game named by ?game=<base> (docs/protocol.md) and hands it to
 // the engine module for its engine.
 import "./style.css";
+import "./wgpu-compat";
 import type { EngineModule, Ui } from "./engine";
 import { GameFS, type SaveErrorDetail } from "./gamefs";
 
