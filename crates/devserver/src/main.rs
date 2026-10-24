@@ -111,7 +111,7 @@ fn detect(game: &Path) -> Option<String> {
         Some("softpal".into())
     } else if names.iter().any(|n| n.ends_with(".hcb")) {
         Some("fvp".into())
-    } else if has("root.pfs") || has("system.ini") {
+    } else if names.iter().any(|n| n.ends_with(".pfs")) || has("system.ini") {
         Some("artemis".into())
     } else if has("nscript.dat")
         || has("0.txt")

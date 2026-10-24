@@ -1,0 +1,22 @@
+diff --git a/crates/asb-interpreter/src/lua_engine.rs b/crates/asb-interpreter/src/lua_engine.rs
+index 3e4d071..f120440 100644
+--- a/crates/asb-interpreter/src/lua_engine.rs
++++ b/crates/asb-interpreter/src/lua_engine.rs
+@@ -783,8 +783,15 @@ impl UserData for EngineApi {
+                 return Ok(());
+             };
+ 
+-            let bytes = reader(&path)
+-                .map_err(|e| mlua::Error::external(format!("include 读取 {path} 失败: {e}")))?;
++            // A missing file is skipped, as Artemis does: trials ship scripts that include
++            // files left out of them (セレクトオブリージュ: system/extend/user/mw_save.lua).
++            let bytes = match reader(&path) {
++                Ok(bytes) => bytes,
++                Err(e) => {
++                    eprintln!("include {path}: {e}");
++                    return Ok(());
++                }
++            };
+ 
+             // lua.load 接受 &[u8]，文本源码与 luac 字节码均可。
+             lua.load(&bytes[..])
