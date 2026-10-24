@@ -50,7 +50,7 @@ r1_artemis	タイトル
 s2023_j_studio_reaero_dt	タイトル	
 s2020_wonder_fool_maokatsu	タイトル	
 s2021_giga_fuyukiss	NG	E-Mote の読み込みで止まる (image/fg/tok_0.psb: missing integer field truncated_width)
-s2024_madosoft_selectoblige	NG	起動時に include が system/extend/user/mw_save.lua を見つけられない
+s2024_madosoft_selectoblige	タイトル	f508d03 (欠けた include を飛ばす) でタイトルまで
 s2025_j_studio_galsfiction	タイトル	blur_k のシェーダーのコンパイルに失敗 (表示には出ていない)
 r1_naru2	タイトル	
 r1_trt	タイトル	ボタンだけで背景が出ない (anm.dll などのレイヤ効果は未実装)
@@ -133,3 +133,6 @@ dl_RJ01650072	タイトル
 dl_RJ01702800	タイトル	
 dl_RJ01720685	本編	クリックで最初の会話まで
 r1_kag3	要再確認	KAG3 のサンプル (xp3 にまとめていない data フォルダ)。開発スレッドでは確認済み
+b2006_ninetail	タイトル	83905b1 / f086ac2 / ce3775e でタイトルまで。効果音の ogg は「Unknown wave format」で鳴らない (続行はできる)
+b2016_cube	NG	xp3 が暗号化されている (plugin/mamiya.tpm)
+b2013_hulotte	NG	xp3 が暗号化されている (plugin/moteyaba.tpm)

@@ -43,10 +43,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | RealLive (siglus_rs) | 8 | 4 | 2 |  | 1 |  | 1 |  |
 | BGI (ethornell-rs) | 21 | 1 | 19 |  |  | 1 |  |  |
 | Softpal (sena-rs) | 28 | 3 | 14 |  |  | 11 |  |  |
-| Artemis (art3m1s-core) | 6 |  | 4 |  |  | 2 |  |  |
+| Artemis (art3m1s-core) | 6 |  | 5 |  |  | 1 |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 1 | 5 | 10 | 3 | 14 |  |  |
-| 吉里吉里 (KiriKiri SDL2) | 135 |  |  |  | 1 |  |  | 134 |
+| 吉里吉里 (KiriKiri SDL2) | 135 |  | 1 |  | 1 | 2 |  | 131 |
 | YU-RIS (vnrun) | 29 |  | 5 |  |  | 8 | 1 | 15 |
 
 ### SiglusEngine (siglus_rs)
@@ -152,9 +152,9 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | r1_artemis | [遥かなるニライカナイ 体験版](https://project-navel.com/niraikanai/niraikanai_Trial.zip) | タイトル |  |
 | s2020_wonder_fool_maokatsu | [まおかつ！　体験版 - Ver1.1](http://suezou.dyndns.org/dl2020/wonder-fool/maokatsu/maokatsu_webtrial1.1.zip) | タイトル |  |
 | s2023_j_studio_reaero_dt | [リアルエロゲシチュエーション！DT　体験版 - Ver1.0.0](http://suezou.dyndns.org/dl2023/j-studio/reaero_dt/reaerodt_Trial2.7z) | タイトル |  |
+| s2024_madosoft_selectoblige | [セレクトオブリージュ　体験版 - Ver1.0.0](http://suezou.dyndns.org/dl2024/madosoft/selectoblige/selectoblige_Trial.zip) | タイトル | f508d03 (欠けた include を飛ばす) でタイトルまで |
 | s2025_j_studio_galsfiction | [GALSFICTION_Trial.zip](http://suezou.dyndns.org/dl2025/j-studio/galsfiction/GALSFICTION_Trial.zip) | タイトル | blur_k のシェーダーのコンパイルに失敗 (表示には出ていない) |
 | s2021_giga_fuyukiss | [フユキス　体験版 - Ver1.0.0](http://suezou.dyndns.org/dl2021/giga/fuyukiss/fuyukiss_trial.zip) | NG | E-Mote の読み込みで止まる (image/fg/tok_0.psb: missing integer field truncated_width) |
-| s2024_madosoft_selectoblige | [セレクトオブリージュ　体験版 - Ver1.0.0](http://suezou.dyndns.org/dl2024/madosoft/selectoblige/selectoblige_Trial.zip) | NG | 起動時に include が system/extend/user/mw_save.lua を見つけられない |
 
 ### NScripter (ONScripter-Yuri)
 
@@ -208,10 +208,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| b2006_ninetail | [機械仕掛けのイブ　～Ｄｅａ　Ｅｘ　Ｍａｃｈｉｎａ～](http://suezou.dyndns.org/dl2006/ninetail/eve/0527_eve_trial_ver100.exe) | タイトル | 83905b1 / f086ac2 / ce3775e でタイトルまで。効果音の ogg は「Unknown wave format」で鳴らない (続行はできる) |
 | r1_kag3 | [KAG3 紹介デモ](https://krkrz.github.io/download/kr2_232r2.zip) | 要再確認 | KAG3 のサンプル (xp3 にまとめていない data フォルダ)。開発スレッドでは確認済み |
+| b2013_hulotte | [妹のおかげでモテすぎてヤバい。 体験版](http://suezou.dyndns.org/dl2013/hulotte/moteyaba/moteyaba_trial.zip) | NG | xp3 が暗号化されている (plugin/moteyaba.tpm) |
+| b2016_cube | [間宮くんちの五つ子事情 体験版](http://suezou.dyndns.org/dl2016/cube/mamiya/mamiya_trial.zip) | NG | xp3 が暗号化されている (plugin/mamiya.tpm) |
 | b2006_akabeesoft | [その横顔を見つめてしまう ～a profile完全版～ web体験版](http://suezou.dyndns.org/dl2006/akabeesoft/sonoyoko/sonoyoko_trial.zip) | 未確認 |  |
 | b2006_mille_feuille | [ソウルレイザー☆ユナ 体験版](http://suezou.dyndns.org/dl2006/mille-feuille/yuna/yuna_taiken.zip) | 未確認 |  |
-| b2006_ninetail | [機械仕掛けのイブ　～Ｄｅａ　Ｅｘ　Ｍａｃｈｉｎａ～](http://suezou.dyndns.org/dl2006/ninetail/eve/0527_eve_trial_ver100.exe) | 未確認 |  |
 | b2007_akabeesoft | [g_web_taiken.zip](http://suezou.dyndns.org/dl2007/akabeesoft/gsen/g_web_taiken.zip) | 未確認 |  |
 | b2008_akabeesoft | [ＷＬＯ-世界恋愛機構- web用体験版](http://suezou.dyndns.org/dl2008/akabeesoft/wlo/wlo_webtrial.zip) | 未確認 |  |
 | b2008_asa_project | [Hime のち Honey - 体験版](http://suezou.dyndns.org/dl2008/asa-project/himehoney/hime_web_trial1.zip) | 未確認 |  |
@@ -229,7 +231,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2012_parasol | [恋妹SWEET☆DAYS 体験版](http://suezou.dyndns.org/dl2012/parasol/koiimo/koiimo_taiken.zip) | 未確認 |  |
 | b2013_cross_over | [花嫁狩凌 ～絶対快楽の白濁淫毒～ 体験版](http://suezou.dyndns.org/dl2013/cross-over/hana/hanayome_trial.zip) | 未確認 |  |
 | b2013_dualtail | [VenusBlood-GAIA- WEB専用ADV体験版](http://suezou.dyndns.org/dl2013/dualtail/vbg/VBG_WEB_AVGTrial.zip) | 未確認 |  |
-| b2013_hulotte | [妹のおかげでモテすぎてヤバい。 体験版](http://suezou.dyndns.org/dl2013/hulotte/moteyaba/moteyaba_trial.zip) | 未確認 |  |
 | b2013_madosoft | [ナマイキデレーション体験版 WEB Ver.](http://suezou.dyndns.org/dl2013/madosoft/namadere/namadere_trial_web.zip) | 未確認 |  |
 | b2014_hibiki_works | [ＰＲＥＴＴＹ×Ｃ∧ＴＩＯＮ](http://suezou.dyndns.org/dl2014/hibiki-works/pretty_cation/pc_web-trial1.01.zip) | 未確認 |  |
 | b2014_undermoon | [奪われた学園～罠に落ちた優等生～　体験版](http://suezou.dyndns.org/dl2014/undermoon/ubaware/ubaware_trial.zip) | 未確認 |  |
@@ -241,7 +242,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2016_alcot | [よめがみ My Sweet Goddess! リコＨシーン体験版](http://suezou.dyndns.org/dl2016/alcot/yomegami/yomegami_trial3.exe) | 未確認 |  |
 | b2016_apadash | [満淫オーク電車～くっ！　任務じゃなければこんな場所…～　体験版　Ver1.00](http://suezou.dyndns.org/dl2016/apadash/oak_train/aptd005_tr.zip) | 未確認 |  |
 | b2016_appetite | [アナル＊ティーチャー～感度良肛！？　逆レッスン～　体験版　Ver1.00](http://suezou.dyndns.org/dl2016/appetite/anaru_teacher/apt068_tr.zip) | 未確認 |  |
-| b2016_cube | [間宮くんちの五つ子事情 体験版](http://suezou.dyndns.org/dl2016/cube/mamiya/mamiya_trial.zip) | 未確認 |  |
 | b2017_appetite | [催眠アプリで寝取りハメ～これまでの恨み、ヤり返してやる！　体験版　Ver1.00](http://suezou.dyndns.org/dl2017/appetite/hypnotism_application/apt098_tr.zip) | 未確認 |  |
 | b2017_sukerasparo | [ことのは・アムリラート](http://suezou.dyndns.org/dl2017/sukerasparo/kotonoha/kotonoha_trial.zip) | 未確認 |  |
 | b2018_appetite | [P.S.あなたを心から愛しています～最期まで気づけなかった妻の苦しみ～　体験版](http://suezou.dyndns.org/dl2018/appetite/ps_iloveyou/apt125_tr.zip) | 未確認 |  |
