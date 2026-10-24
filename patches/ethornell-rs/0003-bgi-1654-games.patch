@@ -1,0 +1,253 @@
+diff --git a/crates/ethornell-app/src/lib.rs b/crates/ethornell-app/src/lib.rs
+index cac7862..bd1a526 100644
+--- a/crates/ethornell-app/src/lib.rs
++++ b/crates/ethornell-app/src/lib.rs
+@@ -1026,22 +1026,22 @@ struct RuntimeTraceApi {
+     /// Independent BGM fade envelope selected by A0:18/A0:19 (target record +0x40).
+     bgm_fade_volumes: [u8; 16],
+     /// Target SE gain bank set by A0:09 (dword_55EE18 / sub_4A2DF0).
+-    sound_primary_volumes: [u8; 64],
++    sound_primary_volumes: [u8; target_checks::SE_CHANNELS],
+     /// Target SE gain bank set by A0:2C (sub_4A2890).
+-    sound_secondary_volumes: [u8; 64],
++    sound_secondary_volumes: [u8; target_checks::SE_CHANNELS],
+     /// Per-SE play volume selected by A0:24 (target record +0x28).
+-    sound_play_volumes: [u8; 64],
++    sound_play_volumes: [u8; target_checks::SE_CHANNELS],
+     /// Independent SE fade envelope selected by A0:26 (target record +0x40).
+-    sound_fade_volumes: [u8; 64],
++    sound_fade_volumes: [u8; target_checks::SE_CHANNELS],
+     /// GetTickCount-domain clock and the two independent sound envelopes.
+     native_sound_tick: u32,
+     bgm_play_ramps: [Option<NativeSoundRamp>; 16],
+     bgm_fade_ramps: [Option<NativeSoundRamp>; 16],
+-    sound_fade_ramps: [Option<NativeSoundRamp>; 64],
++    sound_fade_ramps: [Option<NativeSoundRamp>; target_checks::SE_CHANNELS],
+     bgm_channel_active: [bool; 16],
+-    sound_channel_active: [bool; 64],
++    sound_channel_active: [bool; target_checks::SE_CHANNELS],
+     bgm_playback_clocks: [NativeAudioClock; 16],
+-    sound_playback_clocks: [NativeAudioClock; 64],
++    sound_playback_clocks: [NativeAudioClock; target_checks::SE_CHANNELS],
+     /// Target A0:80-86 CD-audio device. On portable hosts this is backed by
+     /// actual decoded track assets rather than an inert unsupported stub.
+     native_cd_audio: NativeCdAudioState,
+@@ -1440,18 +1440,18 @@ impl RuntimeTraceApi {
+             bgm_secondary_volumes: [128; 16],
+             bgm_play_volumes: [128; 16],
+             bgm_fade_volumes: [128; 16],
+-            sound_primary_volumes: [128; 64],
+-            sound_secondary_volumes: [128; 64],
+-            sound_play_volumes: [128; 64],
+-            sound_fade_volumes: [128; 64],
++            sound_primary_volumes: [128; target_checks::SE_CHANNELS],
++            sound_secondary_volumes: [128; target_checks::SE_CHANNELS],
++            sound_play_volumes: [128; target_checks::SE_CHANNELS],
++            sound_fade_volumes: [128; target_checks::SE_CHANNELS],
+             native_sound_tick: 0,
+             bgm_play_ramps: [None; 16],
+             bgm_fade_ramps: [None; 16],
+-            sound_fade_ramps: [None; 64],
++            sound_fade_ramps: [None; target_checks::SE_CHANNELS],
+             bgm_channel_active: [false; 16],
+-            sound_channel_active: [false; 64],
++            sound_channel_active: [false; target_checks::SE_CHANNELS],
+             bgm_playback_clocks: [NativeAudioClock::default(); 16],
+-            sound_playback_clocks: [NativeAudioClock::default(); 64],
++            sound_playback_clocks: [NativeAudioClock::default(); target_checks::SE_CHANNELS],
+             native_cd_audio: NativeCdAudioState::default(),
+             audio_requests: VecDeque::new(),
+             movie_audio_sent: BTreeMap::new(),
+@@ -29110,7 +29110,7 @@ fn native_audio_panning(value: i32) -> f64 {
+     f64::from(value.clamp(0, 128)) / 128.0
+ }
+ 
+-fn set_sound_channel_active(active: &mut [bool; 64], channel: i32, value: bool) {
++fn set_sound_channel_active(active: &mut [bool], channel: i32, value: bool) {
+     if let Some(slot) = usize::try_from(channel)
+         .ok()
+         .and_then(|index| active.get_mut(index))
+diff --git a/crates/ethornell-app/src/native_sound.rs b/crates/ethornell-app/src/native_sound.rs
+index a059cbe..16b5b66 100644
+--- a/crates/ethornell-app/src/native_sound.rs
++++ b/crates/ethornell-app/src/native_sound.rs
+@@ -22,7 +22,7 @@ impl RuntimeTraceApi {
+         // channel checks (and consume no output values on failure).
+         let channel_limit = match id {
+             0x08 | 0x14 | 0x16 | 0x17 | 0x18 | 0x19 | 0x1C => Some(16),
+-            0x09 | 0x22 | 0x24 | 0x25 | 0x26 | 0x2C | 0x2F => Some(64),
++            0x09 | 0x22 | 0x24 | 0x25 | 0x26 | 0x2C | 0x2F => Some(target_checks::SE_CHANNELS as u32),
+             _ => None,
+         };
+         if let Some(limit) = channel_limit {
+@@ -987,7 +987,7 @@ impl RuntimeTraceApi {
+         decode_gain: f64,
+         playback_rate: f64,
+     ) -> bool {
+-        if !(0..64).contains(&channel) || block.len() < 64 {
++        if !(0..target_checks::SE_CHANNELS as i32).contains(&channel) || block.len() < 64 {
+             return false;
+         }
+         self.sound_slots.insert(
+@@ -1131,7 +1131,7 @@ impl RuntimeTraceApi {
+                 self.apply_native_bgm_volume(channel as i32);
+             }
+         }
+-        for channel in 0..64 {
++        for channel in 0..target_checks::SE_CHANNELS {
+             if !self.sound_slots.contains_key(&(channel as i32)) {
+                 continue;
+             }
+diff --git a/crates/ethornell-app/src/target_checks.rs b/crates/ethornell-app/src/target_checks.rs
+index 32023b9..a1f8388 100644
+--- a/crates/ethornell-app/src/target_checks.rs
++++ b/crates/ethornell-app/src/target_checks.rs
+@@ -7,9 +7,12 @@ fn fail(message: String) -> VmResult<()> {
+     Err(VmError::Runtime(message))
+ }
+ 
+-/// sub_4984C0: SE channel < 0x40.
++/// SE channels: 0x40 in BGI 1.622; later versions (1.654) use more, so allow 0x80.
++pub(crate) const SE_CHANNELS: usize = 0x80;
++
++/// sub_4984C0: SE channel < SE_CHANNELS.
+ pub(crate) fn se_channel(value: i32) -> VmResult<()> {
+-    if value as u32 >= 0x40 {
++    if value as u32 >= SE_CHANNELS as u32 {
+         return fail(format!("無効な効果音番号 [ {value} ] が指定されました"));
+     }
+     Ok(())
+diff --git a/crates/ethornell-archive/src/lib.rs b/crates/ethornell-archive/src/lib.rs
+index dc231d3..fcccac0 100644
+--- a/crates/ethornell-archive/src/lib.rs
++++ b/crates/ethornell-archive/src/lib.rs
+@@ -841,11 +841,8 @@ fn build_resource_lookup(
+ }
+ 
+ fn archive_name_key(name: &str) -> String {
+-    Path::new(name)
+-        .file_name()
+-        .and_then(|name| name.to_str())
+-        .unwrap_or(name)
+-        .to_ascii_lowercase()
++    // Scripts name archives in subfolders Windows-style (`Archive\\data01000.arc`).
++    name.rsplit(['/', '\\']).next().unwrap_or(name).to_ascii_lowercase()
+ }
+ 
+ #[derive(Debug, Clone, Default, Serialize)]
+diff --git a/crates/ethornell-vm/src/lib.rs b/crates/ethornell-vm/src/lib.rs
+index 7c1e7c3..8bd0dfd 100644
+--- a/crates/ethornell-vm/src/lib.rs
++++ b/crates/ethornell-vm/src/lib.rs
+@@ -5594,7 +5594,25 @@ impl Vm {
+                     return Ok(());
+                 }
+                 self.normalize_user_string_args(code, id)?;
+-                let direct_result = if (code, id) == (0xb0, 0x27) {
++                let direct_result = if (code, id) == (0xb0, 0xc4) {
++                    // sub_479D60: EnumFontFamiliesExA (charset 128) into a buffer of NUL-ended
++                    // family names, returning how many; with no buffer, the bytes it needs.
++                    let destination = self.pop_ptr()?;
++                    if destination == 0 {
++                        let bytes: usize = JAPANESE_FONT_FAMILIES
++                            .iter()
++                            .map(|name| self.encode_native_string(name).len() + 1)
++                            .sum();
++                        Some(Value::Int(bytes as i32))
++                    } else {
++                        let mut at = destination;
++                        for name in JAPANESE_FONT_FAMILIES {
++                            self.write_c_string(at, name)?;
++                            at = at.wrapping_add(self.encode_native_string(name).len() as u32 + 1);
++                        }
++                        Some(Value::Int(JAPANESE_FONT_FAMILIES.len() as i32))
++                    }
++                } else if (code, id) == (0xb0, 0x27) {
+                     let destination = self.pop_ptr()?;
+                     let text = api.current_user_text();
+                     let bytes_written = self.write_c_string_bounded(destination, &text, 255)?;
+@@ -11437,10 +11455,6 @@ impl Vm {
+                 let _font_name = self.pop_string_lossy()?;
+                 let _slot = self.pop_int()?;
+             }
+-            (0xb0, 0xc4) => {
+-                let _value = self.pop_int()?;
+-                self.push_value(Value::Int(0));
+-            }
+             (0xb0, 0xc1) => {
+                 let _font = self.pop_int()?;
+                 let _text = self.pop_string_lossy()?;
+@@ -11625,7 +11639,7 @@ impl Vm {
+             (0xb0, 0x86) => &[2, 3],
+             (0xb0, 0x87) => &[2, 3, 6, 7, 8],
+             (0xb0, 0x8C) => &[0, 1, 2],
+-            (0xb0, 0xC0) | (0xb0, 0xC2) | (0xb0, 0xC4) => &[0],
++            (0xb0, 0xC0) | (0xb0, 0xC2) => &[0],
+             (0xb0, 0xC1) => &[1],
+             (0xb0, 0xC3) | (0xb0, 0xC6) | (0xb0, 0xC7) => &[0, 1],
+             (0xb0, 0xF0) => &[2],
+@@ -18650,7 +18664,7 @@ mod tests {
+         assert_eq!(report.stop_reason, VmStopReason::Completed, "{report:?}");
+         assert_eq!(vm.async_tasks.len(), 1);
+         let child = &vm.async_tasks[0].vm;
+-        // The blocks sit at the top of the 0x80000 / 0x40000 regions.
++        // The blocks sit at the top of the code / 0x40000 data regions.
+         assert_eq!(child.mem_ptr, 0x3FF00);
+         assert_eq!(child.thread.frame_region_base(), 0x3FF00);
+         assert_eq!(vm.data_region_limit(), 0x3FF00);
+@@ -18667,9 +18681,9 @@ mod tests {
+         vm.stack.extend([Value::Int(4), Value::Int(0x100), Value::Int(0x40001), Value::Int(0x15)]);
+         let error = vm.dispatch(&instruction, &mut TraceApi).unwrap_err();
+         assert!(error.to_string().contains("[ 262145 ] のスタック領域"), "{error}");
+-        vm.stack.extend([Value::Int(4), Value::Int(0x100), Value::Int(0x10), Value::Int(0x80000)]);
++        vm.stack.extend([Value::Int(4), Value::Int(0x100), Value::Int(0x10), Value::Int(0x100000)]);
+         let error = vm.dispatch(&instruction, &mut TraceApi).unwrap_err();
+-        assert!(error.to_string().contains("$80000"), "{error}");
++        assert!(error.to_string().contains("$100000"), "{error}");
+     }
+ 
+     #[test]
+@@ -19501,3 +19515,6 @@ mod tests {
+ 
+ /// The protected string namespace (Sys80:D8 keeps it).
+ pub(crate) const RESOURCE_NAMESPACE: i32 = i32::MIN;
++
++/// The font families a Japanese Windows lists for charset 128 (what B0:C4 reports).
++const JAPANESE_FONT_FAMILIES: &[&str] = &["ＭＳ ゴシック", "ＭＳ Ｐゴシック", "ＭＳ 明朝", "ＭＳ Ｐ明朝", "MS UI Gothic"];
+diff --git a/crates/ethornell-vm/src/native_strings.rs b/crates/ethornell-vm/src/native_strings.rs
+index 8c86b1b..fa60e8a 100644
+--- a/crates/ethornell-vm/src/native_strings.rs
++++ b/crates/ethornell-vm/src/native_strings.rs
+@@ -153,7 +153,6 @@ pub(crate) fn string_arguments(group: u8, id: u16) -> &'static [usize] {
+         (0xB0, 0xC1) => &[0],
+         (0xB0, 0xC2) => &[0],
+         (0xB0, 0xC3) => &[0, 1],
+-        (0xB0, 0xC4) => &[0],
+         (0xB0, 0xC6) => &[0, 1],
+         (0xB0, 0xC7) => &[0, 1],
+         (0xB0, 0xF0) => &[0],
+diff --git a/crates/ethornell-vm/src/native_thread.rs b/crates/ethornell-vm/src/native_thread.rs
+index 5664b5b..7f2556f 100644
+--- a/crates/ethornell-vm/src/native_thread.rs
++++ b/crates/ethornell-vm/src/native_thread.rs
+@@ -289,8 +289,10 @@ impl Default for CThread {
+         let mut native = CThreadLayout32::default();
+         // The main program thread is created by sub_48C990 with 4096 operand
+         // slots, a 0x80000-byte code region and a 0x40000-byte data region.
++        // Later engines (1.654) load more system modules than fit in that, so
++        // the code region is twice as large here.
+         native.operand_capacity = 4096;
+-        native.code_region_size = 0x80000;
++        native.code_region_size = 0x100000;
+         native.frame_region_size = 0x40000;
+         native.status_flags = 0;
+         Self {
+@@ -1027,7 +1029,7 @@ mod region_tests {
+     #[test]
+     fn main_thread_defaults_match_sub_48c990() {
+         let thread = CThread::default();
+-        assert_eq!(thread.code_region_size(), 0x80000);
++        assert_eq!(thread.code_region_size(), 0x100000);
+         assert_eq!(thread.data_region_size(), 0x40000);
+         assert_eq!(thread.native.operand_capacity, 4096);
+     }
