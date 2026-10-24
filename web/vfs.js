@@ -153,6 +153,11 @@ export class GameFS {
     return this.sizes.size + this.saves.size;
   }
 
+  // URL of a game file, for engines that read ranges themselves.
+  fileUrl(path) {
+    return `${this.base}files/${encodePath(this.resolve(path))}`;
+  }
+
   // Game files as the siglus_rs host expects them.
   fileList() {
     return Array.from(this.sizes, ([path, size]) => ({ path, size, lastModified: 0 }));

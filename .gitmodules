@@ -1,3 +1,6 @@
 [submodule "third_party/siglus_rs"]
 	path = third_party/siglus_rs
 	url = https://github.com/xmoezzz/siglus_rs
+[submodule "third_party/ethornell-rs"]
+	path = third_party/ethornell-rs
+	url = https://github.com/xmoezzz/ethornell-rs

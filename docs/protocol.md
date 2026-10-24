@@ -26,7 +26,8 @@
 }
 ```
 
-- `engine`: `siglus` / `reallive` / `avg32` / `uk2` (siglus_rs で動かすもの)。今後 `onscripter` / `kirikiri` / `artemis` / `bgi` を足す。
+- `engine`: `siglus` / `reallive` / `avg32` / `uk2` (siglus_rs で動かすもの)、`bgi` (ethornell-rs)。今後 `softpal` / `fvp` / `onscripter` / `kirikiri` / `artemis` を足す。
+- BGI (ethornell-rs) はアーカイブを `Range` で少しずつ読む (256KB 単位)。
 - `nls`: 省略可。RealLive / AVG32 の文字コード (`sjis` など)。Siglus では使わない。
 - `files`: ゲームの根以下の全ファイル。大文字小文字はそのまま (プレイヤー側で区別せずに引く)。
 

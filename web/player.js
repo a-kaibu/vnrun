@@ -8,6 +8,7 @@ const ENGINES = {
   reallive: "siglus_rs",
   avg32: "siglus_rs",
   uk2: "siglus_rs",
+  bgi: "ethornell",
 };
 
 const $ = (id) => document.getElementById(id);

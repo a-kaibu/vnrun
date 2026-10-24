@@ -13,10 +13,10 @@ jobs:
         with:
           path: |
             ~/.cargo/registry
-            ~/.cargo/bin/wasm-bindgen
             target
             third_party/siglus_rs/target
-          key: cargo-${{ hashFiles('Cargo.lock', 'third_party/siglus_rs/Cargo.lock') }}
+            third_party/ethornell-rs/target
+          key: cargo-${{ hashFiles('Cargo.lock', 'third_party/*/Cargo.lock') }}
       - run: cargo fmt --check
       - run: cargo clippy --release -- -D warnings
       - run: ./build.sh

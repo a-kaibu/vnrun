@@ -1,0 +1,68 @@
+diff --git a/crates/ethornell-app/src/file_policy/hosted.rs b/crates/ethornell-app/src/file_policy/hosted.rs
+index 9dc7c1d..4df7b10 100644
+--- a/crates/ethornell-app/src/file_policy/hosted.rs
++++ b/crates/ethornell-app/src/file_policy/hosted.rs
+@@ -225,10 +225,13 @@ impl HostedRoots {
+     /// its parent directory present (created when `create`).
+     fn user_target(&self, name: &str, create: bool) -> io::Result<(String, String)> {
+         let normalized = user_data_alias(name);
+-        if normalized.starts_with("bgi-resource/") {
+-            return Err(io::Error::from(io::ErrorKind::PermissionDenied));
+-        }
+-        let rest = normalized.strip_prefix("bgi-user/").unwrap_or(&normalized);
++        // The game folder is read-only here: what the game writes there (BGI.gdb, a data
++        // folder next to the executable, ...) goes to the user root at the same relative
++        // path, and reads of the game folder look there first (see metadata/read_loose).
++        let rest = normalized
++            .strip_prefix("bgi-user/")
++            .or_else(|| normalized.strip_prefix("bgi-resource/"))
++            .unwrap_or(&normalized);
+         let key = key_of(rest)?;
+         if key.is_empty() {
+             return Err(io::Error::from(io::ErrorKind::InvalidInput));
+@@ -373,7 +376,11 @@ impl FilePolicy {
+             return self.hosted.metadata_in(Root::User, &key_of(rest).ok()?);
+         }
+         if let Some(rest) = normalized.strip_prefix("bgi-resource/") {
+-            return self.hosted.metadata_in(Root::Resource, &key_of(rest).ok()?);
++            let key = key_of(rest).ok()?;
++            return self
++                .hosted
++                .metadata_in(Root::User, &key)
++                .or_else(|| self.hosted.metadata_in(Root::Resource, &key));
+         }
+         let key = key_of(&normalized).ok()?;
+         self.hosted
+@@ -395,9 +402,13 @@ impl FilePolicy {
+     pub fn read_loose(&self, name: &str) -> io::Result<Vec<u8>> {
+         let normalized = name.replace('\\', "/");
+         if let Some(rest) = normalized.strip_prefix("bgi-resource/") {
+-            return self
+-                .hosted
+-                .read_in(Root::Resource, &key_of(rest)?, 256 * 1024 * 1024);
++            let key = key_of(rest)?;
++            return match self.hosted.read_in(Root::User, &key, USER_FILE_LIMIT) {
++                Err(error) if error.kind() == io::ErrorKind::NotFound => {
++                    self.hosted.read_in(Root::Resource, &key, 256 * 1024 * 1024)
++                }
++                other => other,
++            };
+         }
+         if let Some(rest) = normalized.strip_prefix("bgi-user/") {
+             return self
+@@ -474,8 +485,13 @@ impl FilePolicy {
+             let marker = format!("{}/.probe-parent", normalized.trim_end_matches('/'));
+             self.hosted.user_target(&marker, true)?;
+         }
+-        if normalized.starts_with("bgi-resource/") {
+-            return Err(io::Error::from(io::ErrorKind::PermissionDenied));
++        if let Some(rest) = normalized.strip_prefix("bgi-resource/") {
++            // Writes into the game folder land in the user root, so a game folder
++            // directory is writable wherever it exists on either side.
++            let key = key_of(rest)?;
++            let user_dir = self.hosted.metadata_in(Root::User, &key).is_some_and(|m| m.is_dir);
++            let resource_dir = self.hosted.metadata_in(Root::Resource, &key).is_some_and(|m| m.is_dir);
++            return if user_dir || resource_dir { Ok(()) } else { Err(not_found()) };
+         }
+         let key = key_of(normalized.strip_prefix("bgi-user/").unwrap_or(&normalized))?;
+         let tree = self
