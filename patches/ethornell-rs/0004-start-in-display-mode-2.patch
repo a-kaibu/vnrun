@@ -1,0 +1,17 @@
+diff --git a/crates/ethornell-app/src/lib.rs b/crates/ethornell-app/src/lib.rs
+index bd1a526..8f1f20b 100644
+--- a/crates/ethornell-app/src/lib.rs
++++ b/crates/ethornell-app/src/lib.rs
+@@ -1265,8 +1265,10 @@ impl RuntimeTraceApi {
+             // dword_507650 starts at -1: link glyphs keep the surrounding colour.
+             system92_text_render_override: -1,
+             window_mode: 0,
+-            screen_width: 1280,
+-            screen_height: 720,
++            // The window starts in display mode 2 (800x600) like the target;
++            // games of other sizes pick their mode with Sys80:60.
++            screen_width: 800,
++            screen_height: 600,
+             // dword_506B8C / dword_506BAC.
+             display_mode_sizes: [
+                 Some((320, 240)),
