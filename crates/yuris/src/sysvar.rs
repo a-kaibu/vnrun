@@ -29,6 +29,7 @@ pub const RSTR: u16 = 56;
 pub const RFLG: u16 = 57;
 pub const PROJECT_PATH: u16 = 72;
 pub const SAVE_PATH: u16 = 73;
+/// @_DXMODE: Direct3D drawing; 0, so ERIS composes its layers itself (no DXBUF / MATH3D)
 pub const DXMODE: u16 = 78;
 /// @_SCREEN_COLOR: bits per pixel of the screen
 pub const SCREEN_COLOR: u16 = 79;
@@ -93,7 +94,7 @@ pub fn init(st: &mut State) {
     st.set_sys(OS_SOUND, false, &[], Value::Int(1));
     st.set_sys(PAI, false, &[], Value::Flt(std::f64::consts::PI));
     st.set_sys(SCREEN_COLOR, false, &[], Value::Int(32));
-    st.set_sys(DXMODE, false, &[], Value::Int(1));
+    st.set_sys(DXMODE, false, &[], Value::Int(0));
     for b in 0..256 {
         st.set_sys(CHR, true, &[b], Value::Str(vec![b as u8]));
     }

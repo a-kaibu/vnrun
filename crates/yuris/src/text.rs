@@ -40,19 +40,51 @@ impl Text {
     }
 
     /// Draws a string with its top left at (x, y). Full-width characters take SX pixels,
-    /// half-width ones SX/2.
-    pub fn draw(&self, img: &mut Image, s: &str, x: i64, y: i64, f: &Font) {
+    /// half-width ones SX/2. `outline` > 0 draws the characters grown by that many pixels
+    /// (CGACT TEXT SET=1, the edge ERIS draws under the text).
+    pub fn draw(&self, img: &mut Image, s: &str, x: i64, y: i64, f: &Font, outline: i64) {
         let Some(font) = &self.font else { return };
         let size = f.sy.max(1) as f32;
         let ascent = font.horizontal_line_metrics(size).map_or(size * 0.88, |m| m.ascent);
+        let r = outline.max(0);
         let mut pen = x;
         for c in s.chars() {
             let adv = if Self::half(c) { f.sx / 2 } else { f.sx };
             let (m, cov) = font.rasterize(c, size);
+            let (w, h) = (m.width as i64, m.height as i64);
+            // coverage with a border of r pixels, bold and grown as asked
+            let (cw, ch) = (w + 2 * r, h + 2 * r);
+            let mut a = vec![0f32; (cw * ch) as usize];
+            for by in 0..h {
+                for bx in 0..w {
+                    let mut v = cov[(by * w + bx) as usize] as f32 / 255.0;
+                    if f.bold && bx > 0 {
+                        v = v.max(cov[(by * w + bx - 1) as usize] as f32 / 255.0);
+                    }
+                    a[((by + r) * cw + bx + r) as usize] = v;
+                }
+            }
+            if r > 0 {
+                let src = a.clone();
+                for py in 0..ch {
+                    for px in 0..cw {
+                        let mut v = 0f32;
+                        for dy in -r..=r {
+                            for dx in -r..=r {
+                                let (sx, sy) = (px + dx, py + dy);
+                                if dx * dx + dy * dy <= r * r + 1 && sx >= 0 && sy >= 0 && sx < cw && sy < ch {
+                                    v = v.max(src[(sy * cw + sx) as usize]);
+                                }
+                            }
+                        }
+                        a[(py * cw + px) as usize] = v;
+                    }
+                }
+            }
             // centre the glyph in its cell
-            let gx = pen + ((adv as f32 - m.advance_width) / 2.0).round() as i64 + m.xmin as i64;
-            let gy = y + (ascent - m.height as f32 - m.ymin as f32).round() as i64;
-            for by in 0..m.height as i64 {
+            let gx = pen + ((adv as f32 - m.advance_width) / 2.0).round() as i64 + m.xmin as i64 - r;
+            let gy = y + (ascent - m.height as f32 - m.ymin as f32).round() as i64 - r;
+            for by in 0..ch {
                 let t = if f.sy > 1 { ((gy + by - y) as f32 / (f.sy - 1) as f32).clamp(0.0, 1.0) } else { 0.0 };
                 let top = rgb(f.color);
                 let col = match f.color2 {
@@ -62,16 +94,10 @@ impl Text {
                     }
                     None => top,
                 };
-                for bx in 0..m.width as i64 {
-                    let mut a = cov[(by * m.width as i64 + bx) as usize] as f32 / 255.0;
-                    if f.bold && bx > 0 {
-                        a = a.max(cov[(by * m.width as i64 + bx - 1) as usize] as f32 / 255.0);
-                    }
+                for bx in 0..cw {
+                    let a = a[(by * cw + bx) as usize];
                     let (px, py) = (gx + bx, gy + by);
-                    if px < 0 || py < 0 || px >= img.w as i64 || py >= img.h as i64 {
-                        continue;
-                    }
-                    if a <= 0.0 {
+                    if a <= 0.0 || px < 0 || py < 0 || px >= img.w as i64 || py >= img.h as i64 {
                         continue;
                     }
                     let i = (py as usize * img.w as usize + px as usize) * 4;

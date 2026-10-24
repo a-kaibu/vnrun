@@ -1,9 +1,11 @@
 //! YPF archives (ysbin.ypf, cg.ypf, ...): an index of names, then the files, each zlib-compressed
 //! or stored.
 //!
-//!     "YPF\0" version:u32 count:u32 data_start:u32 (16 bytes of zeros)
-//!     count x { hash:u32 name_len:u8 name:[u8] kind:u8 compressed:u8 size:u32 packed_size:u32
-//!               offset:u32 checksum:u32 }
+//! ```text
+//! "YPF\0" version:u32 count:u32 data_start:u32 (16 bytes of zeros)
+//! count x { hash:u32 name_len:u8 name:[u8] kind:u8 compressed:u8 size:u32 packed_size:u32
+//!           offset:u32 checksum:u32 }
+//! ```
 //!
 //! Names are stored with every byte inverted, in Shift_JIS, with `\` between folders. The length
 //! byte is inverted too and then mapped through a table of swapped pairs.

@@ -120,6 +120,13 @@ impl Image {
         out
     }
 
+    /// A rectangle of the picture as it is, clear where it is outside the picture.
+    pub fn cut(&self, r: Rect) -> Image {
+        let mut out = Image::new(r.w().max(1) as u32, r.h().max(1) as u32);
+        out.put(&self.crop(r), r.x0.max(0) - r.x0, r.y0.max(0) - r.y0);
+        out
+    }
+
     /// Calls `f` on every pixel of a rectangle (cut to the image).
     pub fn each(&mut self, r: Rect, mut f: impl FnMut(&mut [u8])) {
         let r = r.and(&self.rect());
@@ -173,32 +180,54 @@ impl Image {
         }
     }
 
-    /// Scales to a new size: nearest neighbour or bilinear.
-    pub fn scale(&self, w: u32, h: u32, smooth: bool) -> Image {
-        let mut out = Image::new(w, h);
-        if self.w == 0 || self.h == 0 {
+    /// Scales the rectangle `r` of the picture (clear outside it) to w x h, nearest neighbour or
+    /// bilinear, into `out`'s memory (ERIS sizes its layers every frame).
+    pub fn scale_area(&self, r: Rect, w: u32, h: u32, smooth: bool, mut out: Image) -> Image {
+        out.w = w;
+        out.h = h;
+        out.px.clear();
+        out.px.resize(w as usize * h as usize * 4, 0);
+        if r.w() == w as i64 && r.h() == h as i64 {
+            let c = r.and(&self.rect());
+            let n = c.w() as usize * 4;
+            for y in c.y0..c.y1 {
+                let (s, d) = (self.idx(c.x0, y), out.idx(c.x0 - r.x0, y - r.y0));
+                out.px[d..d + n].copy_from_slice(&self.px[s..s + n]);
+            }
             return out;
         }
-        for y in 0..h {
-            for x in 0..w {
-                let d = out.idx(x as i64, y as i64);
-                if smooth {
-                    let fx = ((x as f32 + 0.5) * self.w as f32 / w as f32 - 0.5).max(0.0);
-                    let fy = ((y as f32 + 0.5) * self.h as f32 / h as f32 - 0.5).max(0.0);
-                    let (x0, y0) = (fx as i64, fy as i64);
-                    let (x1, y1) = ((x0 + 1).min(self.w as i64 - 1), (y0 + 1).min(self.h as i64 - 1));
-                    let (tx, ty) = (fx - x0 as f32, fy - y0 as f32);
-                    for k in 0..4 {
-                        let p = |xx: i64, yy: i64| self.px[self.idx(xx, yy) + k] as f32;
-                        let top = p(x0, y0) * (1.0 - tx) + p(x1, y0) * tx;
-                        let bottom = p(x0, y1) * (1.0 - tx) + p(x1, y1) * tx;
-                        out.px[d + k] = (top * (1.0 - ty) + bottom * ty + 0.5) as u8;
-                    }
-                } else {
-                    let sx = (x as u64 * self.w as u64 / w as u64) as i64;
-                    let sy = (y as u64 * self.h as u64 / h as u64) as i64;
-                    let s = self.idx(sx, sy);
-                    out.px[d..d + 4].copy_from_slice(&self.px[s..s + 4]);
+        let (rw, rh) = (r.w().max(1), r.h().max(1));
+        let get = |x: i64, y: i64| -> [u8; 4] {
+            if x < 0 || y < 0 || x >= self.w as i64 || y >= self.h as i64 {
+                return [0; 4];
+            }
+            let i = self.idx(x, y);
+            self.px[i..i + 4].try_into().unwrap()
+        };
+        for y in 0..h as i64 {
+            let d = out.idx(0, y);
+            let row = &mut out.px[d..d + w as usize * 4];
+            if !smooth {
+                let sy = r.y0 + y * rh / h as i64;
+                for (x, p) in row.chunks_exact_mut(4).enumerate() {
+                    p.copy_from_slice(&get(r.x0 + x as i64 * rw / w as i64, sy));
+                }
+                continue;
+            }
+            // 8 bits of fraction; the sample stays inside the rectangle
+            let fy = ((2 * y + 1) * rh * 256 / (2 * h as i64) - 128).max(0);
+            let (y0, ty) = (fy >> 8, fy & 255);
+            let y1 = (y0 + 1).min(rh - 1);
+            for (x, p) in row.chunks_exact_mut(4).enumerate() {
+                let fx = ((2 * x as i64 + 1) * rw * 256 / (2 * w as i64) - 128).max(0);
+                let (x0, tx) = (fx >> 8, fx & 255);
+                let x1 = (x0 + 1).min(rw - 1);
+                let (a, b) = (get(r.x0 + x0, r.y0 + y0), get(r.x0 + x1, r.y0 + y0));
+                let (c, d) = (get(r.x0 + x0, r.y0 + y1), get(r.x0 + x1, r.y0 + y1));
+                for k in 0..4 {
+                    let top = a[k] as i64 * (256 - tx) + b[k] as i64 * tx;
+                    let bottom = c[k] as i64 * (256 - tx) + d[k] as i64 * tx;
+                    p[k] = ((top * (256 - ty) + bottom * ty + 32768) >> 16) as u8;
                 }
             }
         }
@@ -246,6 +275,36 @@ impl Image {
             return (Image::new(1, 1), 0, 0);
         }
         (self.crop(r), r.x0, r.y0)
+    }
+
+    /// This picture fading into `other`, `t` of 256 of the way; both from the top left, the
+    /// result as large as the larger of them.
+    pub fn mix(&self, other: &Image, t: i64) -> Image {
+        let t = t.clamp(0, 256) as f32 / 256.0;
+        let (w, h) = (self.w.max(other.w), self.h.max(other.h));
+        let mut out = Image::new(w, h);
+        let px = |img: &Image, x: u32, y: u32| -> [f32; 4] {
+            if x >= img.w || y >= img.h {
+                return [0.0; 4];
+            }
+            let i = ((y * img.w + x) * 4) as usize;
+            let a = img.px[i + 3] as f32 / 255.0;
+            [img.px[i] as f32 * a, img.px[i + 1] as f32 * a, img.px[i + 2] as f32 * a, a]
+        };
+        for y in 0..h {
+            for x in 0..w {
+                let (p, q) = (px(self, x, y), px(other, x, y));
+                let m: [f32; 4] = [0, 1, 2, 3].map(|k| p[k] + (q[k] - p[k]) * t);
+                let i = ((y * w + x) * 4) as usize;
+                if m[3] > 0.0 {
+                    for k in 0..3 {
+                        out.px[i + k] = (m[k] / m[3]).round().clamp(0.0, 255.0) as u8;
+                    }
+                }
+                out.px[i + 3] = (m[3] * 255.0).round() as u8;
+            }
+        }
+        out
     }
 
     pub fn flip(&mut self, vertical: bool) {

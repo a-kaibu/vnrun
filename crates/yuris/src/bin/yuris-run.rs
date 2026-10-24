@@ -7,6 +7,12 @@
 //!   at:<x>;<y>       move the mouse there and click (in game pixels)
 //!   key:<code>       press a key (sysvar::code numbers, e.g. 98 Enter)
 //!   shot:<name>      save the screen to <out prefix>_<name>.png
+//!   dump             list the shown layers
+//!   layer:<id>       save a layer's pixels to <out prefix>_<id>.png
+//!   text             print $_TEXT and $_TEXT_FLAG
+//!   var:<id>         print a variable
+//!   tasks            list the tasks
+//!   trace            turn the instruction trace on or off
 //!
 //! Saves go to <out prefix>-saves/. The font is web/public/fonts/ipag.ttf unless YURIS_FONT
 //! names another.
@@ -29,6 +35,7 @@ fn main() -> Result<(), String> {
     let disk = Disk { game: PathBuf::from(&args[1]), saves: PathBuf::from(format!("{out}-saves")) };
     let mut e = Engine::new(Box::new(disk), font.as_deref())?;
     e.vm.state.trace = std::env::var_os("YURIS_TRACE").is_some();
+    e.world.log = std::env::var("YURIS_LOG").map(|s| s.split(',').map(String::from).collect()).unwrap_or_default();
     let mut frame = 0u64;
     let date = [2026, 10, 24, 6, 12, 0, 0, 0];
     let run = |e: &mut Engine, n: u64, frame: &mut u64| -> Result<(), String> {
@@ -69,10 +76,35 @@ fn main() -> Result<(), String> {
                 e.input.held[c] = false;
             }
             "shot" => {
-                let img = e.screenshot();
+                let mut img = e.screenshot();
+                // the window is black under the layers
+                img.px.chunks_mut(4).for_each(|p| p[3] = 255);
                 let path = format!("{out}_{v}.png");
                 image::save_buffer(&path, &img.px, img.w, img.h, image::ColorType::Rgba8).map_err(|e| e.to_string())?;
                 eprintln!("frame {frame}: {path}");
+            }
+            "layer" => {
+                let l = e.world.layers.map.get(v).or_else(|| e.world.layers.get(v)).ok_or("no such layer")?;
+                let path = format!("{out}_{}.png", v.replace('/', "_"));
+                image::save_buffer(&path, &l.img.px, l.img.w, l.img.h, image::ColorType::Rgba8).map_err(|e| e.to_string())?;
+            }
+            "text" => {
+                let t = e.vm.state.get_sys(yuris::sysvar::TEXT, true, &[]).str();
+                let f = e.vm.state.get_sys(yuris::sysvar::TEXT_FLAG, true, &[]).str();
+                eprintln!("$_TEXT {t:?}\n$_TEXT_FLAG {f:?}");
+            }
+            "trace" => e.vm.state.trace = !e.vm.state.trace,
+            "var" => {
+                let id: usize = v.parse().map_err(|_| "var:<id>")?;
+                eprintln!("var {id}: {:?}", e.vm.state.vars.get(id));
+            }
+            "tasks" => e.vm.state.tasks.iter().for_each(|t| eprintln!("{t:?}")),
+            "dump" => {
+                let mut ls: Vec<_> = e.world.layers.map.iter().filter(|(_, l)| l.e).collect();
+                ls.sort_by_key(|(_, l)| (l.z, l.seq));
+                for (name, l) in ls {
+                    eprintln!("{name} z={} a={} at {},{} {}x{} t={} tid={} mid={}", l.z, l.a, l.x, l.y, l.w(), l.h(), l.t, l.tid, l.mid);
+                }
             }
             _ => return Err(format!("unknown step {step}")),
         }

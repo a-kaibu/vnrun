@@ -4,7 +4,7 @@
 
 use std::collections::HashMap;
 
-use crate::expr::{Kind, Value, Var};
+use crate::expr::{self, Kind, Place, Value, Var};
 use crate::files::{Archives, Files};
 use crate::image::{Image, Rect, adjust};
 use crate::layers::{self, Draw, Layers};
@@ -47,6 +47,8 @@ pub struct World {
     reserved: Vec<(u32, Vec<u8>)>,
     pub title: String,
     start: [i64; 8],
+    /// commands to print with their arguments, for debugging
+    pub log: Vec<String>,
 }
 
 pub struct Engine {
@@ -75,6 +77,7 @@ impl Engine {
             reserved: Vec::new(),
             title,
             start: [0; 8],
+            log: Vec::new(),
         };
         Ok(Engine { vm, world, input: Input::new() })
     }
@@ -178,6 +181,14 @@ impl World {
         let id = text(st, c, "ID")?.ok_or("CG without ID")?;
         let file = text(st, c, "FILE")?;
         let img = match &file {
+            // FILE="" makes a black picture: 1x1, or SX x SY when given (ERIS sizes its
+            // buffers so)
+            Some(f) if f.is_empty() => {
+                let (w, h) = (int(st, c, "SX")?.unwrap_or(1).max(1), int(st, c, "SY")?.unwrap_or(1).max(1));
+                let mut img = Image::new(w as u32, h as u32);
+                img.px.chunks_exact_mut(4).for_each(|p| p[3] = 255);
+                Some(img)
+            }
             Some(f) => Some(self.load_image(f).unwrap_or_else(|e| {
                 eprintln!("CG: {e}");
                 Image::black()
@@ -228,13 +239,29 @@ impl World {
             eprintln!("CGACT: no layer {id}");
             return Ok(Flow::Next);
         };
-        let attrs = src.clone();
-        let mut img = if src.set { self.layers.render(&id) } else { src.img.clone() };
+        // the layer without its pixels; those are copied only where needed
+        let attrs = src.clone_attrs();
+        let (set, w0, h0) = (src.set, src.w() as i64, src.h() as i64);
+        let size = on(st, c, "SIZE")? || on(st, c, "SIZE2")?;
+        let mut img = if size && !set {
+            Image::default()
+        } else if set {
+            self.layers.render(&id)
+        } else {
+            src.img.clone()
+        };
         // the part of the layer to work on: X..=X2, Y..=Y2
-        let x0 = int(st, c, "X")?.unwrap_or(0);
-        let y0 = int(st, c, "Y")?.unwrap_or(0);
-        let x1 = int(st, c, "X2")?.map_or(img.w as i64, |v| v + 1);
-        let y1 = int(st, c, "Y2")?.map_or(img.h as i64, |v| v + 1);
+        // (SIZE2 may give FX, FY, ... in hundredths of a pixel instead)
+        let get = |st: &mut State, k: &str| -> Result<Option<i64>, String> {
+            Ok(match int(st, c, k)? {
+                Some(v) => Some(v),
+                None => int(st, c, &format!("F{k}"))?.map(|v| v.div_euclid(100)),
+            })
+        };
+        let x0 = get(st, "X")?.unwrap_or(0);
+        let y0 = get(st, "Y")?.unwrap_or(0);
+        let x1 = get(st, "X2")?.map_or(w0, |v| v + 1);
+        let y1 = get(st, "Y2")?.map_or(h0, |v| v + 1);
         let area = Rect { x0, y0, x1, y1 };
         let value = int(st, c, "SET")?.unwrap_or(0);
         let dest = id2.clone().unwrap_or_else(|| id.clone());
@@ -244,14 +271,21 @@ impl World {
             img = img.crop(area);
             if id2.is_none() {
                 // a part of the layer onto itself: keep the rest of it
-                let mut full = attrs.img.clone();
+                let mut full = self.layers.get(&id).map(|l| l.img.clone()).unwrap_or_default();
                 full.put(&img, x0, y0);
                 img = full;
             }
-        } else if on(st, c, "SIZE")? || on(st, c, "SIZE2")? {
-            let w = int(st, c, "SX")?.unwrap_or(img.w as i64).max(1) as u32;
-            let h = int(st, c, "SY")?.unwrap_or(img.h as i64).max(1) as u32;
-            img = img.scale(w, h, on(st, c, "SIZE2")?);
+        } else if size {
+            // the part X..=X2, Y..=Y2 (all of it by default) scaled to SX x SY
+            let w = get(st, "SX")?.unwrap_or(area.w()).max(1) as u32;
+            let h = get(st, "SY")?.unwrap_or(area.h()).max(1) as u32;
+            // the destination's old pixels, to write into
+            let reuse = match self.layers.get_mut(&dest) {
+                Some(l) if dest != id => std::mem::take(&mut l.img),
+                _ => Image::default(),
+            };
+            let from = if set { &img } else { &self.layers.get(&id).ok_or("CGACT: no layer")?.img };
+            img = from.scale_area(area, w, h, on(st, c, "SIZE2")?, reuse);
         } else if on(st, c, "RESIZE")? {
             img = img.resize_edges(x0, y0, int(st, c, "X2")?.unwrap_or(0), int(st, c, "Y2")?.unwrap_or(0));
             moved = (-x0, -y0);
@@ -259,6 +293,16 @@ impl World {
             let (t, dx, dy) = img.trim(if c.arg("SET").is_some() { value } else { 15 });
             img = t;
             moved = (dx, dy);
+        } else if on(st, c, "TRANSITION")? {
+            // ID fading into ID2, SET of 256 of the way, stored in ID3 (ERIS changing a
+            // standing picture)
+            let Some(b) = id2.as_deref().and_then(|d| self.layers.get(d)) else { return Ok(Flow::Next) };
+            let mixed = img.mix(&b.img, value);
+            let Some(id3) = text(st, c, "ID3")? else { return Ok(Flow::Next) };
+            let to = self.layers.ensure(&id3);
+            to.img = mixed;
+            to.touch();
+            return Ok(Flow::Next);
         } else if on(st, c, "MERGE")? || on(st, c, "MERGE2")? {
             let Some(to) = id2.as_deref().and_then(|d| self.layers.get_mut(d)) else { return Ok(Flow::Next) };
             if on(st, c, "MERGE2")? {
@@ -279,7 +323,9 @@ impl World {
                 Some(l) => l.img.clone(),
                 None => img,
             };
-            self.text.draw(&mut to, &s, x0, y0, &self.font);
+            // SET=1 draws the edge under the text
+            let edge = if int(st, c, "SET")?.unwrap_or(0) == 1 { 2 } else { 0 };
+            self.text.draw(&mut to, &s, x0, y0, &self.font, edge);
             img = to;
         } else {
             let f: Box<dyn Fn(&mut [u8])> = if on(st, c, "SAIDO")? {
@@ -332,7 +378,10 @@ impl World {
         if on(st, c, "EXIST")? {
             v = Value::Int(l.is_some() as i64);
         } else if let Some(l) = l {
-            let (sx, sy) = (int(st, c, "SET")?.unwrap_or(0), int(st, c, "SET2")?.unwrap_or(0));
+            // the point to look at; ONMOUSE without SET/SET2 looks under the mouse
+            let mx = st.get_sys(sysvar::MOUSE_X, false, &[]).int();
+            let my = st.get_sys(sysvar::MOUSE_Y, false, &[]).int();
+            let (sx, sy) = (int(st, c, "SET")?.unwrap_or(mx), int(st, c, "SET2")?.unwrap_or(my));
             for k in ["E", "A", "T", "TA", "X", "Y", "Z", "SX", "SY", "MODE", "COLOR", "ONMOUSE", "ONMOUSE2", "ONMOUSE3", "TID"] {
                 if !on(st, c, k)? {
                     continue;
@@ -387,7 +436,8 @@ impl World {
             f.color2 = None;
         }
         if let Some(v) = int(st, c, "COLOR2")? {
-            f.color2 = (v as u32 & 0xffffff != f.color).then_some(v as u32 & 0xffffff);
+            // -1: no gradient
+            f.color2 = (v >= 0 && v as u32 & 0xffffff != f.color).then_some(v as u32 & 0xffffff);
         }
         if let Some(v) = int(st, c, "BOLD")? {
             f.bold = v != 0;
@@ -680,6 +730,10 @@ fn read_save(b: &[u8]) -> HashMap<u32, Vec<u8>> {
 
 impl Host for World {
     fn command(&mut self, st: &mut State, c: &Call) -> Result<Flow, String> {
+        if self.log.iter().any(|n| n == c.name || n == "*") {
+            let args: Vec<String> = c.args.iter().map(|(k, _, e)| format!("{k}={}", st.eval(e).map_or("?".into(), |v| v.str()))).collect();
+            eprintln!("[{}] {}[{}]", st.task().id, c.name, args.join(" "));
+        }
         match c.name {
             "CG" => self.cg(st, c),
             "CGACT" => self.cgact(st, c),
@@ -754,6 +808,10 @@ impl Host for World {
                 store(st, c, v)?;
                 Ok(Flow::Next)
             }
+            "MATH3D" => {
+                math3d(st, c)?;
+                Ok(Flow::Next)
+            }
             "MATH" => {
                 let a = c.arg("SET").map(|e| st.eval(e)).transpose()?.unwrap_or_default();
                 let b = c.arg("SET2").map(|e| st.eval(e)).transpose()?.unwrap_or_default();
@@ -812,14 +870,7 @@ impl Host for World {
                 }
                 Ok(Flow::Next)
             }
-            // a line of text ends: the text task takes it from here
-            "RETURNCODE" => {
-                let mut flag = st.get_sys(sysvar::TEXT_FLAG, true, &[]).bytes();
-                flag.push(b'E');
-                st.set_sys(sysvar::TEXT_FLAG, true, &[], Value::Str(flag));
-                Ok(Flow::Yield)
-            }
-            "ERROR" | "FPS" | "INPUT" | "MOUSE" | "SYSTEM" | "TRAY" | "MENU" | "PREP" | "MATH3D" | "CLIPACT"
+            "ERROR" | "FPS" | "INPUT" | "MOUSE" | "SYSTEM" | "TRAY" | "MENU" | "PREP" | "CLIPACT"
             | "MOVIE" | "MOVIEEND" | "YMV" | "YMVEND" | "FLASH" | "FLASHEND" => Ok(Flow::Next),
             "MOVIEINFO" | "YMVINFO" | "FLASHINFO" | "MENUINFO" | "CLIPINFO" | "REGINFO" => {
                 store(st, c, Value::Int(0))?;
@@ -836,6 +887,61 @@ impl Host for World {
         self.text_out(st, text);
         Ok(Flow::Next)
     }
+}
+
+/// MATH3D[INT=@I() FLT=@F()]: where ERIS puts a sprite on the screen (its es.SP.XYZCALC), as
+/// the engine computes it. Each 100 of depth between the camera and a layer halves the layer;
+/// at DEFZ it is drawn at its own size. In I: 1 the sprite, 2 the background, 4 the parent
+/// sprite (0 for none), 5 and 6 the screen size, 7 not moved by the camera. In F: 3-5 the
+/// camera, 6-8 the background, 9-10 its centre, 11-12 its offset, 13-15 the sprite, 16-17 its
+/// zoom (%), 18-19 its centre, 20-21 its scale (%), 22-24 the parent, 25-26 the parent's centre,
+/// 27 DEFZ, 28-30 a camera shift. Out: F31-32 the top left, F33-34 the zoom (%).
+fn math3d(st: &mut State, c: &Call) -> Result<(), String> {
+    let (Some(ie), Some(fe)) = (c.arg("INT"), c.arg("FLT")) else { return Ok(()) };
+    let (ip, fp) = (st.place(ie)?, st.place(fe)?);
+    let i = |k: i64| expr::Vars::get(st, &Place { var: ip.var, index: vec![k], whole: false }).int();
+    let f = |k: i64| {
+        let v = expr::Vars::get(st, &Place { var: fp.var, index: vec![k], whole: false }).flt();
+        // the scales come in percent
+        if k == 20 || k == 21 { v / 100.0 } else { v }
+    };
+    let (sw, sh) = (i(5) as f64, i(6) as f64);
+    let (cx, cy, cz) = (f(3) + f(28), f(4) + f(29), f(5) + f(30));
+    let (zoom_x, zoom_y) = (f(16), f(17));
+    let (x, y, zx, zy) = if i(7) != 0 {
+        (f(13) - f(18) * zoom_x / 100.0, f(14) - f(19) * zoom_y / 100.0, zoom_x, zoom_y)
+    } else {
+        let depth = |z: f64| 2f64.powf((f(27) + cz - z) / 100.0);
+        let bg = depth(f(8));
+        let mut x = bg * (f(6) - f(9) - f(20) * cx) + f(11) * f(20) + sw / 2.0;
+        let mut y = bg * (f(7) - f(10) - f(21) * cy) + f(12) * f(21) + sh / 2.0;
+        let mut s = depth(f(15));
+        if i(1) == i(2) {
+            // the background keeps its centre where it is
+            x += s * f(18);
+            y += s * f(19);
+        } else {
+            x += bg * f(9);
+            y += bg * f(10);
+            if i(4) == 0 {
+                x += s * f(13) * f(20);
+                y += s * f(14) * f(21);
+            } else {
+                // a child is sized by its parent's depth
+                s = depth(f(24));
+                x += s * (f(20) * (f(13) + f(22)) - f(25));
+                y += s * (f(21) * (f(14) + f(23)) - f(26));
+            }
+        }
+        (x - s * f(18) * zoom_x / 100.0, y - s * f(19) * zoom_y / 100.0, s * zoom_x, s * zoom_y)
+    };
+    if std::env::var_os("YURIS_M3D").is_some() {
+        eprintln!("M3D I={:?} F={:?} -> {x} {y} {zx} {zy}", (1..=7).map(i).collect::<Vec<_>>(), (3..=30).map(f).collect::<Vec<_>>());
+    }
+    for (k, v) in [(31, x), (32, y), (33, zx), (34, zy)] {
+        st.set(&Place { var: fp.var, index: vec![k], whole: false }, Value::Flt(v));
+    }
+    Ok(())
 }
 
 /// A random number in 0..1 (xorshift; the scripts only want dice).

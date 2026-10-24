@@ -53,6 +53,10 @@ impl Layer {
             seq: 0,
         }
     }
+    /// A copy of everything but the pixels.
+    pub fn clone_attrs(&self) -> Layer {
+        Layer { img: Image { w: self.img.w, h: self.img.h, px: Vec::new() }, mid: self.mid.clone(), tid: self.tid.clone(), ..*self }
+    }
     pub fn w(&self) -> u32 {
         self.img.w
     }

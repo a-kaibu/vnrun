@@ -224,6 +224,8 @@ pub struct Task {
     wake: f64,
     frames_left: u32,
     pub done: bool,
+    /// stopped at RETURNCODE: the text it gave is shown, and goes when the task goes on
+    text_shown: bool,
 }
 
 /// Variables and tasks: what commands may read and change.
@@ -235,6 +237,8 @@ pub struct State {
     /// milliseconds since start
     pub now: f64,
     pub trace: bool,
+    /// TASK[RESTART=1]: run the tasks once more this frame
+    restart: bool,
 }
 
 impl expr::Vars for State {
@@ -332,7 +336,7 @@ const NO_JUMP: u32 = 0;
 
 impl Vm {
     pub fn new(prog: Program) -> Result<Vm, String> {
-        let mut state = State { vars: Vec::new(), tasks: Vec::new(), current: 0, now: 0.0, trace: false };
+        let mut state = State { vars: Vec::new(), tasks: Vec::new(), current: 0, now: 0.0, trace: false, restart: false };
         for d in &prog.decls {
             let id = VarId { id: d.id, str: d.ty == VarType::Str };
             let kind = kind_of(d.ty, id);
@@ -354,6 +358,22 @@ impl Vm {
     /// Runs every task until it waits: one frame of the game.
     pub fn frame(&mut self, now: f64, host: &mut dyn Host) -> Result<(), String> {
         self.state.now = now;
+        // TASK[RESTART=1] asks for another round without waiting a frame; ERIS uses it after
+        // a line of text so the scenario gives the next one at once
+        for _ in 0..8 {
+            self.state.restart = false;
+            self.round(now, host)?;
+            if !self.state.restart || self.ended {
+                break;
+            }
+            for t in &mut self.state.tasks {
+                t.frames_left = 0;
+            }
+        }
+        Ok(())
+    }
+
+    fn round(&mut self, now: f64, host: &mut dyn Host) -> Result<(), String> {
         let mut order: Vec<usize> = (0..self.state.tasks.len()).collect();
         order.sort_by_key(|&i| self.state.tasks[i].z);
         for i in order {
@@ -386,6 +406,11 @@ impl Vm {
                 return Ok(());
             }
             let pos = t.pos;
+            if t.text_shown {
+                self.task_mut().text_shown = false;
+                self.state.set_sys(sys::TEXT, true, &[], Value::Str(Vec::new()));
+                self.state.set_sys(sys::TEXT_FLAG, true, &[], Value::Str(Vec::new()));
+            }
             self.sync_lc();
             let Some(ins) = self.prog.scripts.get(pos.script).and_then(|s| s.code.get(pos.ip)) else {
                 // running off the end of a file ends the task
@@ -609,6 +634,14 @@ impl Vm {
             "VARACT" => self.var_act(ins, name, pos)?,
             "VARINFO" => self.var_info(ins, name, pos)?,
             "END" => return Ok(Flow::End),
+            // a line of text ends: the text task (ERIS) shows it, then lets this task go on
+            "RETURNCODE" => {
+                let mut flag = st.get_sys(sys::TEXT_FLAG, true, &[]).bytes();
+                flag.push(b'E');
+                st.set_sys(sys::TEXT_FLAG, true, &[], Value::Str(flag));
+                self.task_mut().text_shown = true;
+                return Ok(Flow::Yield);
+            }
             _ => {
                 let call = Self::call(&self.prog, ins, name, pos);
                 return host.command(&mut self.state, &call);
@@ -720,6 +753,10 @@ impl Vm {
         let enabled = call.arg("E").map(|e| st.int(e)).transpose()?;
         let z = call.arg("Z").map(|e| st.int(e)).transpose()?;
         let scriptpos = call.arg("SCRIPTPOS").map(|e| st.str(e)).transpose()?;
+        if call.arg("RESTART").is_some_and(|e| st.int(e).unwrap_or(0) != 0) {
+            self.state.restart = true;
+            return Ok(());
+        }
         let existing = self.state.tasks.iter().position(|t| t.id.eq_ignore_ascii_case(&id) && !t.done);
         if let Some(label) = label {
             let to = self.prog.label(&label).ok_or_else(|| format!("no label {label:?}"))?;
@@ -917,6 +954,7 @@ impl Task {
             wake: 0.0,
             frames_left: 0,
             done: false,
+            text_shown: false,
         }
     }
 }
