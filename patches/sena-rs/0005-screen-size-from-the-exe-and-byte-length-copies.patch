@@ -1,0 +1,173 @@
+diff --git a/crates/pal-asset/src/vfs.rs b/crates/pal-asset/src/vfs.rs
+index 52f3bb4..ffbc183 100644
+--- a/crates/pal-asset/src/vfs.rs
++++ b/crates/pal-asset/src/vfs.rs
+@@ -23,6 +23,14 @@ pub fn read_all(path: &Path) -> Result<Vec<u8>> {
+     std::fs::read(path).map_err(|e| AssetError::io(path, e))
+ }
+ 
++/// Names of the entries in a directory; empty when it cannot be read.
++#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
++pub fn list_dir(path: &Path) -> Vec<String> {
++    std::fs::read_dir(path)
++        .map(|dir| dir.flatten().map(|e| e.file_name().to_string_lossy().into_owned()).collect())
++        .unwrap_or_default()
++}
++
+ #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+ pub fn read_range(path: &Path, offset: usize, len: usize) -> Result<Vec<u8>> {
+     use std::io::{Read, Seek, SeekFrom};
+@@ -55,6 +63,13 @@ mod wasm {
+ 
+         #[wasm_bindgen(js_name = senaReadRange)]
+         fn sena_read_range(path: &str, offset: f64, len: f64) -> Uint8Array;
++
++        #[wasm_bindgen(js_name = senaListDir)]
++        fn sena_list_dir(path: &str) -> Vec<String>;
++    }
++
++    pub fn list_dir(path: &Path) -> Vec<String> {
++        sena_list_dir(&normalize_vfs_path(path))
+     }
+ 
+     pub fn is_file(path: &Path) -> bool {
+@@ -124,4 +139,4 @@ mod wasm {
+ }
+ 
+ #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+-pub use wasm::{file_len, is_file, read_all, read_range};
++pub use wasm::{file_len, is_file, list_dir, read_all, read_range};
+diff --git a/crates/pal-vm/src/config.rs b/crates/pal-vm/src/config.rs
+index b7d384e..138b081 100644
+--- a/crates/pal-vm/src/config.rs
++++ b/crates/pal-vm/src/config.rs
+@@ -270,6 +270,41 @@ impl std::str::FromStr for TextLang {
+ /// All sections of an INI file, keyed by lowercased section name.
+ pub type IniFile = BTreeMap<String, IniSection>;
+ 
++/// The screen size Game.exe hard-codes, as `push height; push width` for the window.
++/// SYSTEM.INI's DEF_CG size is the CG canvas, which some games make larger than the
++/// screen (巨乳大魔王のドスケベクエスト: 1540x980 CGs on a 1280x720 screen).
++pub fn exe_screen_size(root: &Path) -> Option<(u32, u32)> {
++    const SIZES: [(u32, u32); 6] = [(800, 600), (1024, 576), (1024, 768), (1280, 720), (1600, 900), (1920, 1080)];
++    let mut best = None;
++    let mut best_count = 0;
++    for name in vfs::list_dir(root) {
++        let lower = name.to_ascii_lowercase();
++        if !lower.ends_with(".exe") || lower.starts_with("config") {
++            continue;
++        }
++        let Ok(bytes) = vfs::read_all(&root.join(&name)) else { continue };
++        for (w, h) in SIZES {
++            let mut pattern = vec![0x68];
++            pattern.extend_from_slice(&h.to_le_bytes());
++            pattern.push(0x68);
++            pattern.extend_from_slice(&w.to_le_bytes());
++            let count = bytes.windows(pattern.len()).filter(|win| *win == pattern.as_slice()).count();
++            if count > best_count {
++                best = Some((w, h));
++                best_count = count;
++            }
++        }
++    }
++    best
++}
++
++/// Makes SYSTEM.INI's DEF_CG size, which the engine takes as the screen size, `size`.
++pub fn set_ini_screen_size(ini: &mut IniFile, (width, height): (u32, u32)) {
++    let graphics = ini.entry("graphics".to_owned()).or_default();
++    graphics.insert("def_cg_width".to_owned(), IniValue::Int(width.into()));
++    graphics.insert("def_cg_height".to_owned(), IniValue::Int(height.into()));
++}
++
+ pub fn ini_graphics_size(
+     ini: Option<&IniFile>,
+     fallback_width: u32,
+diff --git a/crates/pal-vm/src/engine.rs b/crates/pal-vm/src/engine.rs
+index 319167b..4187b74 100644
+--- a/crates/pal-vm/src/engine.rs
++++ b/crates/pal-vm/src/engine.rs
+@@ -148,6 +148,11 @@ impl Engine {
+                         core_assets.text_dat_multilingual,
+                     );
+                     runtime.set_text_lang(config.lang);
++                    let screen_size = crate::config::exe_screen_size(root);
++                    if let (Some(ini), Some(size)) = (startup_config.system_ini.as_mut(), screen_size) {
++                        crate::config::set_ini_screen_size(ini, size);
++                    }
++                    runtime.set_screen_size(screen_size);
+                     if let Some(system_ini) = startup_config.system_ini.clone() {
+                         runtime.set_system_ini(system_ini);
+                     }
+diff --git a/crates/pal-vm/src/runtime.rs b/crates/pal-vm/src/runtime.rs
+index e16ba09..eedf19d 100644
+--- a/crates/pal-vm/src/runtime.rs
++++ b/crates/pal-vm/src/runtime.rs
+@@ -17,6 +17,7 @@ use crate::audio::{
+     PalSoundGroup, PalVolume,
+ };
+ use crate::config::{
++    set_ini_screen_size,
+     ini_graphics_size, parse_system_ini, IniFile, IniValue, TextLang, TEXT_FIELD_SEPARATOR,
+ };
+ use crate::effect::PalEffectSystem;
+@@ -602,6 +603,7 @@ pub struct ScriptRuntime {
+     dynamic_string_cursor: usize,
+     /// SYSTEM.INI parsed through the selected external NLS.
+     system_ini: Option<IniFile>,
++    screen_size: Option<(u32, u32)>,
+     /// Language field read out of multi-language text records.
+     text_lang: TextLang,
+     /// TrueType faces the release ships as loose files, in path order.
+@@ -1578,6 +1580,7 @@ impl ScriptRuntime {
+             dynamic_strings: Vec::new(),
+             dynamic_string_cursor: 0,
+             system_ini: None,
++            screen_size: None,
+             text_lang: TextLang::default(),
+             font_face_candidates: Vec::new(),
+             loaded_face_path: None,
+@@ -1639,7 +1642,20 @@ impl ScriptRuntime {
+         });
+     }
+ 
+-    pub fn set_system_ini(&mut self, ini: IniFile) {
++    /// The screen size from Game.exe, which wins over SYSTEM.INI's DEF_CG size.
++    pub fn set_screen_size(&mut self, size: Option<(u32, u32)>) {
++        self.screen_size = size;
++        if let (Some(size), Some(ini)) = (size, self.system_ini.take()) {
++            let mut ini = ini;
++            set_ini_screen_size(&mut ini, size);
++            self.set_system_ini(ini);
++        }
++    }
++
++    pub fn set_system_ini(&mut self, mut ini: IniFile) {
++        if let Some(size) = self.screen_size {
++            set_ini_screen_size(&mut ini, size);
++        }
+         let (width, height) = ini_graphics_size(
+             Some(&ini),
+             FrameScene::PAL_DEFAULT_WIDTH,
+@@ -14762,9 +14778,20 @@ impl ScriptRuntime {
+         let mut value = self
+             .resolve_script_string(args[1], assets, nls)
+             .unwrap_or_default();
++        // len counts bytes of the game's encoding; cut there, dropping a split character.
+         let len = args[2];
+         if len >= 0 {
+-            value.truncate(len as usize);
++            if let Ok(bytes) = nls.encode(&value) {
++                if bytes.len() > len as usize {
++                    let mut end = len as usize;
++                    value = loop {
++                        if let Ok(cut) = nls.decode(&bytes[..end]) {
++                            break cut;
++                        }
++                        end -= 1;
++                    };
++                }
++            }
+         }
+         if is_dynamic_string_handle(dst) {
+             self.replace_dynamic_string(dst, value);
