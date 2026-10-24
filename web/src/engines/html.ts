@@ -4,7 +4,7 @@
 // swaps the page's localStorage for one kept in the GameFS, before any script of the game runs.
 // IndexedDB is left as it is.
 import type { EngineContext } from "../engine";
-import type { GameFS, Manifest } from "../gamefs";
+import { normalizePath, type GameFS, type Manifest } from "../gamefs";
 
 const SAVES = "localStorage";
 const STUDIO = "studio";
@@ -88,15 +88,63 @@ function studioApi(fs: GameFS) {
   };
 }
 
+// NW.js games that edit the RPG Maker core can call Node's require at the top level (an
+// RPG Maker MV game reads its language from lng.txt with fs). This require has the synchronous
+// fs calls (reads from the game, writes as saves) and path; other modules throw as in Node.
+// `process` stays undefined, so the core keeps its web storage.
+function nodeRequire(fs: GameFS) {
+  const file = (p: string) => normalizePath(p);
+  const encoding = (opt: unknown) =>
+    typeof opt === "string" ? opt : (opt as { encoding?: string } | undefined)?.encoding;
+  const bytes = (data: unknown) =>
+    typeof data === "string" ? new TextEncoder().encode(data) : new Uint8Array(data as ArrayBuffer);
+  const nodeFs = {
+    existsSync: (p: string) => fs.exists(file(p)) || fs.list(file(p)).length > 0,
+    readFileSync(p: string, opt?: unknown) {
+      const data = fs.read(file(p));
+      return encoding(opt) ? new TextDecoder().decode(data) : data;
+    },
+    writeFileSync: (p: string, data: unknown) => fs.write(file(p), bytes(data)),
+    unlinkSync: (p: string) => fs.saves.has(fs.resolve(file(p))) && fs.remove(file(p)),
+    readdirSync: (p: string) => fs.list(file(p)),
+    mkdirSync: () => undefined,
+    createWriteStream(p: string) {
+      let text = "";
+      return {
+        write: (s: string) => ((text += s), true),
+        end: (s = "") => nodeFs.writeFileSync(p, text + s),
+      };
+    },
+  };
+  const join = (...parts: string[]) => normalizePath(parts.join("/"));
+  const nodePath = {
+    sep: "/",
+    join,
+    resolve: join,
+    dirname: (p: string) => join(p).split("/").slice(0, -1).join("/") || ".",
+    basename: (p: string, ext = "") => {
+      const base = join(p).split("/").pop() || "";
+      return ext && base.endsWith(ext) ? base.slice(0, -ext.length) : base;
+    },
+    extname: (p: string) => /\.[^./]*$/.exec(join(p).split("/").pop() || "")?.[0] ?? "",
+  };
+  const modules: Record<string, unknown> = { fs: nodeFs, path: nodePath };
+  return (name: string) => {
+    if (name in modules) return modules[name];
+    throw new Error(`Cannot find module '${name}'`);
+  };
+}
+
 export async function start({ fs, manifest, ui }: EngineContext): Promise<void> {
   const localStorage = storage(fs);
   const studio = studioApi(fs);
+  const require = nodeRequire(fs);
   Object.assign(window, {
     vnrunFrame(win: Window) {
       Object.defineProperty(win, "localStorage", { value: localStorage });
       // RPG Maker MZ refuses to start without IndexedDB and keeps its saves there (localforage,
       // keys named after the game id), so it stays the browser's own.
-      Object.assign(win, { studio_api: studio });
+      Object.assign(win, { studio_api: studio, require });
     },
   });
 
