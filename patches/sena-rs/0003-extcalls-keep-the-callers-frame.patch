@@ -1,0 +1,165 @@
+diff --git a/crates/pal-vm/src/runtime.rs b/crates/pal-vm/src/runtime.rs
+index cdcdc85..94a349b 100644
+--- a/crates/pal-vm/src/runtime.rs
++++ b/crates/pal-vm/src/runtime.rs
+@@ -333,6 +333,11 @@ pub struct ScriptRuntime {
+     vars: Vec<i32>,
+     stack: Vec<i32>,
+     argument_stack: Vec<i32>,
++    /// Stack length under each script call's frame (its argument marker and saved
++    /// argument_base): extcalls must not pop below it.
++    frame_floors: Vec<usize>,
++    /// The last instruction was pack_args, so a `push arg_base` completes a frame.
++    frame_opening: bool,
+     call_stack: Vec<u32>,
+     status: RuntimeStatus,
+     trace: bool,
+@@ -1338,6 +1343,7 @@ struct ThreadSubsystemState {
+     vars: Vec<i32>,
+     stack: Vec<i32>,
+     argument_stack: Vec<i32>,
++    frame_floors: Vec<usize>,
+     argument_base: i32,
+     call_stack: Vec<u32>,
+     wait: Option<ThreadWaitState>,
+@@ -1438,6 +1444,8 @@ impl ScriptRuntime {
+             vars: vec![0; DEFAULT_VAR_COUNT],
+             stack: Vec::new(),
+             argument_stack: Vec::new(),
++            frame_floors: Vec::new(),
++            frame_opening: false,
+             call_stack: Vec::new(),
+             status: RuntimeStatus::Running { pc: entry_pc },
+             trace: config.trace,
+@@ -4121,6 +4129,7 @@ impl ScriptRuntime {
+         let main_vars = std::mem::take(&mut self.vars);
+         let main_stack = std::mem::take(&mut self.stack);
+         let main_argument_stack = std::mem::take(&mut self.argument_stack);
++        let main_frame_floors = std::mem::take(&mut self.frame_floors);
+         let main_argument_base = self.argument_base;
+         let main_call_stack = std::mem::take(&mut self.call_stack);
+         let main_status = self.status.clone();
+@@ -4132,6 +4141,7 @@ impl ScriptRuntime {
+         };
+         self.stack = std::mem::take(&mut self.thread_state.stack);
+         self.argument_stack = std::mem::take(&mut self.thread_state.argument_stack);
++        self.frame_floors = std::mem::take(&mut self.thread_state.frame_floors);
+         self.argument_base = self.thread_state.argument_base;
+         self.call_stack = std::mem::take(&mut self.thread_state.call_stack);
+         self.thread_state.ticking = true;
+@@ -4189,12 +4199,14 @@ impl ScriptRuntime {
+                     self.thread_state.vars = std::mem::take(&mut self.vars);
+                     self.thread_state.stack = std::mem::take(&mut self.stack);
+                     self.thread_state.argument_stack = std::mem::take(&mut self.argument_stack);
++                    self.thread_state.frame_floors = std::mem::take(&mut self.frame_floors);
+                     self.thread_state.argument_base = self.argument_base;
+                     self.thread_state.call_stack = std::mem::take(&mut self.call_stack);
+                     self.pc = main_pc;
+                     self.vars = main_vars;
+                     self.stack = main_stack;
+                     self.argument_stack = main_argument_stack;
++                    self.frame_floors = main_frame_floors;
+                     self.argument_base = main_argument_base;
+                     self.call_stack = main_call_stack;
+                     self.status = main_status;
+@@ -4209,6 +4221,7 @@ impl ScriptRuntime {
+             self.thread_state.vars.clear();
+             self.thread_state.stack.clear();
+             self.thread_state.argument_stack.clear();
++            self.thread_state.frame_floors.clear();
+             self.thread_state.argument_base = 0;
+             self.thread_state.call_stack.clear();
+             self.thread_state.wait = None;
+@@ -4217,6 +4230,7 @@ impl ScriptRuntime {
+             self.thread_state.vars = std::mem::take(&mut self.vars);
+             self.thread_state.stack = std::mem::take(&mut self.stack);
+             self.thread_state.argument_stack = std::mem::take(&mut self.argument_stack);
++            self.thread_state.frame_floors = std::mem::take(&mut self.frame_floors);
+             self.thread_state.argument_base = self.argument_base;
+             self.thread_state.call_stack = std::mem::take(&mut self.call_stack);
+         }
+@@ -4225,6 +4239,7 @@ impl ScriptRuntime {
+         self.vars = main_vars;
+         self.stack = main_stack;
+         self.argument_stack = main_argument_stack;
++        self.frame_floors = main_frame_floors;
+         self.argument_base = main_argument_base;
+         self.call_stack = main_call_stack;
+         self.status = main_status;
+@@ -4270,6 +4285,7 @@ impl ScriptRuntime {
+             ));
+         }
+ 
++        let frame_opening = std::mem::take(&mut self.frame_opening);
+         match opcode {
+             // run_no_wait(): Game.exe sub_421F80 performs no VM pop and only
+             // toggles/queues transition state.  It must not consume the
+@@ -4381,6 +4397,12 @@ impl ScriptRuntime {
+                     // section from its start.
+                     self.adv_wait_checkpoint_pending = true;
+                 }
++                // Handlers follow one PAL release; in others the same extcall can take
++                // fewer arguments. Popping into the caller's frame breaks its epilogue
++                // ("script stack underflow"), so an extcall pops at most the values
++                // pushed in the current frame.
++                let floor = self.frame_floors.last().copied().unwrap_or(0).min(self.stack.len());
++                let frame = self.stack[..floor].to_vec();
+                 // Check if there is a Rust handler; if not, null-handler semantics: write 0 to
+                 // dst and continue (matches original behavior for null-category dispatches).
+                 let result = self.dispatch_extcall(
+@@ -4395,6 +4417,13 @@ impl ScriptRuntime {
+                     audio,
+                     input,
+                 );
++                if self.stack.len() < floor {
++                    self.vm_trace(format_args!(
++                        "  extcall popped {} values of the caller's frame; restored",
++                        floor - self.stack.len()
++                    ));
++                    self.stack = frame;
++                }
+                 self.vm_trace(format_args!(
+                     "  extcall result ext_{category:04X}_{index:04X}.{} => {:?} stack_after={:?}",
+                     name.unwrap_or("?"),
+@@ -4533,6 +4562,9 @@ impl ScriptRuntime {
+                 let value = self.eval_operand(src, mem_dat)?;
+                 self.vm_trace(format_args!("  op push src={src} value={value}"));
+                 self.push_stack(value, insn_pc)?;
++                if frame_opening && src.kind == OperandKind::ArgumentBase {
++                    self.frame_floors.push(self.stack.len());
++                }
+             }
+             32 => {
+                 let count_operand = self.fetch_operand(script)?;
+@@ -4541,6 +4573,7 @@ impl ScriptRuntime {
+                     "  op pack_args count_operand={count_operand} count={count}"
+                 ));
+                 self.pack_args(count, insn_pc)?;
++                self.frame_opening = true;
+             }
+             33 => {
+                 let count_operand = self.fetch_operand(script)?;
+@@ -4549,6 +4582,7 @@ impl ScriptRuntime {
+                     "  op drop_args count_operand={count_operand} count={count}"
+                 ));
+                 self.drop_args(count, insn_pc)?;
++                self.frame_floors.pop();
+             }
+             252 | 253 if !assets.registered_softpal => {
+                 // Native primary entries share the category-7 handlers, including
+@@ -8176,6 +8210,7 @@ impl ScriptRuntime {
+                 self.thread_state.vars = vec![0; DEFAULT_VAR_COUNT];
+                 self.thread_state.stack.clear();
+                 self.thread_state.argument_stack.clear();
++                self.thread_state.frame_floors.clear();
+                 self.thread_state.argument_base = 0;
+                 self.thread_state.call_stack.clear();
+                 self.thread_state.wait = None;
+@@ -8199,6 +8234,7 @@ impl ScriptRuntime {
+                 self.thread_state.vars.clear();
+                 self.thread_state.stack.clear();
+                 self.thread_state.argument_stack.clear();
++                self.thread_state.frame_floors.clear();
+                 self.thread_state.argument_base = 0;
+                 self.thread_state.call_stack.clear();
+                 self.thread_state.wait = None;

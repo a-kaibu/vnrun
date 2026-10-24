@@ -88,6 +88,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
   - ブラウザ版のつなぎ (`web/src/engines/sena.ts`) は描画・入力・ファイルの範囲読みまで。上流の Web 版にはセーブと音声が無い (セーブは std::fs に書いていて wasm では失敗する) ので、動く作品が出てきたら足す。
   - `patches/sena-rs/0001`: スクリプトが止まったとき、上流の Web 版は最後の画面のまま黙って止まっていた。理由をページのエラーとして出す。
   - `patches/sena-rs/0002`: sena-rs は CPU で画面を合成する。できたフレームは Canvas2D ではなくページの Presenter (WebGPU) に渡し、ポインタの座標もページがフレームの座標に直して渡す。
+  - `patches/sena-rs/0003`: 版によって同じ extcall の引数の数が違い (爆乳淫乱ビーチの 2:48 は 1 個、恋カケは 2 個)、多く取ると呼び出し元のフレーム (引数マーカーと arg_base) を食って「script stack underflow」になる。スクリプト呼び出しごとにフレームの底を覚え、extcall がそれより下を取ったら戻す。これで 2014〜2025 年のエレクトリップ作品がタイトルまで出る。Game.exe の各ハンドラの pop 数を静的に数える方法は、ヘルパー関数経由の pop があって正確に出せなかったので採らなかった。
   - 確認には sena のネイティブ版 (`cargo build --release -p pal-vm --bin sena`) の `--headless --diagnostic-png-at <frame>:<png> --trace-script` が便利。
 - **Siglus の二次鍵はブラウザでは探さない** (siglus_rs の wasm ビルドは key.toml を読むだけ)。`vnrun-prep <ゲームのフォルダ>` (crates/prep、ネイティブ) が鍵を復元して key.toml を書く。プリマドールで 1 秒以下。vnrun のサーバーがゲームを取り込むときにこれを呼ぶ想定 (未実装)。
 - movie (OMV / MPEG2 / WMV) の再生も siglus_rs の中で `thread::spawn` を使う箇所が残っている。ムービーのある作品で同じ panic が出るはずなので、出たら同様に直す。
