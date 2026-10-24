@@ -1,0 +1,25 @@
+diff --git a/external/krkrz b/external/krkrz
+--- a/external/krkrz
++++ b/external/krkrz
+@@ -1 +1 @@
+-Subproject commit b11c43a07543756fcb943a60ff0a949a7f470f10
++Subproject commit b11c43a07543756fcb943a60ff0a949a7f470f10-dirty
+diff --git a/src/core/environ/sdl2/Application.cpp b/src/core/environ/sdl2/Application.cpp
+index daf2ed5..ce76a84 100644
+--- a/src/core/environ/sdl2/Application.cpp
++++ b/src/core/environ/sdl2/Application.cpp
+@@ -181,6 +181,14 @@ tjs_string ExePath() {
+ 		}
+ 	}
+ #endif
++#ifdef __EMSCRIPTEN__
++	// No exe in the browser. Games keep savedata/ next to it (KAG's saveDataLocation), so it
++	// is put in the data path, which the page keeps as saves.
++	if (exepath.empty())
++	{
++		exepath = tjs_string(TJS_W("/libsdl/krkrsdl2/game.exe"));
++	}
++#endif
+ #ifndef __EMSCRIPTEN__
+ 	if (exepath.empty())
+ 	{

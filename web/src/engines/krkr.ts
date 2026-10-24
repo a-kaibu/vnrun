@@ -54,6 +54,8 @@ export async function start({ fs, manifest, ui, fonts }: EngineContext): Promise
   // KiriKiri matches names case-insensitively itself (OPTION_ENABLE_CASEINSENSITIVITY).
   mountGame(Module.FS, fs, manifest);
   const saves = new Saves(Module.FS, fs, SAVES, DATA_PATH);
+  // The exe is in the data path (patches/krkrsdl2), and KAG writes to savedata/ beside it.
+  Module.FS.mkdirTree(`${DATA_PATH}/savedata`);
   // After writing save data the engine runs `FS.syncfs(false, ...)`
   // (src/core/environ/sdl2/Application.cpp): that is when saves go to the server.
   Module.FS.syncfs = (_populate, done) => {
