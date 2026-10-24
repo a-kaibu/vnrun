@@ -41,10 +41,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|---|---|---|---|---|
 | SiglusEngine (siglus_rs) | 19 | 5 | 14 |  |  |  |  |  |
 | RealLive (siglus_rs) | 8 | 4 | 2 |  | 1 |  | 1 |  |
-| BGI (ethornell-rs) | 21 | 1 | 14 |  | 2 | 4 |  |  |
+| BGI (ethornell-rs) | 21 | 1 | 19 |  |  | 1 |  |  |
 | Softpal (sena-rs) | 28 | 3 | 14 |  |  | 11 |  |  |
 | Artemis (art3m1s-core) | 6 |  | 4 |  |  | 2 |  |  |
-| NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 2 | 1 |  |
+| NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 1 | 5 | 10 | 3 | 14 |  |  |
 | 吉里吉里 (KiriKiri SDL2) | 135 |  |  |  | 1 |  |  | 134 |
 | YU-RIS (vnrun) | 29 |  | 5 |  |  | 8 | 1 | 15 |
@@ -96,21 +96,21 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2011_lumpofsugar | [DiamicDays_Trial.zip](http://suezou.dyndns.org/dl2011/lumpofsugar/diamicdays/DiamicDays_Trial.zip) | タイトル |  |
 | b2013_lumpofsugar | [sekachu_trial_WEB2.zip](http://suezou.dyndns.org/dl2013/lumpofsugar/sekachu/sekachu_trial_WEB2.zip) | タイトル | c27e445 で直った |
 | b2015_hooksoft | [トラベリングスターズ 体験版02 Ver1.00](http://suezou.dyndns.org/dl2015/hooksoft/traveling_stars/travelingstars_trial_02.zip) | タイトル | c27e445 で直った |
+| b2015_lump_of_sugar | [rensou_trial_WEB.zip](http://suezou.dyndns.org/dl2015/lump-of-sugar/rensourelation/rensou_trial_WEB.zip) | タイトル | 3b42c00 で解消 |
 | b2019_hooksoft | [どっちのｉが好きですか？　Ｈシーン体験版　Ver1.00](http://suezou.dyndns.org/dl2019/hooksoft/isuki/isuki_h_trial.zip) | タイトル | c27e445 で直った |
 | b2019_sukerasparo | [kudan_trial.zip](http://suezou.dyndns.org/dl2019/sukerasparo/kudan/kudan_trial.zip) | タイトル |  |
+| b2020_sukerasomero | [oshilove_trial.zip](http://suezou.dyndns.org/dl2020/sukerasomero/oshi_love/oshilove_trial.zip) | タイトル | インストール用の目印ファイルを無視する 3b42c00 で解消 |
 | dl_VJ01004381 | [顔のない月 -待宵の双椿-](https://trial.dlsite.com/professional/VJ01005000/VJ01004381_trial.zip) | タイトル | 4c341a3 で直った (体験版の印のファイル NSM_MYST_trial を消して確認) |
 | r1_bgi_kudan | [クダンノフォークロア 体験版](http://sukerasparo.com/data/kudan_trial.zip) | タイトル | 本編まで進むことは前回確認済み (handoff) |
 | s2010_lumpofsugar_prismrhythm | [PrismRhythm-プリズムリズム- Web特別体験版](http://suezou.dyndns.org/dl2010/lumpofsugar/prismrhythm/PrismRhythm_trial_Web.lzh) | タイトル | 画面が拡大されず左上に小さく出る (800x600 の作品) |
 | s2011_lumpofsugar_gackoh | [学☆王 - THE ROYAL SEVEN STARS - 体験入学版](http://suezou.dyndns.org/dl2011/lumpofsugar/gackoh/Gackoh_Trial.zip) | タイトル |  |
 | s2014_hooksoft_meltymoment | [MeltyMoment 体験版 Ver1.00](http://suezou.dyndns.org/dl2014/hooksoft/meltymoment/MeltyMoment_trial.zip) | タイトル | c27e445 で直った |
 | s2015_smee_pure_connect | [ピュア×コネクト  Ver1.00](http://suezou.dyndns.org/dl2015/smee/pure_connect/pureconnect_trial.zip) | タイトル | c27e445 で直った |
+| s2019_lump_of_sugar_wakabairono_quartet | [若葉色のカルテット 体験版](http://suezou.dyndns.org/dl2019/lump-of-sugar/wakabairono_quartet/WakabaironoQuartet_trial.zip) | タイトル | 3b42c00 で解消 |
 | s2020_hooksoft_houkago | [放課後シンデレラ 体験版 Ver1.00](http://suezou.dyndns.org/dl2020/hooksoft/houkago/houkago_trial.zip) | タイトル | c27e445 で直った |
-| b2020_sukerasomero | [oshilove_trial.zip](http://suezou.dyndns.org/dl2020/sukerasomero/oshi_love/oshilove_trial.zip) | 要再確認 |  |
-| s2023_quince_soft_little_proncess_go | [リトルプリンセスＧＯ！ 体験版](http://suezou.dyndns.org/dl2023/quince-soft/little-proncess_go/LittlePrincessGO_TR.zip) | 要再確認 |  |
-| b2015_lump_of_sugar | [rensou_trial_WEB.zip](http://suezou.dyndns.org/dl2015/lump-of-sugar/rensourelation/rensou_trial_WEB.zip) | NG | c27e445 の後は「unsupported filesystem/platform/installer host capability」(host_runtime_diag:15:2439:5005) |
-| s2019_lump_of_sugar_wakabairono_quartet | [若葉色のカルテット 体験版](http://suezou.dyndns.org/dl2019/lump-of-sugar/wakabairono_quartet/WakabaironoQuartet_trial.zip) | NG | c27e445 の後は「指定されたファイル [ sysgrp.arc : caret ] は存在しません」 |
-| s2021_smee_pureconnect_hd | [pureconnect_fhd_trial.zip](http://suezou.dyndns.org/dl2021/smee/pureconnect_hd/pureconnect_fhd_trial.zip) | NG | c27e445 の後は「無効なスクリーンサイズが設定されました」(host_runtime_diag:15:232:498) |
-| s2022_hooksoft_houkago2 | [放課後シンデレラ２ 体験版 Ver1.01](http://suezou.dyndns.org/dl2022/hooksoft/houkago2/HoukagoCinderella2_trial_v1.01.zip) | NG | 4c341a3 の後は「サポートされていないパラメータ番号 [ 0x0000008E ]」(host_runtime_diag:15:1931:5475) |
+| s2021_smee_pureconnect_hd | [pureconnect_fhd_trial.zip](http://suezou.dyndns.org/dl2021/smee/pureconnect_hd/pureconnect_fhd_trial.zip) | タイトル | 3b42c00 で解消 |
+| s2023_quince_soft_little_proncess_go | [リトルプリンセスＧＯ！ 体験版](http://suezou.dyndns.org/dl2023/quince-soft/little-proncess_go/LittlePrincessGO_TR.zip) | タイトル | インストール用の目印ファイルを無視する 3b42c00 で解消 |
+| s2022_hooksoft_houkago2 | [放課後シンデレラ２ 体験版 Ver1.01](http://suezou.dyndns.org/dl2022/hooksoft/houkago2/HoukagoCinderella2_trial_v1.01.zip) | NG | f08fa25 でも起動から60秒以内に「サポートされていないパラメータ番号 [0x8E]」。背景はタイトル前の画像 (host_runtime_diag:15:1931:5475:144:56:8) |
 
 ### Softpal (sena-rs)
 
@@ -162,8 +162,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|
 | r1_naru2 | [ナルキッソス SIDE 2nd](https://stage-nana.sakura.ne.jp/download/naru2.lzh) | タイトル |  |
 | r1_trt | [トライアンソロジー 体験版](https://07th-expansion.net/trt/trt_trial.zip) | タイトル | ボタンだけで背景が出ない (anm.dll などのレイヤ効果は未実装) |
-| dl_RJ01724681 | [人妻のオナサポを受けて白濁生汁ピュッピュッピュッしなさい！](https://trial.dlsite.com/doujin/RJ01725000/RJ01724681_trial.zip) | NG | 「Script error, Label "define" is not found」 |
 | r1_saku | [うみねこのなく頃に咲 体験版](https://07th-expansion.net/umi_saku/saku_trial.zip) | NG | PONScripter の作品。0.txt / nscript.dat が無く読めない (0.utf などに未対応) |
+| dl_RJ01724681 | [人妻のオナサポを受けて白濁生汁ピュッピュッピュッしなさい！](https://trial.dlsite.com/doujin/RJ01725000/RJ01724681_trial.zip) | 対象外 | 中身は Unity 製 (開発スレッドで確認) |
 | r1_higanbana | [彼岸花の咲く夜に お試し版](https://07th-expansion.net/rose/higanbana_otameshi.zip) | 対象外 | インストーラ形式 (CreateInstall) で展開できない |
 
 ### HTML (TyranoScript、RPGツクール MV/MZ)

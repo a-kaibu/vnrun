@@ -28,24 +28,24 @@ r1_bgi_kudan	タイトル	本編まで進むことは前回確認済み (handoff
 s2010_sagaplanets_kisaragi	要再確認	展開後にエンジンの印のファイル (Seen.txt) が見つからない
 b2019_hooksoft	タイトル	c27e445 で直った
 b2015_hooksoft	タイトル	c27e445 で直った
-b2020_sukerasomero	要再確認	
+b2020_sukerasomero	タイトル	インストール用の目印ファイルを無視する 3b42c00 で解消
 b2006_lumpofsugar	タイトル	
 b2013_lumpofsugar	タイトル	c27e445 で直った
 b2019_sukerasparo	タイトル	
 b2011_lumpofsugar	タイトル	
-b2015_lump_of_sugar	NG	c27e445 の後は「unsupported filesystem/platform/installer host capability」(host_runtime_diag:15:2439:5005)
+b2015_lump_of_sugar	タイトル	3b42c00 で解消
 b2010_lumpofsugar	タイトル	
 s2015_smee_pure_connect	タイトル	c27e445 で直った
 s2014_hooksoft_meltymoment	タイトル	c27e445 で直った
-s2021_smee_pureconnect_hd	NG	c27e445 の後は「無効なスクリーンサイズが設定されました」(host_runtime_diag:15:232:498)
+s2021_smee_pureconnect_hd	タイトル	3b42c00 で解消
 s2016_hooksoft_amenitys_life	本編	c27e445 で直った。最初の文章が出る
 s2020_hooksoft_houkago	タイトル	c27e445 で直った
 s2010_lumpofsugar_prismrhythm	タイトル	画面が拡大されず左上に小さく出る (800x600 の作品)
 dl_VJ01004381	タイトル	4c341a3 で直った (体験版の印のファイル NSM_MYST_trial を消して確認)
-s2022_hooksoft_houkago2	NG	4c341a3 の後は「サポートされていないパラメータ番号 [ 0x0000008E ]」(host_runtime_diag:15:1931:5475)
+s2022_hooksoft_houkago2	NG	f08fa25 でも起動から60秒以内に「サポートされていないパラメータ番号 [0x8E]」。背景はタイトル前の画像 (host_runtime_diag:15:1931:5475:144:56:8)
 s2011_lumpofsugar_gackoh	タイトル	
-s2023_quince_soft_little_proncess_go	要再確認	
-s2019_lump_of_sugar_wakabairono_quartet	NG	c27e445 の後は「指定されたファイル [ sysgrp.arc : caret ] は存在しません」
+s2023_quince_soft_little_proncess_go	タイトル	インストール用の目印ファイルを無視する 3b42c00 で解消
+s2019_lump_of_sugar_wakabairono_quartet	タイトル	3b42c00 で解消
 r1_artemis	タイトル	
 s2023_j_studio_reaero_dt	タイトル	
 s2020_wonder_fool_maokatsu	タイトル	
@@ -56,7 +56,7 @@ r1_naru2	タイトル
 r1_trt	タイトル	ボタンだけで背景が出ない (anm.dll などのレイヤ効果は未実装)
 r1_saku	NG	PONScripter の作品。0.txt / nscript.dat が無く読めない (0.utf などに未対応)
 r1_higanbana	対象外	インストーラ形式 (CreateInstall) で展開できない
-dl_RJ01724681	NG	「Script error, Label "define" is not found」
+dl_RJ01724681	対象外	中身は Unity 製 (開発スレッドで確認)
 r1_softpal_tenmao	NG	起動時に panic (capacity overflow)
 r1_softpal_hanako	本編	プロローグの文章
 b2024_milimili	本編	プロローグの文章 (r1_softpal_hanako と同じ作品)
