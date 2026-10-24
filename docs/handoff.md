@@ -15,7 +15,7 @@ vnrun の目的、決まったこと、今ある実装、まだ確かめてい�
 
 - vnrun は vnbox と別リポジトリ。**新しく書く部分は Rust** (wasm-bindgen)。
 - 既存の Rust 実装は git submodule で取り込み、つなぎの層で共通の口に合わせる。C/C++ で完成している実装 (吉里吉里、ONScripter など) は書き直さず Emscripten で wasm にする。
-- vnbox (Go) はサーバー側のまま。パッケージ化、Wine での代替実行、ファイルとセーブの配信、S3。
+- vnbox とは独立したプロジェクト。ファイルとセーブの配信も vnrun が持つ (下の「vnbox とは独立」)。
 - エンジン間の抽象化は 2 段 (下の「構成」)。
 
 ## 構成
@@ -35,18 +35,15 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 - **Rust 側の抽象 (未着手)**: 自作エンジン用の共通 crate に「ゲームのファイル (GameFS)」「入力」「描画面」「音声」の trait を置き、各エンジンはそれを実装する。取り込み品は JS のつなぎで合わせる。siglus_rs は自前で winit のイベントループを回すので、JS 側でしか揃えられない。
 - siglus_rs は wasm から `siglusFileExists / siglusReadFile / siglusListDir / siglusKnownFileCount / gameFsWrite / gameFsRemove` という JS のグローバル関数でファイルを読む (crates/game_fs、crates/siglus_scene_vm/src/wasm_vfs.rs)。**読み込みはファイル丸ごと**で、範囲読みは無い。
 
-## vnbox 側 (PR [a-kaibu/vnbox#2](https://github.com/a-kaibu/vnbox/pull/2))
+## vnbox とは独立 (2026-10-24 決定)
 
-- `launch.ini` に `runner=vnrun` と `root=` (エンジンのファイルがあるフォルダ、drive_c からの相対)。
-- `vnbox add` が SiglusEngine / RealLive (`Scene.pck` / `Seen.txt` がある) で DRM 無しのものに自動で付ける。追加済みには `vnbox browser -all`。
-- `internal/webplay`: `/player/` (vnrun の dist、`vnbox serve -player` / `VNBOX_PLAYER` / 既定 `<データ>/player`)、`/player/fonts/` (ホストの IPA / Noto CJK)、`/p/<name>/manifest.json|files/|saves/`。
-- セーブは `<データ>/websaves/<name>/`、S3 があれば書き込み停止 30 秒後に `websaves/<user>/<name>/` へ。
-- ギャラリーと詳細画面に「ブラウザで遊ぶ」。Wine 起動は「Wine で遊ぶ」として残る。
-- 別スレッドの PR #1 (WebRTC の遅延・負荷チューニング) とは独立。
+- ユーザーの判断で **vnrun は vnbox から完全に独立** させる。ゲームファイルの配信もセーブの保存も vnrun 自身が持つ。vnbox への組み込み (旧 PR a-kaibu/vnbox#2、`runner=vnrun` / `internal/webplay`) は取りやめ、マージしない。
+- 今は `crates/devserver` が 1 本のゲームフォルダを配り、セーブを `saves/<name>/` に置く。これを複数タイトルの一覧・セーブ管理を持つ vnrun のサーバーに育てる (旧 PR の webplay の作り、つまりマニフェスト・Range・セーブの原子的な書き込み・容量上限が参考になる)。
+- vnbox (Wine + WebRTC) は DRM 付き作品などの別系統として残る。互いに依存しない。
 
 ## 確認済みのこと / まだのこと
 
-- 確認済み: siglus_rs の wasm ビルド (約 19MB、gzip で約 8MB)。devserver と vnbox のポータルの両方で、Chromium から「マニフェスト → wasm 起動 → VFS 経由のファイル読み込み → セーブの PUT」まで通る。
+- 確認済み: siglus_rs の wasm ビルド (約 19MB、gzip で約 8MB)。devserver で、Chromium から「マニフェスト → wasm 起動 → VFS 経由のファイル読み込み → セーブの PUT」まで通る。
 - **実物の体験版での確認 (2026-10-24、devserver + ヘッドレス Chromium、`tools/shot.js`)**:
 
   | 作品 | エンジン | 結果 |
@@ -59,7 +56,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 - 実物で見つかって直したもの (`patches/siglus_rs/`、build.sh が適用する):
   - `0001`: ボイスの時間圧縮 (JITAN) を `std::thread::spawn` でやっていて、wasm では panic してタイトル画面で落ちた。wasm ではその場で処理する。
   - `0002`: wasm の起動部が画面を 1280x720 に固定し、キャンバスの大きさをそのままゲームの座標にしていた (1024x576 の作品は左上に小さく、1920x1080 の作品は切れる)。Gameexe の SCREEN_SIZE をゲームの座標にして、キャンバスに縦横比を保って拡大し、ポインタの座標も換算する (Android / iOS 版と同じやり方)。
-- **Siglus の二次鍵はブラウザでは探さない** (siglus_rs の wasm ビルドは key.toml を読むだけ)。`vnrun-prep <ゲームのフォルダ>` (crates/prep、ネイティブ) が鍵を復元して key.toml を書く。プリマドールで 1 秒以下。vnbox は `vnbox add` のときにこれを呼ぶ想定 (未実装)。
+- **Siglus の二次鍵はブラウザでは探さない** (siglus_rs の wasm ビルドは key.toml を読むだけ)。`vnrun-prep <ゲームのフォルダ>` (crates/prep、ネイティブ) が鍵を復元して key.toml を書く。プリマドールで 1 秒以下。vnrun のサーバーがゲームを取り込むときにこれを呼ぶ想定 (未実装)。
 - movie (OMV / MPEG2 / WMV) の再生も siglus_rs の中で `thread::spawn` を使う箇所が残っている。ムービーのある作品で同じ panic が出るはずなので、出たら同様に直す。
 - 気にしておくこと: 丸ごと読みなので、大きい音声アーカイブ (Siglus の .ovk など) で同期 XHR が重くなる可能性。必要なら siglus_rs 側に範囲読みを足す。音声の自動再生制限 (最初のタップ) の扱いも未確認。
 
@@ -105,8 +102,8 @@ Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softp
 
 ## 決まった順番と次にやること
 
-1. **実物の体験版で siglus_rs を確認** (Siglus と RealLive)。vnbox の PR #2 も実機で通す。
-2. **ethornell-rs (BGI) と sena-rs (Softpal) を取り込む**。submodule + `engines/<id>/build.sh` + `web/engines/<id>.js`、vnbox の `webplay.Engines` と `markers` にも足す。
+1. **実物の体験版で siglus_rs を確認** (Siglus と RealLive)。
+2. **ethornell-rs (BGI) と sena-rs (Softpal) を取り込む**。submodule + `engines/<id>/build.sh` + `web/engines/<id>.js`。
 3. rfvp (FVP)、NScripter (OnscripterYuri を Emscripten で)。
 4. 吉里吉里: krkrz を Emscripten で wasm にし、xmoezzz の eluna / xp3 / AMV などで商用作品のプラグインを埋める。まず 133 本が使うプラグイン DLL を数えて多い順に。
 5. Artemis (art3m1s-core に Web のつなぎを書く)。
@@ -115,5 +112,6 @@ Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softp
 ## 未決のこと
 
 - Rust 側の共通 trait の具体的な形 (描画は WebGL2 か wgpu か、音声の取り回し)。最初の自作エンジンで決める。
-- エンジンの wasm をどこで配るか。今は `./build.sh` で手元ビルド。GitHub Actions でビルドして Releases に置き、vnbox が落とす形 (Wine と同じ) が候補。
+- エンジンの wasm をどこで配るか。今は `./build.sh` で手元ビルド。GitHub Actions でビルドして Releases に置く形が候補。
+- vnrun のサーバーの形 (ゲームの取り込み、一覧、セーブの保存先とバックアップ)。
 - ゲームのファイルの大きいものを丸ごと読む問題 (上記)。

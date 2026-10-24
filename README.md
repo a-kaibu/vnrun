@@ -1,6 +1,6 @@
 # vnrun — ノベルゲームのエンジンをブラウザで動かす
 
-Windows 向けノベルゲームを、Wine を使わずにブラウザの中で動かすためのプレイヤー。ゲームのデータはサーバー ([vnbox](https://github.com/a-kaibu/vnbox) など) から HTTP で読み、エンジンは WebAssembly でブラウザ側で動く。サーバーはファイルとセーブを配るだけなので、非力なホストでも重くならない。
+Windows 向けノベルゲームを、Wine を使わずにブラウザの中で動かすためのプレイヤー。ゲームのデータはvnrun 自身のサーバーから HTTP で読み、エンジンは WebAssembly でブラウザ側で動く。サーバーはファイルとセーブを配るだけなので、非力なホストでも重くならない。
 
 ## 対応エンジン
 
@@ -25,7 +25,7 @@ crates/devserver     手元で試すためのサーバー
 crates/prep          ブラウザでできない下ごしらえ (Siglus の二次鍵の復元など)
 patches/<id>/        取り込んだエンジンへの修正
 tools/shot.js        ヘッドレス Chromium で起動・操作・スクショ
-docs/protocol.md     プレイヤーとサーバーの約束事 (vnbox が実装する)
+docs/protocol.md     プレイヤーとサーバーの約束事
 ```
 
 ## ビルドと試し方
