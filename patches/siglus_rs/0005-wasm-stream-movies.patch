@@ -1,0 +1,351 @@
+diff --git a/crates/siglus_scene_vm/src/movie/mod.rs b/crates/siglus_scene_vm/src/movie/mod.rs
+index a7e1a9f..8093bc1 100644
+--- a/crates/siglus_scene_vm/src/movie/mod.rs
++++ b/crates/siglus_scene_vm/src/movie/mod.rs
+@@ -21,6 +21,8 @@ use kira::sound::streaming::{
+ };
+ 
+ use crate::assets::RgbaImage;
++#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
++mod wasm_stream;
+ use crate::audio::{AudioHub, TrackKind};
+ 
+ const MPEG2_HEADER_PROBE_BYTES: usize = 256 * 1024;
+@@ -376,6 +378,8 @@ pub struct MovieManager {
+     wmv_audio_tasks: HashMap<PathBuf, WmvAudioTask>,
+     wmv_streams: HashMap<PathBuf, WmvStreamState>,
+     omv_streams: HashMap<PathBuf, OmvStreamState>,
++    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
++    wasm_movies: HashMap<PathBuf, wasm_stream::WasmMovie>,
+     playbacks: HashMap<u64, MoviePlayback>,
+     next_playback_id: u64,
+     /// Resolved movie paths keyed by (append_dir, file_name). The per-frame
+@@ -552,6 +556,8 @@ impl MovieManager {
+             wmv_audio_tasks: HashMap::new(),
+             wmv_streams: HashMap::new(),
+             omv_streams: HashMap::new(),
++            #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
++            wasm_movies: HashMap::new(),
+             playbacks: HashMap::new(),
+             next_playback_id: 1,
+             path_cache: HashMap::new(),
+@@ -583,6 +589,8 @@ impl MovieManager {
+         self.wmv_streams.clear();
+         self.wmv_audio_tasks.clear();
+         self.omv_streams.clear();
++        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
++        self.wasm_movies.clear();
+         #[cfg(target_os = "vita")]
+         {
+             // The desktop cache favors replay latency. On Vita, retaining
+@@ -799,6 +807,15 @@ impl MovieManager {
+         let path = self.resolve_mov_path_cached(file_name)?;
+         #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+         {
++            let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("").to_ascii_lowercase();
++            if ext == "omv" || is_wmv_extension(&ext) {
++                if !self.wasm_movies.contains_key(&path) {
++                    let movie = wasm_stream::WasmMovie::open(&path)?;
++                    self.wasm_movies.insert(path.clone(), movie);
++                }
++                let movie = self.wasm_movies.get_mut(&path).expect("movie opened");
++                return movie.poll(timer_ms, loop_flag).map(Some);
++            }
+             return self.poll_cached_movie_frame_for_path_with_loop(path, timer_ms, loop_flag);
+         }
+         let ext = path
+@@ -4388,13 +4405,7 @@ fn decode_mpeg2_preview_frame(path: &Path) -> Result<Arc<RgbaImage>> {
+ fn decode_omv_preview_frame(path: &Path) -> Result<Arc<RgbaImage>> {
+     #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+     {
+-        let bytes = read_movie_bytes(path)?;
+-        let asset = decode_omv_asset_from_bytes(path, bytes)?;
+-        return asset
+-            .frames
+-            .into_iter()
+-            .next()
+-            .ok_or_else(|| anyhow!("omv preview frame missing: {}", path.display()));
++        return wasm_stream::WasmMovie::omv_preview(path);
+     }
+ 
+     #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+diff --git a/crates/siglus_scene_vm/src/movie/wasm_stream.rs b/crates/siglus_scene_vm/src/movie/wasm_stream.rs
+new file mode 100644
+index 0000000..9c21ef0
+--- /dev/null
++++ b/crates/siglus_scene_vm/src/movie/wasm_stream.rs
+@@ -0,0 +1,274 @@
++//! Browser movie playback without threads: OMV and WMV frames are decoded on demand from the
++//! file in memory, as the movie clock reaches them. Decoding a whole movie to RGBA up front
++//! needs gigabytes for an HD movie, past what a wasm32 memory can hold.
++
++use std::io::Cursor;
++use std::path::Path;
++use std::sync::Arc;
++use std::sync::atomic::AtomicBool;
++
++use anyhow::{Context, Result};
++
++use super::*;
++
++/// Frames decoded per poll at most, so a movie that fell behind catches up over a few frames
++/// instead of stalling one.
++const MAX_DECODES_PER_POLL: usize = 4;
++
++#[derive(Clone)]
++struct Bytes(Arc<Vec<u8>>);
++
++impl AsRef<[u8]> for Bytes {
++    fn as_ref(&self) -> &[u8] {
++        &self.0
++    }
++}
++
++enum Source {
++    Omv {
++        tf: siglus_omv_decoder::TheoraFile,
++        vinfo: siglus_omv_decoder::VideoInfo,
++        packed: Vec<u8>,
++        display_w: i32,
++        display_h: i32,
++        theora_type: u32,
++        frame_ms: f64,
++    },
++    Wmv {
++        bytes: Bytes,
++        decoder: wmv_decoder::AsfWmv2Decoder<Cursor<Bytes>>,
++        origin_ms: u64,
++    },
++}
++
++enum Raw {
++    Omv(Vec<u8>),
++    Wmv(wmv_decoder::YuvFrame),
++}
++
++pub(super) struct WasmMovie {
++    source: Source,
++    width: u32,
++    height: u32,
++    fps: Option<f32>,
++    total_ms: Option<u64>,
++    audio: Option<MovieAudio>,
++    /// index of the next frame the decoder gives
++    next_idx: usize,
++    /// decoded, not yet due: (pts, index, frame)
++    pending: Option<(u64, usize, Raw)>,
++    shown: Option<(u64, usize, Arc<RgbaImage>)>,
++    decoded_now: bool,
++}
++
++impl WasmMovie {
++    pub(super) fn open(path: &Path) -> Result<WasmMovie> {
++        let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("").to_ascii_lowercase();
++        let bytes = read_movie_bytes(path)?;
++        if ext == "omv" {
++            Self::open_omv(path, bytes)
++        } else {
++            Self::open_wmv(path, bytes)
++        }
++    }
++
++    fn open_omv(path: &Path, bytes: Vec<u8>) -> Result<WasmMovie> {
++        let header = read_omv_header_from_bytes(&bytes).ok();
++        let ogg = extract_ogg_from_bytes(&bytes).with_context(|| format!("read embedded ogg: {}", path.display()))?;
++        drop(bytes);
++        let mut tf = siglus_omv_decoder::TheoraFile::open_from_memory(ogg)
++            .with_context(|| format!("open theora: {}", path.display()))?;
++        let vinfo = tf.info();
++        let display_w = header.as_ref().map_or(vinfo.width, |h| h.display_width as i32);
++        let display_h = header.as_ref().map_or(vinfo.height, |h| h.display_height as i32);
++        let fps = header
++            .as_ref()
++            .filter(|h| h.frame_time_us != 0)
++            .map(|h| 1_000_000.0 / h.frame_time_us as f32)
++            .or_else(|| (vinfo.fps > 0.0).then_some(vinfo.fps as f32));
++        let frame_ms = omv_frame_duration_ms(header.as_ref(), fps).unwrap_or(1000.0 / 30.0);
++        let theora_type = header.as_ref().map_or(siglus_assets::omv::OMV_THEORA_TYPE_YUV, |h| h.theora_type);
++        let audio = decode_omv_audio(&mut tf)?;
++        tf.reset();
++        let video_ms = header
++            .as_ref()
++            .filter(|h| h.packet_count_hint > 0)
++            .map(|h| (h.packet_count_hint as f64 * frame_ms).round() as u64);
++        let total_ms = video_ms.or_else(|| audio.as_ref().and_then(|a| a.duration_ms));
++        let (_, _, y, u, v) = omv_plane_layout(vinfo.frame_width, vinfo.frame_height, vinfo.fmt);
++        Ok(WasmMovie {
++            source: Source::Omv {
++                tf,
++                vinfo,
++                packed: vec![0; y + u + v],
++                display_w,
++                display_h,
++                theora_type,
++                frame_ms,
++            },
++            width: display_w.max(1) as u32,
++            height: display_h.max(1) as u32,
++            fps,
++            total_ms,
++            audio,
++            next_idx: 0,
++            pending: None,
++            shown: None,
++            decoded_now: true,
++        })
++    }
++
++    fn open_wmv(path: &Path, bytes: Vec<u8>) -> Result<WasmMovie> {
++        let bytes = Bytes(Arc::new(bytes));
++        let mut decoder = wmv_decoder::AsfWmv2Decoder::open(Cursor::new(bytes.clone()))
++            .with_context(|| format!("open ASF/WMV decoder: {}", path.display()))?;
++        let info = decoder.video_stream_info().clone();
++        // The movie clock starts at the first picture's PTS; the audio is kept on that clock.
++        let first = decoder.next_frame().with_context(|| format!("decode ASF/WMV frame: {}", path.display()))?;
++        let origin_ms = first.as_ref().map_or(0, |f| f.pts_ms as u64);
++        let audio = decode_wmv_audio_full_from_reader(Cursor::new(bytes.clone()), &AtomicBool::new(false), origin_ms)?;
++        let total_ms = audio
++            .as_ref()
++            .map(MovieAudio::end_ms)
++            .or_else(|| decoder.duration_ms())
++            .filter(|ms| *ms > 0);
++        Ok(WasmMovie {
++            pending: first.map(|f| (0, 0, Raw::Wmv(f.frame))),
++            source: Source::Wmv { bytes, decoder, origin_ms },
++            width: info.width.max(1),
++            height: info.height.max(1),
++            fps: None,
++            total_ms,
++            audio,
++            next_idx: 1,
++            shown: None,
++            decoded_now: true,
++        })
++    }
++
++    fn rewind(&mut self) -> Result<()> {
++        match &mut self.source {
++            Source::Omv { tf, .. } => tf.reset(),
++            Source::Wmv { bytes, decoder, .. } => *decoder = wmv_decoder::AsfWmv2Decoder::open(Cursor::new(bytes.clone()))?,
++        }
++        self.next_idx = 0;
++        self.pending = None;
++        Ok(())
++    }
++
++    /// The next frame from the decoder, with its time on the movie clock.
++    fn decode(&mut self) -> Result<Option<(u64, usize, Raw)>> {
++        let idx = self.next_idx;
++        let out = match &mut self.source {
++            Source::Omv { tf, packed, frame_ms, .. } => {
++                if !tf.read_video_frame(packed)? {
++                    return Ok(None);
++                }
++                ((idx as f64 * *frame_ms) as u64, Raw::Omv(packed.clone()))
++            }
++            Source::Wmv { decoder, origin_ms, .. } => match decoder.next_frame()? {
++                Some(f) => ((f.pts_ms as u64).saturating_sub(*origin_ms), Raw::Wmv(f.frame)),
++                None => return Ok(None),
++            },
++        };
++        self.next_idx += 1;
++        Ok(Some((out.0, idx, out.1)))
++    }
++
++    fn rgba(&self, raw: Raw) -> Arc<RgbaImage> {
++        match (&self.source, raw) {
++            (Source::Omv { vinfo, display_w, display_h, theora_type, .. }, Raw::Omv(packed)) => {
++                let rgba = convert_omv_frame(
++                    &packed,
++                    vinfo.frame_width,
++                    vinfo.frame_height,
++                    vinfo.fmt,
++                    *display_w,
++                    *display_h,
++                    *theora_type,
++                );
++                Arc::new(RgbaImage { width: self.width, height: self.height, center_x: 0, center_y: 0, rgba })
++            }
++            (_, Raw::Wmv(frame)) => Arc::new(wmv_yuv_frame_to_rgba(&frame)),
++            (_, Raw::Omv(_)) => unreachable!("OMV data from a WMV decoder"),
++        }
++    }
++
++    /// The first frame of an OMV, for a movie object that is not playing.
++    pub(super) fn omv_preview(path: &Path) -> Result<Arc<RgbaImage>> {
++        let bytes = read_movie_bytes(path)?;
++        let header = read_omv_header_from_bytes(&bytes).ok();
++        let ogg = extract_ogg_from_bytes(&bytes).with_context(|| format!("read embedded ogg: {}", path.display()))?;
++        drop(bytes);
++        let (vinfo, packed) = siglus_omv_decoder::decode_first_video_frame_from_memory(ogg)?;
++        let display_w = header.as_ref().map_or(vinfo.width, |h| h.display_width as i32);
++        let display_h = header.as_ref().map_or(vinfo.height, |h| h.display_height as i32);
++        let theora_type = header.as_ref().map_or(siglus_assets::omv::OMV_THEORA_TYPE_YUV, |h| h.theora_type);
++        let rgba = convert_omv_frame(
++            &packed,
++            vinfo.frame_width,
++            vinfo.frame_height,
++            vinfo.fmt,
++            display_w,
++            display_h,
++            theora_type,
++        );
++        Ok(Arc::new(RgbaImage {
++            width: display_w.max(1) as u32,
++            height: display_h.max(1) as u32,
++            center_x: 0,
++            center_y: 0,
++            rgba,
++        }))
++    }
++
++    pub(super) fn poll(&mut self, timer_ms: u64, loop_flag: bool) -> Result<MovieStreamFrame> {
++        let t = match self.total_ms {
++            Some(total) if loop_flag && total > 0 => timer_ms % total,
++            _ => timer_ms,
++        };
++        if self.shown.as_ref().is_some_and(|(pts, _, _)| *pts > t) {
++            self.rewind()?;
++            self.shown = None;
++        }
++        let mut due = None;
++        for _ in 0..MAX_DECODES_PER_POLL {
++            if self.pending.is_none() {
++                self.pending = self.decode()?;
++                if self.pending.is_none() {
++                    // The end: now the length is known.
++                    if let Source::Omv { frame_ms, .. } = &self.source {
++                        let ms = (self.next_idx as f64 * frame_ms).round() as u64;
++                        self.total_ms = Some(self.total_ms.map_or(ms, |t| t.max(ms)));
++                    }
++                    break;
++                }
++            }
++            if self.pending.as_ref().is_some_and(|(pts, _, _)| *pts <= t) {
++                due = self.pending.take();
++            } else {
++                break;
++            }
++        }
++        if due.is_none() && self.shown.is_none() {
++            due = self.pending.take();
++        }
++        if let Some((pts, idx, raw)) = due {
++            self.shown = Some((pts, idx, self.rgba(raw)));
++        }
++        let (_, idx, frame) = self.shown.clone().ok_or_else(|| anyhow!("movie has no frames"))?;
++        let decoded_now = std::mem::take(&mut self.decoded_now);
++        Ok(MovieStreamFrame {
++            frame,
++            frame_idx: idx,
++            fps: self.fps,
++            total_ms: self.total_ms,
++            audio: self.audio.clone(),
++            audio_ready: true,
++            decoded_now,
++            frame_idx_is_decode_order: matches!(self.source, Source::Wmv { .. }),
++            clamped_timer_ms: None,
++            source_size: Some((self.width, self.height)),
++        })
++    }
++}

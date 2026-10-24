@@ -13,6 +13,7 @@ WASM_BINDGEN_VERSION="$(awk '/^name = "wasm-bindgen"$/ {getline; gsub(/[^0-9.]/,
 
 # Our fixes for the browser build (patches/siglus_rs/*.patch), applied to a clean checkout.
 git -C "$SRC" checkout -q -- .
+git -C "$SRC" clean -fdq
 for p in "$ROOT"/patches/siglus_rs/*.patch; do
   [[ -e "$p" ]] && git -C "$SRC" apply "$p"
 done
