@@ -16,3 +16,6 @@
 [submodule "third_party/onscripter-yuri"]
 	path = third_party/onscripter-yuri
 	url = https://github.com/YuriSizuku/OnscripterYuri
+[submodule "third_party/krkrsdl2"]
+	path = third_party/krkrsdl2
+	url = https://github.com/krkrsdl2/krkrsdl2

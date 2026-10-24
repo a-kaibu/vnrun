@@ -114,6 +114,8 @@ export class Presenter {
     format: "rgba8unorm" | "bgra8unorm" = "rgba8unorm",
     bytesPerRow = width * 4,
   ): void {
+    // Engines can hand over a frame before their window has a size.
+    if (!width || !height) return;
     this.layout(width, height);
     const nearest = this.rect.w % width === 0 && this.rect.h % height === 0;
     if (

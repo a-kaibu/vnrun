@@ -51,19 +51,23 @@ function baseOf(path: string): string {
 }
 
 // Reads a URL synchronously as bytes. Synchronous XHR cannot use responseType in a window,
-// so the body comes back as a binary string. `range` is [start, end) of the file; a server
-// that ignores it sends the whole file.
+// so the body comes back as a binary string. Decoding that string honours a byte order mark,
+// which would eat a file's leading EF BB BF (or FF FE) and decode the rest as Unicode, so the
+// server puts one zero byte in front of the body (X-Vnrun-Pad, docs/protocol.md), dropped here.
+// `range` is [start, end) of the file; a server that ignores it sends the whole file.
 function getSync(url: string, range?: [number, number]): Uint8Array {
   const xhr = new XMLHttpRequest();
   xhr.open("GET", url, false);
   xhr.overrideMimeType("text/plain; charset=x-user-defined");
+  xhr.setRequestHeader("X-Vnrun-Pad", "1");
   if (range) xhr.setRequestHeader("Range", `bytes=${range[0]}-${range[1] - 1}`);
   xhr.send(null);
   const ok = xhr.status === 200 || (range && xhr.status === 206);
   if (!ok) throw new Error(`GET ${url}: HTTP ${xhr.status}`);
   const text = xhr.responseText || "";
-  const out = new Uint8Array(text.length);
-  for (let i = 0; i < text.length; i += 1) out[i] = text.charCodeAt(i) & 0xff;
+  if (text.charCodeAt(0) !== 0) throw new Error(`GET ${url}: the server ignored X-Vnrun-Pad`);
+  const out = new Uint8Array(text.length - 1);
+  for (let i = 1; i < text.length; i += 1) out[i - 1] = text.charCodeAt(i) & 0xff;
   return range && xhr.status === 200 ? out.subarray(range[0], range[1]) : out;
 }
 

@@ -9,6 +9,7 @@
 //   at:<x>;<y>            click at page pixels (the page is 1280x800)
 //   key:<Key>             press a key (Playwright names: Enter, Space, ArrowDown, ...)
 //   files:<sel>=<path>    put a file or folder into an <input type=file> (upstream launcher pages)
+//   eval:<js>             log the JSON of a page expression (no commas)
 // The console log (page and workers) goes to <out prefix>.log.
 const { chromium } = require("playwright");
 const fs = require("fs");
@@ -66,6 +67,8 @@ if (!url || !out) {
     } else if (cmd === "files") {
       const [sel, path] = arg.split("=");
       await page.setInputFiles(sel, path);
+    } else if (cmd === "eval") {
+      log.push(`[eval] ${JSON.stringify(await page.evaluate(arg))}`);
     } else {
       throw new Error(`unknown step: ${step}`);
     }

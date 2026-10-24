@@ -13,6 +13,8 @@
 | PUT | `saves/<path>` | セーブを書く (本文がそのまま中身) |
 | DELETE | `saves/<path>` | セーブを消す |
 
+`files/` と `saves/` の GET は、要求に `X-Vnrun-Pad: 1` があれば本文の先頭に 0 のバイトを 1 つ足して返す (`Range` のときも、切り出した範囲の前に足す。`Content-Range` は足す前の範囲のまま)。プレイヤーは同期 XHR で本文を文字列として受け取るしかなく、その変換が先頭の BOM (EF BB BF、FF FE、FE FF) を見て本文を Unicode として読み替えてしまうため。
+
 `<path>` はゲームの根からの相対パスで、区切りは `/`、各要素は URL エンコードする。`..` や先頭の `/` は受け付けない。
 
 ## manifest.json
@@ -26,7 +28,7 @@
 }
 ```
 
-- `engine`: `siglus` / `reallive` / `avg32` / `uk2` (siglus_rs で動かすもの)、`bgi` (ethornell-rs)、`softpal` (sena-rs)、`fvp` (rfvp)。今後 `onscripter` / `kirikiri` / `artemis` を足す。
+- `engine`: `siglus` / `reallive` / `avg32` / `uk2` (siglus_rs で動かすもの)、`bgi` (ethornell-rs)、`softpal` (sena-rs)、`fvp` (rfvp)。`artemis` (art3m1s-core)、`nscripter` (ONScripter-Yuri)、`kirikiri` (吉里吉里SDL2)。
 - BGI (ethornell-rs) はアーカイブを `Range` で少しずつ読む (256KB 単位)。
 - `nls`: 省略可。RealLive / AVG32 の文字コード (`sjis` など)。Siglus では使わない。
 - `files`: ゲームの根以下の全ファイル。大文字小文字はそのまま (プレイヤー側で区別せずに引く)。

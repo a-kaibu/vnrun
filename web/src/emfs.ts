@@ -88,26 +88,27 @@ export function mountGame(FS: EmFS, fs: GameFS, manifest: Manifest, lowercase = 
   }
 }
 
-/** The `/saves` folder, kept in the GameFS under `prefix` (saves never shadow game files). */
+/** A saves folder (`dir`), kept in the GameFS under `prefix` (saves never shadow game files). */
 export class Saves {
-  private seen = new Map<string, number>(); // path under /saves -> mtime
+  private seen = new Map<string, number>(); // path under dir -> mtime
 
   constructor(
     private readonly FS: EmFS,
     private readonly fs: GameFS,
     private readonly prefix: string,
+    private readonly dir = "/saves",
   ) {
-    FS.mkdirTree("/saves");
+    FS.mkdirTree(dir);
     for (const [path, bytes] of fs.saves) {
       if (!path.startsWith(`${prefix}/`)) continue;
-      const local = `/saves/${path.slice(prefix.length + 1)}`;
+      const local = `${dir}/${path.slice(prefix.length + 1)}`;
       FS.mkdirTree(parentDir(local));
       FS.writeFile(local, bytes);
     }
     this.scan(false);
   }
 
-  private files(dir = "/saves", out: [string, number][] = []): [string, number][] {
+  private files(dir = this.dir, out: [string, number][] = []): [string, number][] {
     for (const name of this.FS.readdir(dir)) {
       if (name === "." || name === "..") continue;
       const path = `${dir}/${name}`;
@@ -121,7 +122,7 @@ export class Saves {
   /** Sends files written or removed since the last scan. */
   scan(send = true): void {
     const now = new Map(this.files());
-    const remote = (path: string) => `${this.prefix}/${path.slice("/saves/".length)}`;
+    const remote = (path: string) => `${this.prefix}/${path.slice(this.dir.length + 1)}`;
     for (const [path, mtime] of now) {
       if (send && this.seen.get(path) !== mtime) this.fs.write(remote(path), this.FS.readFile(path));
     }

@@ -2,7 +2,7 @@
 //! so a game can be played in a browser.
 //!
 //!     vnrun-devserver --game <ゲームのフォルダ> [--dist dist] [--saves <dir>] [--addr 127.0.0.1:8090]
-//!                     [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter] [--title T] [--nls sjis]
+//!                     [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter|kirikiri] [--title T] [--nls sjis]
 
 use std::fs::{self, File};
 use std::io::{Read, Seek, SeekFrom};
@@ -44,7 +44,7 @@ struct Manifest<'a> {
 fn usage() -> ! {
     eprintln!(
         "usage: vnrun-devserver --game <dir> [--dist dist] [--saves <dir>] [--addr 127.0.0.1:8090] \
-         [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter] [--title T] [--nls sjis]"
+         [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter|kirikiri] [--title T] [--nls sjis]"
     );
     exit(2)
 }
@@ -117,6 +117,8 @@ fn detect(game: &Path) -> Option<String> {
         || names.iter().any(|n| n.ends_with(".nsa") || n.ends_with(".sar"))
     {
         Some("nscripter".into())
+    } else if names.iter().any(|n| n.ends_with(".xp3")) || has("startup.tjs") || has("data") {
+        Some("kirikiri".into())
     } else {
         None
     }
@@ -204,13 +206,23 @@ fn json<T: Serialize>(req: Request, v: &T) {
     );
 }
 
-/// Serves a file, honouring a single `Range: bytes=a-b`.
+/// Serves a file, honouring a single `Range: bytes=a-b`. With `X-Vnrun-Pad: 1` the body starts
+/// with one extra zero byte (docs/protocol.md).
 fn send_file(req: Request, path: &Path) {
     let Ok(mut f) = File::open(path) else {
         return status(req, 404, "not found");
     };
     let len = f.metadata().map(|m| m.len()).unwrap_or(0);
     let ct = header("Content-Type", content_type(path));
+    let pad: &'static [u8] = if req
+        .headers()
+        .iter()
+        .any(|h| h.field.equiv("X-Vnrun-Pad") && h.value.as_str() == "1")
+    {
+        &[0]
+    } else {
+        &[]
+    };
     let range = req
         .headers()
         .iter()
@@ -240,8 +252,8 @@ fn send_file(req: Request, path: &Path) {
                 ct,
                 header("Content-Range", &format!("bytes {start}-{end}/{len}")),
             ],
-            f.take(n),
-            Some(n as usize),
+            pad.chain(f.take(n)),
+            Some(pad.len() + n as usize),
             None,
         );
         let _ = req.respond(resp);
@@ -250,8 +262,8 @@ fn send_file(req: Request, path: &Path) {
     let resp = Response::new(
         StatusCode(200),
         vec![ct, header("Accept-Ranges", "bytes")],
-        f,
-        Some(len as usize),
+        pad.chain(f),
+        Some(pad.len() + len as usize),
         None,
     );
     let _ = req.respond(resp);

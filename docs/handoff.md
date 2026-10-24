@@ -76,6 +76,12 @@ docs/protocol.md     プレイヤーとサーバーの約束事
   - フォントは作品に入っていないので、ページのフォント (fonts/fonts.json の先頭) を渡す。スクリプトは既定で Shift_JIS (`--enc:sjis`)。
   - 動画は未対応 (飛ばす)。確認は自作の 0.txt (文章・選択肢・savegame) だけで、実物の作品はまだ。
   - この環境のプロキシは GitHub の archive (zip/tarball) を拒むので、Emscripten の ports は `tools/emscripten-ports.sh` で git から用意した。Lua は lua.org に届かないので GitHub のミラーから。
+- 吉里吉里 (KiriKiri SDL2、`engines/krkr/`):
+  - krkrsdl2 の Emscripten ビルド (CMake + Ninja) をそのまま使う。`patches/krkrsdl2/0001` で SDL のレンダラを作らずウィンドウのサーフェス (SDL の BGR888 = メモリ上 RGBX) を `vnrun_present` でページの Presenter (WebGPU) に渡す。Web でもウィンドウの大きさはレイヤの大きさのまま (KRKRSDL2_WINDOW_SIZE_IS_LAYER_SIZE を外した)。ポインタは `vnrun_mouse` / `vnrun_wheel`。
+  - 起動するのは data.xp3、無ければ data フォルダ、無ければゲームのフォルダ。ファイル名の大小文字は krkr 自身が無視するので小文字の別名は作らない。
+  - セーブは System.dataPath (`/libsdl/krkrsdl2`) に書かれる。エンジンがファイルを書いたあと `FS.syncfs` を呼ぶので、Module.FS.syncfs を差し替えてそこで GameFS に送る (emscripten_run_script はモジュール内で eval するので、グローバルの FS ではなく Module.FS が呼ばれる)。
+  - 確認は `/home/user/trials/kag3` (krkrsdl2/kag3) と、その first.ks を書き換えた krtest (文章・link の選択肢・`[save]`)。商用作品は暗号化 xp3 (作品ごとの復号の追加が要る) と、プラグイン DLL (wasm には読めないので、使われている物を数えて代わりを書く) が次の課題。
+- 同期 XHR の BOM: `responseText` を読むとブラウザが先頭の BOM を消す/解釈するため、UTF-8 BOM 付きの TJS が 3 バイト欠けて読めなかった。範囲読みに `X-Vnrun-Pad: 1` を付け、サーバーは先頭に 0x00 を 1 バイト足して返す (docs/protocol.md)。全エンジンに効く修正。
 - Softpal (sena-rs):
   - sena-rs は README のとおり「恋×シンアイ彼女」(2017) を対象に作られていて、ほかの作品は命令の引数の数や戻り値の扱いが少し違うところで止まる。エレクトリップ (Softpal の体験版が 2011〜2025 年に毎年ある) で 2 本試してどちらも止まった。直すには、止まった箇所ごとに旧版の Pal.dll の動きを確かめて sena-rs に版の違いを足す必要がある。
   - ブラウザ版のつなぎ (`web/src/engines/sena.ts`) は描画・入力・ファイルの範囲読みまで。上流の Web 版にはセーブと音声が無い (セーブは std::fs に書いていて wasm では失敗する) ので、動く作品が出てきたら足す。
@@ -98,7 +104,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 | Softpal | 31 | [xmoezzz/sena-rs](https://github.com/xmoezzz/sena-rs) | Rust | あり | README に「特に『Koikake』1 作品が対象」。他作品は差分を埋める前提 |
 | FVP | 6 | [xmoezzz/rfvp](https://github.com/xmoezzz/rfvp) | Rust | あり (platform/wasm) | 全バージョン互換を目指すと記載 |
 | Artemis | 5 | [Alphaly2K/art3m1s-core](https://github.com/Alphaly2K/art3m1s-core) | Rust | 無し | Flutter 版あり。商用作品の互換表なし |
-| 吉里吉里 | 133 | krkrz / [krkrsdl2](https://github.com/krkrsdl2/krkrsdl2) (Web 版あり)、Kirikiroid2 | C++ | あり | krkrsdl2 は「未改変の商用ゲームは非対応」と明記。下の xmoezzz の部品が使える |
+| 吉里吉里 | 133 | krkrz / [krkrsdl2](https://github.com/krkrsdl2/krkrsdl2) (Web 版あり)、Kirikiroid2 | C++ | あり | 組み込み済み (KAG3 で確認)。krkrsdl2 は「未改変の商用ゲームは非対応」と明記。下の xmoezzz の部品が使える |
 | NScripter | 4 | [OnscripterYuri](https://github.com/YuriSizuku/OnscripterYuri)、onscripter-ru-wasm | C++ | あり | |
 | AliceSoft System4 | 3 | [xsystem4](https://github.com/kichikuou/xsystem4)、system3-sdl2 (Web 版あり) | C | System3 のみ | |
 | YU-RIS | 29 | なし | | | 自作候補 |
