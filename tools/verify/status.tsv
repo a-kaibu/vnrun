@@ -85,3 +85,13 @@ s2014_erectlip_furyou	タイトル
 s2014_qoobrand_majokoi	NG	「script stack underflow」で止まる (pc=0x0004F640)
 s2014_erectlip_gyokumajyo	NG	「script stack underflow」で止まる (pc=0x0005121C)
 dl_VJ01002655	NG	「script stack underflow」で止まる (pc=0x000687DC)
+s2023_casket_oshitona_vtuber02	タイトル	
+s2023_casket_oshitona_vtuber03	タイトル	
+s2020_casket_ayakashi03	タイトル	
+s2011_whirlpool_maikaze	NG	「ysbin/ysc.ybn is missing」(台本が pac/*.ypf にある古い形)
+s2023_milimili_onaho_yokai	NG	起動時に panic (capacity overflow)
+r1_tyrano	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)。exe を zip として展開すれば読めるはず
+dl_VJ01000810	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)
+dl_RJ01731048	NG	黒画面。「require is not defined」(NW.js の Node API を使う)
+dl_RJ01604592	NG	「Your browser does not support IndexedDB」(iframe から IndexedDB が使えない)
+dl_RJ01698597	起動	読み込み中の表示のまま進まない

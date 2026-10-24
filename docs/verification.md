@@ -42,12 +42,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | SiglusEngine (siglus_rs) | 19 | 5 | 14 |  |  |  |  |  |
 | RealLive (siglus_rs) | 8 | 4 | 2 |  | 1 |  | 1 |  |
 | BGI (ethornell-rs) | 21 | 1 | 14 |  | 2 | 4 |  |  |
-| Softpal (sena-rs) | 28 | 3 | 14 |  |  | 10 |  | 1 |
+| Softpal (sena-rs) | 28 | 3 | 14 |  |  | 11 |  |  |
 | Artemis (art3m1s-core) | 6 |  | 4 |  |  | 2 |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 2 | 1 |  |
-| HTML (TyranoScript、RPGツクール MV/MZ) | 33 |  |  |  |  |  |  | 33 |
+| HTML (TyranoScript、RPGツクール MV/MZ) | 33 |  |  | 1 | 2 | 2 |  | 28 |
 | 吉里吉里 (KiriKiri SDL2) | 135 |  |  |  |  |  |  | 135 |
-| YU-RIS (vnrun) | 29 |  |  |  |  |  | 1 | 28 |
+| YU-RIS (vnrun) | 29 |  | 3 |  |  | 1 | 1 | 24 |
 
 ### SiglusEngine (siglus_rs)
 
@@ -143,7 +143,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | r1_softpal_tenmao | [転性魔王さま 体験版](https://kumanomi-soft.amusecraft.com/tenmao/dl/tenmao_try.zip) | NG | 起動時に panic (capacity overflow) |
 | s2014_erectlip_gyokumajyo | [逆転魔女裁判－痴女な魔女に裁かれちゃう－　【体験版】](http://suezou.dyndns.org/dl2014/erectlip/gyokumajyo/gyakumajyo_try.zip) | NG | 「script stack underflow」で止まる (pc=0x0005121C) |
 | s2014_qoobrand_majokoi | [魔女こいにっき 体験版 (第一弾)](http://suezou.dyndns.org/dl2014/qoobrand/mazyokoi/MAJOKOI_try.zip) | NG | 「script stack underflow」で止まる (pc=0x0004F640) |
-| s2023_milimili_onaho_yokai | [巨乳オナホ妖怪と田舎ライフもHも満喫生活　【体験版】](http://suezou.dyndns.org/dl2023/milimili/onaho_yokai/onaho_yokai_try.zip) | 未確認 |  |
+| s2023_milimili_onaho_yokai | [巨乳オナホ妖怪と田舎ライフもHも満喫生活　【体験版】](http://suezou.dyndns.org/dl2023/milimili/onaho_yokai/onaho_yokai_try.zip) | NG | 起動時に panic (capacity overflow) |
 
 ### Artemis (art3m1s-core)
 
@@ -170,8 +170,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| dl_RJ01698597 | [かんもく:場面緘黙女子](https://trial.dlsite.com/doujin/RJ01699000/RJ01698597_trial.zip) | 起動 | 読み込み中の表示のまま進まない |
+| dl_VJ01000810 | [エッチなお姉ちゃんが、褐色巨乳の悪魔だった件](https://trial.dlsite.com/professional/VJ01001000/VJ01000810_trial.zip) | 要再確認 | NW.js のゲームが exe に埋め込まれている (package.nw が無い) |
+| r1_tyrano | [転生した世界で… 体験版](http://www.gocha-mix.com/gp/gxgp01/dl/gxgp001_trial.zip) | 要再確認 | NW.js のゲームが exe に埋め込まれている (package.nw が無い)。exe を zip として展開すれば読めるはず |
+| dl_RJ01604592 | [HEART OVERLOAD! 欲望でつながる戦術部隊](https://trial.dlsite.com/doujin/RJ01605000/RJ01604592_trial.zip) | NG | 「Your browser does not support IndexedDB」(iframe から IndexedDB が使えない) |
+| dl_RJ01731048 | [ヤリステナイメスブター 世界を救った後の ボクの日常『性』活](https://trial.dlsite.com/doujin/RJ01732000/RJ01731048_trial.zip) | NG | 黒画面。「require is not defined」(NW.js の Node API を使う) |
 | dl_RJ01529614 | [まぐわれ異世界珍道中](https://trial.dlsite.com/doujin/RJ01530000/RJ01529614_trial.zip) | 未確認 |  |
-| dl_RJ01604592 | [HEART OVERLOAD! 欲望でつながる戦術部隊](https://trial.dlsite.com/doujin/RJ01605000/RJ01604592_trial.zip) | 未確認 |  |
 | dl_RJ01612664 | [雪音の仇討ち物語](https://trial.dlsite.com/doujin/RJ01613000/RJ01612664_trial.zip) | 未確認 |  |
 | dl_RJ01618221 | [アリナと淫魔の呪い](https://trial.dlsite.com/doujin/RJ01619000/RJ01618221_trial.zip) | 未確認 |  |
 | dl_RJ01618747 | [スペースパトロール パニカ](https://trial.dlsite.com/doujin/RJ01619000/RJ01618747_trial.zip) | 未確認 |  |
@@ -181,7 +185,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_RJ01650072 | [どこでもHな世界～地味子のバイト日記～](https://trial.dlsite.com/doujin/RJ01651000/RJ01650072_trial.zip) | 未確認 |  |
 | dl_RJ01686418 | [秘密 女騎士NTR](https://trial.dlsite.com/doujin/RJ01687000/RJ01686418_trial.zip) | 未確認 |  |
 | dl_RJ01696742 | [サモンスピリッツ](https://trial.dlsite.com/doujin/RJ01697000/RJ01696742_trial.zip) | 未確認 |  |
-| dl_RJ01698597 | [かんもく:場面緘黙女子](https://trial.dlsite.com/doujin/RJ01699000/RJ01698597_trial.zip) | 未確認 |  |
 | dl_RJ01699647 | [とろぴかる・ちぇいす！長年追っていた指名手配犯をヌーディストビーチで発見したクール系女刑事](https://trial.dlsite.com/doujin/RJ01700000/RJ01699647_trial.zip) | 未確認 |  |
 | dl_RJ01699765 | [星直しのブレイブロード -淫欲の街と堕落の聖女候補-](https://trial.dlsite.com/doujin/RJ01700000/RJ01699765_trial.zip) | 未確認 |  |
 | dl_RJ01701172 | [ラッキィ・ホール-ハズレは淫魔の搾精穴-](https://trial.dlsite.com/doujin/RJ01702000/RJ01701172_trial.zip) | 未確認 |  |
@@ -196,13 +199,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_RJ01722380 | [むぎゅっと☆搾精ナイトメア！](https://trial.dlsite.com/doujin/RJ01723000/RJ01722380_trial.zip) | 未確認 |  |
 | dl_RJ01727123 | [監禁部屋から逃げれない1](https://trial.dlsite.com/doujin/RJ01728000/RJ01727123_trial.zip) | 未確認 |  |
 | dl_RJ01730521 | [大魔法少女カサネ](https://trial.dlsite.com/doujin/RJ01731000/RJ01730521_trial.zip) | 未確認 |  |
-| dl_RJ01731048 | [ヤリステナイメスブター 世界を救った後の ボクの日常『性』活](https://trial.dlsite.com/doujin/RJ01732000/RJ01731048_trial.zip) | 未確認 |  |
 | dl_RJ01741863 | [淫らに染めて ～叔母が堕ちるまで～](https://trial.dlsite.com/doujin/RJ01742000/RJ01741863_trial.zip) | 未確認 |  |
 | dl_RJ01746541 | [女魔法使いセーラは俺から逃げられない！ ～便利なエロアイテムと孕むまでヤれる封鎖村～](https://trial.dlsite.com/doujin/RJ01747000/RJ01746541_trial.zip) | 未確認 |  |
 | dl_RJ357058 | [Last12 - 勇者の恥ずかしい育児日記 -](https://trial.dlsite.com/doujin/RJ358000/RJ357058_trial.zip) | 未確認 |  |
-| dl_VJ01000810 | [エッチなお姉ちゃんが、褐色巨乳の悪魔だった件](https://trial.dlsite.com/professional/VJ01001000/VJ01000810_trial.zip) | 未確認 |  |
 | dl_VJ01001309 | [エッチなお姉ちゃんが、褐色巨乳の悪魔だった件2 ～新たな悪魔ミリス登場♪～](https://trial.dlsite.com/professional/VJ01002000/VJ01001309_trial.zip) | 未確認 |  |
-| r1_tyrano | [転生した世界で… 体験版](http://www.gocha-mix.com/gp/gxgp01/dl/gxgp001_trial.zip) | 未確認 |  |
 
 ### 吉里吉里 (KiriKiri SDL2)
 
@@ -348,6 +348,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| s2020_casket_ayakashi03 | [あやかし遊郭～花魁アマビエ民譚集～体験版](http://suezou.dyndns.org/dl2020/casket/ayakashi03/ayakashi03_trial.zip) | タイトル |  |
+| s2023_casket_oshitona_vtuber02 | [画面から出てきた推しVtuberとHな同棲生活 ～庶民派吸血鬼お嬢様は契約したい～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber02/oshitona02_trial.zip) | タイトル |  |
+| s2023_casket_oshitona_vtuber03 | [画面から出てきた推しVtuberとHな同棲生活 ～夢魔かわASMR配信者は地雷系？～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber03/oshitona03_trial.zip) | タイトル |  |
+| s2011_whirlpool_maikaze | [舞風のメルト -Where leads to feeling destination- WEB体験版 (ver1.01)](http://suezou.dyndns.org/dl2011/whirlpool/maikaze/webtrial_maikaze_ver101.exe) | NG | 「ysbin/ysc.ybn is missing」(台本が pac/*.ypf にある古い形) |
 | r1_yuris | [YU-RIS サンプル](https://yu-ris.net/download/yu-ris_0495_032.zip) | 対象外 | YU-RIS の SDK のサンプル (コンパイル前で ysbin.ypf が無い) |
 | b2006_whirlpool | [いな☆こい！ ～お稲荷さまとモテモテのたたり～ 体験版 ver 1.00](http://suezou.dyndns.org/dl2006/whirlpool/inakoi/inakoi_trial_100.exe) | 未確認 |  |
 | b2007_whirlpool | [magus_trial.exe](http://suezou.dyndns.org/dl2007/whirlpool/magus/magus_trial.exe) | 未確認 |  |
@@ -368,13 +372,9 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_VJ01002338 | [いな☆こい！ ～お稲荷さまとモテモテのたたり～](https://trial.dlsite.com/professional/VJ01003000/VJ01002338_trial.zip) | 未確認 |  |
 | dl_VJ01002863 | [【限定版】巨乳軍人支配催眠「私の任務は貴方にご奉仕する事です。色んな穴をご自由にお使い下さい」](https://trial.dlsite.com/professional/VJ01003000/VJ01002863_trial.zip) | 未確認 |  |
 | dl_VJ01004582 | [【豪華版】家族は（俺以外）サキュバスでした ～二人の姉と母との性活で精液を搾り取られます～](https://trial.dlsite.com/professional/VJ01005000/VJ01004582_trial.zip) | 未確認 |  |
-| s2011_whirlpool_maikaze | [舞風のメルト -Where leads to feeling destination- WEB体験版 (ver1.01)](http://suezou.dyndns.org/dl2011/whirlpool/maikaze/webtrial_maikaze_ver101.exe) | 未確認 |  |
 | s2014_whirlpool_tearstilla | [鯨神のティアスティラ 体験版](http://suezou.dyndns.org/dl2014/whirlpool/tearstilla/kujira_trial_web.zip) | 未確認 |  |
 | s2016_no_strike_jyogaku | [女装学園（孕）　体験版](http://suezou.dyndns.org/dl2016/no-strike/jyogaku/jyogaku_trial.zip) | 未確認 |  |
 | s2019_no_strike_jyosou_jinjya | [josou jinjya_trial](http://suezou.dyndns.org/dl2019/no-strike/jyosou_jinjya/josou_jinjya_trial_TW.zip) | 未確認 |  |
-| s2020_casket_ayakashi03 | [あやかし遊郭～花魁アマビエ民譚集～体験版](http://suezou.dyndns.org/dl2020/casket/ayakashi03/ayakashi03_trial.zip) | 未確認 |  |
 | s2021_casket_bellaca | [リンカーベル・アカデミア～落第魔女とヒミツの儀式～体験版](http://suezou.dyndns.org/dl2021/casket/bellaca/bellaca01_trial.zip) | 未確認 |  |
 | s2021_casket_bellaca02 | [リンカーベル・アカデミア～龍族のフィアンセ～Hシーン体験版](http://suezou.dyndns.org/dl2021/casket/bellaca02/bellaca02_trial.zip) | 未確認 |  |
-| s2023_casket_oshitona_vtuber02 | [画面から出てきた推しVtuberとHな同棲生活 ～庶民派吸血鬼お嬢様は契約したい～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber02/oshitona02_trial.zip) | 未確認 |  |
-| s2023_casket_oshitona_vtuber03 | [画面から出てきた推しVtuberとHな同棲生活 ～夢魔かわASMR配信者は地雷系？～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber03/oshitona03_trial.zip) | 未確認 |  |
 <!-- /matrix -->
