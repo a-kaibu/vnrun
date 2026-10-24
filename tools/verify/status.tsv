@@ -33,19 +33,19 @@ b2006_lumpofsugar	タイトル
 b2013_lumpofsugar	タイトル	c27e445 で直った
 b2019_sukerasparo	タイトル	
 b2011_lumpofsugar	タイトル	
-b2015_lump_of_sugar	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
+b2015_lump_of_sugar	NG	c27e445 の後は「unsupported filesystem/platform/installer host capability」(host_runtime_diag:15:2439:5005)
 b2010_lumpofsugar	タイトル	
-s2015_smee_pure_connect	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
-s2014_hooksoft_meltymoment	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
-s2021_smee_pureconnect_hd	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
-s2016_hooksoft_amenitys_life	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
-s2020_hooksoft_houkago	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
+s2015_smee_pure_connect	タイトル	c27e445 で直った
+s2014_hooksoft_meltymoment	タイトル	c27e445 で直った
+s2021_smee_pureconnect_hd	NG	c27e445 の後は「無効なスクリーンサイズが設定されました」(host_runtime_diag:15:232:498)
+s2016_hooksoft_amenitys_life	本編	c27e445 で直った。最初の文章が出る
+s2020_hooksoft_houkago	タイトル	c27e445 で直った
 s2010_lumpofsugar_prismrhythm	タイトル	画面が拡大されず左上に小さく出る (800x600 の作品)
 dl_VJ01004381	NG	4 分待っても黒画面のまま (エラーなし)
 s2022_hooksoft_houkago2	NG	4 分待っても黒画面のまま (エラーなし)
 s2011_lumpofsugar_gackoh	タイトル	
 s2023_quince_soft_little_proncess_go	NG	起動時に「VM stopped: UnknownDispatch; host_runtime_diag:14:1:17:4294967295:4294967295:0」
-s2019_lump_of_sugar_wakabairono_quartet	NG	起動時に「無効なサイズ [ 0 ] byteのメモリ領域を確保しようとしました」
+s2019_lump_of_sugar_wakabairono_quartet	NG	c27e445 の後は「指定されたファイル [ sysgrp.arc : caret ] は存在しません」
 r1_artemis	タイトル	
 s2023_j_studio_reaero_dt	タイトル	
 s2020_wonder_fool_maokatsu	タイトル	
@@ -58,3 +58,22 @@ r1_saku	NG	PONScripter の作品。0.txt / nscript.dat が無く読めない (0.
 r1_higanbana	対象外	インストーラ形式 (CreateInstall) で展開できない
 dl_RJ01724681	NG	「Script error, Label "define" is not found」
 r1_softpal_tenmao	NG	起動時に panic (capacity overflow)
+r1_softpal_hanako	本編	プロローグの文章
+b2024_milimili	本編	プロローグの文章 (r1_softpal_hanako と同じ作品)
+b2021_milimili	タイトル	
+b2022_amuse_craft_erotica	タイトル	
+b2026_crystalia	タイトル	
+b2017_unisonshift	タイトル	
+b2020_milimili	タイトル	
+b2018_erectlip	タイトル	
+b2025_unisonshift	タイトル	
+b2020_erectlip	タイトル	
+s2026_amuse_craft_erotica_youkashi	タイトル	
+s2025_crystalia_crack_trick	タイトル	
+b2023_erectlip	NG	「script stack underflow」で止まる (pc=0x00066AE8)
+b2025_erectlip	NG	「script stack underflow」で止まる (pc=0x00071B44)
+dl_VJ01004424	NG	「script stack underflow」で止まる (pc=0x00071B44、b2025_erectlip と同じ作品)
+b2015_erectlip	NG	panic: pal-vm runtime.rs:14727 is_char_boundary
+b2011_erectlip	NG	最初の命令 sp_set_ex の引数の形が違い何も出ない (unsupported extcall)
+b2012_erectlip	NG	最初の命令 sp_set_ex の引数の形が違い何も出ない (unsupported extcall)
+r1_yuris	対象外	YU-RIS の SDK のサンプル (コンパイル前で ysbin.ypf が無い)
