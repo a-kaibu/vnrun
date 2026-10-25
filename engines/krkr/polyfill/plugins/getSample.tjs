@@ -1,0 +1,8 @@
+// vnrun: getSample.dll. Lip sync reads the voice's loudness from WaveSoundBuffer; here it is
+// always silence, so mouths stay closed.
+{
+	var B = global.WaveSoundBuffer;
+	if (typeof(B.setDefaultAheads) === "undefined") B.setDefaultAheads = function() {};
+	if (typeof(B.getSample) === "undefined") B.getSample = function() { return 0; };
+	if (typeof(B.sampleValue) === "undefined") B.sampleValue = 0;
+}

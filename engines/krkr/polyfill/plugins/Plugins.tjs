@@ -13,6 +13,8 @@ global.vnrunPlugins = %[
 		"kagparserex.dll" => "KAGParserEx.tjs",
 		"addfont.dll" => "addFont.tjs",
 		"win32dialog.dll" => "win32dialog.tjs",
+		"sigcheck.dll" => "sigcheck.tjs",
+		"getsample.dll" => "getSample.tjs",
 	],
 ];
 global.Plugins.link = function(name) {
@@ -24,6 +26,16 @@ global.Plugins.link = function(name) {
 	p.loaded[key] = true;
 	Debug.message("(vnrun) " + name + ": " + script);
 	Scripts.execStorage(p.root + script);
+} incontextof global;
+// The stand-ins count as loaded plugins (scripts look for their names in Plugins.getList).
+global.vnrunPlugins.getList = global.Plugins.getList;
+global.Plugins.getList = function() {
+	var p = global.vnrunPlugins;
+	var list = p.getList === void ? [] : p.getList();
+	var names = [];
+	names.assign(p.loaded);
+	for (var i = 0; i < names.count; i += 2) list.add(names[i]);
+	return list;
 } incontextof global;
 // addFont also comes as a TPM, which KiriKiri loads by itself before startup.tjs.
 Scripts.execStorage(global.vnrunPlugins.root + "addFont.tjs");

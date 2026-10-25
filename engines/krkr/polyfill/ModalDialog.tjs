@@ -6,7 +6,8 @@
 	global.vnrunDialog = %[ text: "", drawText: global.Layer.drawText ];
 	global.Layer.drawText = function(x, y, text) {
 		var v = global.vnrunDialog;
-		if (window !== global.Window.mainWindow && text != "はい" && text != "いいえ")
+		// (zero-size windows are not dialogs: release.ks draws its signature checks on them)
+		if (window !== global.Window.mainWindow && width > 0 && text != "はい" && text != "いいえ")
 			v.text += text + "\n";
 		return (v.drawText incontextof this)(...);
 	} incontextof null;

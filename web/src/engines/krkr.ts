@@ -42,6 +42,8 @@ const POLYFILL_FILES = [
     "KAGParserEx",
     "addFont",
     "win32dialog",
+    "sigcheck",
+    "getSample",
   ].map((name) => `plugins/${name}.tjs`),
 ];
 const STARTUP = "/vnrun/startup.tjs";

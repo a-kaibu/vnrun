@@ -1,0 +1,9 @@
+// vnrun: sigcheck.dll. Release scripts check the signatures (data.xp3.sig) of the exe and the
+// archives with Window.checkSignature and quit unless onCheckSignatureDone gets a result of 1.
+// The exe is not there and the archives are read as they come, so every check passes.
+if (typeof(global.Window.checkSignature) === "undefined")
+	global.Window.checkSignature = function(file, publickey, info) {
+		if (typeof(this.onCheckSignatureDone) !== "undefined")
+			this.onCheckSignatureDone(1, info, 1, "");
+		return 1;
+	} incontextof null;

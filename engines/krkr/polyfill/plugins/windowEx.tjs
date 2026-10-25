@@ -9,6 +9,15 @@
 		"setMaximizeBox", "setDisableResize"];
 	for (var i = 0; i < methods.count; i++)
 		if (typeof(W[methods[i]]) === "undefined") W[methods[i]] = nop;
+	// the window's state as windowEx tells it: never minimised or maximised in a page
+	var states = %[ maximized: false, minimized: false, maximizeBox: true, minimizeBox: true,
+		disableResize: false, disableMove: false ];
+	var names = [];
+	names.assign(states);
+	for (var i = 0; i < names.count; i += 2)
+		if (typeof(W[names[i]]) === "undefined") W[names[i]] = names[i + 1];
+	// the system menu, a menu nobody sees
+	if (typeof(W.exSystemMenu) === "undefined") W.exSystemMenu = new MenuItem(null, "");
 	if (typeof(W.getWindowRect) === "undefined")
 		W.getWindowRect = function() { return %[ x: left, y: top, w: width, h: height ]; };
 	if (typeof(W.getClientRect) === "undefined")

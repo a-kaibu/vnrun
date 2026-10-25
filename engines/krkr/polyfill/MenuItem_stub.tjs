@@ -1,30 +1,43 @@
-﻿
-
+﻿// KiriKiri SDL2 has no menus. A MenuItem keeps what the scripts set on it and its children, so
+// scripts that walk or relabel the menu (caption.indexOf, children[i]) still work.
 class MenuItem
 {
-	var caption;
-	var checked;
-	var enabled;
-	var group;
-	var radio;
-	var shortcut;
-	var visible;
+	var caption = "";
+	var checked = false;
+	var enabled = true;
+	var group = 0;
+	var radio = false;
+	var shortcut = "";
+	var visible = true;
 	var parent;
 	var children;
 	var root;
 	var window;
-	var index;
-	function MenuItem() {
+	var index = -1;
+	function MenuItem(window, caption = "") {
+		this.window = window;
+		this.caption = caption;
 		children = [];
 	}
 	function finalize() {}
-	function add() {}
-	function insert() {}
-	function remove() {}
+	function add(item) { insert(item, children.count); }
+	function insert(item, index) {
+		if (item === void) return;
+		children.insert(index, item);
+		item.parent = this;
+		item.root = root === void ? this : root;
+		renumber();
+	}
+	function remove(item) {
+		children.remove(item, true);
+		renumber();
+	}
+	function renumber() {
+		for (var i = 0; i < children.count; i++) children[i].index = i;
+	}
 	function popup() {}
 	function onClick() {}
 	function fireClick() {}
 }
 
 global.Window.menu = new MenuItem();
-

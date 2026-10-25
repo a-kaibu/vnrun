@@ -1,7 +1,7 @@
 // vnrun: csvParser.dll. new CSVParser(target, separator=","), then init(text) or
 // initStorage(name) and getNextLine() until void, or parse(text) / parseStorage(name), which
-// call target.doLine(fields, lineNumber). Quoted fields may hold separators, "" and newlines.
-// Empty lines are skipped.
+// call target.doLine(fields, lineNumber) (no target: this.doLine). Quoted fields may hold
+// separators, "" and newlines. Empty lines are skipped.
 class CSVParser
 {
 	var target, separator;
@@ -55,9 +55,12 @@ class CSVParser
 
 	function parse(text = void) {
 		if (text !== void) init(text);
+		// no target (void or null): a subclass's own doLine
+		var to = target === void || target === null ? this : target;
+		if (typeof(to.doLine) === "undefined") return;
 		var fields;
 		while ((fields = getNextLine()) !== void)
-			if (target !== void) target.doLine(fields, currentLineNumber);
+			to.doLine(fields, currentLineNumber);
 	}
 	function parseStorage(name, utf8 = false) {
 		initStorage(name, utf8);
