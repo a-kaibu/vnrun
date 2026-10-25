@@ -37,6 +37,6 @@
 		S.clone = function(obj) {
 			if (typeof(obj) != "Object" || obj === null) return obj;
 			if (obj instanceof "Array") { var a = []; a.assignStruct(obj); return a; }
-			var d = %[]; d.assignStruct(obj); return d;
+			var d = %[]; (Dictionary.assignStruct incontextof d)(obj); return d;
 		} incontextof global;
 }
