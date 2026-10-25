@@ -3,7 +3,10 @@
 //! The formats are documented in the modules: [`pac`] (archives), [`script`] (compiled scripts),
 //! [`vm`] (the script machine).
 
+pub mod dat;
+pub mod engine;
 pub mod files;
+pub mod font;
 pub mod gfx;
 pub mod pac;
 pub mod script;

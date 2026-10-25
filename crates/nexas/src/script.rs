@@ -8,8 +8,8 @@
 //! ```
 //!
 //! `init` runs once when the file is loaded. Each file carries a copy of every function it calls,
-//! so a call needs nothing but the file. The 0x44-byte records list each label's (op 0x1B) local
-//! variables, for saves.
+//! so a call needs nothing but the file. The 0x44-byte records are the file's banks: the labels
+//! (op 0x1B) the engine can start it at, each with up to 8 parameters that go to local integers.
 
 use std::collections::HashMap;
 
@@ -21,8 +21,18 @@ pub struct Ins {
     pub arg: u32,
 }
 
+/// An entry point: label `label`, whose parameter k goes to local integer `vars[k]` (-1: none);
+/// a caller passing 99999 leaves it at `defaults[k]`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Bank {
+    pub label: i32,
+    pub vars: [i32; 8],
+    pub defaults: [i32; 8],
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct Block {
+    pub banks: Vec<Bank>,
     pub init: Vec<Ins>,
     pub code: Vec<Ins>,
     pub strings: Vec<Vec<u8>>,
@@ -88,12 +98,25 @@ impl Reader<'_> {
         let int_names = names(self.strs()?);
         let str_names = names(self.strs()?);
         let n = self.u32()? as usize;
-        self.at = n
-            .checked_mul(0x44)
-            .and_then(|k| k.checked_add(self.at))
-            .filter(|&e| e <= self.b.len())
-            .ok_or("cut short")?;
+        if n.checked_mul(0x44)
+            .is_none_or(|k| self.at + k > self.b.len())
+        {
+            return Err("banks are cut short".into());
+        }
+        let mut banks = Vec::with_capacity(n);
+        for _ in 0..n {
+            let mut v = [0i32; 17];
+            for x in &mut v {
+                *x = self.u32()? as i32;
+            }
+            banks.push(Bank {
+                label: v[0],
+                vars: v[1..9].try_into().unwrap(),
+                defaults: v[9..17].try_into().unwrap(),
+            });
+        }
         Ok(Block {
+            banks,
             init,
             code,
             strings,

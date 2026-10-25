@@ -182,6 +182,37 @@ impl Thread {
         true
     }
 
+    /// Starts the main code at bank `label` with its parameters (99999: the bank's default).
+    pub fn enter_bank(&mut self, label: u32, params: &[i32]) -> bool {
+        let bank = self
+            .script
+            .main
+            .banks
+            .iter()
+            .find(|b| b.label == label as i32)
+            .copied();
+        if !self.goto_label(label) {
+            return false;
+        }
+        if let Some(bank) = bank {
+            for k in 0..8 {
+                let Ok(var) = usize::try_from(bank.vars[k]) else {
+                    continue;
+                };
+                let v = match params.get(k) {
+                    Some(&p) if p != 99999 => p,
+                    _ => bank.defaults[k],
+                };
+                let ints = &mut self.frames[0].ints;
+                if ints.len() <= var {
+                    ints.resize(var + 1, 0);
+                }
+                ints[var] = v;
+            }
+        }
+        true
+    }
+
     fn block_of(&self, f: &Frame) -> &Block {
         match f.func {
             Some(id) => self.script.funcs.get(&id).unwrap_or(&self.script.main),
