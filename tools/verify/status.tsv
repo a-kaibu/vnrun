@@ -166,7 +166,7 @@ b2013_madosoft	タイトル	591d0a0 でタイトルまで
 b2008_asa_project	起動	5d1348e でロゴと体験版の注意書きまで。タイトルは未確認
 b2008_akabeesoft	起動	5d1348e で注意書き画面まで。タイトルは未確認
 b2010_akabeesoft	タイトル	d084599 (setLayerPos) でタイトル画面まで表示
-b2006_akabeesoft	NG	5d1348e で「TypeError: getWasmTableEntry(...) is not a function」
+b2006_akabeesoft	タイトル	dc42573 でタイトル画面まで表示
 b2012_akabeesoft3	起動	e7d5b88 でロゴと注意書きまで。タイトルは未確認
 b2011_nanawind	NG	cxdec 系 (yuyukana.tpm) で未対応。「Invalid character '\x03'」
 b2020_lass_pixy	NG	E-mote で未対応。6d436d5 でメニューまで通過、motion.tjs(20)「Member "Motion" does not exist」
@@ -181,7 +181,7 @@ b2021_chaos_r	タイトル	5d1348e でタイトル画面まで表示
 b2021_kelp	タイトル	5d1348e でタイトル画面まで表示
 b2022_chaos_r	タイトル	5d1348e でタイトル画面まで表示
 b2019_tinkle_position	本編	1929e7a で「はじめる」からハグクリックの説明画面まで
-b2023_lump_of_sugar_all	NG	1929e7a でも式「GetUIFile(quickmenu.pimg)」の評価で Member "quickmenu" does not exist
+b2023_lump_of_sugar_all	タイトル	dc42573 でタイトル画面まで表示
 b2012_alcot	NG	「Member "Motion" does not exist」(motion.tjs(20)、E-mote) で未対応
 b2012_kai	NG	「Member "Motion" does not exist」(motion.tjs(20)、E-mote) で未対応
 b2010_giga	NG	64d6316 (2015 年版の表) で「System.bin: string is cut short」
@@ -228,7 +228,7 @@ b2020_pin_point	タイトル	5d1348e でタイトル画面まで表示。起動�
 b2021_pin_point	タイトル	5d1348e でタイトル画面まで表示。起動時に「フルスクリーンで表示しますか？」の確認ダイアログが出る
 b2008_dualtail	タイトル	e7d5b88 でタイトル画面まで表示
 b2012_cross_over	タイトル	e7d5b88 でタイトル画面まで表示
-b2009_dualtail	NG	5d1348e で「TypeError: getWasmTableEntry(...) is not a function」
+b2009_dualtail	タイトル	dc42573 でタイトル画面まで表示 (クリックで設定画面も開く)
 b2022_hending	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」
 b2020_akabeesoft3	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」
 b2013_dualtail	タイトル	d084599 (setLayerPos) でタイトル画面まで表示
