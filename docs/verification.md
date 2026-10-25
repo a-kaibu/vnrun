@@ -47,7 +47,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 2 | 11 | 14 | 3 | 3 |  |  |
 | 吉里吉里 (KiriKiri SDL2) | 135 |  | 2 |  | 1 | 9 |  | 123 |
-| YU-RIS (vnrun) | 29 |  | 19 | 3 |  | 6 | 1 |  |
+| YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -358,6 +358,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_VJ01000407 | [画面から出てきた推しVtuberとHな同棲生活 ～夢魔かわASMR配信者は地雷系？～](https://trial.dlsite.com/professional/VJ01001000/VJ01000407_trial.zip) | タイトル | 3e4a888 のビルドでタイトルまで |
 | dl_VJ01001385 | [【豪華版】ボクが当主になるために今日からメイドとHします2](https://trial.dlsite.com/professional/VJ01002000/VJ01001385_trial.zip) | タイトル | 3e4a888 のビルドでタイトルまで |
 | dl_VJ01001386 | [【通常版】ボクが当主になるために今日からメイドとHします2](https://trial.dlsite.com/professional/VJ01002000/VJ01001386_trial.zip) | タイトル | 5224635 (YU-RIS 482) でタイトルまで |
+| dl_VJ01002327 | [竜翼のメロディア −Diva with the blessed dragonol−](https://trial.dlsite.com/professional/VJ01003000/VJ01002327_trial.zip) | タイトル | c03eae9 (YU-RIS 551 のシステム変数) でタイトルまで |
 | dl_VJ01002863 | [【限定版】巨乳軍人支配催眠「私の任務は貴方にご奉仕する事です。色んな穴をご自由にお使い下さい」](https://trial.dlsite.com/professional/VJ01003000/VJ01002863_trial.zip) | タイトル | 3e4a888 のビルドでタイトルまで |
 | dl_VJ01004582 | [【豪華版】家族は（俺以外）サキュバスでした ～二人の姉と母との性活で精液を搾り取られます～](https://trial.dlsite.com/professional/VJ01005000/VJ01004582_trial.zip) | タイトル | 5224635 (YU-RIS 482) でタイトルまで |
 | s2014_whirlpool_tearstilla | [鯨神のティアスティラ 体験版](http://suezou.dyndns.org/dl2014/whirlpool/tearstilla/kujira_trial_web.zip) | タイトル | 6b6e16b / 3e4a888 (YU-RIS 554) でタイトルまで。初期化に40秒ほどかかる |
@@ -368,13 +369,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2023_casket_oshitona_vtuber02 | [画面から出てきた推しVtuberとHな同棲生活 ～庶民派吸血鬼お嬢様は契約したい～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber02/oshitona02_trial.zip) | タイトル |  |
 | s2023_casket_oshitona_vtuber03 | [画面から出てきた推しVtuberとHな同棲生活 ～夢魔かわASMR配信者は地雷系？～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber03/oshitona03_trial.zip) | タイトル |  |
 | b2010_whirlpool | [涼風のメルト -Where wishes are drawn to each other- WEB体験版](http://suezou.dyndns.org/dl2010/whirlpool/melt/webtrial_melt.exe) | 起動 | 3e4a888 で真っ白 (ページ下のバーも出ない。タブが落ちた可能性) |
-| s2011_whirlpool_maikaze | [舞風のメルト -Where leads to feeling destination- WEB体験版 (ver1.01)](http://suezou.dyndns.org/dl2011/whirlpool/maikaze/webtrial_maikaze_ver101.exe) | 起動 | 3e4a888 でも黒画面 (ネイティブの yuris-run でも黒)。YSTB 550 |
+| s2011_whirlpool_maikaze | [舞風のメルト -Where leads to feeling destination- WEB体験版 (ver1.01)](http://suezou.dyndns.org/dl2011/whirlpool/maikaze/webtrial_maikaze_ver101.exe) | 起動 | c03eae9 でも黒画面のまま (YSTB 550、エラーなし) |
 | s2019_no_strike_jyosou_jinjya | [josou jinjya_trial](http://suezou.dyndns.org/dl2019/no-strike/jyosou_jinjya/josou_jinjya_trial_TW.zip) | 起動 | 3e4a888 で真っ白 (ページ下のバーも出ない。タブが落ちた可能性) |
 | b2006_whirlpool | [いな☆こい！ ～お稲荷さまとモテモテのたたり～ 体験版 ver 1.00](http://suezou.dyndns.org/dl2006/whirlpool/inakoi/inakoi_trial_100.exe) | NG | pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」 |
 | b2007_whirlpool | [magus_trial.exe](http://suezou.dyndns.org/dl2007/whirlpool/magus/magus_trial.exe) | NG | pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」 |
 | b2014_whirlpool | [G.I.B. ガールズ・イン・ブラック  WEB体験版](http://suezou.dyndns.org/dl2014/whirlpool/gib/gib_webtrial.exe) | NG | 3e4a888 で「yst00044.ybn: short arguments」 |
 | b2021_whirlpool | [けもの道☆ガーリッシュスクエア　体験版](http://suezou.dyndns.org/dl2021/whirlpool/kemonomichi-gs/kemonomichi-gs_trial.zip) | NG | 3e4a888 で「yst00067.ybn: short arguments」 |
-| dl_VJ01002327 | [竜翼のメロディア −Diva with the blessed dragonol−](https://trial.dlsite.com/professional/VJ01003000/VJ01002327_trial.zip) | NG | 3e4a888 でも白画面。ネイティブでは「動作には65536色以上表示可能な環境が必要です」のダイアログで終了し、pac/op.ypf は YPF ではない。YSTB 551 |
 | dl_VJ01002338 | [いな☆こい！ ～お稲荷さまとモテモテのたたり～](https://trial.dlsite.com/professional/VJ01003000/VJ01002338_trial.zip) | NG | pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」 |
 | r1_yuris | [YU-RIS サンプル](https://yu-ris.net/download/yu-ris_0495_032.zip) | 対象外 | YU-RIS の SDK のサンプル (コンパイル前で ysbin.ypf が無い) |
 <!-- /matrix -->
