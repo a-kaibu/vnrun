@@ -132,7 +132,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 | AliceSoft System4 | 3 | [xsystem4](https://github.com/kichikuou/xsystem4)、system3-sdl2 (Web 版あり) | C | System3 のみ | |
 | YU-RIS | 29 | なし | | | 自作候補 |
 | NeXAS | 26 | 自作 (`crates/nexas`) | Rust | あり (WebGPU) | 2015 年の版 (恋愛フェイズ) と 2012 年の版 (キスベル) で本編まで。ほかの版は命令表を足す |
-| AdvHD | 18 | なし | | | |
+| AdvHD | 18 | 自作 (`crates/advhd`, `crates/advhd-web`) | Rust | あり (WebGPU) | 2018 年の版 (Lua 5.3、僕と彼女のご奉仕同棲) でタイトルから本編の文章まで。選択肢・音・セーブ・マスク遷移はまだ。2015 年版は Lua の io、2026 年版は setCallback が足りない |
 | LiveMaker / WillPlus | 各 9 | なし | | | |
 | CatSystem2 / Escude / EntisGLS | 各 8 | なし | | | |
 
