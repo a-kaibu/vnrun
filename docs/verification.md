@@ -42,12 +42,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | SiglusEngine (siglus_rs) | 19 | 5 | 14 |  |  |  |  |  |
 | RealLive (siglus_rs) | 8 | 4 | 2 |  | 1 |  | 1 |  |
 | BGI (ethornell-rs) | 21 | 1 | 19 |  |  | 1 |  |  |
-| Softpal (sena-rs) | 28 | 3 | 14 |  |  | 11 |  |  |
+| Softpal (sena-rs) | 28 | 3 | 19 |  |  | 6 |  |  |
 | Artemis (art3m1s-core) | 6 |  | 5 |  |  | 1 |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
-| HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 1 | 5 | 10 | 3 | 14 |  |  |
+| HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 1 | 6 | 10 | 3 | 13 |  |  |
 | 吉里吉里 (KiriKiri SDL2) | 135 |  | 1 |  | 1 | 2 |  | 131 |
-| YU-RIS (vnrun) | 29 |  | 5 |  |  | 8 | 1 | 15 |
+| YU-RIS (vnrun) | 29 |  | 6 | 1 | 1 | 5 | 1 | 15 |
 
 ### SiglusEngine (siglus_rs)
 
@@ -125,10 +125,15 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2020_milimili | [shin-neko ～再会した妹との新たな関係～　【体験版】](http://suezou.dyndns.org/dl2020/milimili/shin_neko/shin-neko_try.zip) | タイトル |  |
 | b2021_milimili | [ちんかもツインズ２！　～夏だ！海だ！ふたごの妹おっぱい対決だ！～　【体験版】](http://suezou.dyndns.org/dl2021/milimili/chinkamo2/chinkamo2_try.zip) | タイトル |  |
 | b2022_amuse_craft_erotica | [黒ギャル子ちゃんとしっぽり温泉旅行 ～Hしまくり三泊四日の旅～　【体験版】](http://suezou.dyndns.org/dl2022/amuse_craft-erotica/kurogal_onsen/kurogal_onsen_try.zip) | タイトル |  |
+| b2025_erectlip | [爆乳淫乱ビーチ　体験版](http://suezou.dyndns.org/dl2025/erectlip/inran_beach/inran_beach_try.zip) | タイトル | 654935e / 8c223b7 でタイトルのボタンまで出る |
 | b2025_unisonshift | [小日向柚月と初夜したいっ！　【体験版】](http://suezou.dyndns.org/dl2025/unisonshift/kohinata/kohinata_try.zip) | タイトル |  |
 | b2026_crystalia | [ディメンション凸ラバース!! 【体験版】](http://suezou.dyndns.org/dl2026/crystalia/totsu_lover/totsulover_try.zip) | タイトル |  |
+| dl_VJ01002655 | [爆乳メイド調教 ～夜姦緊縛教育～](https://trial.dlsite.com/professional/VJ01003000/VJ01002655_trial.zip) | タイトル | 654935e 以降でタイトルまで |
+| dl_VJ01004424 | [爆乳淫乱ビーチ](https://trial.dlsite.com/professional/VJ01005000/VJ01004424_trial.zip) | タイトル | 654935e / 8c223b7 でタイトルのボタンまで出る (b2025_erectlip と同じ作品) |
 | s2013_erectlip_katekyo | [爆乳淫乱家庭教師　【体験版】](http://suezou.dyndns.org/dl2013/erectlip/katekyo/KATEKYO_try.zip) | タイトル |  |
 | s2014_erectlip_furyou | [学園の生贄――慰み者と化した巨乳不良少女 ～白濁に侵される褐色＆堕肉の狂宴～【体験版】](http://suezou.dyndns.org/dl2014/erectlip/furyou/furyou_try.zip) | タイトル |  |
+| s2014_erectlip_gyokumajyo | [逆転魔女裁判－痴女な魔女に裁かれちゃう－　【体験版】](http://suezou.dyndns.org/dl2014/erectlip/gyokumajyo/gyakumajyo_try.zip) | タイトル | 654935e / 8c223b7 でタイトルのボタンまで出る |
+| s2014_qoobrand_majokoi | [魔女こいにっき 体験版 (第一弾)](http://suezou.dyndns.org/dl2014/qoobrand/mazyokoi/MAJOKOI_try.zip) | タイトル | 654935e 以降でタイトルまで |
 | s2020_amuse_craft_erotica_kinbaku | [緊縛性奴会長 ～カレに知られたワタシの秘密～　【体験版】](http://suezou.dyndns.org/dl2020/amuse_craft-erotica/kinbaku/kinbaku_s_try.zip) | タイトル |  |
 | s2022_amuse_craft_erotica_tsumamomi | [つまもみ ～欲求不満の奥さんとなし崩しオイルマッサージ～　【体験版】](http://suezou.dyndns.org/dl2022/amuse_craft-erotica/tsumamomi/tsumamomi_try.zip) | タイトル |  |
 | s2025_crystalia_crack_trick | [CRACK≡TRICK!](http://suezou.dyndns.org/dl2025/crystalia/crack_trick/cratri_try.zip) | タイトル |  |
@@ -136,13 +141,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2011_erectlip | [りとる†びっち ～Little Bitch Girls in Hog Farm～ 体験版](http://suezou.dyndns.org/dl2011/erectlip/littlebitch/LittleBitch_trial.zip) | NG | 最初の命令 sp_set_ex の引数の形が違い何も出ない (unsupported extcall) |
 | b2012_erectlip | [inrakuchikan_trial.zip](http://suezou.dyndns.org/dl2012/erectlip/inrakuchikan/inrakuchikan_trial.zip) | NG | 最初の命令 sp_set_ex の引数の形が違い何も出ない (unsupported extcall) |
 | b2015_erectlip | [巨乳大魔王のドスケベクエスト ～完全敗北した少年勇者クンＵＣ～　【体験版】](http://suezou.dyndns.org/dl2015/erectlip/dosukebe/dosukebe_try.zip) | NG | panic: pal-vm runtime.rs:14727 is_char_boundary |
-| b2023_erectlip | [爆乳遊廓 ～癒され太夫孕ませの夜鶴～　【体験版】](http://suezou.dyndns.org/dl2023/erectlip/bakunyu_yukaku/yukaku_try.zip) | NG | 「script stack underflow」で止まる (pc=0x00066AE8) |
-| b2025_erectlip | [爆乳淫乱ビーチ　体験版](http://suezou.dyndns.org/dl2025/erectlip/inran_beach/inran_beach_try.zip) | NG | 「script stack underflow」で止まる (pc=0x00071B44) |
-| dl_VJ01002655 | [爆乳メイド調教 ～夜姦緊縛教育～](https://trial.dlsite.com/professional/VJ01003000/VJ01002655_trial.zip) | NG | 「script stack underflow」で止まる (pc=0x000687DC) |
-| dl_VJ01004424 | [爆乳淫乱ビーチ](https://trial.dlsite.com/professional/VJ01005000/VJ01004424_trial.zip) | NG | 「script stack underflow」で止まる (pc=0x00071B44、b2025_erectlip と同じ作品) |
+| b2023_erectlip | [爆乳遊廓 ～癒され太夫孕ませの夜鶴～　【体験版】](http://suezou.dyndns.org/dl2023/erectlip/bakunyu_yukaku/yukaku_try.zip) | NG | underflow は直ったが、ブラウザでは起動時に panic (raw_vec capacity_overflow) |
 | r1_softpal_tenmao | [転性魔王さま 体験版](https://kumanomi-soft.amusecraft.com/tenmao/dl/tenmao_try.zip) | NG | 起動時に panic (capacity overflow) |
-| s2014_erectlip_gyokumajyo | [逆転魔女裁判－痴女な魔女に裁かれちゃう－　【体験版】](http://suezou.dyndns.org/dl2014/erectlip/gyokumajyo/gyakumajyo_try.zip) | NG | 「script stack underflow」で止まる (pc=0x0005121C) |
-| s2014_qoobrand_majokoi | [魔女こいにっき 体験版 (第一弾)](http://suezou.dyndns.org/dl2014/qoobrand/mazyokoi/MAJOKOI_try.zip) | NG | 「script stack underflow」で止まる (pc=0x0004F640) |
 | s2023_milimili_onaho_yokai | [巨乳オナホ妖怪と田舎ライフもHも満喫生活　【体験版】](http://suezou.dyndns.org/dl2023/milimili/onaho_yokai/onaho_yokai_try.zip) | NG | 起動時に panic (capacity overflow) |
 
 ### Artemis (art3m1s-core)
@@ -171,6 +171,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | dl_RJ01720685 | [アイドルダークダンジョン](https://trial.dlsite.com/doujin/RJ01721000/RJ01720685_trial.zip) | 本編 | クリックで最初の会話まで |
+| dl_RJ01604592 | [HEART OVERLOAD! 欲望でつながる戦術部隊](https://trial.dlsite.com/doujin/RJ01605000/RJ01604592_trial.zip) | タイトル | 416970b (IndexedDB) でタイトルまで |
 | dl_RJ01612664 | [雪音の仇討ち物語](https://trial.dlsite.com/doujin/RJ01613000/RJ01612664_trial.zip) | タイトル | RPGツクール。画面が拡大されない |
 | dl_RJ01642779 | [戦闘補習3～武闘派冒険者、魔術を学ぶ～](https://trial.dlsite.com/doujin/RJ01643000/RJ01642779_trial.zip) | タイトル | RPGツクール。画面が拡大されない |
 | dl_RJ01650072 | [どこでもHな世界～地味子のバイト日記～](https://trial.dlsite.com/doujin/RJ01651000/RJ01650072_trial.zip) | タイトル |  |
@@ -190,7 +191,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_VJ01001309 | [エッチなお姉ちゃんが、褐色巨乳の悪魔だった件2 ～新たな悪魔ミリス登場♪～](https://trial.dlsite.com/professional/VJ01002000/VJ01001309_trial.zip) | 要再確認 | NW.js のゲームが exe に埋め込まれている (package.nw が無い) |
 | r1_tyrano | [転生した世界で… 体験版](http://www.gocha-mix.com/gp/gxgp01/dl/gxgp001_trial.zip) | 要再確認 | NW.js のゲームが exe に埋め込まれている (package.nw が無い)。exe を zip として展開すれば読めるはず |
 | dl_RJ01529614 | [まぐわれ異世界珍道中](https://trial.dlsite.com/doujin/RJ01530000/RJ01529614_trial.zip) | NG | 「Your browser does not support IndexedDB」 |
-| dl_RJ01604592 | [HEART OVERLOAD! 欲望でつながる戦術部隊](https://trial.dlsite.com/doujin/RJ01605000/RJ01604592_trial.zip) | NG | 「Your browser does not support IndexedDB」(iframe から IndexedDB が使えない) |
 | dl_RJ01618221 | [アリナと淫魔の呪い](https://trial.dlsite.com/doujin/RJ01619000/RJ01618221_trial.zip) | NG | 「Your browser does not support IndexedDB」 |
 | dl_RJ01648691 | [測り難きは下心](https://trial.dlsite.com/doujin/RJ01649000/RJ01648691_trial.zip) | NG | 「Your browser does not support IndexedDB」 |
 | dl_RJ01696742 | [サモンスピリッツ](https://trial.dlsite.com/doujin/RJ01697000/RJ01696742_trial.zip) | NG | 「Your browser does not support IndexedDB」 |
@@ -349,18 +349,18 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | dl_RJ01721024 | [むかしグラビアアイドルだった団地妻](https://trial.dlsite.com/doujin/RJ01722000/RJ01721024_trial.zip) | タイトル |  |
+| dl_VJ01001386 | [【通常版】ボクが当主になるために今日からメイドとHします2](https://trial.dlsite.com/professional/VJ01002000/VJ01001386_trial.zip) | タイトル | 5224635 (YU-RIS 482) でタイトルまで |
 | s2020_casket_ayakashi03 | [あやかし遊郭～花魁アマビエ民譚集～体験版](http://suezou.dyndns.org/dl2020/casket/ayakashi03/ayakashi03_trial.zip) | タイトル |  |
 | s2021_casket_bellaca | [リンカーベル・アカデミア～落第魔女とヒミツの儀式～体験版](http://suezou.dyndns.org/dl2021/casket/bellaca/bellaca01_trial.zip) | タイトル |  |
 | s2023_casket_oshitona_vtuber02 | [画面から出てきた推しVtuberとHな同棲生活 ～庶民派吸血鬼お嬢様は契約したい～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber02/oshitona02_trial.zip) | タイトル |  |
 | s2023_casket_oshitona_vtuber03 | [画面から出てきた推しVtuberとHな同棲生活 ～夢魔かわASMR配信者は地雷系？～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber03/oshitona03_trial.zip) | タイトル |  |
+| s2011_whirlpool_maikaze | [舞風のメルト -Where leads to feeling destination- WEB体験版 (ver1.01)](http://suezou.dyndns.org/dl2011/whirlpool/maikaze/webtrial_maikaze_ver101.exe) | 起動 | 5224635 以降は ysc.ybn エラーは出ないが、黒画面のまま (エラーなし) |
+| s2019_no_strike_jyosou_jinjya | [josou jinjya_trial](http://suezou.dyndns.org/dl2019/no-strike/jyosou_jinjya/josou_jinjya_trial_TW.zip) | 要再確認 | pac/ フォルダがゲームのルートとして選ばれ、白画面のまま |
 | dl_VJ01000315 | [【限定版】エルフェンキング](https://trial.dlsite.com/professional/VJ01001000/VJ01000315_trial.zip) | NG | 「ysbin/ysc.ybn is missing」 |
-| dl_VJ01001386 | [【通常版】ボクが当主になるために今日からメイドとHします2](https://trial.dlsite.com/professional/VJ01002000/VJ01001386_trial.zip) | NG | 「ysbin/ysc.ybn is missing」 |
 | dl_VJ01002327 | [竜翼のメロディア −Diva with the blessed dragonol−](https://trial.dlsite.com/professional/VJ01003000/VJ01002327_trial.zip) | NG | 「ysbin/ysc.ybn is missing」 |
 | dl_VJ01004582 | [【豪華版】家族は（俺以外）サキュバスでした ～二人の姉と母との性活で精液を搾り取られます～](https://trial.dlsite.com/professional/VJ01005000/VJ01004582_trial.zip) | NG | 「ysbin/ysc.ybn is missing」 |
-| s2011_whirlpool_maikaze | [舞風のメルト -Where leads to feeling destination- WEB体験版 (ver1.01)](http://suezou.dyndns.org/dl2011/whirlpool/maikaze/webtrial_maikaze_ver101.exe) | NG | 「ysbin/ysc.ybn is missing」(台本が pac/*.ypf にある古い形) |
-| s2014_whirlpool_tearstilla | [鯨神のティアスティラ 体験版](http://suezou.dyndns.org/dl2014/whirlpool/tearstilla/kujira_trial_web.zip) | NG | 「ysbin/ysc.ybn is missing」 |
+| s2014_whirlpool_tearstilla | [鯨神のティアスティラ 体験版](http://suezou.dyndns.org/dl2014/whirlpool/tearstilla/kujira_trial_web.zip) | NG | 5224635 以降も「ysbin/ysc.ybn is missing」 |
 | s2016_no_strike_jyogaku | [女装学園（孕）　体験版](http://suezou.dyndns.org/dl2016/no-strike/jyogaku/jyogaku_trial.zip) | NG | 「ysbin/ysc.ybn is missing」 |
-| s2019_no_strike_jyosou_jinjya | [josou jinjya_trial](http://suezou.dyndns.org/dl2019/no-strike/jyosou_jinjya/josou_jinjya_trial_TW.zip) | NG | 「unexpected end of file」 |
 | r1_yuris | [YU-RIS サンプル](https://yu-ris.net/download/yu-ris_0495_032.zip) | 対象外 | YU-RIS の SDK のサンプル (コンパイル前で ysbin.ypf が無い) |
 | b2006_whirlpool | [いな☆こい！ ～お稲荷さまとモテモテのたたり～ 体験版 ver 1.00](http://suezou.dyndns.org/dl2006/whirlpool/inakoi/inakoi_trial_100.exe) | 未確認 |  |
 | b2007_whirlpool | [magus_trial.exe](http://suezou.dyndns.org/dl2007/whirlpool/magus/magus_trial.exe) | 未確認 |  |
