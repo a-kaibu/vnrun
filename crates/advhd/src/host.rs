@@ -716,10 +716,10 @@ const CFUNC: &[(&str, HostFn)] = &[
         vec![]
     }),
     ("LegacyGame__lua_GetString", |s, a| {
-        vec![Value::str(s.strings.get(&a.i(0)).map_or("", |x| x))]
+        vec![Value::str(s.strings.get(&a.s(0)).map_or("", |x| x))]
     }),
     ("LegacyGame__lua_SetString", |s, a| {
-        s.strings.insert(a.i(0), a.s(1));
+        s.strings.insert(a.s(0), a.s(1));
         vec![]
     }),
     ("LegacyGame__lua_GetGameState", |s, a| {

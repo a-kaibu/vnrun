@@ -30,7 +30,9 @@ pub struct State {
     pub now: f64,
     pub flags: Vec<bool>,
     pub vars: Vec<f32>,
-    pub strings: HashMap<i64, String>,
+    /// string variables ("@NAME": 0x6e, LegacyGame__lua_SetString), which stand for their
+    /// value in other commands' strings and as <@NAME> in text
+    pub strings: HashMap<String, String>,
     /// LegacyGame__lua_SetGameState
     pub game_state: HashMap<i64, f64>,
     /// the interface asked the scenario to wait (LUA_PROCESS_GAME_PAUSED)

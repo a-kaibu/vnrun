@@ -55,8 +55,6 @@ pub struct Engine {
     trace: bool,
     /// the choice the interface reported
     chosen: Option<i64>,
-    /// string variables ("@NAME"), which stand for their value in other commands' strings
-    svars: HashMap<String, String>,
 }
 
 fn lua_str(v: &Value) -> String {
@@ -99,7 +97,6 @@ impl Engine {
             ended: false,
             trace: false,
             chosen: None,
-            svars: HashMap::new(),
         };
         e.init_lua();
         e.cur = e.script("start").ok_or("no start.ws2")?;
@@ -560,17 +557,20 @@ impl Engine {
         self.exec(&ins)
     }
 
-    /// Puts string variables' values in for "@NAME" strings, but not where a command names
-    /// the variable it sets (the first string of 0x6e, 0x73 and 0x75).
+    /// Puts string variables' values in for "@NAME" strings and for <@NAME> inside text, but not
+    /// where a command names the variable it sets (the first string of 0x6e, 0x73 and 0x75).
     fn resolve(&self, mut ins: Ins) -> Ins {
-        if self.svars.is_empty() {
+        let st = self.st.borrow();
+        if st.strings.is_empty() {
             return ins;
         }
         let skip = matches!(ins.op, 0x6e | 0x73 | 0x75) as usize;
         for a in ins.args.iter_mut().skip(skip) {
             if let Arg::Str(s) = a {
-                if let Some(v) = self.svars.get(s.as_str()) {
+                if let Some(v) = st.strings.get(s.as_str()) {
                     *s = v.clone();
+                } else if s.contains("<@") {
+                    *s = embed(s, &st.strings);
                 }
             }
         }
@@ -847,18 +847,21 @@ impl Engine {
             0x1e | 0x1f | 0x20 | 0x28 | 0x29 | 0x2a | 0x30 => {} // sound: not yet
             0x6e => {
                 if a(0).text().starts_with('@') {
-                    self.svars
+                    self.st
+                        .borrow_mut()
+                        .strings
                         .insert(a(0).text().to_string(), a(1).text().to_string());
                 }
             }
             0x73 => {
                 // flag = (string variable == text)
-                let v = self
-                    .svars
+                let same = self
+                    .st
+                    .borrow()
+                    .strings
                     .get(a(0).text())
-                    .map(String::as_str)
-                    .unwrap_or("");
-                let same = v.eq_ignore_ascii_case(a(1).text());
+                    .map_or("", String::as_str)
+                    .eq_ignore_ascii_case(a(1).text());
                 self.st.borrow_mut().set_flag(a(2).int(), same);
             }
             0x75 => {
@@ -870,7 +873,7 @@ impl Engine {
                     .layer(SCENE, a(1).text())
                     .map(|l| l.file.clone())
                     .unwrap_or_default();
-                self.svars.insert(a(0).text().to_string(), file);
+                self.st.borrow_mut().strings.insert(a(0).text().to_string(), file);
             }
             0x2e | 0x13 | 0x17 | 0x18 | 0x1b | 0x32 | 0x38 | 0x53 | 0x66 | 0x68 | 0x6f | 0x71
             | 0xfb | 0xfc | 0xfd => {}
@@ -983,4 +986,18 @@ impl Engine {
             .layer(SCENE, name)
             .is_some_and(|l| !matches!(l.content, Content::None))
     }
+}
+
+/// Text with each <@NAME> replaced by the string variable "@NAME" (empty when unset).
+fn embed(s: &str, vars: &HashMap<String, String>) -> String {
+    let mut out = String::new();
+    let mut rest = s;
+    while let Some(i) = rest.find("<@") {
+        let Some(j) = rest[i..].find('>') else { break };
+        out.push_str(&rest[..i]);
+        out.push_str(vars.get(&rest[i + 1..i + j]).map_or("", String::as_str));
+        rest = &rest[i + j + 1..];
+    }
+    out.push_str(rest);
+    out
 }
