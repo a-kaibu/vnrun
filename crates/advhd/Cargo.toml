@@ -8,4 +8,6 @@ description = "An AdvHD (WillPlus) engine for the browser: reads .arc archives, 
 [dependencies]
 luavm = { path = "../luavm" }
 encoding_rs = "0.8"
+nexas = { path = "../nexas" }
+fontdue = "0.9"
 image = { version = "0.25", default-features = false, features = ["png", "bmp"] }

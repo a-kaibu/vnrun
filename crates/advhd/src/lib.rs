@@ -4,8 +4,14 @@
 //! comes from the game's AdvHD.exe ([`exe`]), since it changes between engine versions.
 
 mod builtin;
+pub mod engine;
 pub mod exe;
 pub mod files;
+pub mod host;
+pub mod layers;
+pub mod pna;
+pub mod state;
+pub mod text;
 pub mod ws2;
 
 /// Shift_JIS (CP932) text, the encoding of script strings before engine 2.1.

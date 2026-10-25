@@ -13,8 +13,10 @@ name = "advhd"
 version = "0.1.0"
 dependencies = [
  "encoding_rs",
+ "fontdue",
  "image 0.25.10",
  "luavm",
+ "nexas",
 ]
 
 [[package]]
