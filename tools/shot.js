@@ -43,6 +43,8 @@ if (!url || !out) {
   page.on("pageerror", (e) => log.push(`[pageerror] ${e.message}`));
   page.on("worker", (w) => w.on("console", (m) => log.push(`[worker ${m.type()}] ${m.text()}`)));
   process.on("exit", () => fs.writeFileSync(`${out}.log`, log.join("\n")));
+  // Whole stacks in the log (a Rust panic's caller is often past the default 10 frames).
+  await page.addInitScript(() => (Error.stackTraceLimit = 50));
   await page.goto(url);
   for (const step of steps.split(",")) {
     const [cmd, ...rest] = step.split(":");

@@ -27,5 +27,7 @@ rustup target add wasm32-unknown-unknown
 cargo build --manifest-path "$SRC/Cargo.toml" --release --locked -p pal-vm --lib --target wasm32-unknown-unknown
 rm -rf "$OUT"
 mkdir -p "$OUT"
-wasm_bindgen "$SRC/target/wasm32-unknown-unknown/release/pal_vm.wasm" --target web --no-typescript --out-dir "$OUT"
+# --keep-debug keeps the function names (about 1MB), so a panic's stack in the console names
+# its callers.
+wasm_bindgen "$SRC/target/wasm32-unknown-unknown/release/pal_vm.wasm" --target web --no-typescript --keep-debug --out-dir "$OUT"
 git -C "$SRC" rev-parse HEAD > "$OUT/REVISION"

@@ -76,10 +76,16 @@ docs/protocol.md     プレイヤーとサーバーの約束事
   - 動画は未対応 (飛ばす)。確認は自作の 0.txt (文章・選択肢・savegame) だけで、実物の作品はまだ。
   - この環境のプロキシは GitHub の archive (zip/tarball) を拒むので、Emscripten の ports は `tools/emscripten-ports.sh` で git から用意した。Lua は lua.org に届かないので GitHub のミラーから。
 - 吉里吉里 (KiriKiri SDL2、`engines/krkr/`):
-  - krkrsdl2 の Emscripten ビルド (CMake + Ninja) をそのまま使う。`patches/krkrsdl2/0001` で SDL のレンダラを作らずウィンドウのサーフェス (SDL の BGR888 = メモリ上 RGBX) を `vnrun_present` でページの Presenter (WebGPU) に渡す。Web でもウィンドウの大きさはレイヤの大きさのまま (KRKRSDL2_WINDOW_SIZE_IS_LAYER_SIZE を外した)。ポインタは `vnrun_mouse` / `vnrun_wheel`。
+  - krkrsdl2 の Emscripten ビルド (CMake + Ninja) をそのまま使う。`patches/krkrsdl2/0001` で SDL のレンダラを作らずウィンドウのサーフェスを `vnrun_present` でページの Presenter (WebGPU) に渡す。サーフェスの形式が何であれ krkr は自分の画素 (メモリ上 B, G, R, A) をそのままコピーするので `bgra8unorm` で見せる (rgba で見せて赤と青が入れ替わっていた)。Web でもウィンドウの大きさはレイヤの大きさのまま (KRKRSDL2_WINDOW_SIZE_IS_LAYER_SIZE を外した)。ポインタは `vnrun_mouse` / `vnrun_wheel`。
   - 起動するのは data.xp3、無ければ data フォルダ、無ければゲームのフォルダ。ファイル名の大小文字は krkr 自身が無視するので小文字の別名は作らない。
   - セーブは System.dataPath (`/libsdl/krkrsdl2`) に書かれる。エンジンがファイルを書いたあと `FS.syncfs` を呼ぶので、Module.FS.syncfs を差し替えてそこで GameFS に送る (emscripten_run_script はモジュール内で eval するので、グローバルの FS ではなく Module.FS が呼ばれる)。
-  - 確認は `/home/user/trials/kag3` (krkrsdl2/kag3) と、その first.ks を書き換えた krtest (文章・link の選択肢・`[save]`)。商用作品は暗号化 xp3 (作品ごとの復号の追加が要る) と、プラグイン DLL (wasm には読めないので、使われている物を数えて代わりを書く) が次の課題。
+  - 確認は `/home/user/trials/kag3` (krkrsdl2/kag3) と、その first.ks を書き換えた krtest (文章・link の選択肢・`[save]`)。
+  - System.exePath はゲームのフォルダ (`/game/game.exe`、`patches/krkrsdl2/0002`)。作品は exePath + "voice.xp3" や .cf を探す。KAG の savedata/ はその横で、ページが `/game/savedata` を data path の savedata へのシンボリックリンクにしてセーブとして残す。
+  - 暗号化 xp3: `patches/krkrz/0002` が開いた xp3 ごとに XOR の鍵を探す。先頭が分かるファイル (png/tlg/ogg/jpg/bmp/wav) と、文字として読めるスクリプトから、固定の鍵と「ファイルハッシュの下位バイト XOR 鍵」の両方に投票させる。GARbro の DB では HashCrypt (101 作品) や SourireCrypt などがこの形。moteyaba (hash^0xCD) と mamiya (hash) で確認。cxdec (GARbro で 92 作品、TPM の制御ブロックとパラメータが要る) は未対応。
+  - プラグイン DLL は読めないので Plugins.link は何もしない。よく使われるものは TJS の代わり (`engines/krkr/polyfill/plugins/`、Plugins.tjs が Plugins.link を差し替える): csvParser、fstat (ファイル操作はしない)、windowEx (何もしない)、layerExDraw (図形は外接矩形を塗る程度の近似)、scriptsEx、KAGParserEx。
+  - Ogg Vorbis (Windows では wuvorbis プラグイン) は stb_vorbis で読む (`patches/krkrz/0003`、`engines/krkr/stb_vorbis.c` をビルドが krkrz にコピーする)。
+  - `patches/krkrz/0004`: TJSInt32ToHex(x, 0) が無限ループでバッファを壊していた (OpenAL のエラーを出すときに落ちた)。
+  - 確認: moteyaba 体験版で注意画面 → タイトル → 本編の文章まで。
 - 同期 XHR の BOM: `responseText` を読むとブラウザが先頭の BOM を消す/解釈するため、UTF-8 BOM 付きの TJS が 3 バイト欠けて読めなかった。範囲読みに `X-Vnrun-Pad: 1` を付け、サーバーは先頭に 0x00 を 1 バイト足して返す (docs/protocol.md)。全エンジンに効く修正。
 - Web ページのゲーム (engine `html`、`web/src/engines/html.ts`): TyranoScript や RPGツクール MV/MZ は元から Web で動くので、ゲームのページを iframe で開くだけにした (描画もゲーム自身。WebGPU 方針の例外として判断を仰ぎ中)。セーブは、サーバーが iframe のページの先頭に `parent.vnrunFrame(window)` を差し込み、プレイヤーがそこで localStorage を GameFS 上のもの (`saves/localStorage/<key>`) に差し替える。IndexedDB はそのまま (RPGツクール MZ は IndexedDB が無いと起動せず、セーブもブラウザの IndexedDB に入る)。起動ページは package.json の main、無ければ www/index.html、無ければ index.html。Tyrano の公式サンプル (github.com/ShikemokuMK/tyranoscript) でタイトル・本編・セーブ・別セッションでのロードまで確認。未対応: package.nw (zip) や exe に固めた NW.js 作品 (展開してから渡す必要がある)、RPGツクールの実作品での確認。
 - Softpal (sena-rs):
@@ -91,6 +97,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
   - `patches/sena-rs/0004`: ANI (スプライトの動きの小さなバイトコード) は `[fc 13] fd` の後に 00/12 移動、01 待ち、02 拡大、03 不透明度を並べ、`fe` 待ち・`ff` 終わり、ループ (0a など) が続く。上流は先頭 1 項目しか読まなかったので、待ちのあるタイトルボタン (ANI_BTN_EFFECT0n: 遅延 + フェードイン + 移動) が透明のままだった。最初のブロックの項目をまとめて流す (遅延とループは未対応)。
   - `patches/sena-rs/0005`: SYSTEM.INI の DEF_CG_WIDTH/HEIGHT は CG の大きさで、画面の大きさではない作品がある (ドスケベクエスト: CG 1540x980、画面 1280x720)。Game.exe が窓を作るときの `push 高さ; push 幅` を探して画面の大きさにする。ずれていると座標がずれてタイトルのボタンが押せなかった。あわせて文字列を長さで切る extcall (18/7) を Shift-JIS のバイト数で切るようにした (UTF-8 の文字の途中で切ってパニックしていた)。
   - `patches/sena-rs/0006`: 2011-2012 年の版 (りとるびっち体験版で確認)。`sp_set_ex` が z なしの 4 引数なので、スクリプトの呼び出し直前の push の数を数えて見分ける (`CoreAssets::short_extcalls`、`old_softpal()`)。引数の数が違う extcall は足りない後ろの引数を 0 で補い、多い分は捨てる (sp_set_ex 4→5、bgm_play 4→7、se_stop 3→2)。SYSTEM.INI がなく画面は exe の 800x600 で、スクリプト座標から内部の 1920x1080 への倍率を 1.5 固定から画面の比に。ボタンの flags 0 はマウスで押せる扱い、押したボタンの点へは gosub ではなくジャンプ (ハンドラの `ret` がボタン待ちの関数から抜ける)。
+  - `patches/sena-rs/0007`: 実装の無い extcall (引数の数も分からないもの) は、スクリプトがその直前に push した数だけ捨てる。残すと呼び出し元が保存した arg_base がずれ、temp_mem に 2^28 番地を書こうとしてブラウザで capacity overflow になった (爆乳遊廓の 0x12_0033)。ネイティブで同じ所に行くには 1500 フレームほど回す必要があった。ブラウザ版の wasm は関数名を残す (`--keep-debug`、約 1MB) ので panic の呼び出し元が見える。
   - 確認には sena のネイティブ版 (`cargo build --release -p pal-vm --bin sena`) の `--headless --diagnostic-png-at <frame>:<png> --trace-script` が便利。
 - **Siglus の二次鍵はブラウザでは探さない** (siglus_rs の wasm ビルドは key.toml を読むだけ)。`vnrun-prep <ゲームのフォルダ>` (crates/prep、ネイティブ) が鍵を復元して key.toml を書く。プリマドールで 1 秒以下。vnrun のサーバーがゲームを取り込むときにこれを呼ぶ想定 (未実装)。
 - movie (OMV / MPEG2 / WMV) の再生も siglus_rs の中で `thread::spawn` を使う箇所が残っている。ムービーのある作品で同じ panic が出るはずなので、出たら同様に直す。

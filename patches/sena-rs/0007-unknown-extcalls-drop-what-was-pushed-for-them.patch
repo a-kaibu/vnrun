@@ -1,0 +1,42 @@
+diff --git a/crates/pal-vm/src/runtime.rs b/crates/pal-vm/src/runtime.rs
+index aa7c504..4d44b42 100644
+--- a/crates/pal-vm/src/runtime.rs
++++ b/crates/pal-vm/src/runtime.rs
+@@ -97,6 +97,25 @@ const DEFAULT_MEM_SIZE: usize = 0x10000;
+ /// Maximum per-frame events recorded for PAL_DEBUG dump.
+ const MAX_FRAME_EVENTS: usize = 64;
+ 
++/// How many values the script pushes (allowing movs between them) right before the
++/// instruction at `pc`.
++fn pushed_before(bytes: &[u8], pc: u32) -> usize {
++    const PUSH: u32 = 0x0001_001F;
++    const MOV: u32 = 0x0001_0001;
++    let word = |at: usize| bytes.get(at..at + 4).map(|w| u32::from_le_bytes([w[0], w[1], w[2], w[3]]));
++    let (mut at, mut count) = (pc as usize, 0);
++    loop {
++        if at >= 8 && word(at - 8) == Some(PUSH) {
++            count += 1;
++            at -= 8;
++        } else if at >= 12 && word(at - 12) == Some(MOV) {
++            at -= 12;
++        } else {
++            return count;
++        }
++    }
++}
++
+ fn debug_vm_enabled() -> bool {
+     std::env::var("DEBUG_VM")
+         .ok()
+@@ -4507,7 +4526,10 @@ impl ScriptRuntime {
+                         let name_str = name.unwrap_or("?");
+                         let cleanup_count = registered_sig.map(|sig| sig.pop_count).or_else(|| lookup_sig(category, index)
+                             .map(|sig| sig.pop_count)
+-                            .or_else(|| observed_pop_count(category, index)));
++                            .or_else(|| observed_pop_count(category, index)))
++                            // Else what the script pushed for it: left on the stack, the
++                            // arguments shift the caller's saved argument_base.
++                            .or_else(|| Some(pushed_before(script.bytes(), insn_pc)));
+                         if let Some(count) = cleanup_count {
+                             let dropped = self.pop_ext_args(count);
+                             self.vm_trace(format_args!(
