@@ -1,0 +1,28 @@
+// vnrun: many startup.tjs check their command line options (-debugwin=no, ...) and, when they
+// differ, start the exe again with them and quit. There is no exe to start in the page: take the
+// options here instead, and skip the System.exit that follows.
+{
+	var S = global.System;
+	global.vnrunSystem = %[ shellExecute: S.shellExecute, exit: S.exit, skipExit: false ];
+	S.shellExecute = function(target, param = "") {
+		var v = global.vnrunSystem;
+		var self = Storages.extractStorageName(System.exeName).toLowerCase();
+		if (Storages.extractStorageName(target).toLowerCase() != self)
+			return v.shellExecute(...);
+		var opts = param.split(" ", , true);
+		for (var i = 0; i < opts.count; i++) {
+			var kv = opts[i].split("=");
+			if (kv.count == 2) System.setArgument(kv[0], kv[1]);
+		}
+		Debug.message("(vnrun) restart with " + param + ": options set instead");
+		v.skipExit = true;
+	} incontextof global;
+	S.exit = function() {
+		var v = global.vnrunSystem;
+		if (v.skipExit) {
+			v.skipExit = false;
+			return;
+		}
+		return v.exit(...);
+	} incontextof global;
+}

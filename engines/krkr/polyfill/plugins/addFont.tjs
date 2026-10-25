@@ -1,0 +1,7 @@
+// vnrun: addFont.dll. System.addFont registers a font file (also inside an archive) through
+// KiriKiri SDL2's Font.addFont.
+if (typeof(global.System.addFont) === "undefined")
+	global.System.addFont = function(storage) {
+		var faces = Font.addFont(storage);
+		return faces === void ? 0 : faces.count;
+	};

@@ -41,6 +41,11 @@ if (!url || !out) {
   const at = () => `${((Date.now() - t0) / 1000).toFixed(0)}s`;
   page.on("console", (m) => log.push(`[${m.type()}] ${m.text()}`));
   page.on("pageerror", (e) => log.push(`[pageerror] ${e.message}`));
+  // alert/confirm from the game (KiriKiri's System.inform, yes/no dialogs): logged, answered no.
+  page.on("dialog", (d) => {
+    log.push(`[dialog ${d.type()}] ${d.message()}`);
+    d.dismiss().catch(() => {});
+  });
   page.on("worker", (w) => w.on("console", (m) => log.push(`[worker ${m.type()}] ${m.text()}`)));
   process.on("exit", () => fs.writeFileSync(`${out}.log`, log.join("\n")));
   // Whole stacks in the log (a Rust panic's caller is often past the default 10 frames).

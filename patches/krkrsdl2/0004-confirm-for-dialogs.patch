@@ -1,0 +1,36 @@
+--- a/src/core/sdl2/SDLApplication.cpp
++++ b/src/core/sdl2/SDLApplication.cpp
+@@ -20,6 +20,7 @@
+ #include "ScriptMgnIntf.h"
+ #include "SystemControl.h"
+ #include "PluginImpl.h"
++#include "Extension.h"
+ #ifdef KRKRZ_ENABLE_CANVAS
+ #include "OpenGLScreenSDL2.h"
+ #endif
+@@ -3054,6 +3055,25 @@
+ 	return !!::Application->StartApplication(_argc, _wargv);
+ }
+ 
++#ifdef __EMSCRIPTEN__
++// vnrun: vnrunConfirm(text) asks the browser's confirm() and returns true for OK. A modal window
++// would need a nested event loop, which the page cannot run (polyfill/ModalDialog.tjs uses this).
++EM_JS(int, vnrun_confirm_js, (const char *text), { return confirm(UTF8ToString(text)) ? 1 : 0; });
++static tjs_error TJS_INTF_METHOD vnrun_confirm(tTJSVariant *result, tjs_int numparams,
++	tTJSVariant **param, iTJSDispatch2 *objthis)
++{
++	std::string text;
++	if (numparams > 0) TVPUtf16ToUtf8(text, ttstr(*param[0]).AsStdString());
++	int yes = vnrun_confirm_js(text.c_str());
++	if (result) *result = (tjs_int)yes;
++	return TJS_S_OK;
++}
++static iTJSDispatch2 *vnrun_create_confirm(iTJSDispatch2 *)
++{
++	return TJSCreateNativeClassMethod(vnrun_confirm);
++}
++static tTVPAtInstallClass vnrun_install_confirm(TJS_W("vnrunConfirm"), vnrun_create_confirm, TJS_W(""));
++#endif
+ void krkrsdl2_run_main_loop(void)
+ {
+ #if defined(__EMSCRIPTEN__) && !defined(__EMSCRIPTEN_PTHREADS__)

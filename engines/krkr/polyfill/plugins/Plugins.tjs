@@ -11,6 +11,8 @@ global.vnrunPlugins = %[
 		"layerexdraw.dll" => "layerExDraw.tjs",
 		"scriptsex.dll" => "scriptsEx.tjs",
 		"kagparserex.dll" => "KAGParserEx.tjs",
+		"addfont.dll" => "addFont.tjs",
+		"win32dialog.dll" => "win32dialog.tjs",
 	],
 ];
 global.Plugins.link = function(name) {
@@ -23,3 +25,5 @@ global.Plugins.link = function(name) {
 	Debug.message("(vnrun) " + name + ": " + script);
 	Scripts.execStorage(p.root + script);
 } incontextof global;
+// addFont also comes as a TPM, which KiriKiri loads by itself before startup.tjs.
+Scripts.execStorage(global.vnrunPlugins.root + "addFont.tjs");

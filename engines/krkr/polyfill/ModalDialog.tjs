@@ -1,0 +1,21 @@
+// vnrun: Window.showModal runs a nested event loop, which the page cannot (it would never return
+// to the browser). Dialog windows ask with the browser's confirm() instead: the text drawn on
+// windows other than the main one is the question, and the answer goes to the window's result
+// (the [はい]/[いいえ] of KAG's YesNoDialogWindow and of most games' versions of it).
+{
+	global.vnrunDialog = %[ text: "", drawText: global.Layer.drawText ];
+	global.Layer.drawText = function(x, y, text) {
+		var v = global.vnrunDialog;
+		if (window !== global.Window.mainWindow && text != "はい" && text != "いいえ")
+			v.text += text + "\n";
+		return (v.drawText incontextof this)(...);
+	} incontextof null;
+	global.Window.showModal = function() {
+		var v = global.vnrunDialog;
+		var question = v.text != "" ? v.text : caption;
+		v.text = "";
+		var yes = global.vnrunConfirm(question);
+		Debug.message("(vnrun) dialog \"" + question + "\": " + (yes ? "yes" : "no"));
+		if (typeof this.result != "undefined") this.result = !!yes;
+	} incontextof null;
+}

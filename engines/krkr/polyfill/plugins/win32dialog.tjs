@@ -1,0 +1,52 @@
+// vnrun: win32dialog.dll. Windows dialogs (KiriKiri Z's k2compat uses them for debug pads and
+// the font picker) have nothing to show in a page: the classes exist and do nothing.
+class WIN32Dialog {
+	function WIN32Dialog(owner) {}
+	function finalize() {}
+	function store() {}
+	function open() { return 0; }
+	function close() {}
+	function show() {}
+	function hide() {}
+	function getItem() { return 0; }
+	function setItemText() {}
+	function getItemText() { return ""; }
+	function setItemEnabled() {}
+	function sendItemMessage() { return 0; }
+	function initCommonControlsEx() { return true; }
+	function getOctetAddress() { return 0; }
+	function getStringAddress() { return 0; }
+	function getStringFromAddress() { return ""; }
+	class Header { function Header() {} }
+	class Items { function Items() {} }
+	class Blob { function Blob() {} }
+	class Bitmap { function Bitmap() {} }
+	class SolidBrush { function SolidBrush() {} }
+	class Font { function Font() {} }
+}
+// The Windows constants the dialog scripts use (their values don't matter here).
+{
+	var names = [
+		"BLACK_BRUSH", "BM_GETCHECK", "BM_GETSTATE", "BM_SETCHECK", "BN_CLICKED", "BS_AUTOCHECKBOX",
+		"BS_AUTORADIOBUTTON", "BS_CHECKBOX", "BS_DEFPUSHBUTTON", "BS_FLAT", "BS_GROUPBOX",
+		"BS_PUSHBUTTON", "BS_RADIOBUTTON", "CBEIF_TEXT", "CBEM_INSERTITEMW", "CBENF_RETURN",
+		"CBEN_ENDEDITA", "CBEN_ENDEDITW", "CBS_DROPDOWN", "CBS_DROPDOWNLIST", "CB_ADDSTRING",
+		"CB_DELETESTRING", "CB_GETCOUNT", "CB_GETCURSEL", "CB_SETCURSEL", "DS_CENTER",
+		"DS_MODALFRAME", "DS_SETFONT", "DS_SHELLFONT", "EM_SCROLLCARET", "EM_SETREADONLY",
+		"EM_SETSEL", "EN_CHANGE", "ES_AUTOHSCROLL", "ES_AUTOVSCROLL", "ES_LEFT", "ES_MULTILINE",
+		"ES_NOHIDESEL", "ES_READONLY", "ES_WANTRETURN", "FW_BOLD", "FW_NORMAL", "GWL_EXSTYLE",
+		"GWL_STYLE", "ICC_USEREX_CLASSES", "LBN_DBLCLK", "LBN_SELCHANGE", "LBS_MULTIPLESEL",
+		"LBS_NOTIFY", "LBS_OWNERDRAWFIXED", "LB_ADDSTRING", "LB_GETCOUNT", "LB_GETCURSEL",
+		"LB_GETSEL", "LB_GETTOPINDEX", "LB_SETCURSEL", "LB_SETITEMHEIGHT", "LVM_DELETEALLITEMS",
+		"LVM_DELETECOLUMN", "LVM_INSERTCOLUMNW", "LVS_EX_GRIDLINES", "LVS_REPORT", "ODS_SELECTED",
+		"SBM_GETPOS", "SIZE_MAXIMIZED", "SIZE_RESTORED", "SS_BITMAP", "SS_CENTER", "SS_CENTERIMAGE",
+		"SS_ICON", "SS_LEFT", "SS_RIGHT", "SS_SUNKEN", "TBM_GETPOS", "TBM_SETPOS", "TBM_SETRANGEMAX",
+		"TBM_SETRANGEMIN", "TBM_SETTICFREQ", "TBS_AUTOTICKS", "TBS_HORZ", "WHITE_BRUSH", "WS_BORDER",
+		"WS_CAPTION", "WS_DLGFRAME", "WS_EX_ACCEPTFILES", "WS_EX_APPWINDOW", "WS_EX_CLIENTEDGE",
+		"WS_EX_DLGMODALFRAME", "WS_EX_TOOLWINDOW", "WS_EX_WINDOWEDGE", "WS_GROUP", "WS_HSCROLL",
+		"WS_MAXIMIZEBOX", "WS_MINIMIZEBOX", "WS_OVERLAPPEDWINDOW", "WS_POPUP", "WS_SYSMENU",
+		"WS_TABSTOP", "WS_THICKFRAME", "WS_VISIBLE", "WS_VSCROLL"
+	];
+	for (var i = 0; i < names.count; i++)
+		if (typeof(global[names[i]]) === "undefined") global[names[i]] = 0;
+}
