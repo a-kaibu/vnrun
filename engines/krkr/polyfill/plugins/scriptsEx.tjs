@@ -2,7 +2,9 @@
 {
 	var S = global.Scripts;
 	// [key, value, key, value, ...] of a dictionary
-	S.vnrunPairs = function(obj) { var a = []; a.assign(obj); return a; } incontextof global;
+	// Array.assign enumerates a closure's context object when it has one (a global function
+	// would give all of global), so drop it to walk the object's own members
+	S.vnrunPairs = function(obj) { var a = []; a.assign(obj incontextof null); return a; } incontextof global;
 	if (typeof(S.getObjectKeys) === "undefined")
 		S.getObjectKeys = function(obj) {
 			var a = Scripts.vnrunPairs(obj), keys = [];
@@ -24,7 +26,9 @@
 			}
 			var a = Scripts.vnrunPairs(obj);
 			for (var i = 0; i < a.count; i += 2) {
-				var r = func(a[i], a[i + 1], *);
+				// & passes a property object as it is, as the plugin does, instead of calling its
+				// getter (alice_gram's lazy globals read kag before it exists)
+				var r = func(a[i], &a[i + 1], *);
 				if (r) return r;
 			}
 		} incontextof null; // a callback without a context runs on the caller's this, as in scriptsEx
