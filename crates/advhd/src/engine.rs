@@ -716,6 +716,16 @@ impl Engine {
                     self.call("closeMessageWindow", vec![Value::Bool(true)]);
                     self.window_open = false;
                 }
+                // Early builds (yobai 2013) open the window on a scene frozen by 0x64 and never
+                // fade it in with 0x65: opening the window shows the scene as it is.
+                if a(0).int() == 1 {
+                    let mut s = self.st.borrow_mut();
+                    if let Some(set) = s.screen.set(SCENE)
+                        && set.snap.as_ref().is_some_and(|p| p.fade.is_none())
+                    {
+                        set.snap = None;
+                    }
+                }
             }
             0x1a => {
                 self.call(a(0).text(), vec![]);

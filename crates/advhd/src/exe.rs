@@ -83,8 +83,8 @@ fn types_at(pe: &Pe, va: u64) -> Option<Vec<u8>> {
 }
 
 /// The command argument table of an AdvHD.exe. Early builds (1.4 and before) have none in the
-/// exe; they take the 2018 table, where command 0x11 differs, and before 1.4 the message, name
-/// and sound commands also lack their last argument.
+/// exe; they take the 2018 table, where command 0x11 differs, and before 1.4 the message, name,
+/// window and sound commands also lack their last argument.
 pub fn formats(exe: &[u8]) -> Formats {
     let pe = Pe::parse(exe);
     let utf16 = pe.as_ref().is_some_and(|pe| pe.wide);
@@ -97,6 +97,7 @@ pub fn formats(exe: &[u8]) -> Formats {
         if version(exe).is_some_and(|v| v < (1, 4)) {
             t[0x14] = Some(vec![4, 6, 8, 6, 8]);
             t[0x15] = Some(vec![6, 8]);
+            t[0x16] = Some(vec![0]);
             t[0x1e] = Some(vec![6, 8, 10, 8, 5, 5, 1, 1, 0]);
             t[0x28] = Some(vec![6, 8, 10, 8, 5, 5, 1, 1, 0, 1, 1, 0]);
         }
