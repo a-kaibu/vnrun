@@ -326,3 +326,7 @@ s2021_akabeesoft2_roleplayer	NG	スクリプトが exe 内蔵の暗号 (cxdec �
 s2017_nanawind_alice_gram	NG	confirm_askJump / quickmenu.tjs(1) QuickMenuLock の property getter で「Member "kag" does not exist」
 s2022_mille_feuille_excelchiffon	NG	initialize2.tjs(15)「Member "gpButtonA" does not exist」
 s2012_ninetail_gears_of_dragoon	NG	mainwindow.tjs(3795) stopQuake で「Member "setLayerPos" does not exist」
+b2013_ensemble	タイトル	b076f1f でタイトル画面まで表示 (InstallShield 版)
+s2013_guilty_yobai	タイトル	b076f1f でタイトル画面まで表示 (InstallShield cab 版)
+dl_VJ01004836	タイトル	b076f1f でタイトル画面まで表示
+s2018_ensemble_otostuki	要再確認	zip の展開が不完全で Rio.arc が見つからない (Bgm/Chip*.arc のみ)
