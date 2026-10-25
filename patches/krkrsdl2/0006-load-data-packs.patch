@@ -1,0 +1,99 @@
+--- a/src/core/base/sdl2/StorageImpl.cpp
++++ b/src/core/base/sdl2/StorageImpl.cpp
+@@ -1696,3 +1696,96 @@
+ static tTVPAtInstallClass vnrun_install_move_file(TJS_W("vnrunMoveFile"), vnrun_create_move_file, TJS_W(""));
+ static tTVPAtInstallClass vnrun_install_delete_file(TJS_W("vnrunDeleteFile"), vnrun_create_delete_file, TJS_W(""));
+ #endif
++
++#ifdef __EMSCRIPTEN__
++#include "tjsArray.h"
++#include "tjsDictionary.h"
++// vnrun: vnrunLoadDataPack(storage), which polyfill/Compat.tjs makes Scripts.loadDataPack: the
++// value in a "TJS/ns0" data pack (uiload's .pbd layouts). After the 16-byte header, a value is
++// a tag byte, a byte that means nothing to the reader, and then: 0 void; 2 string (u32 length,
++// UTF-16LE); 4 integer (i64); 5 real (f64); 0x81 array (u32 count, values); 0xc1 dictionary
++// (u32 count, then string keys without tag, each followed by its value).
++struct vnrun_pack
++{
++	const tjs_uint8 *p, *end;
++	void need(size_t n) { if((size_t)(end - p) < n) TVPThrowExceptionMessage(TJS_W("loadDataPack: truncated")); }
++	tjs_uint32 u32() { need(4); tjs_uint32 v = p[0] | p[1] << 8 | p[2] << 16 | (tjs_uint32)p[3] << 24; p += 4; return v; }
++	ttstr str()
++	{
++		tjs_uint32 n = u32();
++		need((size_t)n * 2);
++		std::vector<tjs_char> s(n);
++		for(tjs_uint32 i = 0; i < n; i++) s[i] = (tjs_char)(p[2 * i] | p[2 * i + 1] << 8);
++		p += (size_t)n * 2;
++		return ttstr(s.data(), n);
++	}
++	tTJSVariant value()
++	{
++		need(2);
++		tjs_uint8 tag = p[0];
++		p += 2;
++		switch(tag)
++		{
++		case 0: return tTJSVariant();
++		case 2: return tTJSVariant(str());
++		case 4: { need(8); tjs_int64 v; memcpy(&v, p, 8); p += 8; return tTJSVariant(v); }
++		case 5: { need(8); double v; memcpy(&v, p, 8); p += 8; return tTJSVariant(v); }
++		case 0x81:
++		{
++			iTJSDispatch2 *a = TJSCreateArrayObject();
++			tTJSVariant r(a, a);
++			a->Release();
++			tjs_uint32 n = u32();
++			for(tjs_uint32 i = 0; i < n; i++)
++			{
++				tTJSVariant v = value();
++				a->PropSetByNum(TJS_MEMBERENSURE, i, &v, a);
++			}
++			return r;
++		}
++		case 0xc1:
++		{
++			iTJSDispatch2 *d = TJSCreateDictionaryObject();
++			tTJSVariant r(d, d);
++			d->Release();
++			tjs_uint32 n = u32();
++			for(tjs_uint32 i = 0; i < n; i++)
++			{
++				ttstr k = str();
++				tTJSVariant v = value();
++				d->PropSet(TJS_MEMBERENSURE, k.c_str(), NULL, &v, d);
++			}
++			return r;
++		}
++		}
++		TVPThrowExceptionMessage(TJS_W("loadDataPack: unknown value tag %1"), ttstr((tjs_int)tag));
++		return tTJSVariant();
++	}
++};
++static tjs_error TJS_INTF_METHOD vnrun_load_data_pack(tTJSVariant *result, tjs_int numparams,
++	tTJSVariant **param, iTJSDispatch2 *objthis)
++{
++	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
++	tTJSBinaryStream *st = TVPCreateStream(TVPSearchPlacedPath(ttstr(*param[0])));
++	std::vector<tjs_uint8> buf;
++	try
++	{
++		buf.resize((size_t)st->GetSize());
++		if(!buf.empty()) st->ReadBuffer(buf.data(), (tjs_uint)buf.size());
++	}
++	catch(...)
++	{
++		delete st;
++		throw;
++	}
++	delete st;
++	if(buf.size() < 16 || memcmp(buf.data(), "TJS/ns0\0", 8) != 0)
++		TVPThrowExceptionMessage(TJS_W("loadDataPack: not a TJS/ns0 data pack: %1"), ttstr(*param[0]));
++	vnrun_pack r = { buf.data() + 16, buf.data() + buf.size() };
++	tTJSVariant v = r.value();
++	if (result) *result = v;
++	return TJS_S_OK;
++}
++static iTJSDispatch2 *vnrun_create_load_data_pack(iTJSDispatch2 *) { return TJSCreateNativeClassMethod(vnrun_load_data_pack); }
++static tTVPAtInstallClass vnrun_install_load_data_pack(TJS_W("vnrunLoadDataPack"), vnrun_create_load_data_pack, TJS_W(""));
++#endif

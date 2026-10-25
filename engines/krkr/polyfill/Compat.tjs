@@ -70,3 +70,7 @@ if (typeof(global.Window.registerHotKey) === "undefined") {
 	global.Window.registerHotKey = function() { return true; } incontextof null;
 	global.Window.unregisterHotKey = function() { return true; } incontextof null;
 }
+
+// Scripts.loadDataPack (newer KiriKiri Z): the value in a "TJS/ns0" data pack, read natively.
+if (typeof(global.Scripts.loadDataPack) === "undefined" && typeof(global.vnrunLoadDataPack) !== "undefined")
+	global.Scripts.loadDataPack = global.vnrunLoadDataPack;
