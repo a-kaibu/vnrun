@@ -1,43 +1,63 @@
 --- a/crates/ethornell-app/src/lib.rs
 +++ b/crates/ethornell-app/src/lib.rs
-@@ -272,6 +272,36 @@
+@@ -272,6 +272,56 @@
  
      (DEFAULT_GAME_ID.into(), "fallback", false)
  }
 +/// Builds without GetGameId (Hello,good-bye) check the marker by name:
 +/// FileExists("HelloGoodBye") followed by a jump straight to TerminateInterpreter.
++/// 1.7x builds (顔のない月) pick the name from two strings first and jump inline.
 +fn install_markers(manager: &ResourceManager) -> Vec<String> {
++    use ethornell_script::BpOperand;
 +    let Ok(bytes) = manager.read_decoded_from_archive("system.arc", "ipl._bp") else {
 +        return Vec::new();
 +    };
 +    let program = ethornell_script::parse_bp_program(None, &bytes);
++    let code = &program.instructions;
 +    let terminates = |target: u32| {
-+        program
-+            .instructions
-+            .iter()
++        code.iter()
 +            .find(|instruction| instruction.offset == u64::from(target))
 +            .is_some_and(|instruction| instruction.known_call == Some("TerminateInterpreter"))
 +    };
-+    program
-+        .instructions
-+        .windows(4)
-+        .filter_map(|w| match (w[0].operands.as_ref(), w[2].operands.as_ref()) {
-+            ([ethornell_script::BpOperand::String(name)], [ethornell_script::BpOperand::Offset(target)])
-+                if w[1].known_call == Some("FileExists")
-+                    && w[3].opcode.name() == "jc"
-+                    && terminates(*target) =>
-+            {
-+                Some(name.clone())
-+            }
++    let target = |instruction: &ethornell_script::BpInstruction| {
++        instruction.operands.iter().find_map(|operand| match operand {
++            BpOperand::Offset(target) => Some(*target),
 +            _ => None,
 +        })
-+        .collect()
++    };
++    let mut markers = Vec::new();
++    for (i, instruction) in code.iter().enumerate() {
++        if instruction.known_call != Some("FileExists") {
++            continue;
++        }
++        let jump = match code.get(i + 1..i + 3) {
++            Some([a, _]) if a.opcode.name() == "jc" => target(a),
++            Some([a, b]) if b.opcode.name() == "jc" => target(a),
++            _ => None,
++        };
++        if !jump.is_some_and(terminates) {
++            continue;
++        }
++        // the strings pushed since the previous call or jump
++        let since = code[..i]
++            .iter()
++            .rposition(|b| b.known_call.is_some() || b.opcode.name() == "jc")
++            .map_or(0, |k| k + 1);
++        for before in &code[since.max(i.saturating_sub(6))..i] {
++            for operand in before.operands.iter() {
++                if let BpOperand::String(name) = operand {
++                    markers.push(name.clone());
++                }
++            }
++        }
++    }
++    markers
 +}
 +
  fn confirmed_native_profile(
      manager: &ResourceManager,
      bootstrap: &[u8],
-@@ -816,6 +846,8 @@
+@@ -816,6 +866,8 @@
      manager: ResourceManager,
      native_root: PathBuf,
      game_id: String,
@@ -46,11 +66,12 @@
      text_state: TextState,
      text_runtime: TextRuntime,
      graph_defaults: GraphRuntimeDefaults,
-@@ -1300,11 +1332,13 @@
+@@ -1300,11 +1352,14 @@
      fn new_with_native_root(manager: ResourceManager, native_root: PathBuf) -> Self {
          let (game_id, source, compact) = configured_game_id(&manager);
          tracing::info!(%game_id, source, "configured native game identifier");
 +        let install_markers = install_markers(&manager);
++        tracing::info!(?install_markers, "files ipl stops for when they exist");
          Self {
              host: host_runtime::HostServices::default(),
              manager,
@@ -60,7 +81,7 @@
              text_state: TextState::default(),
              text_runtime: TextRuntime::default(),
              graph_defaults: GraphRuntimeDefaults::default(),
-@@ -2373,7 +2407,10 @@
+@@ -2373,7 +2428,10 @@
      /// The install media carries a file named after the game id, and ipl
      /// leaves for the installer when it sees it; we run as an installed copy.
      fn is_install_media_marker(&self, path: &str) -> bool {
