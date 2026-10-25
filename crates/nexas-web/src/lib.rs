@@ -58,8 +58,12 @@ pub struct Game {
 #[wasm_bindgen]
 impl Game {
     #[wasm_bindgen(constructor)]
-    pub fn new() -> Result<Game, JsError> {
-        let e = Engine::new(Box::new(Host)).map_err(|e| JsError::new(&e))?;
+    /// `font`: a TrueType font for builds without .fnt fonts (empty: none).
+    pub fn new(font: &[u8]) -> Result<Game, JsError> {
+        let mut e = Engine::new(Box::new(Host)).map_err(|e| JsError::new(&e))?;
+        if !font.is_empty() {
+            e.set_font(font).map_err(|e| JsError::new(&e))?;
+        }
         Ok(Game {
             e,
             draws: Vec::new(),

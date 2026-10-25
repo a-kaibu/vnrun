@@ -71,6 +71,8 @@ const STRING: u32 = 0x8000_0000;
 pub struct Frame {
     /// the function, or None for the main code
     pub func: Option<u32>,
+    /// running the main code's init block (run_init)
+    pub init: bool,
     pub ip: usize,
     pub ints: Vec<i32>,
     pub strs: Vec<Vec<u8>>,
@@ -124,6 +126,7 @@ impl Globals {
 }
 
 /// A script thread: the engine runs the main one and a few system ones.
+#[derive(Clone)]
 pub struct Thread {
     pub name: String,
     pub script: Rc<Script>,
@@ -147,6 +150,7 @@ impl Thread {
     pub fn new(name: &str, script: Rc<Script>) -> Thread {
         let main = Frame {
             func: None,
+            init: false,
             ip: 0,
             ints: vec![0; script.main.int_names.len()],
             strs: vec![Vec::new(); script.main.str_names.len()],
@@ -162,6 +166,25 @@ impl Thread {
             done: false,
             trace: false,
         }
+    }
+
+    /// Runs the init block of the main code, which sets the file's variables; the thread then
+    /// goes on where it was.
+    pub fn run_init(&mut self, g: &mut Globals, host: &mut dyn Host) -> Result<(), String> {
+        let ip = self.frames[0].ip;
+        self.frames[0].init = true;
+        self.frames[0].ip = 0;
+        while !self.done {
+            if let Step::Jump { .. } = self.step(g, host)? {
+                break;
+            }
+        }
+        self.frames.truncate(1);
+        self.frames[0].init = false;
+        self.frames[0].ip = ip;
+        self.stack.clear();
+        self.done = false;
+        Ok(())
     }
 
     /// Starts the main code at label `label` (op 0x1B); false if there is none.
@@ -218,6 +241,11 @@ impl Thread {
             Some(id) => self.script.funcs.get(&id).unwrap_or(&self.script.main),
             None => &self.script.main,
         }
+    }
+
+    fn code_of(&self, f: &Frame) -> &[Ins] {
+        let b = self.block_of(f);
+        if f.init { &b.init } else { &b.code }
     }
 
     fn frame(&mut self) -> &mut Frame {
@@ -289,7 +317,7 @@ impl Thread {
         // a function that runs off its end returns
         loop {
             let f = self.frames.last().unwrap();
-            let len = self.block_of(f).code.len();
+            let len = self.code_of(f).len();
             if f.ip < len {
                 break;
             }
@@ -301,7 +329,7 @@ impl Thread {
             self.frame().ip += 1;
         }
         let f = self.frames.last().unwrap();
-        let Ins { op, arg } = self.block_of(f).code[f.ip];
+        let Ins { op, arg } = self.code_of(f)[f.ip];
         let depth = self.frames.len();
         if self.trace {
             eprintln!(
@@ -347,6 +375,7 @@ impl Thread {
                     };
                     let mut frame = Frame {
                         func: Some(fid),
+                        init: false,
                         ip: 0,
                         ints: vec![0; func.int_names.len()],
                         strs: vec![Vec::new(); func.str_names.len()],

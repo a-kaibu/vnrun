@@ -37,7 +37,12 @@ fn main() -> Result<(), String> {
     };
     let mut e = Engine::new(Box::new(disk))?;
     e.log = true;
+    eprintln!("nexas: build {}", e.build.name);
     e.set_trace(std::env::var_os("NEXAS_TRACE").is_some());
+    e.log_calls = std::env::var_os("NEXAS_CALLS").is_some();
+    if let Some(f) = std::env::var_os("NEXAS_FONT") {
+        e.set_font(&std::fs::read(f).map_err(|e| e.to_string())?)?;
+    }
     for f in 1..=frames {
         for (_, click) in marks.iter().filter(|m| m.0 == f) {
             if let Some((x, y)) = click {

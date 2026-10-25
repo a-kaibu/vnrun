@@ -372,6 +372,7 @@ name = "nexas"
 version = "0.1.0"
 dependencies = [
  "encoding_rs",
+ "fontdue",
  "image 0.25.10",
  "miniz_oxide 0.8.9",
 ]

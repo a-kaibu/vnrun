@@ -8,6 +8,7 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::rc::Rc;
 
+use crate::builds::{BUILDS, Build};
 use crate::dat::{self, Cell};
 use crate::files::{Archives, Files};
 use crate::font::Font;
@@ -97,6 +98,8 @@ struct Obj {
     sy: Tween,
     rot: Tween,
     alpha: Tween,
+    /// drawn with 描画モード 3/4 and alpha `alpha`; mode 0 (new objects) is drawn opaque
+    blend: bool,
     add: bool,
     /// period (frames), from and to (0..1), start frame
     blink: Option<(u64, f32, f32, u64)>,
@@ -117,8 +120,8 @@ impl Obj {
             sx: Tween::at(1.0),
             sy: Tween::at(1.0),
             rot: Tween::at(0.0),
-            // objects come in hidden; the scripts fade them in (描画モード 3)
-            alpha: Tween::at(0.0),
+            alpha: Tween::at(1.0),
+            blend: false,
             add: false,
             blink: None,
             button: false,
@@ -168,6 +171,10 @@ enum Wait {
 }
 
 pub struct Engine {
+    /// the exe build whose builtin numbering the scripts use
+    pub build: &'static Build,
+    /// the threads that called a bank (0x48/0x49), each stopped at its call
+    calls: Vec<Thread>,
     files: Box<dyn Files>,
     arcs: Archives,
     /// archives in the order files are looked up (Config.pac/packlist.dat)
@@ -206,6 +213,10 @@ pub struct Engine {
     pub screen: Image,
     logged: HashSet<u32>,
     pub log: bool,
+    /// print every builtin call
+    pub log_calls: bool,
+    /// the font for games without .fnt fonts (set_font)
+    ttf: Option<Rc<fontdue::Font>>,
 }
 
 impl Engine {
@@ -247,11 +258,17 @@ impl Engine {
             .transpose()?
             .unwrap_or_default();
         let mut scripts = HashMap::new();
-        let system = load_script(&arcs, files.as_mut(), &mut scripts, "System.bin")?;
+        let build = arcs
+            .read(files.as_mut(), "Script", "System.bin")
+            .and_then(|b| script::parse(&b).ok())
+            .map_or(&BUILDS[0], |s| Build::detect(&s));
+        let system = load_script(&arcs, files.as_mut(), &mut scripts, "System.bin", build)?;
         let mut thread = Thread::new("System.bin", system);
         // System.bin label 0 starts the game (System.dat's entry table)
         thread.goto_label(0);
-        let e = Engine {
+        let mut e = Engine {
+            build,
+            calls: Vec::new(),
             files,
             arcs,
             order,
@@ -282,7 +299,14 @@ impl Engine {
             screen: Image::new(WIDTH, HEIGHT),
             logged: HashSet::new(),
             log: false,
+            log_calls: false,
+            ttf: None,
         };
+        let mut t = e.thread.clone();
+        let mut g = std::mem::take(&mut e.globals);
+        t.run_init(&mut g, &mut e)?;
+        e.globals = g;
+        e.thread = t;
         Ok(e)
     }
 
@@ -319,6 +343,14 @@ impl Engine {
     }
 
     /// Traces every instruction the script runs to stderr.
+    /// A TrueType font for the text of builds that draw with Windows fonts.
+    pub fn set_font(&mut self, ttf: &[u8]) -> Result<(), String> {
+        let f = fontdue::Font::from_bytes(ttf, fontdue::FontSettings::default())?;
+        self.ttf = Some(Rc::new(f));
+        self.fonts.clear();
+        Ok(())
+    }
+
     pub fn set_trace(&mut self, on: bool) {
         self.thread.trace = on;
     }
@@ -380,10 +412,21 @@ impl Engine {
                 Step::End => break,
                 Step::Jump { file, label } => {
                     let params = std::mem::take(&mut self.pending_params);
-                    let s = load_script(&self.arcs, self.files.as_mut(), &mut self.scripts, &file)?;
+                    let s = load_script(
+                        &self.arcs,
+                        self.files.as_mut(),
+                        &mut self.scripts,
+                        &file,
+                        self.build,
+                    )?;
                     let trace = self.thread.trace;
-                    self.thread = Thread::new(&file, s);
-                    self.thread.trace = trace;
+                    let mut t = Thread::new(&file, s);
+                    t.trace = trace;
+                    let mut g = std::mem::take(&mut self.globals);
+                    let init = t.run_init(&mut g, self);
+                    self.globals = g;
+                    init?;
+                    self.thread = t;
                     if !self.thread.enter_bank(label, &params) {
                         return Err(format!("{file} has no label {label}"));
                     }
@@ -492,6 +535,14 @@ impl Engine {
             Some(Err(e)) => {
                 eprintln!("nexas: {name}: {e}");
                 None
+            }
+            // a cell size from the name (ＭＳゴシック24x24.fnt), else 24
+            None if self.ttf.is_some() => {
+                let size = name
+                    .split(|c: char| !c.is_ascii_digit())
+                    .find_map(|d| d.parse().ok())
+                    .unwrap_or(24);
+                self.ttf.clone().map(|t| Rc::new(Font::outline(t, size)))
             }
             None => {
                 eprintln!("nexas: no font {name}");
@@ -747,17 +798,33 @@ fn load_script(
     files: &mut dyn Files,
     cache: &mut HashMap<String, Rc<Script>>,
     name: &str,
+    build: &Build,
 ) -> Result<Rc<Script>, String> {
     let key = name.to_lowercase();
     if let Some(s) = cache.get(&key) {
         return Ok(s.clone());
     }
+    // Older builds name scripts without the extension.
     let b = arcs
         .read(files, "Script", name)
+        .or_else(|| arcs.read(files, "Script", &format!("{name}.bin")))
         .ok_or(format!("Script.pac has no {name}"))?;
-    let s = Rc::new(script::parse(&b).map_err(|e| format!("{name}: {e}"))?);
+    let mut s = script::parse(&b).map_err(|e| format!("{name}: {e}"))?;
+    build.translate(&mut s);
+    let s = Rc::new(s);
     cache.insert(key, s.clone());
     Ok(s)
+}
+
+fn describe_args(args: &[Value]) -> String {
+    let a: Vec<String> = args
+        .iter()
+        .map(|v| match v {
+            Value::Int(i) => i.to_string(),
+            Value::Str(s) => format!("{:?}", sjis::decode(s)),
+        })
+        .collect();
+    format!("({})", a.join(", "))
 }
 
 fn arg(args: &[Value], k: usize) -> i32 {
@@ -819,6 +886,16 @@ impl Host for Engine {
         id: u32,
         args: &[Value],
     ) -> Result<(Value, Flow), String> {
+        let local = id;
+        let id = self.build.canonical(id);
+        if self.log_calls {
+            eprintln!(
+                "nexas: {}:{} b{id:#x} (b{local:#x} here) {}",
+                vm.name,
+                vm.frames[0].ip,
+                describe_args(args)
+            );
+        }
         let a = |k| arg(args, k);
         let now = self.now;
         let mut flow = Flow::Next;
@@ -855,11 +932,30 @@ impl Host for Engine {
                     label: label as u32,
                 };
             }
-            // go to a bank of this file (bank, 8 parameters), keeping its variables
+            // call a bank of another file (file, bank, 8 parameters); 0x4a comes back
+            0x48 => {
+                self.calls.push(vm.clone());
+                self.pending_params = (2..10).map(a).collect();
+                flow = Flow::Jump {
+                    file: text(args, 0),
+                    label: a(1) as u32,
+                };
+            }
+            // go to (0x47) or call (0x49) a bank of this file (bank, 8 parameters), keeping
+            // its variables
             0x47 | 0x49 => {
+                if id == 0x49 {
+                    self.calls.push(vm.clone());
+                }
                 let params: Vec<i32> = (1..9).map(a).collect();
                 if !vm.enter_bank(a(0) as u32, &params) {
                     return Err(format!("{} has no bank {}", vm.name, a(0)));
+                }
+            }
+            // return from 0x48/0x49 to the instruction after the call (none: nothing)
+            0x4a => {
+                if let Some(t) = self.calls.pop() {
+                    *vm = t;
                 }
             }
             // flags: set (n, v) / get (n); system flags: set (n, v, ?) / get (n)
@@ -960,9 +1056,19 @@ impl Host for Engine {
                         }
                         0x14a => o.rot.go(a(2) as f32, t, now),
                         _ => {
-                            // 3: normal, 4: added
-                            o.add = a(2) == 4;
-                            o.alpha.go(a(3) as f32 / 100.0, t, now);
+                            // 描画モード 0: opaque; 3: alpha, 4: added. A switch from mode 0
+                            // fades from nothing, so a new object's fade-in starts at 0.
+                            if a(2) == 0 {
+                                o.blend = false;
+                                o.alpha = Tween::at(1.0);
+                            } else {
+                                if !o.blend {
+                                    o.alpha = Tween::at(0.0);
+                                    o.blend = true;
+                                }
+                                o.add = a(2) == 4;
+                                o.alpha.go(a(3) as f32 / 100.0, t, now);
+                            }
                         }
                     }
                 }
@@ -1029,7 +1135,10 @@ impl Host for Engine {
                     );
                     match alpha {
                         Some(v) => o.alpha = Tween::at(v),
-                        None => o.alpha.go(1.0, t, now),
+                        None => {
+                            o.alpha = Tween::at(0.0);
+                            o.alpha.go(1.0, t, now);
+                        }
                     }
                     self.objs.insert(key, o);
                     if nowait == 0 {
@@ -1162,14 +1271,10 @@ impl Host for Engine {
             0x1a1 => out = self.plane,
             _ => {
                 if self.log && self.logged.insert(id) {
-                    let a: Vec<String> = args
-                        .iter()
-                        .map(|v| match v {
-                            Value::Int(i) => i.to_string(),
-                            Value::Str(s) => format!("{:?}", sjis::decode(s)),
-                        })
-                        .collect();
-                    eprintln!("nexas: b{id:#x}({}) not done", a.join(", "));
+                    eprintln!(
+                        "nexas: b{id:#x} (b{local:#x} here) {} not done",
+                        describe_args(args)
+                    );
                 }
             }
         }

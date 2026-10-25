@@ -7,5 +7,6 @@ description = "A NeXAS (Giga) engine for the browser: reads PAC archives and com
 
 [dependencies]
 miniz_oxide = "0.8"
+fontdue = "0.9"
 encoding_rs = "0.8"
 image = { version = "0.25", default-features = false, features = ["png", "bmp"] }

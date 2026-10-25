@@ -104,8 +104,12 @@ docs/protocol.md     プレイヤーとサーバーの約束事
   - 確認には sena のネイティブ版 (`cargo build --release -p pal-vm --bin sena`) の `--headless --diagnostic-png-at <frame>:<png> --trace-script` が便利。
 - NeXAS (自作、`crates/nexas`、ブラウザは `crates/nexas-web` + `web/src/engines/nexas.ts`):
   - PAC、コンパイル済みスクリプト (2010 年以降の形) の VM、.dat の表、SPM、.fnt (ビットマップフォント) を読む。組み込み命令の番号は exe ごとに違い、`engine.rs` は 2015 年の版 (恋愛フェイズ) の番号。
+  - 版ごとの違いは `builds.rs`: 版の番号から 2015 年の番号への表 (逆コンパイルした分岐の case を、処理の中身の似かたで順に対応づけたもの) と、VM の命令番号のずれ (2012 年の版は 0x2F と 0x39/0x3A が無い)。どの版かは System.bin の呼び出しの引数の数がいちばん合う表で決める。版を足すときは exe を Ghidra で逆コンパイルし、`switch(param_3)` の大きい関数 (組み込み命令の分岐) と `^ 0x8000` のある関数 (VM) を 2015 年のものと比べる。
+  - 0x48/0x49 は bank の呼び出し (0x4A で呼んだ所に戻る)、0x45/0x47 は行ったきり。ファイルを読んだら init ブロック (変数の初期値) を先に流す。オブジェクトは作った時点では不透明 (描画モード 0) で、0x159 でモード 3/4 に切り替えると 0 から目標の不透明度へ変わる。
+  - 2015 年より前の版は .fnt を持たず Windows のフォントで描くので、`fonts/fonts.json` の TrueType フォント (ネイティブは `NEXAS_FONT`) を縁取りして使う。
   - エンジンは「何をどこに描くか」の一覧 (`Engine::draws`) を出し、ページが WebGPU で四角形として描く (回転・拡大・加算・クリップ)。ネイティブ (`nexas-run <game> <frames> <prefix> [frame[:x:y] ...]`) は同じ一覧を CPU で描いて PNG に書く。
-  - 確認: 恋愛フェイズ体験版でロゴ → 注意書き → タイトル → ダイジェスト選択 → 本編 (チャット画面、メッセージウィンドウ、立ち絵) まで。ブラウザでもタイトルと本編を確認。
+  - 確認: 恋愛フェイズ体験版でロゴ → 注意書き → タイトル → ダイジェスト選択 → 本編 (チャット画面、メッセージウィンドウ、立ち絵) まで。ブラウザでもタイトルと本編を確認。キスベル体験版 (2012) はタイトル → 本編の最初の文まで (ネイティブ)、ブラウザでタイトルまで。
+  - 調べるとき: `NEXAS_CALLS=1` で組み込み命令の呼び出しを全部、`NEXAS_TRACE=1` で命令を、`NEXAS_OBJS=1` で画面のオブジェクトを出す。
   - まだ: 音 (BGM・ボイス・効果音)、セーブ、メッセージウィンドウの正しい位置 (System.dat の値を推測で使っている)、主人公の名前 (@u00/@u01 は仮)、パーティクル (0x189 系)、ほかの版の命令表。
 - **Siglus の二次鍵はブラウザでは探さない** (siglus_rs の wasm ビルドは key.toml を読むだけ)。`vnrun-prep <ゲームのフォルダ>` (crates/prep、ネイティブ) が鍵を復元して key.toml を書く。プリマドールで 1 秒以下。vnrun のサーバーがゲームを取り込むときにこれを呼ぶ想定 (未実装)。
 - movie (OMV / MPEG2 / WMV) の再生も siglus_rs の中で `thread::spawn` を使う箇所が残っている。ムービーのある作品で同じ panic が出るはずなので、出たら同様に直す。
@@ -127,7 +131,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 | NScripter | 4 | [OnscripterYuri](https://github.com/YuriSizuku/OnscripterYuri)、onscripter-ru-wasm | C++ | あり | |
 | AliceSoft System4 | 3 | [xsystem4](https://github.com/kichikuou/xsystem4)、system3-sdl2 (Web 版あり) | C | System3 のみ | |
 | YU-RIS | 29 | なし | | | 自作候補 |
-| NeXAS | 26 | 自作 (`crates/nexas`) | Rust | あり (WebGPU) | 2015 年の版 (恋愛フェイズ体験版) で本編まで。ほかの版は組み込み命令の番号が違う |
+| NeXAS | 26 | 自作 (`crates/nexas`) | Rust | あり (WebGPU) | 2015 年の版 (恋愛フェイズ) と 2012 年の版 (キスベル) で本編まで。ほかの版は命令表を足す |
 | AdvHD | 18 | なし | | | |
 | LiveMaker / WillPlus | 各 9 | なし | | | |
 | CatSystem2 / Escude / EntisGLS | 各 8 | なし | | | |

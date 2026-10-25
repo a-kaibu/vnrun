@@ -17,7 +17,7 @@ interface Game {
 
 interface NexasModule {
   default(): Promise<unknown>;
-  Game: new () => Game;
+  Game: new (font: Uint8Array) => Game;
 }
 
 // Saves get their own folder so they never shadow a game file of the same name.
@@ -231,12 +231,12 @@ class Compositor {
   }
 }
 
-export async function start({ fs, ui }: EngineContext): Promise<void> {
+export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
   bind(fs);
   const presenter = await Presenter.create(ui.canvas);
   const nexas = await importEngine<NexasModule>("nexas", "nexas_web.js");
   await nexas.default();
-  const game = new nexas.Game();
+  const game = new nexas.Game(fonts[0] ?? new Uint8Array());
   const compositor = new Compositor(presenter.device, game.width(), game.height());
   const { canvas } = ui;
   canvas.addEventListener("pointerdown", (event) => {
