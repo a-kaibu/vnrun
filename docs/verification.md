@@ -41,7 +41,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|---|---|---|---|---|
 | SiglusEngine (siglus_rs) | 19 | 5 | 14 |  |  |  |  |  |
 | RealLive (siglus_rs) | 8 | 4 | 2 |  | 1 |  | 1 |  |
-| BGI (ethornell-rs) | 21 | 1 | 19 | 1 |  |  |  |  |
+| BGI (ethornell-rs) | 21 | 1 | 20 |  |  |  |  |  |
 | Softpal (sena-rs) | 28 | 3 | 24 |  |  | 1 |  |  |
 | Artemis (art3m1s-core) | 6 |  | 5 |  |  | 1 |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
@@ -93,7 +93,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|
 | s2016_hooksoft_amenitys_life | [AmenitysLife Ver1.00](http://suezou.dyndns.org/dl2016/hooksoft/amenitys_life/AmenitysLife_trial_02.zip) | 本編 | f81eded 以降も本編まで |
 | b2006_lumpofsugar | [いつか、届く、あの空に。【体験版】](http://suezou.dyndns.org/dl2006/lumpofsugar/itsusora/itsusora_trial.lzh) | タイトル |  |
-| b2010_lumpofsugar | [Hello,good-bye 体験版](http://suezou.dyndns.org/dl2010/lumpofsugar/hello_good-bye/Hello_goodbye_trial_web.zip) | タイトル | 1c16d6c (0009、ipl の中の目印ファイル名) でタイトルまで |
+| b2010_lumpofsugar | [Hello,good-bye 体験版](http://suezou.dyndns.org/dl2010/lumpofsugar/hello_good-bye/Hello_goodbye_trial_web.zip) | タイトル | 28374cc (0009 更新) でタイトルまで |
 | b2011_lumpofsugar | [DiamicDays_Trial.zip](http://suezou.dyndns.org/dl2011/lumpofsugar/diamicdays/DiamicDays_Trial.zip) | タイトル |  |
 | b2013_lumpofsugar | [sekachu_trial_WEB2.zip](http://suezou.dyndns.org/dl2013/lumpofsugar/sekachu/sekachu_trial_WEB2.zip) | タイトル | c27e445 で直った |
 | b2015_hooksoft | [トラベリングスターズ 体験版02 Ver1.00](http://suezou.dyndns.org/dl2015/hooksoft/traveling_stars/travelingstars_trial_02.zip) | タイトル | c27e445 で直った |
@@ -101,9 +101,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2019_hooksoft | [どっちのｉが好きですか？　Ｈシーン体験版　Ver1.00](http://suezou.dyndns.org/dl2019/hooksoft/isuki/isuki_h_trial.zip) | タイトル | c27e445 で直った |
 | b2019_sukerasparo | [kudan_trial.zip](http://suezou.dyndns.org/dl2019/sukerasparo/kudan/kudan_trial.zip) | タイトル |  |
 | b2020_sukerasomero | [oshilove_trial.zip](http://suezou.dyndns.org/dl2020/sukerasomero/oshi_love/oshilove_trial.zip) | タイトル | インストール用の目印ファイルを無視する 3b42c00 で解消 |
+| dl_VJ01004381 | [顔のない月 -待宵の双椿-](https://trial.dlsite.com/professional/VJ01005000/VJ01004381_trial.zip) | タイトル | 28374cc (0009 更新) でタイトルまで |
 | r1_bgi_kudan | [クダンノフォークロア 体験版](http://sukerasparo.com/data/kudan_trial.zip) | タイトル | 本編まで進むことは前回確認済み (handoff) |
-| s2010_lumpofsugar_prismrhythm | [PrismRhythm-プリズムリズム- Web特別体験版](http://suezou.dyndns.org/dl2010/lumpofsugar/prismrhythm/PrismRhythm_trial_Web.lzh) | タイトル | 1c16d6c (0009、ipl の中の目印ファイル名) でタイトルまで。800x600 の画面が中央に小さく出る |
-| s2011_lumpofsugar_gackoh | [学☆王 - THE ROYAL SEVEN STARS - 体験入学版](http://suezou.dyndns.org/dl2011/lumpofsugar/gackoh/Gackoh_Trial.zip) | タイトル | 1c16d6c (0009、ipl の中の目印ファイル名) でタイトルまで |
+| s2010_lumpofsugar_prismrhythm | [PrismRhythm-プリズムリズム- Web特別体験版](http://suezou.dyndns.org/dl2010/lumpofsugar/prismrhythm/PrismRhythm_trial_Web.lzh) | タイトル | 28374cc (0009 更新) でタイトルまで。800x600 の画面が中央に小さく出る |
+| s2011_lumpofsugar_gackoh | [学☆王 - THE ROYAL SEVEN STARS - 体験入学版](http://suezou.dyndns.org/dl2011/lumpofsugar/gackoh/Gackoh_Trial.zip) | タイトル | 28374cc (0009 更新) でタイトルまで |
 | s2014_hooksoft_meltymoment | [MeltyMoment 体験版 Ver1.00](http://suezou.dyndns.org/dl2014/hooksoft/meltymoment/MeltyMoment_trial.zip) | タイトル | c27e445 で直った |
 | s2015_smee_pure_connect | [ピュア×コネクト  Ver1.00](http://suezou.dyndns.org/dl2015/smee/pure_connect/pureconnect_trial.zip) | タイトル | c27e445 で直った |
 | s2019_lump_of_sugar_wakabairono_quartet | [若葉色のカルテット 体験版](http://suezou.dyndns.org/dl2019/lump-of-sugar/wakabairono_quartet/WakabaironoQuartet_trial.zip) | タイトル | 3b42c00 で解消 |
@@ -111,7 +112,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2021_smee_pureconnect_hd | [pureconnect_fhd_trial.zip](http://suezou.dyndns.org/dl2021/smee/pureconnect_hd/pureconnect_fhd_trial.zip) | タイトル | 3b42c00 で解消 |
 | s2022_hooksoft_houkago2 | [放課後シンデレラ２ 体験版 Ver1.01](http://suezou.dyndns.org/dl2022/hooksoft/houkago2/HoukagoCinderella2_trial_v1.01.zip) | タイトル | f81eded (BackML 0x8E) でタイトルまで |
 | s2023_quince_soft_little_proncess_go | [リトルプリンセスＧＯ！ 体験版](http://suezou.dyndns.org/dl2023/quince-soft/little-proncess_go/LittlePrincessGO_TR.zip) | タイトル | 1c16d6c でもタイトルまで |
-| dl_VJ01004381 | [顔のない月 -待宵の双椿-](https://trial.dlsite.com/professional/VJ01005000/VJ01004381_trial.zip) | 起動 | 1c16d6c でも2分間黒画面のまま (エラーなし) |
 
 ### Softpal (sena-rs)
 
