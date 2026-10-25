@@ -293,10 +293,10 @@ b2025_ensemble_sweet	本編	b076f1f で START から本編テキストまで
 b2025_guilty	本編	b076f1f で START から本編テキストまで
 b2026_tokohana	タイトル	b076f1f でタイトルから名前入力まで。prompt に名前を入れても OK が押されず先に進まない
 dl_VJ01002397	本編	b076f1f で START から本編テキストまで
-dl_VJ01003020	タイトル	b076f1f で START から名前入力まで。prompt に名前を入れた後、画面上の OK を押す操作は未確認
+dl_VJ01003020	本編	14cde42 で START → 名前入力の OK → 本編テキストまで
 dl_VJ01004020	本編	b076f1f で START から本編テキストまで
 dl_VJ01004594	本編	b076f1f で START から本編テキストまで
-dl_VJ015399	タイトル	b076f1f で START から名前入力まで。prompt に名前を入れた後、画面上の OK を押す操作は未確認
+dl_VJ015399	本編	14cde42 で START → 名前入力の OK → 本編テキストまで。名前欄が「<@FIRNAME>」のまま
 s2015_ensemble_koikata	本編	b076f1f で START からキャラクター選択画面まで
 s2015_ensemble_sweet_yakimochi	本編	b076f1f で START からキャラクター選択画面まで
 s2016_ensemble_sweet_hanayome	本編	b076f1f で START から本編テキストまで
@@ -325,8 +325,8 @@ s2021_akabeesoft2_roleplayer	NG	スクリプトが exe 内蔵の暗号 (cxdec �
 s2017_nanawind_alice_gram	NG	confirm_askJump / quickmenu.tjs(1) QuickMenuLock の property getter で「Member "kag" does not exist」
 s2022_mille_feuille_excelchiffon	NG	e0a3162 で初期化は通過し first.ks まで進むが、[BgSet storage="_black"] で「Layer bitmap: Buffer underrun/overrun」の後 [trans method=crossfade] で「memory access out of bounds」
 s2012_ninetail_gears_of_dragoon	タイトル	d084599 (setLayerPos) でタイトル画面まで表示
-b2013_ensemble	タイトル	b076f1f で START を押すと白画面のまま進まない (エラーなし)
-s2013_guilty_yobai	タイトル	b076f1f で START から最初の画面まで。mapmovetrial.ws2:0x9e で unknown command 0x03
+b2013_ensemble	本編	14cde42 で START から本編テキストまで (START 後しばらく白画面)
+s2013_guilty_yobai	本編	14cde42 で START から「誰の所へ行きますか？」のマップ選択まで (背景が白)
 dl_VJ01004836	本編	b076f1f で START から本編テキストまで
 s2018_ensemble_otostuki	要再確認	zip の展開が不完全で Rio.arc が見つからない (Bgm/Chip*.arc のみ)
 s2008_ninetail_amatu	タイトル	
