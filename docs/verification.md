@@ -46,7 +46,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Artemis (art3m1s-core) | 6 |  | 5 |  |  | 1 |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 2 | 17 | 9 | 3 | 2 |  |  |
-| 吉里吉里 (KiriKiri SDL2) | 135 |  | 85 | 8 | 1 | 31 |  | 10 |
+| 吉里吉里 (KiriKiri SDL2) | 135 | 2 | 83 | 8 | 1 | 31 |  | 10 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 30 | 5 | 1 |  | 1 | 22 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
@@ -210,6 +210,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| b2019_tinkle_position | [おにギュＨ＿ＨＣＢ体験版](http://suezou.dyndns.org/dl2019/tinkle-position/onigyu_h/onigyuh_hcbtrial.zip) | 本編 | 1929e7a で「はじめる」からハグクリックの説明画面まで |
+| dl_RJ01677912 | [とける風花とシロうさぎ](https://trial.dlsite.com/doujin/RJ01678000/RJ01677912_trial.zip) | 本編 | 1929e7a で START から本編テキストまで (立ち絵・名前欄・文章) |
 | b2006_ninetail | [機械仕掛けのイブ　～Ｄｅａ　Ｅｘ　Ｍａｃｈｉｎａ～](http://suezou.dyndns.org/dl2006/ninetail/eve/0527_eve_trial_ver100.exe) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2008_dualtail | [Venus Blood Chimera](http://suezou.dyndns.org/dl2008/dualtail/vbc/VBC_trial_SLGver100.zip) | タイトル | e7d5b88 でタイトル画面まで表示 |
 | b2010_akabeesoft | [置き場がない！ web体験版](http://suezou.dyndns.org/dl2010/akabeesoft/okiba/okiba_webTRIAL.zip) | タイトル | d084599 (setLayerPos) でタイトル画面まで表示 |
@@ -231,7 +233,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2019_appetite | [女体化パニック！３～お、俺は男だ！　でも、悔しいけど気持ちいいっ……のか！？　体験版](http://suezou.dyndns.org/dl2019/appetite/nyotaika3/apt133_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2019_dualtail | [VenusBlood FRONTIER International SLG Trial 日本語版](http://suezou.dyndns.org/dl2019/dualtail/vbfi/VBFI_New_SLG_Trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2019_sator | [モウソウスピーカー～Ｈな妄想が聴こえてくるよ～　体験版](http://suezou.dyndns.org/dl2019/sator/mousou_speaker/mousou_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| b2019_tinkle_position | [おにギュＨ＿ＨＣＢ体験版](http://suezou.dyndns.org/dl2019/tinkle-position/onigyu_h/onigyuh_hcbtrial.zip) | タイトル | 1929e7a でタイトル画面まで表示 (psb:// 対応) |
 | b2020_at_sakura | [優来（ゆら）があいつに抱かれる理由（わけ） 体験版](http://suezou.dyndns.org/dl2020/at-sakura/yura_wake/aspc-0112_taiken_ver1.0.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2020_chaos_r | [悪堕ち 魔導処女～絶対支配の触手調教～　体験版](http://suezou.dyndns.org/dl2020/chaos-r/madousyojo/madousyojo_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2020_pin_point | [世話焼き奥さんで人の頼みを断れない亜衣さんにお願いして中出しハメ放題のドスケベ妻になってもらった 体験版](http://suezou.dyndns.org/dl2020/pin-point/wife_ai/PP34_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示。起動時に「フルスクリーンで表示しますか？」の確認ダイアログが出る |
@@ -249,7 +250,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2024_at_sakura | [性調教済だった愛する彼女 体験版](http://suezou.dyndns.org/dl2024/at-sakura/seikyo_kano/aspc-0150_taiken_ver1.0.zip) | タイトル | 591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動) |
 | b2025_at_sakura | [学生会長・紫藤喜那の淫鬱 体験版](http://suezou.dyndns.org/dl2025/at-sakura/seito_sidou/aspc-0161_taiken_ver1.0.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2025_monoceros_plus | [Vanilla Android　シコ猿DT大学生の俺と美少女アンドロイドがいろんなプレイでハメパコミッション　体験版](http://suezou.dyndns.org/dl2025/monoceros_plus/vanilla_android/VanillaAndroid-trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| dl_RJ01677912 | [とける風花とシロうさぎ](https://trial.dlsite.com/doujin/RJ01678000/RJ01677912_trial.zip) | タイトル | 1929e7a でロゴからタイトル画面まで表示 |
 | dl_VJ01000429 | [【DLsite限定版】進軍ゴブリン軍団2 ～淫獣軍VS.INTRUDER～](https://trial.dlsite.com/professional/VJ01001000/VJ01000429_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | dl_VJ01000497 | [【DLsite限定版】性感エステ 灯 -AKARI- マキ（28）](https://trial.dlsite.com/professional/VJ01001000/VJ01000497_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | dl_VJ01000502 | [堕とされていくお姉ちゃんと、何もできないボク ～憧れの彼女は、淫落し痴態をさらけ出す～](https://trial.dlsite.com/professional/VJ01001000/VJ01000502_trial.zip) | タイトル | d51f3e8 系のページでタイトル画面まで表示 |
