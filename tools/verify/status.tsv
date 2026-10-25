@@ -330,6 +330,6 @@ s2013_guilty_yobai	タイトル	b076f1f でタイトル画面まで表示 (Insta
 dl_VJ01004836	タイトル	b076f1f でタイトル画面まで表示
 s2018_ensemble_otostuki	要再確認	zip の展開が不完全で Rio.arc が見つからない (Bgm/Chip*.arc のみ)
 s2008_ninetail_amatu	タイトル	
-dl_RJ01677912	NG	a5f0c12 で HOTKEY は通過、uisystem.tjs で Window.getNotificationNum("SYSKEYDOWN") が無く停止 (windowEx)
+dl_RJ01677912	NG	0a37f6c で getNotificationNum は通過、uiloader.tjs で Scripts.loadDataPack が無く停止
 b2016_alcot	NG	quickmenu.tjs の EventProxyLayer で owner.names に "qsave" が無く、dm() が Invalid argument count。黒画面
-b2014_hibiki_works	NG	customhistorylayer.tjs(124) loadImages("log_top") で TLG Read Error (sys.tpm の復号漏れ?)。黒画面
+b2014_hibiki_works	NG	arc/image.xp3 の TLG (先頭 5 バイト平文 + (adler>>12) XOR) で方式判定を誤り TLG Read Error。黒画面
