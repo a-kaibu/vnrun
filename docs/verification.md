@@ -283,7 +283,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2016_cube | [間宮くんちの五つ子事情 体験版](http://suezou.dyndns.org/dl2016/cube/mamiya/mamiya_trial.zip) | NG | 5d1348e で真っ白のまま |
 | b2019_tinkle_position | [おにギュＨ＿ＨＣＢ体験版](http://suezou.dyndns.org/dl2019/tinkle-position/onigyu_h/onigyuh_hcbtrial.zip) | NG | custom.tjs(217) onUiloaded で「Cannot convert the variable type ((void) to Object)」 |
 | b2020_akabeesoft3 | [墓多 DYING ZOMBIES -体験版-](http://suezou.dyndns.org/dl2020/akabeesoft3/hakatadyingzombies/ab3_hakatadyingzombies_webtrial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」 |
-| b2020_lass_pixy | [リトルシックガール　～桃蜜は妹の香り～　体験版](http://suezou.dyndns.org/dl2020/lass-pixy/lsg03/LSG3_tr.zip) | NG | bc69267 で DS_MODALFRAME は通過、lass_rebind.tjs(23)「Member "ICC_BAR_CLASSES" does not exist」(WIN32Dialog.initCommonControlsEx) |
+| b2020_lass_pixy | [リトルシックガール　～桃蜜は妹の香り～　体験版](http://suezou.dyndns.org/dl2020/lass-pixy/lsg03/LSG3_tr.zip) | NG | a491dc8 で win32dialog は通過、lass_menu.tjs(33) reparent で「Member "dispDoubleBufferMenu" does not exist」(メニュー項目) |
 | b2022_hending | [リンパにATATA! ～メス牡蠣ミルクどぴゅらっしゅ♡～](http://suezou.dyndns.org/dl2022/hending/atata/atata_trial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」 |
 | b2023_lump_of_sugar_all | [瑠璃桜](http://suezou.dyndns.org/dl2023/lump-of-sugar_all/rurizakura/Rurizakura_trial.zip) | NG | 「Invalid argument count」(quickmenu.tjs(1) EventProxyLayer) |
 | r1_krkr_apt306 | [先輩、好きです……押忍！ 体験版](https://www.appetite-game.com/apt306/image/apt306_tr.zip) | NG | 591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」 |
