@@ -49,7 +49,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | 吉里吉里 (KiriKiri SDL2) | 135 |  | 79 | 7 | 1 | 38 |  | 10 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 30 | 5 | 1 |  | 1 | 22 | 1 |  |
-| AdvHD (vnrun) | 30 | 24 | 5 |  | 1 |  |  |  |
+| AdvHD (vnrun) | 30 | 26 | 3 |  | 1 |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -317,7 +317,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2020_lass_pixy | [リトルシックガール　～桃蜜は妹の香り～　体験版](http://suezou.dyndns.org/dl2020/lass-pixy/lsg03/LSG3_tr.zip) | NG | E-mote で未対応。6d436d5 でメニューまで通過、motion.tjs(20)「Member "Motion" does not exist」 |
 | b2022_hending | [リンパにATATA! ～メス牡蠣ミルクどぴゅらっしゅ♡～](http://suezou.dyndns.org/dl2022/hending/atata/atata_trial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」 |
 | b2023_lump_of_sugar_all | [瑠璃桜](http://suezou.dyndns.org/dl2023/lump-of-sugar_all/rurizakura/Rurizakura_trial.zip) | NG | 「Invalid argument count」(quickmenu.tjs(1) EventProxyLayer) |
-| dl_RJ01677912 | [とける風花とシロうさぎ](https://trial.dlsite.com/doujin/RJ01678000/RJ01677912_trial.zip) | NG | 59e12cc で title.ks まで。Scripts.foreach のコールバック文脈 (entryUpdate) と game.cfu の書き込み失敗で黒画面 |
+| dl_RJ01677912 | [とける風花とシロうさぎ](https://trial.dlsite.com/doujin/RJ01678000/RJ01677912_trial.zip) | NG | 7c0d7c6 でスクリプトの例外は出なくなったが、起動後も黒画面のまま (エラーなし) |
 | r1_krkr_apt306 | [先輩、好きです……押忍！ 体験版](https://www.appetite-game.com/apt306/image/apt306_tr.zip) | NG | 591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」 |
 | s2008_dualtail_clarice | [奴隷将校クラリス　－　白濁のグローリエ　－　ＡＤＶパート体験版](http://suezou.dyndns.org/dl2008/dualtail/clarice/Clarice_ADVtrial.exe) | NG | startup.tjs(6) で「Read error」 |
 | s2010_akabeesoft_lavender | [光輪の町、ラベンダーの少女　体験版](http://suezou.dyndns.org/dl2010/akabeesoft/lavender/lavender_webTRIAL.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」 |
@@ -430,6 +430,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2022_ensemble | [華は短し、踊れよ乙女 - 体験版](http://suezou.dyndns.org/dl2022/ensemble/hanaoto/hanaoto_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
 | b2025_ensemble_sweet | [のーぶるバトラー TRIAL EDITION](http://suezou.dyndns.org/dl2025/ensemble-sweet/noblebutler/noblebutler_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
 | b2025_guilty | [虜ノ焔 ～淫欲の炎に満ちた地下闘技場～ 体験版](http://suezou.dyndns.org/dl2025/guilty/torikonohomura/torikonohomura_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
+| b2026_tokohana | [OfficeLove -クールな上司と秘密のイキ抜き- Trial Edition](http://suezou.dyndns.org/dl2026/tokohana/office_love/OfficeLove_trial.zip) | 本編 | 3fe627e で START → 名前入力の OK → 本編テキストまで |
 | dl_VJ01002397 | [僕の好きな人の好きな人は、女装した僕でした。](https://trial.dlsite.com/professional/VJ01003000/VJ01002397_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
 | dl_VJ01003020 | [幸乃下蛍の恋青日和 ～お義姉ちゃんとの秘密同棲～](https://trial.dlsite.com/professional/VJ01004000/VJ01003020_trial.zip) | 本編 | 14cde42 で START → 名前入力の OK → 本編テキストまで |
 | dl_VJ01004020 | [のーぶる・バトラー](https://trial.dlsite.com/professional/VJ01005000/VJ01004020_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
@@ -437,6 +438,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_VJ01004836 | [俺だけに傅く孕メイドたち ～精子を貪る五人の欲心女～](https://trial.dlsite.com/professional/VJ01005000/VJ01004836_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
 | dl_VJ015399 | [恋するあまいろホームステイ -留学生はわんこ系幼馴染-](https://trial.dlsite.com/professional/VJ016000/VJ015399_trial.zip) | 本編 | 14cde42 で START → 名前入力の OK → 本編テキストまで。名前欄が「<@FIRNAME>」のまま |
 | s2013_guilty_yobai | [夜這いする七人の孕女～体験版2～](http://suezou.dyndns.org/dl2013/guilty/yobai/yobai_trial2.exe) | 本編 | 14cde42 で START から「誰の所へ行きますか？」のマップ選択まで (背景が白) |
+| s2013_pulltop_cocoro | [ココロ＠ファンクション！―えっちシーン体験版](http://suezou.dyndns.org/dl2013/pulltop/cocoro/CocoroFunction_Hscene_trial.exe) | 本編 | 3fe627e で START からキャラクター選択画面まで |
 | s2015_ensemble_koikata | [恋する気持ちのかさねかた_Hシーン体験版](http://suezou.dyndns.org/dl2015/ensemble/koikata/koikata_H_trial.zip) | 本編 | b076f1f で START からキャラクター選択画面まで |
 | s2015_ensemble_sweet_yakimochi | [エッチでヘンタイ！ヤキモチお嬢様！！　ヘンタイ性癖解放Ver．体験版](http://suezou.dyndns.org/dl2015/ensemble-sweet/yakimochi/Dohentai_trial.exe) | 本編 | b076f1f で START からキャラクター選択画面まで |
 | s2016_ensemble_sweet_hanayome | [恋するお嬢様はエッチな花嫁　体験版](http://suezou.dyndns.org/dl2016/ensemble-sweet/hanayome/hanayome_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
@@ -445,8 +447,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2026_ensemble_sweet_ribichu | [リビドーアバンちゅ～る TRIAL EDITION](http://suezou.dyndns.org/dl2026/ensemble-sweet/ribichu/ribichu_trial.exe) | 本編 | b076f1f で START から本編テキストまで |
 | b2014_ensemble | [goldenmarriage_trial.exe](http://suezou.dyndns.org/dl2014/ensemble/golden_marriage/goldenmarriage_trial.exe) | タイトル | e51df34 でタイトル画面まで表示 (InstallShield 版) |
 | b2014_ensemble_sweet | [hentai_trial.exe](http://suezou.dyndns.org/dl2014/ensemble-sweet/hentai/hentai_trial.exe) | タイトル | 14cde42 (e3c9f4d 後) でも START 後 0010.ws2:0x3 で unknown command 0x03 |
-| b2026_tokohana | [OfficeLove -クールな上司と秘密のイキ抜き- Trial Edition](http://suezou.dyndns.org/dl2026/tokohana/office_love/OfficeLove_trial.zip) | タイトル | b076f1f でタイトルから名前入力まで。prompt に名前を入れても OK が押されず先に進まない |
 | r1_advhd | [有閑夫人倶楽部 体験版](https://www.willplus-download.com/Empress/yukanmadam/yukanmadam_trialedition.exe) | タイトル | 775114f でタイトル画面まで正しいサイズで表示 |
-| s2013_pulltop_cocoro | [ココロ＠ファンクション！―えっちシーン体験版](http://suezou.dyndns.org/dl2013/pulltop/cocoro/CocoroFunction_Hscene_trial.exe) | タイトル | e51df34 でタイトル画面まで表示 (InstallShield 版) |
 | s2018_ensemble_otostuki | [乙女が結ぶ月夜の煌めき　体験版](http://suezou.dyndns.org/dl2018/ensemble/otostuki/ototsuki_trial.zip) | 要再確認 | zip の展開が不完全で Rio.arc が見つからない (Bgm/Chip*.arc のみ) |
 <!-- /matrix -->

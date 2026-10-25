@@ -291,7 +291,7 @@ b2018_tokohana	本編	b076f1f で START から本編テキストまで
 b2022_ensemble	本編	b076f1f で START から本編テキストまで
 b2025_ensemble_sweet	本編	b076f1f で START から本編テキストまで
 b2025_guilty	本編	b076f1f で START から本編テキストまで
-b2026_tokohana	タイトル	b076f1f でタイトルから名前入力まで。prompt に名前を入れても OK が押されず先に進まない
+b2026_tokohana	本編	3fe627e で START → 名前入力の OK → 本編テキストまで
 dl_VJ01002397	本編	b076f1f で START から本編テキストまで
 dl_VJ01003020	本編	14cde42 で START → 名前入力の OK → 本編テキストまで
 dl_VJ01004020	本編	b076f1f で START から本編テキストまで
@@ -305,7 +305,7 @@ s2022_ensemble_sweet_otoshita	本編	b076f1f で START から本編テキスト�
 s2026_ensemble_sweet_ribichu	本編	b076f1f で START から本編テキストまで
 r1_advhd	タイトル	775114f でタイトル画面まで正しいサイズで表示
 b2014_ensemble	タイトル	e51df34 でタイトル画面まで表示 (InstallShield 版)
-s2013_pulltop_cocoro	タイトル	e51df34 でタイトル画面まで表示 (InstallShield 版)
+s2013_pulltop_cocoro	本編	3fe627e で START からキャラクター選択画面まで
 s2024_appetite_isekai_cyoroin	タイトル	d51f3e8 系のページでタイトル画面まで表示
 s2024_appetite_inyoku_train	タイトル	d51f3e8 系のページでタイトル画面まで表示
 s2017_appetite_evil_monmusu	タイトル	d51f3e8 系のページでタイトル画面まで表示
@@ -330,6 +330,6 @@ s2013_guilty_yobai	本編	14cde42 で START から「誰の所へ行きますか
 dl_VJ01004836	本編	b076f1f で START から本編テキストまで
 s2018_ensemble_otostuki	要再確認	zip の展開が不完全で Rio.arc が見つからない (Bgm/Chip*.arc のみ)
 s2008_ninetail_amatu	タイトル	
-dl_RJ01677912	NG	59e12cc で title.ks まで。Scripts.foreach のコールバック文脈 (entryUpdate) と game.cfu の書き込み失敗で黒画面
+dl_RJ01677912	NG	7c0d7c6 でスクリプトの例外は出なくなったが、起動後も黒画面のまま (エラーなし)
 b2016_alcot	NG	csvParser 代替が区切り文字の文字コード指定 (44/9) を扱えず、quickmenu の names が空。黒画面
 b2014_hibiki_works	NG	1c2e2b9 でタイトル描画が始まるが title_logo.ks:45 の trans method=ripple (extrans.dll) が無く停止
