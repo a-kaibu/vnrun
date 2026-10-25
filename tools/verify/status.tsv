@@ -58,11 +58,11 @@ r1_saku	NG	PONScripter の作品。0.txt / nscript.dat が無く読めない (0.
 r1_higanbana	対象外	インストーラ形式 (CreateInstall) で展開できない
 dl_RJ01724681	対象外	中身は Unity 製 (開発スレッドで確認)
 r1_softpal_tenmao	NG	起動時に panic (capacity overflow)
-r1_softpal_hanako	本編	プロローグの文章
+r1_softpal_hanako	本編	654935e 以降も本編の文章まで
 b2024_milimili	本編	プロローグの文章 (r1_softpal_hanako と同じ作品)
 b2021_milimili	タイトル	
 b2022_amuse_craft_erotica	タイトル	
-b2026_crystalia	タイトル	
+b2026_crystalia	タイトル	654935e 以降もタイトルまで
 b2017_unisonshift	タイトル	
 b2020_milimili	タイトル	
 b2018_erectlip	タイトル	
@@ -101,16 +101,16 @@ dl_RJ01642779	タイトル	RPGツクール。画面が拡大されない
 s2019_no_strike_jyosou_jinjya	要再確認	pac/ フォルダがゲームのルートとして選ばれ、白画面のまま
 s2014_whirlpool_tearstilla	NG	5224635 以降も「ysbin/ysc.ybn is missing」
 dl_VJ01001386	タイトル	5224635 (YU-RIS 482) でタイトルまで
-dl_VJ01004582	NG	「ysbin/ysc.ybn is missing」
-dl_VJ01000315	NG	「ysbin/ysc.ybn is missing」
-dl_VJ01002327	NG	「ysbin/ysc.ybn is missing」
-dl_RJ01648691	NG	「Your browser does not support IndexedDB」
-dl_RJ01618221	NG	「Your browser does not support IndexedDB」
+dl_VJ01004582	タイトル	5224635 (YU-RIS 482) でタイトルまで
+dl_VJ01000315	タイトル	5224635 (YU-RIS 482) でタイトルまで
+dl_VJ01002327	起動	5224635 以降は ysc.ybn エラーは出ないが、黒画面のまま (エラーなし)
+dl_RJ01648691	本編	416970b (IndexedDB) 以降。クリックでマップ画面まで進む
+dl_RJ01618221	起動	IndexedDB のエラーは消えたが、読み込み中の表示のまま進まない (エラーなし)
 dl_RJ357058	NG	「Unexpected end of JSON input」
 dl_RJ01720493	NG	「Cannot read properties of undefined (reading 'fs')」(NW.js の Node API)
-dl_RJ01722380	NG	「Your browser does not support IndexedDB」
-dl_RJ01727123	NG	「Your browser does not support IndexedDB」
-s2016_no_strike_jyogaku	NG	「ysbin/ysc.ybn is missing」
+dl_RJ01722380	タイトル	416970b (IndexedDB) でタイトルまで
+dl_RJ01727123	タイトル	416970b (IndexedDB) でタイトルまで
+s2016_no_strike_jyogaku	タイトル	5224635 (YU-RIS 482) でタイトルまで
 dl_RJ01612664	タイトル	RPGツクール。画面が拡大されない
 dl_RJ01721024	タイトル	
 dl_RJ01686418	起動	黒画面のまま (エラーなし)
@@ -120,12 +120,12 @@ dl_RJ01699765	起動	読み込み中の表示のまま進まない
 dl_RJ01702392	起動	灰色の画面に大きすぎるタイトル文字だけが出て進まない
 dl_RJ01618747	起動	読み込み中の表示のまま進まない
 dl_VJ01001309	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)
-dl_RJ01720958	NG	「Your browser does not support IndexedDB」
-dl_RJ01703802	NG	「Your browser does not support IndexedDB」
-dl_RJ01699647	NG	「Your browser does not support IndexedDB」
-dl_RJ01701172	NG	「Your browser does not support IndexedDB」
-dl_RJ01696742	NG	「Your browser does not support IndexedDB」
-dl_RJ01529614	NG	「Your browser does not support IndexedDB」
+dl_RJ01720958	タイトル	416970b (IndexedDB) でタイトルまで
+dl_RJ01703802	起動	IndexedDB のエラーは消えたが、読み込み中の表示のまま進まない (エラーなし)
+dl_RJ01699647	タイトル	416970b (IndexedDB) でタイトルまで。コンソールに「Cannot read properties of null (reading 'unlockInfo')」
+dl_RJ01701172	起動	IndexedDB のエラーは消えたが、読み込み中の表示のまま進まない (エラーなし)
+dl_RJ01696742	タイトル	416970b (IndexedDB) でタイトルまで
+dl_RJ01529614	起動	IndexedDB のエラーは消えたが、読み込み中の表示のまま進まない (エラーなし)
 dl_RJ01746541	起動	黒画面のまま (エラーなし)
 dl_RJ01701742	起動	読み込み中の表示のまま進まない
 dl_RJ01623688	起動	読み込み中の表示のまま進まない
