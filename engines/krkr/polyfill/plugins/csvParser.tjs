@@ -1,7 +1,8 @@
 // vnrun: csvParser.dll. new CSVParser(target, separator=","), then init(text) or
 // initStorage(name) and getNextLine() until void, or parse(text) / parseStorage(name), which
 // call target.doLine(fields, lineNumber) (no target: this.doLine). Quoted fields may hold
-// separators, "" and newlines. Empty lines are skipped.
+// separators, "" and newlines. Spaces and tabs around unquoted fields are dropped (UI .func files
+// line their columns up with tabs). Empty lines are skipped.
 class CSVParser
 {
 	var target, separator;
@@ -28,7 +29,7 @@ class CSVParser
 	function getNextLine() {
 		var len = text.length;
 		while (pos < len) {
-			var fields = [], field = "", quoted = false, any = false;
+			var fields = [], field = "", quoted = false, wasQuoted = false, any = false;
 			currentLineNumber++;
 			while (pos < len) {
 				var c = text[pos];
@@ -40,17 +41,24 @@ class CSVParser
 					if (c == "\n") currentLineNumber++;
 					field += c; pos++; continue;
 				}
-				if (c == "\"") { quoted = true; any = true; pos++; continue; }
-				if (c == separator) { fields.add(field); field = ""; any = true; pos++; continue; }
+				if (c == "\"") { if (!wasQuoted) field = trim(field); quoted = wasQuoted = true; any = true; pos++; continue; }
+				if (c == separator) { fields.add(wasQuoted ? field : trim(field)); field = ""; wasQuoted = false; any = true; pos++; continue; }
 				if (c == "\r") { pos++; continue; }
 				if (c == "\n") { pos++; break; }
 				field += c; any = true; pos++;
 			}
 			if (!any) continue;
-			fields.add(field);
+			fields.add(wasQuoted ? field : trim(field));
 			return fields;
 		}
 		return void;
+	}
+
+	function trim(s) {
+		var a = 0, b = s.length;
+		while (a < b && (s[a] == " " || s[a] == "\t")) a++;
+		while (b > a && (s[b - 1] == " " || s[b - 1] == "\t")) b--;
+		return s.substring(a, b - a);
 	}
 
 	function parse(text = void) {
