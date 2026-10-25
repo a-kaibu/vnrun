@@ -16,6 +16,15 @@
 	names.assign(states);
 	for (var i = 0; i < names.count; i += 2)
 		if (typeof(W[names[i]]) === "undefined") W[names[i]] = names[i + 1];
+	// Window messages by name (registerExEvent / onWindowsMessage hooks; none arrive here)
+	if (typeof(W.getNotificationNum) === "undefined")
+		W.getNotificationNum = function(name) {
+			var nums = %[ KEYDOWN: 0x100, KEYUP: 0x101, CHAR: 0x102, SYSKEYDOWN: 0x104, SYSKEYUP: 0x105,
+				SYSCHAR: 0x106, SYSCOMMAND: 0x112, MOUSEWHEEL: 0x20a, ENTERMENULOOP: 0x211,
+				EXITMENULOOP: 0x212, ACTIVATE: 0x6, SIZE: 0x5, MOVE: 0x3, NCLBUTTONDOWN: 0xa1 ];
+			var n = nums[name];
+			return n === void ? 0 : n;
+		};
 	// the system menu, a menu nobody sees
 	if (typeof(W.exSystemMenu) === "undefined") W.exSystemMenu = new MenuItem(null, "");
 	if (typeof(W.getWindowRect) === "undefined")
