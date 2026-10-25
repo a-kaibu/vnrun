@@ -63,3 +63,10 @@ if (typeof(global.MenuItem.biMinimize) === "undefined") {
 // The window handle, which games hand to plugins (gamepad.dll); there is none here.
 if (typeof(global.Window.HWND) === "undefined")
 	global.Window.HWND = 0;
+
+// Window.registerHotKey (Windows builds and plugins): system-wide keys such as PrtSc for
+// screenshot plugins. The page has none to register; it says yes and the key never fires.
+if (typeof(global.Window.registerHotKey) === "undefined") {
+	global.Window.registerHotKey = function() { return true; } incontextof null;
+	global.Window.unregisterHotKey = function() { return true; } incontextof null;
+}
