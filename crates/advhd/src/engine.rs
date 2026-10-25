@@ -161,6 +161,18 @@ impl Engine {
         self.lua.trace = on && std::env::var_os("ADVHD_LUA").is_some();
     }
 
+    /// Whether a text field waits for the player's text (a name to enter).
+    pub fn input_wanted(&self) -> bool {
+        self.st.borrow().input.is_some()
+    }
+
+    /// Gives the waiting text field its text, as if typed and confirmed.
+    pub fn enter_text(&mut self, text: &str) {
+        let Some(set) = self.st.borrow_mut().input.take() else { return };
+        // the last argument says the entry was cancelled
+        self.call("onIMEnd", vec![Value::str(&set), Value::str(text), Value::Bool(false)]);
+    }
+
     /// Starts the scenario over at the top of a script (for trying out a part of the game).
     pub fn goto(&mut self, script: &str) -> Result<(), String> {
         self.stack.clear();

@@ -45,6 +45,8 @@ pub struct State {
     pub texts: HashMap<(String, String), Text>,
     images: HashMap<String, Option<Rc<Image>>>,
     pnas: HashMap<String, Option<Rc<Pna>>>,
+    /// the set of a text field waiting for the player's text (insertCommandLineLayer)
+    pub input: Option<String>,
     /// interface calls the engine doesn't know, each reported once
     pub unknown: std::collections::HashSet<String>,
 }
@@ -69,6 +71,7 @@ impl State {
             texts: HashMap::new(),
             images: HashMap::new(),
             pnas: HashMap::new(),
+            input: None,
             unknown: Default::default(),
         }
     }

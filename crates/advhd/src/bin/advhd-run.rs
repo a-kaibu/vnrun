@@ -5,7 +5,7 @@
 //! Each `frame` is saved as `<out prefix><frame>.png`; with `:x:y`, there is also a click there
 //! on that frame (`-1:-1`: a click on nothing, as Enter). The last frame is always saved.
 //! ADVHD_FONT names a TrueType font (default: web/public/fonts/ipag.ttf), ADVHD_TRACE lists
-//! commands as they run, ADVHD_START=frame:script jumps to a script on that frame.
+//! commands as they run, ADVHD_START=frame:script jumps to a script on that frame, ADVHD_NAME is the text for text fields.
 
 use advhd::engine::Engine;
 use advhd::files::Disk;
@@ -47,6 +47,9 @@ fn main() -> Result<(), String> {
             }
         }
         e.frame()?;
+        if e.input_wanted() {
+            e.enter_text(&std::env::var("ADVHD_NAME").unwrap_or_else(|_| "vnrun".into()));
+        }
         if f == frames || marks.iter().any(|m| m.0 == f) {
             let out = format!("{prefix}{f}.png");
             let img = e.render();

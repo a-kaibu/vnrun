@@ -94,6 +94,15 @@ impl Game {
         self.e.mouse_move(x, y);
     }
 
+    /// Whether the game waits for typed text (a name).
+    pub fn input_wanted(&self) -> bool {
+        self.e.input_wanted()
+    }
+
+    pub fn enter_text(&mut self, text: &str) {
+        self.e.enter_text(text);
+    }
+
     /// Where the scenario is, for the console.
     pub fn describe(&self) -> String {
         self.e.describe()

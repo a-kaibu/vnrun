@@ -15,7 +15,8 @@ pub type St = Rc<RefCell<State>>;
 
 /// The constants AdvHD.exe gives Lua (those not listed are 0, as LUA_PARAM_POS is).
 const CONSTS: &[(&str, f64)] = &[
-    ("LUA_LAYER_PNA", 0.0), ("LUA_LAYER_STD", 1.0),
+    ("LUA_LAYER_PNA", 0.0), ("LUA_LAYER_STD", 1.0), ("LUA_LAYER_EMOTE", 2.0), ("LUA_LAYER_SPINE", 3.0),
+    ("LUA_LAYER_EFFEKSEER", 4.0), ("LUA_EFFECT_COLOR", 0.0),
     ("LUA_PARAM_POS", 0.0), ("LUA_PARAM_ROTATE", 1.0), ("LUA_PARAM_SCALE", 2.0), ("LUA_PARAM_CENTERZ", 3.0),
     ("LUA_PARAM_CENTERR", 4.0), ("LUA_PARAM_OFFSET", 5.0), ("LUA_PARAM_COLOR", 6.0), ("LUA_PARAM_RECT", 7.0),
     ("LUA_PARAM_SIZE", 8.0), ("LUA_PARAM_DISSOLVE_PROGRESS", 9.0), ("LUA_PARAM_MASK_OFFSET", 10.0),
@@ -166,6 +167,25 @@ const LAYERS: &[(&str, HostFn)] = &[
         let n = a.s(0);
         s.screen.sets.retain(|x| x.name != n);
         ok(true)
+    }),
+    ("insertCommandLineLayer", |s, a| {
+        // set, name, ...: a text field; the player asks for the text (State::input)
+        s.screen.add(&a.s(0)).insert(crate::layers::Layer::new(&a.s(1), crate::layers::Content::None));
+        s.input = Some(a.s(0));
+        ok(true)
+    }),
+    ("focusCommandLine", |_, _| ok(true)),
+    ("insertNullLayer", |s, a| {
+        // set, name: a layer that only holds others
+        s.screen.add(&a.s(0)).insert(crate::layers::Layer::new(&a.s(1), crate::layers::Content::None));
+        ok(true)
+    }),
+    ("onGameSpeedChanged", |_, _| {
+        // an object the interface gives a function to call when the game speed changes, which
+        // it doesn't here
+        let mut t = Table::default();
+        t.set_str("setCallback", Value::native("setCallback", |_, _| Ok(vec![])));
+        vec![Value::table(t)]
     }),
     ("insertLayer", |s, a| {
         // set, name, LUA_LAYER_PNA / STD, archive, file
@@ -488,6 +508,15 @@ const CFUNC: &[(&str, HostFn)] = &[
         }
         vec![]
     }),
+    ("LegacyGame__lua_Request", |s, a| {
+        match a.i(0) {
+            4 => s.paused = true,
+            5 => s.paused = false,
+            k => s.requests.push((k, a.i(1))),
+        }
+        vec![]
+    }),
+    ("LegacyGame__lua_RequestInterrupt", |_, _| vec![]),
     ("LegacyGame__lua_SelectItem", |s, a| {
         s.requests.push((-1, a.i(0)));
         vec![]
@@ -508,6 +537,7 @@ const CFUNC: &[(&str, HostFn)] = &[
     ("CSaveDataManager__lua_GetSaveDataText", |_, _| vec![Value::str("")]),
     ("CSaveDataManager__lua_GetSaveDataChapter", |_, _| vec![Value::str("")]),
     ("CSaveDataManager__lua_GetSavePath", |_, _| vec![Value::str("")]),
+    ("CSaveDataManager__lua_IsResume", |_, _| ok(false)),
     ("CSaveDataManager__lua_GetDataPath", |_, _| vec![Value::str("")]),
     ("CSaveDataManager__lua_GetThumbnailPath", |_, _| vec![Value::str("")]),
     ("D3DApp__lua_PostMouseMove", |_, _| vec![]),
@@ -520,6 +550,16 @@ const CFUNC: &[(&str, HostFn)] = &[
 pub fn install(lua: &mut Lua, st: &St) {
     for &(n, v) in CONSTS {
         lua.set_global(n, v);
+    }
+    // Later builds name the requests LUA_REQUEST_* (LegacyGame__lua_Request); they get the
+    // numbers of the LUA_PROCESS_* of the same name, the new ones numbers of their own.
+    for &(n, v) in CONSTS {
+        if let Some(rest) = n.strip_prefix("LUA_PROCESS_") {
+            lua.set_global(&format!("LUA_REQUEST_{rest}"), v);
+        }
+    }
+    for (i, n) in ["REBOOT", "NISMODE", "CALLFILE", "RESUMEGAME", "WINDOWMINIMUMSIZE", "WINDOWDBYDSIZE"].iter().enumerate() {
+        lua.set_global(&format!("LUA_REQUEST_{n}"), 100.0 + i as f64);
     }
     let cclass = table();
     for (name, fns) in [

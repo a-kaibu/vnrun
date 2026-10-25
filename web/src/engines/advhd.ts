@@ -13,6 +13,8 @@ interface Game {
   ended(): boolean;
   click(x: number, y: number): void;
   move_to(x: number, y: number): void;
+  input_wanted(): boolean;
+  enter_text(text: string): void;
   draws(): Float32Array;
   texture(id: number): Uint8Array;
 }
@@ -77,6 +79,8 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
         void ui.exit();
         return;
       }
+      // A text field (the hero's name): the browser's own prompt stands in for it.
+      if (game.input_wanted()) game.enter_text(prompt("名前を入力してください") ?? "");
       if (ran) presenter.showTexture(compositor.render(game));
     } catch (error) {
       window.dispatchEvent(new ErrorEvent("error", { error }));
