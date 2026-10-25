@@ -1,12 +1,13 @@
 --- a/src/core/base/sdl2/StorageImpl.cpp
 +++ b/src/core/base/sdl2/StorageImpl.cpp
-@@ -1945,3 +1945,169 @@
+@@ -1945,3 +1945,246 @@
  static iTJSDispatch2 *vnrun_create_load_data_pack(iTJSDispatch2 *) { return TJSCreateNativeClassMethod(vnrun_load_data_pack); }
  static tTVPAtInstallClass vnrun_install_load_data_pack(TJS_W("vnrunLoadDataPack"), vnrun_create_load_data_pack, TJS_W(""));
  #endif
 +
 +#ifdef __EMSCRIPTEN__
 +#include <zlib.h>
++#include "UtilStreams.h"
 +// vnrun: vnrunLoadPSB(storage), which polyfill/plugins/psbfile.tjs makes PSBFile.root: the tree in
 +// an M2 PSB file (KAGEX's compiled .scn scenarios), optionally in an "mdf" zlib wrapper. The
 +// header gives the offsets of the key names (three PSB arrays coding a trie), the strings (an
@@ -136,12 +137,10 @@
 +		return tTJSVariant();
 +	}
 +};
-+static tjs_error TJS_INTF_METHOD vnrun_load_psb(tTJSVariant *result, tjs_int numparams,
-+	tTJSVariant **param, iTJSDispatch2 *objthis)
++// read a PSB file (or its "mdf" zlib wrapper) from the storage system
++static void vnrun_psb_read(vnrun_psb &psb, const ttstr &storage)
 +{
-+	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
-+	vnrun_psb psb;
-+	tTJSBinaryStream *st = TVPCreateStream(TVPSearchPlacedPath(ttstr(*param[0])));
++	tTJSBinaryStream *st = TVPCreateStream(TVPSearchPlacedPath(storage));
 +	try
 +	{
 +		psb.d.resize((size_t)st->GetSize());
@@ -158,11 +157,89 @@
 +		uLongf n = psb.d[4] | psb.d[5] << 8 | psb.d[6] << 16 | (uLongf)psb.d[7] << 24;
 +		std::vector<tjs_uint8> out(n);
 +		if(uncompress(out.data(), &n, psb.d.data() + 8, (uLong)(psb.d.size() - 8)) != Z_OK)
-+			TVPThrowExceptionMessage(TJS_W("PSB: broken mdf data: %1"), ttstr(*param[0]));
++			TVPThrowExceptionMessage(TJS_W("PSB: broken mdf data: %1"), storage);
 +		out.resize(n);
 +		psb.d.swap(out);
 +	}
 +	psb.load();
++}
++// "psb://<storage>/<key>[/<key>...]": a resource in the dictionaries of a PSB file. diffimage2.tjs
++// loads the layers of a .pimg (PSD) file as psb://name.pimg/<layer_id>.tlg. The last file read
++// stays cached.
++class tVNRunPSBMedia : public iTVPStorageMedia
++{
++	ttstr CachedName;
++	vnrun_psb Cached;
++	bool Find(const ttstr &name, size_t &start, size_t &len)
++	{
++		const tjs_char *n = name.c_str(), *slash = TJS_strchr(n, TJS_W('/'));
++		if(!slash) return false;
++		ttstr storage(n, (int)(slash - n));
++		if(storage != CachedName)
++		{
++			CachedName.Clear();
++			Cached = vnrun_psb();
++			vnrun_psb_read(Cached, storage);
++			CachedName = storage;
++		}
++		size_t p = Cached.root;
++		for(const tjs_char *k = slash + 1; ; )
++		{
++			const tjs_char *e = TJS_strchr(k, TJS_W('/'));
++			ttstr key = e ? ttstr(k, (int)(e - k)) : ttstr(k);
++			Cached.need(p, 1);
++			if(Cached.d[p] != 0x21) return false;
++			size_t q = p + 1;
++			std::vector<tjs_uint64> keys = Cached.array(q), ofs = Cached.array(q);
++			size_t i = 0;
++			while(i < keys.size() && i < ofs.size() && !(keys[i] < Cached.names.size() && Cached.names[(size_t)keys[i]] == key)) i++;
++			if(i >= keys.size() || i >= ofs.size()) return false;
++			p = q + (size_t)ofs[i];
++			if(!e) break;
++			k = e + 1;
++		}
++		Cached.need(p, 1);
++		tjs_uint8 t = Cached.d[p];
++		if(t < 0x19 || t > 0x1c) return false;
++		p++;
++		tjs_uint64 i = Cached.uint(p, t - 0x18);
++		if(i >= Cached.chunkofs.size() || i >= Cached.chunklen.size()) return false;
++		start = Cached.chunkdata + (size_t)Cached.chunkofs[i];
++		len = (size_t)Cached.chunklen[i];
++		Cached.need(start, len);
++		return true;
++	}
++public:
++	void TJS_INTF_METHOD AddRef() {}
++	void TJS_INTF_METHOD Release() {}
++	void TJS_INTF_METHOD GetName(ttstr &name) { name = TJS_W("psb"); }
++	void TJS_INTF_METHOD NormalizeDomainName(ttstr &name) {}
++	void TJS_INTF_METHOD NormalizePathName(ttstr &name) {}
++	bool TJS_INTF_METHOD CheckExistentStorage(const ttstr &name)
++	{
++		size_t s, n;
++		try { return Find(name, s, n); } catch(...) { return false; }
++	}
++	tTJSBinaryStream * TJS_INTF_METHOD Open(const ttstr &name, tjs_uint32 flags)
++	{
++		size_t s, n;
++		if(flags != TJS_BS_READ || !Find(name, s, n))
++			TVPThrowExceptionMessage(TJS_W("PSB: cannot open psb://%1"), name);
++		tTVPMemoryStream *st = new tTVPMemoryStream(NULL, (tjs_uint)n);
++		if(n) memcpy(st->GetInternalBuffer(), &Cached.d[s], n);
++		return st;
++	}
++	void TJS_INTF_METHOD GetListAt(const ttstr &name, iTVPStorageLister *lister) {}
++	void TJS_INTF_METHOD GetLocallyAccessibleName(ttstr &name) { name.Clear(); }
++};
++static tjs_error TJS_INTF_METHOD vnrun_load_psb(tTJSVariant *result, tjs_int numparams,
++	tTJSVariant **param, iTJSDispatch2 *objthis)
++{
++	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
++	static tVNRunPSBMedia *media = NULL;
++	if(!media) { media = new tVNRunPSBMedia(); TVPRegisterStorageMedia(media); }
++	vnrun_psb psb;
++	vnrun_psb_read(psb, ttstr(*param[0]));
 +	tTJSVariant v = psb.value(psb.root);
 +	if (result) *result = v;
 +	return TJS_S_OK;

@@ -1068,7 +1068,7 @@ class __internal_KAGParser
 		{
 			// return to previous calling position
 			this.loadScenario(data.storage);
-			if (data.label.length !== 0)
+			if (data.label !== void && data.label != "") // void in frames that scripts built
 			{
 				this.goToLabel(data.label);
 			}

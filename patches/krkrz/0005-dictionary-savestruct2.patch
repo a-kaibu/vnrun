@@ -1,0 +1,19 @@
+diff --git a/tjs2/tjsDictionary.cpp b/tjs2/tjsDictionary.cpp
+index 3fc29028..d31680b7 100644
+--- a/tjs2/tjsDictionary.cpp
++++ b/tjs2/tjsDictionary.cpp
+@@ -304,6 +304,14 @@ TJS_BEGIN_NATIVE_METHOD_DECL(/*func.name*/saveStruct)
+ }
+ TJS_END_NATIVE_STATIC_METHOD_DECL(/*func.name*/saveStruct)
+ //----------------------------------------------------------------------
++// vnrun: saveStruct2 of savestruct.dll; the built-in writer stands in. A static member, as the
++// script one would be copied into every new dictionary and show up among its keys.
++TJS_BEGIN_NATIVE_METHOD_DECL(/*func.name*/saveStruct2)
++{
++	return NCM_saveStruct::Process(result, numparams, param, objthis);
++}
++TJS_END_NATIVE_STATIC_METHOD_DECL(/*func.name*/saveStruct2)
++//----------------------------------------------------------------------
+ TJS_BEGIN_NATIVE_METHOD_DECL(/*func.name*/assign)
+ {
+ 	TJS_GET_NATIVE_INSTANCE(/* var. name */ni, /* var. type */tTJSDictionaryNI);

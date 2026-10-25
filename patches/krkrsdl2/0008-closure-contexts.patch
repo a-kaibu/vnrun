@@ -1,0 +1,32 @@
+--- a/src/core/base/sdl2/StorageImpl.cpp
++++ b/src/core/base/sdl2/StorageImpl.cpp
+@@ -2188,3 +2188,29 @@
+ static iTJSDispatch2 *vnrun_create_load_psb(iTJSDispatch2 *) { return TJSCreateNativeClassMethod(vnrun_load_psb); }
+ static tTVPAtInstallClass vnrun_install_load_psb(TJS_W("vnrunLoadPSB"), vnrun_create_load_psb, TJS_W(""));
+ #endif
++
++#ifdef __EMSCRIPTEN__
++// vnrun: the closure checks of scriptsEx.dll, which polyfill/plugins/scriptsEx.tjs makes
++// Scripts.isNullContext / Scripts.getObjectContext: TJS cannot see the context of a closure.
++static tjs_error TJS_INTF_METHOD vnrun_is_null_context(tTJSVariant *result, tjs_int numparams,
++	tTJSVariant **param, iTJSDispatch2 *objthis)
++{
++	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
++	if (param[0]->Type() != tvtObject) return TJS_E_INVALIDPARAM;
++	if (result) *result = (tjs_int)(param[0]->AsObjectClosureNoAddRef().ObjThis == NULL);
++	return TJS_S_OK;
++}
++static iTJSDispatch2 *vnrun_create_is_null_context(iTJSDispatch2 *) { return TJSCreateNativeClassMethod(vnrun_is_null_context); }
++static tTVPAtInstallClass vnrun_install_is_null_context(TJS_W("vnrunIsNullContext"), vnrun_create_is_null_context, TJS_W(""));
++static tjs_error TJS_INTF_METHOD vnrun_get_object_context(tTJSVariant *result, tjs_int numparams,
++	tTJSVariant **param, iTJSDispatch2 *objthis)
++{
++	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
++	if (param[0]->Type() != tvtObject) return TJS_E_INVALIDPARAM;
++	iTJSDispatch2 *ctx = param[0]->AsObjectClosureNoAddRef().ObjThis;
++	if (result) *result = ctx ? tTJSVariant(ctx, ctx) : tTJSVariant((iTJSDispatch2 *)NULL);
++	return TJS_S_OK;
++}
++static iTJSDispatch2 *vnrun_create_get_object_context(iTJSDispatch2 *) { return TJSCreateNativeClassMethod(vnrun_get_object_context); }
++static tTVPAtInstallClass vnrun_install_get_object_context(TJS_W("vnrunGetObjectContext"), vnrun_create_get_object_context, TJS_W(""));
++#endif

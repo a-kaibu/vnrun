@@ -33,6 +33,10 @@
 				if (!Scripts.equalStruct(x[i], y[i])) return false;
 			return true;
 		} incontextof global;
+	if (typeof(S.isNullContext) === "undefined" && typeof(global.vnrunIsNullContext) !== "undefined")
+		S.isNullContext = global.vnrunIsNullContext;
+	if (typeof(S.getObjectContext) === "undefined" && typeof(global.vnrunGetObjectContext) !== "undefined")
+		S.getObjectContext = global.vnrunGetObjectContext;
 	if (typeof(S.clone) === "undefined")
 		S.clone = function(obj) {
 			if (typeof(obj) != "Object" || obj === null) return obj;
