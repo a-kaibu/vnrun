@@ -304,8 +304,8 @@ s2019_guilty_harame	タイトル	b076f1f でタイトル画面まで表示
 s2022_ensemble_sweet_otoshita	タイトル	b076f1f でタイトル画面まで表示
 s2026_ensemble_sweet_ribichu	タイトル	b076f1f でタイトル画面まで表示
 r1_advhd	タイトル	775114f でタイトル画面まで正しいサイズで表示
-b2014_ensemble	NG	b076f1f で例外なしの黒画面のまま (InstallShield 版)
-s2013_pulltop_cocoro	NG	b076f1f で例外なしの白画面のまま (InstallShield 版)
+b2014_ensemble	タイトル	e51df34 でタイトル画面まで表示 (InstallShield 版)
+s2013_pulltop_cocoro	タイトル	e51df34 でタイトル画面まで表示 (InstallShield 版)
 s2024_appetite_isekai_cyoroin	タイトル	d51f3e8 系のページでタイトル画面まで表示
 s2024_appetite_inyoku_train	タイトル	d51f3e8 系のページでタイトル画面まで表示
 s2017_appetite_evil_monmusu	タイトル	d51f3e8 系のページでタイトル画面まで表示
@@ -319,12 +319,12 @@ s2026_poison_motion_sxs_me	起動	d51f3e8 系のページでCAUTION とブラン
 s2025_poison_extasy_paizuri_me	起動	d51f3e8 系のページで注意書きとブランドロゴまで。タイトルは未確認
 s2011_hulotte_with_ribbon	起動	d51f3e8 系のページで注意書きまで。クリック後は白画面 (OpenAL Error A004 あり)
 s2014_cube_koikano	NG	d51f3e8 系のページで例外なしの白画面のまま
-dl_RJ01677912	NG	mainwindow.tjs(1) fullScreen setter で「Member "getNormalRect" does not exist」、黒画面
+dl_RJ01677912	NG	441b1de で getNormalRect は通過、menus.tjs(1) SetWindowControlMenu で「Member "biMinimize" does not exist」、黒画面
 s2021_nanawind_kanade_gram_ch1	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」
 s2010_akabeesoft_lavender	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」
 s2021_akabeesoft2_roleplayer	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」
 s2017_nanawind_alice_gram	NG	confirm_askJump / quickmenu.tjs(1) QuickMenuLock の property getter で「Member "kag" does not exist」
-s2022_mille_feuille_excelchiffon	NG	initialize2.tjs(15)「Member "gpButtonA" does not exist」
+s2022_mille_feuille_excelchiffon	NG	441b1de で gp* は通過、padinput.tjs(32) GamePad_Plugin で「Member "GamepadPort" does not exist」。画面が崩れた白黒表示
 s2012_ninetail_gears_of_dragoon	タイトル	d084599 (setLayerPos) でタイトル画面まで表示
 b2013_ensemble	タイトル	b076f1f でタイトル画面まで表示 (InstallShield 版)
 s2013_guilty_yobai	タイトル	b076f1f でタイトル画面まで表示 (InstallShield cab 版)

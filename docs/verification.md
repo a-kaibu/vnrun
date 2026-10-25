@@ -49,7 +49,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | 吉里吉里 (KiriKiri SDL2) | 135 |  | 78 | 7 | 1 | 36 |  | 13 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 30 | 5 | 1 |  | 1 | 22 | 1 |  |
-| AdvHD (vnrun) | 30 |  | 27 |  | 1 | 2 |  |  |
+| AdvHD (vnrun) | 30 |  | 29 |  | 1 |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -314,7 +314,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2020_lass_pixy | [リトルシックガール　～桃蜜は妹の香り～　体験版](http://suezou.dyndns.org/dl2020/lass-pixy/lsg03/LSG3_tr.zip) | NG | E-mote で未対応。6d436d5 でメニューまで通過、motion.tjs(20)「Member "Motion" does not exist」 |
 | b2022_hending | [リンパにATATA! ～メス牡蠣ミルクどぴゅらっしゅ♡～](http://suezou.dyndns.org/dl2022/hending/atata/atata_trial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」 |
 | b2023_lump_of_sugar_all | [瑠璃桜](http://suezou.dyndns.org/dl2023/lump-of-sugar_all/rurizakura/Rurizakura_trial.zip) | NG | 「Invalid argument count」(quickmenu.tjs(1) EventProxyLayer) |
-| dl_RJ01677912 | [とける風花とシロうさぎ](https://trial.dlsite.com/doujin/RJ01678000/RJ01677912_trial.zip) | NG | mainwindow.tjs(1) fullScreen setter で「Member "getNormalRect" does not exist」、黒画面 |
+| dl_RJ01677912 | [とける風花とシロうさぎ](https://trial.dlsite.com/doujin/RJ01678000/RJ01677912_trial.zip) | NG | 441b1de で getNormalRect は通過、menus.tjs(1) SetWindowControlMenu で「Member "biMinimize" does not exist」、黒画面 |
 | r1_krkr_apt306 | [先輩、好きです……押忍！ 体験版](https://www.appetite-game.com/apt306/image/apt306_tr.zip) | NG | 591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」 |
 | s2008_dualtail_clarice | [奴隷将校クラリス　－　白濁のグローリエ　－　ＡＤＶパート体験版](http://suezou.dyndns.org/dl2008/dualtail/clarice/Clarice_ADVtrial.exe) | NG | startup.tjs(6) で「Read error」 |
 | s2010_akabeesoft_lavender | [光輪の町、ラベンダーの少女　体験版](http://suezou.dyndns.org/dl2010/akabeesoft/lavender/lavender_webTRIAL.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」 |
@@ -327,7 +327,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2021_nanawind_kanade_gram_ch1 | [花鐘カナデ＊グラム Chapter1 -小桜結- 体験版](http://suezou.dyndns.org/dl2021/nanawind/kanade-gram_ch1/kanade-gram_ch1-trial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」 |
 | s2021_no_strike_Trap_Genesis | [Jyosou Souseiki Trial Ver.](http://suezou.dyndns.org/dl2021/no-strike/Trap_Genesis/Jyosou_Souseiki_Trial.zip) | NG | 暗号化 (シナリオ、未対応)。213e9df で DrawDeviceForSteam は通過、kagparser.tjs(96) loadScenario で「narrow→wide」 |
 | s2022_akabeesoft2_roleplayer_tororo | [ROLEPLAYER：とろろ姉妹の粘膜ポトレ ぐりぐちゃLIVE！](http://suezou.dyndns.org/dl2022/akabeesoft2/roleplayer_tororo/ab2_roleplayer_tororoshimai_webtrial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」 |
-| s2022_mille_feuille_excelchiffon | [燦然可憐エクセルシフォン 体験版](http://suezou.dyndns.org/dl2022/mille-feuille/excelchiffon/excelchiffon_trial.zip) | NG | initialize2.tjs(15)「Member "gpButtonA" does not exist」 |
+| s2022_mille_feuille_excelchiffon | [燦然可憐エクセルシフォン 体験版](http://suezou.dyndns.org/dl2022/mille-feuille/excelchiffon/excelchiffon_trial.zip) | NG | 441b1de で gp* は通過、padinput.tjs(32) GamePad_Plugin で「Member "GamepadPort" does not exist」。画面が崩れた白黒表示 |
 | s2023_hending_hassyakusama | [ソープランドのはっしゃくさま](http://suezou.dyndns.org/dl2023/hending/hassyakusama/hending_soapland_no_hassyakusama_webtrial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」 |
 | s2024_no_strike_yuribatake | [Jyosou Yuribatake Trial](http://suezou.dyndns.org/dl2024/no-strike/yuribatake/jyosou_yuribatake_japantrial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。initialize.tjs(303) KAGLoadScript で「Cannot convert given narrow string to wide string」 |
 | s2025_akabeesoft2_roleplayer_ikura | [Role player：いくら姉妹の粘膜ポトレ　ぐりぐちゃLIVE！　体験版](http://suezou.dyndns.org/dl2025/akabeesoft2/roleplayer_ikura/Role_player_ikura_trial.zip) | NG | freeResizeMode の property getter で例外 |
@@ -420,6 +420,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2013_ensemble | [お嬢様はご機嫌ナナメ 体験版](http://suezou.dyndns.org/dl2013/ensemble/ojyonana/ojyonana_trial.exe) | タイトル | b076f1f でタイトル画面まで表示 (InstallShield 版) |
+| b2014_ensemble | [goldenmarriage_trial.exe](http://suezou.dyndns.org/dl2014/ensemble/golden_marriage/goldenmarriage_trial.exe) | タイトル | e51df34 でタイトル画面まで表示 (InstallShield 版) |
 | b2014_ensemble_sweet | [hentai_trial.exe](http://suezou.dyndns.org/dl2014/ensemble-sweet/hentai/hentai_trial.exe) | タイトル | b076f1f でタイトル画面まで表示 |
 | b2014_guilty | [ANEWO_trial2.exe](http://suezou.dyndns.org/dl2014/guilty/anewo/ANEWO_trial2.exe) | タイトル | b076f1f でタイトル画面まで表示 |
 | b2014_pulltop_latte | [TotoRezo_WFD_Htrial02.exe](http://suezou.dyndns.org/dl2014/pulltop-latte/totoreso/TotoRezo_WFD_Htrial02.exe) | タイトル | b076f1f でタイトル画面まで表示 |
@@ -440,6 +441,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_VJ015399 | [恋するあまいろホームステイ -留学生はわんこ系幼馴染-](https://trial.dlsite.com/professional/VJ016000/VJ015399_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
 | r1_advhd | [有閑夫人倶楽部 体験版](https://www.willplus-download.com/Empress/yukanmadam/yukanmadam_trialedition.exe) | タイトル | 775114f でタイトル画面まで正しいサイズで表示 |
 | s2013_guilty_yobai | [夜這いする七人の孕女～体験版2～](http://suezou.dyndns.org/dl2013/guilty/yobai/yobai_trial2.exe) | タイトル | b076f1f でタイトル画面まで表示 (InstallShield cab 版) |
+| s2013_pulltop_cocoro | [ココロ＠ファンクション！―えっちシーン体験版](http://suezou.dyndns.org/dl2013/pulltop/cocoro/CocoroFunction_Hscene_trial.exe) | タイトル | e51df34 でタイトル画面まで表示 (InstallShield 版) |
 | s2015_ensemble_koikata | [恋する気持ちのかさねかた_Hシーン体験版](http://suezou.dyndns.org/dl2015/ensemble/koikata/koikata_H_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
 | s2015_ensemble_sweet_yakimochi | [エッチでヘンタイ！ヤキモチお嬢様！！　ヘンタイ性癖解放Ver．体験版](http://suezou.dyndns.org/dl2015/ensemble-sweet/yakimochi/Dohentai_trial.exe) | タイトル | b076f1f でタイトル画面まで表示 |
 | s2016_ensemble_sweet_hanayome | [恋するお嬢様はエッチな花嫁　体験版](http://suezou.dyndns.org/dl2016/ensemble-sweet/hanayome/hanayome_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
@@ -447,6 +449,4 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2022_ensemble_sweet_otoshita | [乙女とふれあう、ひとつ屋根の下 TRIAL EDITION](http://suezou.dyndns.org/dl2022/ensemble-sweet/otoshita/otoshita_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
 | s2026_ensemble_sweet_ribichu | [リビドーアバンちゅ～る TRIAL EDITION](http://suezou.dyndns.org/dl2026/ensemble-sweet/ribichu/ribichu_trial.exe) | タイトル | b076f1f でタイトル画面まで表示 |
 | s2018_ensemble_otostuki | [乙女が結ぶ月夜の煌めき　体験版](http://suezou.dyndns.org/dl2018/ensemble/otostuki/ototsuki_trial.zip) | 要再確認 | zip の展開が不完全で Rio.arc が見つからない (Bgm/Chip*.arc のみ) |
-| b2014_ensemble | [goldenmarriage_trial.exe](http://suezou.dyndns.org/dl2014/ensemble/golden_marriage/goldenmarriage_trial.exe) | NG | b076f1f で例外なしの黒画面のまま (InstallShield 版) |
-| s2013_pulltop_cocoro | [ココロ＠ファンクション！―えっちシーン体験版](http://suezou.dyndns.org/dl2013/pulltop/cocoro/CocoroFunction_Hscene_trial.exe) | NG | b076f1f で例外なしの白画面のまま (InstallShield 版) |
 <!-- /matrix -->
