@@ -677,7 +677,7 @@ impl Engine {
                 if a(0).int() < 0xfe {
                     let mut s = self.st.borrow_mut();
                     let image = Rc::new(s.screen.render(now, Some(SCENE)));
-                    s.screen.add(SCENE).snap = Some(Snap { image, fade: None });
+                    s.screen.add(SCENE).snap = Some(Snap { image, fade: None, under: false });
                 }
             }
             0x65 => {

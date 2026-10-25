@@ -280,9 +280,12 @@ impl Layer {
 }
 
 /// A frozen picture of a set, and the fade from it once a transition starts: (start, length).
+/// A copied snapshot (copySnap, a menu's backdrop) is drawn under the set's own layers instead
+/// of in place of them.
 pub struct Snap {
     pub image: Rc<Image>,
     pub fade: Option<(f64, f64)>,
+    pub under: bool,
 }
 
 pub struct Set {
@@ -472,8 +475,13 @@ impl Screen {
         let mut out = Vec::new();
         for s in &self.sets {
             match &s.snap {
-                Some(Snap { image, fade: None }) => full(&mut out, image.clone(), 1.0, w, h),
-                Some(Snap { image, fade: Some((start, len)) }) => {
+                Some(Snap { image, fade: None, under }) => {
+                    full(&mut out, image.clone(), 1.0, w, h);
+                    if *under {
+                        s.draws(&mut out, w, h);
+                    }
+                }
+                Some(Snap { image, fade: Some((start, len)), .. }) => {
                     s.draws(&mut out, w, h);
                     let t = if *len > 0.0 { ((now - start) / len).clamp(0.0, 1.0) as f32 } else { 1.0 };
                     full(&mut out, image.clone(), 1.0 - t, w, h);

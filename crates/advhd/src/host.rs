@@ -359,7 +359,7 @@ const LAYERS: &[(&str, HostFn)] = &[
     ("copySnap", |s, a| {
         let img = s.screen.set(&a.s(1)).and_then(|x| x.snap.as_ref().map(|p| p.image.clone()));
         if let Some(image) = img {
-            s.screen.add(&a.s(0)).snap = Some(Snap { image, fade: None });
+            s.screen.add(&a.s(0)).snap = Some(Snap { image, fade: None, under: true });
         }
         vec![]
     }),
@@ -431,7 +431,7 @@ const LAYERS: &[(&str, HostFn)] = &[
 /// Freezes a set as the screen shows it up to that set.
 fn snap(s: &mut State, set: &str) -> Vec<Value> {
     let image = Rc::new(s.screen.render(s.now, Some(set)));
-    s.screen.add(set).snap = Some(Snap { image, fade: None });
+    s.screen.add(set).snap = Some(Snap { image, fade: None, under: false });
     vec![]
 }
 
