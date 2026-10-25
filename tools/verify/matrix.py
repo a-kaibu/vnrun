@@ -19,6 +19,7 @@ ENGINES = {
     "kirikiri": "吉里吉里 (KiriKiri SDL2)",
     "yuris": "YU-RIS (vnrun)",
     "nexas": "NeXAS (vnrun)",
+    "advhd": "AdvHD (vnrun)",
 }
 RESULTS = ["本編", "タイトル", "起動", "要再確認", "NG", "対象外", "未確認"]
 

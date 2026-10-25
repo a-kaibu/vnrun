@@ -49,6 +49,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | 吉里吉里 (KiriKiri SDL2) | 135 |  | 33 | 3 | 1 | 19 |  | 79 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 30 | 5 | 1 |  | 1 | 22 | 1 |  |
+| AdvHD (vnrun) | 30 |  |  |  |  |  |  | 30 |
 
 ### SiglusEngine (siglus_rs)
 
@@ -413,4 +414,39 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2018_lune_elf_saimin | [巨乳エルフ母娘催眠体験版](http://suezou.dyndns.org/dl2018/lune/elf_saimin/elfsaimin_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
 | s2019_lune_dogeza_saimin | [巨乳女戦士・土下座催眠「ちくしょうっ……アタシはお前の思い通りになんか、ならないからな……！」](http://suezou.dyndns.org/dl2019/lune/dogeza_saimin/dogeza_saimin_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
 | s2025_milimili_hanako | [ちょっとナマイキなトイレの花子さん ～えっちぃ学園のおばけとエロエロ搾精性活～ 【体験版】](http://suezou.dyndns.org/dl2025/milimili/hanako/hanako_try2.zip) | 対象外 | 中身は Unity 製 (vnbox の NeXAS 判定が誤り) |
+
+### AdvHD (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2013_ensemble | [お嬢様はご機嫌ナナメ 体験版](http://suezou.dyndns.org/dl2013/ensemble/ojyonana/ojyonana_trial.exe) | 未確認 |  |
+| b2014_ensemble | [goldenmarriage_trial.exe](http://suezou.dyndns.org/dl2014/ensemble/golden_marriage/goldenmarriage_trial.exe) | 未確認 |  |
+| b2014_ensemble_sweet | [hentai_trial.exe](http://suezou.dyndns.org/dl2014/ensemble-sweet/hentai/hentai_trial.exe) | 未確認 |  |
+| b2014_guilty | [ANEWO_trial2.exe](http://suezou.dyndns.org/dl2014/guilty/anewo/ANEWO_trial2.exe) | 未確認 |  |
+| b2014_pulltop_latte | [TotoRezo_WFD_Htrial02.exe](http://suezou.dyndns.org/dl2014/pulltop-latte/totoreso/TotoRezo_WFD_Htrial02.exe) | 未確認 |  |
+| b2015_ensemble | [marriagefd_trial.exe](http://suezou.dyndns.org/dl2015/ensemble/golden_marriage_jd/marriagefd_trial.exe) | 未確認 |  |
+| b2015_guilty | [淫らに喘ぐ七人の夜這いする孕女　体験版](http://suezou.dyndns.org/dl2015/guilty/yobai3/yobai3_trial.zip) | 未確認 |  |
+| b2018_ensemble | [恋はそっと咲く花のように　体験版](http://suezou.dyndns.org/dl2018/ensemble/koihana/KOIHANA_WEB_TRIAL.zip) | 未確認 |  |
+| b2018_guilty | [俺の上であがく六人の伽女　体験版２](http://suezou.dyndns.org/dl2018/guilty/togime/togime_trial2.zip) | 未確認 |  |
+| b2018_tokohana | [僕と彼女のご奉仕同棲　体験版](http://suezou.dyndns.org/dl2018/tokohana/gohoushidousei/gohoushidousei_trial.zip) | 未確認 |  |
+| b2022_ensemble | [華は短し、踊れよ乙女 - 体験版](http://suezou.dyndns.org/dl2022/ensemble/hanaoto/hanaoto_trial.zip) | 未確認 |  |
+| b2025_ensemble_sweet | [のーぶるバトラー TRIAL EDITION](http://suezou.dyndns.org/dl2025/ensemble-sweet/noblebutler/noblebutler_trial.zip) | 未確認 |  |
+| b2025_guilty | [虜ノ焔 ～淫欲の炎に満ちた地下闘技場～ 体験版](http://suezou.dyndns.org/dl2025/guilty/torikonohomura/torikonohomura_trial.zip) | 未確認 |  |
+| b2026_tokohana | [OfficeLove -クールな上司と秘密のイキ抜き- Trial Edition](http://suezou.dyndns.org/dl2026/tokohana/office_love/OfficeLove_trial.zip) | 未確認 |  |
+| dl_VJ01002397 | [僕の好きな人の好きな人は、女装した僕でした。](https://trial.dlsite.com/professional/VJ01003000/VJ01002397_trial.zip) | 未確認 |  |
+| dl_VJ01003020 | [幸乃下蛍の恋青日和 ～お義姉ちゃんとの秘密同棲～](https://trial.dlsite.com/professional/VJ01004000/VJ01003020_trial.zip) | 未確認 |  |
+| dl_VJ01004020 | [のーぶる・バトラー](https://trial.dlsite.com/professional/VJ01005000/VJ01004020_trial.zip) | 未確認 |  |
+| dl_VJ01004594 | [宿りし乙女の誓いと魔法](https://trial.dlsite.com/professional/VJ01005000/VJ01004594_trial.zip) | 未確認 |  |
+| dl_VJ01004836 | [俺だけに傅く孕メイドたち ～精子を貪る五人の欲心女～](https://trial.dlsite.com/professional/VJ01005000/VJ01004836_trial.zip) | 未確認 |  |
+| dl_VJ015399 | [恋するあまいろホームステイ -留学生はわんこ系幼馴染-](https://trial.dlsite.com/professional/VJ016000/VJ015399_trial.zip) | 未確認 |  |
+| r1_advhd | [有閑夫人倶楽部 体験版](https://www.willplus-download.com/Empress/yukanmadam/yukanmadam_trialedition.exe) | 未確認 |  |
+| s2013_guilty_yobai | [夜這いする七人の孕女～体験版2～](http://suezou.dyndns.org/dl2013/guilty/yobai/yobai_trial2.exe) | 未確認 |  |
+| s2013_pulltop_cocoro | [ココロ＠ファンクション！―えっちシーン体験版](http://suezou.dyndns.org/dl2013/pulltop/cocoro/CocoroFunction_Hscene_trial.exe) | 未確認 |  |
+| s2015_ensemble_koikata | [恋する気持ちのかさねかた_Hシーン体験版](http://suezou.dyndns.org/dl2015/ensemble/koikata/koikata_H_trial.zip) | 未確認 |  |
+| s2015_ensemble_sweet_yakimochi | [エッチでヘンタイ！ヤキモチお嬢様！！　ヘンタイ性癖解放Ver．体験版](http://suezou.dyndns.org/dl2015/ensemble-sweet/yakimochi/Dohentai_trial.exe) | 未確認 |  |
+| s2016_ensemble_sweet_hanayome | [恋するお嬢様はエッチな花嫁　体験版](http://suezou.dyndns.org/dl2016/ensemble-sweet/hanayome/hanayome_trial.zip) | 未確認 |  |
+| s2018_ensemble_otostuki | [乙女が結ぶ月夜の煌めき　体験版](http://suezou.dyndns.org/dl2018/ensemble/otostuki/ototsuki_trial.zip) | 未確認 |  |
+| s2019_guilty_harame | [孕女～精子を欲しがる淫らな教え子～ 体験版](http://suezou.dyndns.org/dl2019/guilty/harame/harame_trial.zip) | 未確認 |  |
+| s2022_ensemble_sweet_otoshita | [乙女とふれあう、ひとつ屋根の下 TRIAL EDITION](http://suezou.dyndns.org/dl2022/ensemble-sweet/otoshita/otoshita_trial.zip) | 未確認 |  |
+| s2026_ensemble_sweet_ribichu | [リビドーアバンちゅ～る TRIAL EDITION](http://suezou.dyndns.org/dl2026/ensemble-sweet/ribichu/ribichu_trial.exe) | 未確認 |  |
 <!-- /matrix -->
