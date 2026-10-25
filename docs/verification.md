@@ -49,7 +49,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | 吉里吉里 (KiriKiri SDL2) | 135 |  | 79 | 7 | 1 | 38 |  | 10 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 30 | 5 | 1 |  | 1 | 22 | 1 |  |
-| AdvHD (vnrun) | 30 | 9 | 20 |  | 1 |  |  |  |
+| AdvHD (vnrun) | 30 | 19 | 10 |  | 1 |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -428,25 +428,25 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2022_ensemble | [華は短し、踊れよ乙女 - 体験版](http://suezou.dyndns.org/dl2022/ensemble/hanaoto/hanaoto_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
 | b2025_ensemble_sweet | [のーぶるバトラー TRIAL EDITION](http://suezou.dyndns.org/dl2025/ensemble-sweet/noblebutler/noblebutler_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
 | b2025_guilty | [虜ノ焔 ～淫欲の炎に満ちた地下闘技場～ 体験版](http://suezou.dyndns.org/dl2025/guilty/torikonohomura/torikonohomura_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
-| b2013_ensemble | [お嬢様はご機嫌ナナメ 体験版](http://suezou.dyndns.org/dl2013/ensemble/ojyonana/ojyonana_trial.exe) | タイトル | b076f1f でタイトル画面まで表示 (InstallShield 版) |
+| dl_VJ01002397 | [僕の好きな人の好きな人は、女装した僕でした。](https://trial.dlsite.com/professional/VJ01003000/VJ01002397_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
+| dl_VJ01004020 | [のーぶる・バトラー](https://trial.dlsite.com/professional/VJ01005000/VJ01004020_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
+| dl_VJ01004594 | [宿りし乙女の誓いと魔法](https://trial.dlsite.com/professional/VJ01005000/VJ01004594_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
+| dl_VJ01004836 | [俺だけに傅く孕メイドたち ～精子を貪る五人の欲心女～](https://trial.dlsite.com/professional/VJ01005000/VJ01004836_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
+| s2015_ensemble_koikata | [恋する気持ちのかさねかた_Hシーン体験版](http://suezou.dyndns.org/dl2015/ensemble/koikata/koikata_H_trial.zip) | 本編 | b076f1f で START からキャラクター選択画面まで |
+| s2015_ensemble_sweet_yakimochi | [エッチでヘンタイ！ヤキモチお嬢様！！　ヘンタイ性癖解放Ver．体験版](http://suezou.dyndns.org/dl2015/ensemble-sweet/yakimochi/Dohentai_trial.exe) | 本編 | b076f1f で START からキャラクター選択画面まで |
+| s2016_ensemble_sweet_hanayome | [恋するお嬢様はエッチな花嫁　体験版](http://suezou.dyndns.org/dl2016/ensemble-sweet/hanayome/hanayome_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
+| s2019_guilty_harame | [孕女～精子を欲しがる淫らな教え子～ 体験版](http://suezou.dyndns.org/dl2019/guilty/harame/harame_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
+| s2022_ensemble_sweet_otoshita | [乙女とふれあう、ひとつ屋根の下 TRIAL EDITION](http://suezou.dyndns.org/dl2022/ensemble-sweet/otoshita/otoshita_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
+| s2026_ensemble_sweet_ribichu | [リビドーアバンちゅ～る TRIAL EDITION](http://suezou.dyndns.org/dl2026/ensemble-sweet/ribichu/ribichu_trial.exe) | 本編 | b076f1f で START から本編テキストまで |
+| b2013_ensemble | [お嬢様はご機嫌ナナメ 体験版](http://suezou.dyndns.org/dl2013/ensemble/ojyonana/ojyonana_trial.exe) | タイトル | b076f1f で START を押すと白画面のまま進まない (エラーなし) |
 | b2014_ensemble | [goldenmarriage_trial.exe](http://suezou.dyndns.org/dl2014/ensemble/golden_marriage/goldenmarriage_trial.exe) | タイトル | e51df34 でタイトル画面まで表示 (InstallShield 版) |
 | b2014_ensemble_sweet | [hentai_trial.exe](http://suezou.dyndns.org/dl2014/ensemble-sweet/hentai/hentai_trial.exe) | タイトル | b076f1f でタイトルまで。START 後に「0010.ws2:0x3: unknown command 0x03」 |
 | b2014_guilty | [ANEWO_trial2.exe](http://suezou.dyndns.org/dl2014/guilty/anewo/ANEWO_trial2.exe) | タイトル | b076f1f でタイトルまで。START 後に「t2_000.ws2:0xd4: unknown command 0xb7」 |
 | b2026_tokohana | [OfficeLove -クールな上司と秘密のイキ抜き- Trial Edition](http://suezou.dyndns.org/dl2026/tokohana/office_love/OfficeLove_trial.zip) | タイトル | b076f1f でタイトルから名前入力まで。prompt に名前を入れても OK が押されず先に進まない |
-| dl_VJ01002397 | [僕の好きな人の好きな人は、女装した僕でした。](https://trial.dlsite.com/professional/VJ01003000/VJ01002397_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
-| dl_VJ01003020 | [幸乃下蛍の恋青日和 ～お義姉ちゃんとの秘密同棲～](https://trial.dlsite.com/professional/VJ01004000/VJ01003020_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
-| dl_VJ01004020 | [のーぶる・バトラー](https://trial.dlsite.com/professional/VJ01005000/VJ01004020_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
-| dl_VJ01004594 | [宿りし乙女の誓いと魔法](https://trial.dlsite.com/professional/VJ01005000/VJ01004594_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
-| dl_VJ01004836 | [俺だけに傅く孕メイドたち ～精子を貪る五人の欲心女～](https://trial.dlsite.com/professional/VJ01005000/VJ01004836_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
-| dl_VJ015399 | [恋するあまいろホームステイ -留学生はわんこ系幼馴染-](https://trial.dlsite.com/professional/VJ016000/VJ015399_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
+| dl_VJ01003020 | [幸乃下蛍の恋青日和 ～お義姉ちゃんとの秘密同棲～](https://trial.dlsite.com/professional/VJ01004000/VJ01003020_trial.zip) | タイトル | b076f1f で START から名前入力まで。prompt に名前を入れた後、画面上の OK を押す操作は未確認 |
+| dl_VJ015399 | [恋するあまいろホームステイ -留学生はわんこ系幼馴染-](https://trial.dlsite.com/professional/VJ016000/VJ015399_trial.zip) | タイトル | b076f1f で START から名前入力まで。prompt に名前を入れた後、画面上の OK を押す操作は未確認 |
 | r1_advhd | [有閑夫人倶楽部 体験版](https://www.willplus-download.com/Empress/yukanmadam/yukanmadam_trialedition.exe) | タイトル | 775114f でタイトル画面まで正しいサイズで表示 |
-| s2013_guilty_yobai | [夜這いする七人の孕女～体験版2～](http://suezou.dyndns.org/dl2013/guilty/yobai/yobai_trial2.exe) | タイトル | b076f1f でタイトル画面まで表示 (InstallShield cab 版) |
+| s2013_guilty_yobai | [夜這いする七人の孕女～体験版2～](http://suezou.dyndns.org/dl2013/guilty/yobai/yobai_trial2.exe) | タイトル | b076f1f で START から最初の画面まで。mapmovetrial.ws2:0x9e で unknown command 0x03 |
 | s2013_pulltop_cocoro | [ココロ＠ファンクション！―えっちシーン体験版](http://suezou.dyndns.org/dl2013/pulltop/cocoro/CocoroFunction_Hscene_trial.exe) | タイトル | e51df34 でタイトル画面まで表示 (InstallShield 版) |
-| s2015_ensemble_koikata | [恋する気持ちのかさねかた_Hシーン体験版](http://suezou.dyndns.org/dl2015/ensemble/koikata/koikata_H_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
-| s2015_ensemble_sweet_yakimochi | [エッチでヘンタイ！ヤキモチお嬢様！！　ヘンタイ性癖解放Ver．体験版](http://suezou.dyndns.org/dl2015/ensemble-sweet/yakimochi/Dohentai_trial.exe) | タイトル | b076f1f でタイトル画面まで表示 |
-| s2016_ensemble_sweet_hanayome | [恋するお嬢様はエッチな花嫁　体験版](http://suezou.dyndns.org/dl2016/ensemble-sweet/hanayome/hanayome_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
-| s2019_guilty_harame | [孕女～精子を欲しがる淫らな教え子～ 体験版](http://suezou.dyndns.org/dl2019/guilty/harame/harame_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
-| s2022_ensemble_sweet_otoshita | [乙女とふれあう、ひとつ屋根の下 TRIAL EDITION](http://suezou.dyndns.org/dl2022/ensemble-sweet/otoshita/otoshita_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
-| s2026_ensemble_sweet_ribichu | [リビドーアバンちゅ～る TRIAL EDITION](http://suezou.dyndns.org/dl2026/ensemble-sweet/ribichu/ribichu_trial.exe) | タイトル | b076f1f でタイトル画面まで表示 |
 | s2018_ensemble_otostuki | [乙女が結ぶ月夜の煌めき　体験版](http://suezou.dyndns.org/dl2018/ensemble/otostuki/ototsuki_trial.zip) | 要再確認 | zip の展開が不完全で Rio.arc が見つからない (Bgm/Chip*.arc のみ) |
 <!-- /matrix -->
