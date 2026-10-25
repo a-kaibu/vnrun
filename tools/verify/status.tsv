@@ -259,8 +259,8 @@ s2024_no_strike_yuribatake	NG	スクリプトが exe 内蔵の暗号 (cxdec 系)
 s2026_no_strike_jyosou_yuriarashi	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。initialize.tjs(303) KAGLoadScript で「Cannot convert given narrow string to wide string」
 s2022_akabeesoft2_roleplayer_tororo	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」
 s2008_dualtail_clarice	NG	startup.tjs(6) で「Read error」
-s2021_no_strike_Trap_Genesis	NG	213e9df で DrawDeviceForSteam は通過、kagparser.tjs(96) loadScenario で「narrow→wide」(シナリオが暗号化)
+s2021_no_strike_Trap_Genesis	NG	暗号化 (シナリオ、未対応)。213e9df で DrawDeviceForSteam は通過、kagparser.tjs(96) loadScenario で「narrow→wide」
 s2025_akabeesoft2_roleplayer_ikura	NG	freeResizeMode の property getter で例外
-s2020_sagaplanets_kakenuke	NG	213e9df でも default.tjs(315) ExtractMojimoGameFont 内の Scripts.loadDataPack で例外 (ゲーム側の定義が使われる)
+s2020_sagaplanets_kakenuke	NG	暗号化 (Mojimo ゲームフォント、Scripts.loadDataPack の IV 付き、未対応)。default.tjs(315) で例外
 s2026_poison_motion_sxs2_me	起動	213e9df で CAUTION 画面まで。タイトルは未確認
 s2011_grand_cru_imostar	NG	5d1348e で例外なしで黒画面のまま
