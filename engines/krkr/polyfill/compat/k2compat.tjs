@@ -1,3 +1,7 @@
 // vnrun: KiriKiri Z releases come with k2compat.tjs (KiriKiri 2 compatibility), and some games
 // load it without shipping it. What it adds for a page (menus, plugins, the font) the other
-// polyfill scripts already give, so this one is empty.
+// polyfill scripts already give, so this one only has the names games use from it.
+
+// What initialize.tjs of KiriKiri Z games sets up after loading this file.
+if (typeof(global.Krkr2CompatUtils) === "undefined")
+	global.Krkr2CompatUtils = %[ scriptBase: "" ];
