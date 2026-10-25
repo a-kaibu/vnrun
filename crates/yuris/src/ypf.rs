@@ -9,8 +9,10 @@
 //!
 //! Later versions (482 has it, 466 not) store the offset as a u64.
 //!
-//! Names are stored with every byte inverted, in Shift_JIS, with `\` between folders. The length
-//! byte is inverted too and then mapped through a table of swapped pairs.
+//! Names are stored in Shift_JIS, with `\` between folders, and every byte XORed with a key: 0xff
+//! (inverted) in most games, others (0xc9 in 鯨神のティアスティラ). The key is taken from the
+//! first name, whose fourth byte from the end is the `.` of its extension. The length byte is
+//! inverted and then mapped through a table of swapped pairs.
 
 use std::collections::HashMap;
 
@@ -33,33 +35,31 @@ pub struct Index {
     by_name: HashMap<String, usize>,
 }
 
-// Pairs of name lengths the archive swaps (after inverting the byte).
-const SWAPS: [(u8, u8); 12] = [
-    (0x03, 0x48),
-    (0x06, 0x35),
-    (0x09, 0x0b),
-    (0x0c, 0x10),
-    (0x0d, 0x13),
-    (0x11, 0x19),
-    (0x15, 0x1b),
-    (0x1c, 0x1e),
-    (0x20, 0x23),
-    (0x26, 0x29),
-    (0x2c, 0x2f),
-    (0x2e, 0x32),
+// Pairs of name lengths the archive swaps (after inverting the byte). Releases differ (the
+// tables of GARbro's ArcYPF.cs): the archive is read with each until one fits.
+const SWAPS: [&[u8]; 4] = [
+    &[
+        0x03, 0x48, 0x06, 0x35, 0x0c, 0x10, 0x11, 0x19, 0x1c, 0x1e, 0x09, 0x0b, 0x0d, 0x13, 0x15, 0x1b, 0x20, 0x23,
+        0x26, 0x29, 0x2c, 0x2f, 0x2e, 0x32,
+    ],
+    // Whirlpool (鯨神のティアスティラ, Unionism Quartet, ...)
+    &[
+        0x03, 0x0a, 0x06, 0x35, 0x0c, 0x10, 0x11, 0x18, 0x1c, 0x1e, 0x09, 0x0b, 0x0d, 0x13, 0x15, 0x1b, 0x20, 0x23,
+        0x26, 0x29, 0x2c, 0x2f, 0x14, 0x2e,
+    ],
+    &[
+        0x0c, 0x10, 0x11, 0x19, 0x1c, 0x1e, 0x09, 0x0b, 0x0d, 0x13, 0x15, 0x1b, 0x20, 0x23, 0x26, 0x29, 0x2c, 0x2f,
+        0x2e, 0x32,
+    ],
+    &[0x09, 0x0b, 0x0d, 0x13, 0x15, 0x1b, 0x20, 0x23, 0x26, 0x29, 0x2c, 0x2f, 0x2e, 0x32],
 ];
 
-fn name_len(stored: u8) -> usize {
+fn name_len(swaps: &[u8], stored: u8) -> usize {
     let n = !stored;
-    for (a, b) in SWAPS {
-        if n == a {
-            return b as usize;
-        }
-        if n == b {
-            return a as usize;
-        }
+    match swaps.iter().position(|&b| b == n) {
+        Some(i) => swaps[i ^ 1] as usize,
+        None => n as usize,
     }
-    n as usize
 }
 
 fn u32_at(b: &[u8], at: usize) -> Option<u32> {
@@ -74,10 +74,22 @@ pub fn fold(name: &str) -> String {
 impl Index {
     /// Reads the index from the start of an archive (the first `data_start` bytes are enough).
     pub fn parse(head: &[u8]) -> Result<Index, String> {
-        Index::parse_with(head, false).or_else(|e| Index::parse_with(head, true).map_err(|_| e))
+        // Preferably the reading whose index ends where the files start.
+        let mut first = None;
+        for exact in [true, false] {
+            for swaps in SWAPS {
+                for wide_offsets in [false, true] {
+                    match Index::parse_with(head, swaps, wide_offsets, exact) {
+                        Ok(index) => return Ok(index),
+                        Err(e) => drop(first.get_or_insert(e)),
+                    }
+                }
+            }
+        }
+        Err(first.unwrap_or_default())
     }
 
-    fn parse_with(head: &[u8], wide_offsets: bool) -> Result<Index, String> {
+    fn parse_with(head: &[u8], swaps: &[u8], wide_offsets: bool, exact: bool) -> Result<Index, String> {
         if head.get(..4) != Some(b"YPF\0") {
             return Err("not a YPF archive".into());
         }
@@ -86,10 +98,16 @@ impl Index {
         let data_start = u32_at(head, 12).ok_or("short header")? as usize;
         let mut at = 0x20;
         let mut index = Index { version, ..Default::default() };
+        let mut key = None;
         for _ in 0..count {
             let stored = *head.get(at + 4).ok_or("short index")?;
-            let len = name_len(stored);
-            let raw: Vec<u8> = head.get(at + 5..at + 5 + len).ok_or("short index")?.iter().map(|b| !b).collect();
+            let len = name_len(swaps, stored);
+            let stored_name = head.get(at + 5..at + 5 + len).ok_or("short index")?;
+            let key = *key.get_or_insert(match len {
+                4.. => stored_name[len - 4] ^ b'.',
+                _ => 0xff,
+            });
+            let raw: Vec<u8> = stored_name.iter().map(|b| b ^ key).collect();
             let p = at + 5 + len;
             let compressed = *head.get(p + 1).ok_or("short index")? != 0;
             let size = u32_at(head, p + 2).ok_or("short index")?;
@@ -102,6 +120,9 @@ impl Index {
             index.by_name.insert(fold(&name), index.entries.len());
             index.entries.push(Entry { name, compressed, size, packed_size, offset });
             at = p + if wide_offsets { 22 } else { 18 };
+        }
+        if exact && at != data_start {
+            return Err("the index does not end where the files start".into());
         }
         Ok(index)
     }
