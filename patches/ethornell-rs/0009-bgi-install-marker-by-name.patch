@@ -1,0 +1,74 @@
+--- a/crates/ethornell-app/src/lib.rs
++++ b/crates/ethornell-app/src/lib.rs
+@@ -272,6 +272,36 @@
+ 
+     (DEFAULT_GAME_ID.into(), "fallback", false)
+ }
++/// Builds without GetGameId (Hello,good-bye) check the marker by name:
++/// FileExists("HelloGoodBye") followed by a jump straight to TerminateInterpreter.
++fn install_markers(manager: &ResourceManager) -> Vec<String> {
++    let Ok(bytes) = manager.read_decoded_from_archive("system.arc", "ipl._bp") else {
++        return Vec::new();
++    };
++    let program = ethornell_script::parse_bp_program(None, &bytes);
++    let terminates = |target: u32| {
++        program
++            .instructions
++            .iter()
++            .find(|instruction| instruction.offset == u64::from(target))
++            .is_some_and(|instruction| instruction.known_call == Some("TerminateInterpreter"))
++    };
++    program
++        .instructions
++        .windows(4)
++        .filter_map(|w| match (w[0].operands.as_ref(), w[2].operands.as_ref()) {
++            ([ethornell_script::BpOperand::String(name)], [ethornell_script::BpOperand::Offset(target)])
++                if w[1].known_call == Some("FileExists")
++                    && w[3].opcode.name() == "jc"
++                    && terminates(*target) =>
++            {
++                Some(name.clone())
++            }
++            _ => None,
++        })
++        .collect()
++}
++
+ fn confirmed_native_profile(
+     manager: &ResourceManager,
+     bootstrap: &[u8],
+@@ -816,6 +846,8 @@
+     manager: ResourceManager,
+     native_root: PathBuf,
+     game_id: String,
++    /// Files whose presence makes ipl terminate (see is_install_media_marker).
++    install_markers: Vec<String>,
+     text_state: TextState,
+     text_runtime: TextRuntime,
+     graph_defaults: GraphRuntimeDefaults,
+@@ -1300,11 +1332,13 @@
+     fn new_with_native_root(manager: ResourceManager, native_root: PathBuf) -> Self {
+         let (game_id, source, compact) = configured_game_id(&manager);
+         tracing::info!(%game_id, source, "configured native game identifier");
++        let install_markers = install_markers(&manager);
+         Self {
+             host: host_runtime::HostServices::default(),
+             manager,
+             native_root,
+             game_id,
++            install_markers,
+             text_state: TextState::default(),
+             text_runtime: TextRuntime::default(),
+             graph_defaults: GraphRuntimeDefaults::default(),
+@@ -2373,7 +2407,10 @@
+     /// The install media carries a file named after the game id, and ipl
+     /// leaves for the installer when it sees it; we run as an installed copy.
+     fn is_install_media_marker(&self, path: &str) -> bool {
+-        path.rsplit(['/', '\\']).next().is_some_and(|name| name.eq_ignore_ascii_case(&self.game_id))
++        path.rsplit(['/', '\\']).next().is_some_and(|name| {
++            name.eq_ignore_ascii_case(&self.game_id)
++                || self.install_markers.iter().any(|marker| name.eq_ignore_ascii_case(marker))
++        })
+     }
+ 
+     fn cached_file_exists(&mut self, archive: &str, file: &str) -> bool {
