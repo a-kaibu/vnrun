@@ -15,6 +15,7 @@ global.vnrunPlugins = %[
 		"win32dialog.dll" => "win32dialog.tjs",
 		"sigcheck.dll" => "sigcheck.tjs",
 		"getsample.dll" => "getSample.tjs",
+		"gamepad.dll" => "gamepad.tjs",
 	],
 ];
 global.Plugins.link = function(name) {

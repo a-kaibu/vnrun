@@ -1,0 +1,12 @@
+// vnrun: gamepad.dll. The page reads no game pads, so the port has none (count 0) and games
+// skip the controllers.
+if (typeof(global.GamepadPort) === "undefined") {
+	class GamepadPort {
+		var count = 0;
+		function GamepadPort() {}
+		function initialize(hwnd) {}
+		function update() {}
+		function getController(i) { return void; }
+	}
+	global.GamepadPort = GamepadPort;
+}

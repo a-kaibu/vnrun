@@ -46,6 +46,7 @@ const POLYFILL_FILES = [
     "win32dialog",
     "sigcheck",
     "getSample",
+    "gamepad",
   ].map((name) => `plugins/${name}.tjs`),
 ];
 const STARTUP = "/vnrun/startup.tjs";

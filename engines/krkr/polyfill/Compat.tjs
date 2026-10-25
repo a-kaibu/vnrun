@@ -52,3 +52,9 @@ if (typeof(global.gpButtonA) === "undefined") {
 	global.gpButtonLeftThumb = 0x40; global.gpButtonRightThumb = 0x80;
 	global.gpTimer = 0; global.gpTouchDown = 30; // XINPUT_GAMEPAD_TRIGGER_THRESHOLD
 }
+
+// Border icons (Delphi's TBorderIcon set) for Window.borderIcons-style menus of Windows builds.
+if (typeof(global.biMinimize) === "undefined") {
+	global.biSystemMenu = 1; global.biMinimize = 2; global.biMaximize = 4; global.biHelp = 8;
+	global.Window.biSystemMenu = 1; global.Window.biMinimize = 2; global.Window.biMaximize = 4; global.Window.biHelp = 8;
+}
