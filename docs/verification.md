@@ -41,7 +41,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|---|---|---|---|---|
 | SiglusEngine (siglus_rs) | 19 | 5 | 14 |  |  |  |  |  |
 | RealLive (siglus_rs) | 8 | 4 | 2 |  | 1 |  | 1 |  |
-| BGI (ethornell-rs) | 21 | 1 | 19 |  |  | 1 |  |  |
+| BGI (ethornell-rs) | 21 | 1 | 20 |  |  |  |  |  |
 | Softpal (sena-rs) | 28 | 3 | 19 |  |  | 6 |  |  |
 | Artemis (art3m1s-core) | 6 |  | 5 |  |  | 1 |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
@@ -109,8 +109,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2019_lump_of_sugar_wakabairono_quartet | [若葉色のカルテット 体験版](http://suezou.dyndns.org/dl2019/lump-of-sugar/wakabairono_quartet/WakabaironoQuartet_trial.zip) | タイトル | 3b42c00 で解消 |
 | s2020_hooksoft_houkago | [放課後シンデレラ 体験版 Ver1.00](http://suezou.dyndns.org/dl2020/hooksoft/houkago/houkago_trial.zip) | タイトル | c27e445 で直った |
 | s2021_smee_pureconnect_hd | [pureconnect_fhd_trial.zip](http://suezou.dyndns.org/dl2021/smee/pureconnect_hd/pureconnect_fhd_trial.zip) | タイトル | 3b42c00 で解消 |
+| s2022_hooksoft_houkago2 | [放課後シンデレラ２ 体験版 Ver1.01](http://suezou.dyndns.org/dl2022/hooksoft/houkago2/HoukagoCinderella2_trial_v1.01.zip) | タイトル | f81eded (BackML 0x8E) でタイトルまで |
 | s2023_quince_soft_little_proncess_go | [リトルプリンセスＧＯ！ 体験版](http://suezou.dyndns.org/dl2023/quince-soft/little-proncess_go/LittlePrincessGO_TR.zip) | タイトル | インストール用の目印ファイルを無視する 3b42c00 で解消 |
-| s2022_hooksoft_houkago2 | [放課後シンデレラ２ 体験版 Ver1.01](http://suezou.dyndns.org/dl2022/hooksoft/houkago2/HoukagoCinderella2_trial_v1.01.zip) | NG | f08fa25 でも起動から60秒以内に「サポートされていないパラメータ番号 [0x8E]」。背景はタイトル前の画像 (host_runtime_diag:15:1931:5475:144:56:8) |
 
 ### Softpal (sena-rs)
 
