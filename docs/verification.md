@@ -49,7 +49,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | 吉里吉里 (KiriKiri SDL2) | 135 |  | 66 | 5 | 1 | 30 |  | 33 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 30 | 5 | 1 |  | 1 | 22 | 1 |  |
-| AdvHD (vnrun) | 30 |  | 23 | 1 |  | 2 |  | 4 |
+| AdvHD (vnrun) | 30 |  | 24 |  |  | 2 |  | 4 |
 
 ### SiglusEngine (siglus_rs)
 
@@ -436,13 +436,13 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_VJ01004020 | [のーぶる・バトラー](https://trial.dlsite.com/professional/VJ01005000/VJ01004020_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
 | dl_VJ01004594 | [宿りし乙女の誓いと魔法](https://trial.dlsite.com/professional/VJ01005000/VJ01004594_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
 | dl_VJ015399 | [恋するあまいろホームステイ -留学生はわんこ系幼馴染-](https://trial.dlsite.com/professional/VJ016000/VJ015399_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
+| r1_advhd | [有閑夫人倶楽部 体験版](https://www.willplus-download.com/Empress/yukanmadam/yukanmadam_trialedition.exe) | タイトル | 775114f でタイトル画面まで正しいサイズで表示 |
 | s2015_ensemble_koikata | [恋する気持ちのかさねかた_Hシーン体験版](http://suezou.dyndns.org/dl2015/ensemble/koikata/koikata_H_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
 | s2015_ensemble_sweet_yakimochi | [エッチでヘンタイ！ヤキモチお嬢様！！　ヘンタイ性癖解放Ver．体験版](http://suezou.dyndns.org/dl2015/ensemble-sweet/yakimochi/Dohentai_trial.exe) | タイトル | b076f1f でタイトル画面まで表示 |
 | s2016_ensemble_sweet_hanayome | [恋するお嬢様はエッチな花嫁　体験版](http://suezou.dyndns.org/dl2016/ensemble-sweet/hanayome/hanayome_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
 | s2019_guilty_harame | [孕女～精子を欲しがる淫らな教え子～ 体験版](http://suezou.dyndns.org/dl2019/guilty/harame/harame_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
 | s2022_ensemble_sweet_otoshita | [乙女とふれあう、ひとつ屋根の下 TRIAL EDITION](http://suezou.dyndns.org/dl2022/ensemble-sweet/otoshita/otoshita_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
 | s2026_ensemble_sweet_ribichu | [リビドーアバンちゅ～る TRIAL EDITION](http://suezou.dyndns.org/dl2026/ensemble-sweet/ribichu/ribichu_trial.exe) | タイトル | b076f1f でタイトル画面まで表示 |
-| r1_advhd | [有閑夫人倶楽部 体験版](https://www.willplus-download.com/Empress/yukanmadam/yukanmadam_trialedition.exe) | 起動 | b076f1f でタイトル画像の左上の一部だけが拡大表示される (解像度の扱い?) |
 | b2014_ensemble | [goldenmarriage_trial.exe](http://suezou.dyndns.org/dl2014/ensemble/golden_marriage/goldenmarriage_trial.exe) | NG | b076f1f で例外なしの黒画面のまま (InstallShield 版) |
 | s2013_pulltop_cocoro | [ココロ＠ファンクション！―えっちシーン体験版](http://suezou.dyndns.org/dl2013/pulltop/cocoro/CocoroFunction_Hscene_trial.exe) | NG | b076f1f で例外なしの白画面のまま (InstallShield 版) |
 | b2013_ensemble | [お嬢様はご機嫌ナナメ 体験版](http://suezou.dyndns.org/dl2013/ensemble/ojyonana/ojyonana_trial.exe) | 未確認 |  |
