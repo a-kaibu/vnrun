@@ -181,7 +181,7 @@ fn val(item: Item, vars: &dyn Vars) -> Value {
 }
 
 fn var_id(d: &[u8]) -> VarId {
-    VarId { id: u16::from_le_bytes([d[1], d[2]]), str: d[0] == b'$' }
+    VarId { id: d.get(1..3).map_or(0, |b| u16::from_le_bytes([b[0], b[1]])), str: d.first() == Some(&b'$') }
 }
 
 /// Splits an expression into its tokens.
@@ -203,12 +203,15 @@ fn run(e: &[u8], vars: &dyn Vars) -> Result<Item, String> {
     let mut st: Vec<Item> = Vec::new();
     let pop = |st: &mut Vec<Item>| st.pop().ok_or_else(|| "expression stack is empty".to_string());
     for (t, d) in tokens(e) {
+        // Numbers cut short read as zero bytes.
+        let mut n = [0u8; 8];
+        n[..d.len().min(8)].copy_from_slice(&d[..d.len().min(8)]);
         let item = match t {
-            b'B' => Item::Val(Value::Int(d[0] as i8 as i64)),
-            b'W' => Item::Val(Value::Int(i16::from_le_bytes([d[0], d[1]]) as i64)),
-            b'I' => Item::Val(Value::Int(i32::from_le_bytes(d[..4].try_into().unwrap()) as i64)),
-            b'L' => Item::Val(Value::Int(i64::from_le_bytes(d[..8].try_into().unwrap()))),
-            b'F' => Item::Val(Value::Flt(f64::from_le_bytes(d[..8].try_into().unwrap()))),
+            b'B' => Item::Val(Value::Int(n[0] as i8 as i64)),
+            b'W' => Item::Val(Value::Int(i16::from_le_bytes([n[0], n[1]]) as i64)),
+            b'I' => Item::Val(Value::Int(i32::from_le_bytes(n[..4].try_into().unwrap()) as i64)),
+            b'L' => Item::Val(Value::Int(i64::from_le_bytes(n))),
+            b'F' => Item::Val(Value::Flt(f64::from_le_bytes(n))),
             b'M' => Item::Val(Value::Str(unquote(d))),
             b'H' => Item::Place(Place { var: var_id(d), index: Vec::new(), whole: false }),
             b'v' => Item::Place(Place { var: var_id(d), index: Vec::new(), whole: true }),

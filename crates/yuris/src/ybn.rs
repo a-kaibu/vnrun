@@ -125,6 +125,7 @@ pub fn variables(b: &[u8]) -> Result<Vec<VarDecl>, String> {
 
 fn variables_with(b: &[u8], wide: bool) -> Result<Vec<VarDecl>, String> {
     magic(b, b"YSVR")?;
+    let ver = version(b);
     let mut r = Reader::new(b, 8);
     let count = r.u16()? as usize;
     let mut out = Vec::with_capacity(count);
@@ -152,7 +153,7 @@ fn variables_with(b: &[u8], wide: bool) -> Result<Vec<VarDecl>, String> {
             }
             VarType::None => Vec::new(),
         };
-        let id = if wide { sysvar_482(id) } else { id };
+        let id = sysvar(ver, id);
         out.push(VarDecl { scope, group, script, id, ty, dims, init });
     }
     if r.at != b.len() {
@@ -161,25 +162,39 @@ fn variables_with(b: &[u8], wide: bool) -> Result<Vec<VarDecl>, String> {
     Ok(out)
 }
 
-/// 482 put new system variables among the old ones; this gives them the 466 numbers the VM
-/// knows (and moves the new ones out of the way). User variables are 541 and up.
-fn sysvar_482(id: u16) -> u16 {
-    match id {
-        0..=49 | 541.. => id,
-        53..=61 => id - 3,
-        97..=98 => id - 25,
-        106..=540 => id - 28,
-        _ => 10000 + id,
+fn version(b: &[u8]) -> u32 {
+    b.get(4..8).map_or(0, |v| u32::from_le_bytes(v.try_into().unwrap()))
+}
+
+/// Later versions put new system variables among the old ones; this gives them the 466 numbers
+/// the VM knows (and moves the new ones out of the way). The numbers were matched by the types
+/// in ysv.ybn: 482 games, and a 554 one (鯨神のティアスティラ).
+fn sysvar(ver: u32, id: u16) -> u16 {
+    match ver {
+        ..482 => id,
+        482..500 => match id {
+            0..=49 | 541.. => id,
+            53..=61 => id - 3,
+            97..=98 => id - 25,
+            106..=540 => id - 28,
+            _ => 10000 + id,
+        },
+        _ => match id {
+            0..=58 | 538.. => id,
+            96..=97 => id - 24,
+            103..=537 => id - 25,
+            _ => 10000 + id,
+        },
     }
 }
 
-/// Renumbers the variables in expression bytes (op u8, size u16, payload) for 482.
-fn remap_expr(e: &mut [u8]) {
+/// Renumbers the variables in expression bytes (op u8, size u16, payload) for later versions.
+fn remap_expr(ver: u32, e: &mut [u8]) {
     let mut i = 0;
     while i + 3 <= e.len() {
         let (op, n) = (e[i], u16::from_le_bytes([e[i + 1], e[i + 2]]) as usize);
         if matches!(op, b'H' | b'V') && n == 3 && i + 6 <= e.len() && matches!(e[i + 3], b'@' | b'$') {
-            let id = sysvar_482(u16::from_le_bytes([e[i + 4], e[i + 5]]));
+            let id = sysvar(ver, u16::from_le_bytes([e[i + 4], e[i + 5]]));
             e[i + 4..i + 6].copy_from_slice(&id.to_le_bytes());
         }
         i += 3 + n;
@@ -258,7 +273,7 @@ const DEFAULT_KEY: [u8; 4] = [0xd3, 0x6f, 0xac, 0x96];
 
 pub fn script(b: &[u8]) -> Result<Script, String> {
     magic(b, b"YSTB")?;
-    let v482 = b.len() >= 8 && u32::from_le_bytes(b[4..8].try_into().unwrap()) >= 482;
+    let ver = version(b);
     let mut r = Reader::new(b, 8);
     let count = r.u32()? as usize;
     let code_size = r.u32()? as usize;
@@ -288,9 +303,7 @@ pub fn script(b: &[u8]) -> Result<Script, String> {
             let size = u32::from_le_bytes(a[4..8].try_into().unwrap());
             let off = u32::from_le_bytes(a[8..12].try_into().unwrap()) as usize;
             let mut value = res.get(off..off + size as usize).map(<[u8]>::to_vec).unwrap_or_default();
-            if v482 {
-                remap_expr(&mut value);
-            }
+            remap_expr(ver, &mut value);
             list.push(Arg { keyword, ty, value, jump: size });
         }
         out.push(Instr { op, args: list, line });

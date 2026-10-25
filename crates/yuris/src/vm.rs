@@ -406,8 +406,9 @@ impl Vm {
     }
 
     fn run_task(&mut self, host: &mut dyn Host) -> Result<(), String> {
-        // A task that runs this long without waiting is stuck in a loop.
-        for _ in 0..2_000_000 {
+        // A task that runs this long without waiting is stuck in a loop. ERIS 554 sets up its
+        // buttons in one go, a few million steps.
+        for _ in 0..50_000_000 {
             let t = &self.state.tasks[self.state.current];
             if t.done || !t.enabled {
                 return Ok(());
@@ -428,7 +429,13 @@ impl Vm {
             self.task_mut().pos.ip += 1;
             let name = self.prog.name(&ins).to_string();
             if self.state.trace {
-                eprintln!("[{}] {}:{} {}", self.task_mut().id, pos.script, pos.ip, name);
+                let call = Self::call(&self.prog, &ins, &name, pos);
+                let args: Vec<String> = call
+                    .args
+                    .iter()
+                    .map(|(k, _, e)| format!("{k}={}", self.state.eval(e).map_or("?".into(), |v| v.str())))
+                    .collect();
+                eprintln!("[{}] {}:{} {} {}", self.task_mut().id, pos.script, pos.ip, name, args.join(" "));
             }
             let flow = self
                 .exec(&ins, &name, pos, host)

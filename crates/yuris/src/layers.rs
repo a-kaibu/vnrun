@@ -29,6 +29,8 @@ pub struct Layer {
     pub tid: String,
     pub t: i64,
     pub ta: i64,
+    /// numbers the scripts keep on the layer (LINT, LINT2)
+    pub lint: [i64; 2],
     /// order of creation, for layers with the same Z
     pub seq: u64,
 }
@@ -50,6 +52,7 @@ impl Layer {
             tid: String::new(),
             t: 256,
             ta: 0,
+            lint: [0; 2],
             seq: 0,
         }
     }

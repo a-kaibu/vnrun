@@ -85,6 +85,9 @@ impl Image {
     }
 
     pub fn decode(bytes: &[u8]) -> Result<Image, String> {
+        if bytes.starts_with(b"YCG\0") {
+            return Self::ycg(bytes);
+        }
         let img = image::load_from_memory(bytes).map_err(|e| e.to_string())?.into_rgba8();
         let (w, h) = img.dimensions();
         let mut out = Image { w, h, px: img.into_raw() };
@@ -93,6 +96,25 @@ impl Image {
             out.px.chunks_exact_mut(4).for_each(|p| p[3] = 255);
         }
         Ok(out)
+    }
+
+    /// YCG (later YU-RIS): a 0x38-byte header, then BGRA pixels in two zlib streams.
+    fn ycg(b: &[u8]) -> Result<Image, String> {
+        let u32_at = |o: usize| b.get(o..o + 4).map_or(0, |v| u32::from_le_bytes(v.try_into().unwrap()) as usize);
+        let (w, h) = (u32_at(4), u32_at(8));
+        if u32_at(0x10) != 1 {
+            return Err(format!("YCG compression {} is not supported", u32_at(0x10)));
+        }
+        let (size1, packed1, size2, packed2) = (u32_at(0x20), u32_at(0x24), u32_at(0x30), u32_at(0x34));
+        let part = |at: usize, packed: usize, size: usize| {
+            let src = b.get(at..at + packed).ok_or("YCG is cut short")?;
+            miniz_oxide::inflate::decompress_to_vec_zlib_with_limit(src, size).map_err(|e| format!("YCG: {e:?}"))
+        };
+        let mut px = part(0x38, packed1, size1)?;
+        px.extend(part(0x38 + packed1, packed2, size2)?);
+        px.resize(w * h * 4, 0);
+        px.chunks_exact_mut(4).for_each(|p| p.swap(0, 2));
+        Ok(Image { w: w as u32, h: h as u32, px })
     }
 
     pub fn at(&self, x: i64, y: i64) -> Option<[u8; 4]> {

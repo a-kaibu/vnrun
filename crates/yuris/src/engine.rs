@@ -210,6 +210,8 @@ impl World {
         set(st, c, "MODE", &mut l.mode)?;
         set(st, c, "T", &mut l.t)?;
         set(st, c, "TA", &mut l.ta)?;
+        set(st, c, "LINT", &mut l.lint[0])?;
+        set(st, c, "LINT2", &mut l.lint[1])?;
         if let Some(m) = text(st, c, "MID")? {
             l.mid = m;
         }
@@ -382,7 +384,7 @@ impl World {
             let mx = st.get_sys(sysvar::MOUSE_X, false, &[]).int();
             let my = st.get_sys(sysvar::MOUSE_Y, false, &[]).int();
             let (sx, sy) = (int(st, c, "SET")?.unwrap_or(mx), int(st, c, "SET2")?.unwrap_or(my));
-            for k in ["E", "A", "T", "TA", "X", "Y", "Z", "SX", "SY", "MODE", "COLOR", "ONMOUSE", "ONMOUSE2", "ONMOUSE3", "TID"] {
+            for k in ["E", "A", "T", "TA", "X", "Y", "Z", "SX", "SY", "MODE", "COLOR", "ONMOUSE", "ONMOUSE2", "ONMOUSE3", "TID", "LINT", "LINT2"] {
                 if !on(st, c, k)? {
                     continue;
                 }
@@ -398,6 +400,8 @@ impl World {
                     "SY" => Value::Int(l.h() as i64),
                     "MODE" => Value::Int(l.mode),
                     "TID" => Value::text(&l.tid),
+                    "LINT" => Value::Int(l.lint[0]),
+                    "LINT2" => Value::Int(l.lint[1]),
                     "COLOR" => Value::Int(l.img.at(sx, sy).map_or(-1, |p| argb(p) & 0xffffff)),
                     _ => {
                         let (lx, ly) = self.screen_pos(&id);
