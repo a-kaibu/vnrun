@@ -46,7 +46,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Artemis (art3m1s-core) | 6 |  | 5 |  |  | 1 |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 2 | 17 | 9 | 3 | 2 |  |  |
-| 吉里吉里 (KiriKiri SDL2) | 135 |  | 7 | 8 | 1 | 21 |  | 98 |
+| 吉里吉里 (KiriKiri SDL2) | 135 |  | 33 | 3 | 1 | 19 |  | 79 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 30 | 1 | 1 | 1 | 1 | 25 | 1 |  |
 
@@ -209,69 +209,69 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| b2006_ninetail | [機械仕掛けのイブ　～Ｄｅａ　Ｅｘ　Ｍａｃｈｉｎａ～](http://suezou.dyndns.org/dl2006/ninetail/eve/0527_eve_trial_ver100.exe) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2011_grand_cru | [はっぴぃふぁくとりー　体験版](http://suezou.dyndns.org/dl2011/grand-cru/hf/hp_trial.zip) | タイトル | 591d0a0 で黒地にタイトルのメニュー文字だけ出る |
+| b2012_parasol | [恋妹SWEET☆DAYS 体験版](http://suezou.dyndns.org/dl2012/parasol/koiimo/koiimo_taiken.zip) | タイトル | 5d1348e でタイトル画面まで表示。クリック後に黒画面 |
 | b2013_cross_over | [花嫁狩凌 ～絶対快楽の白濁淫毒～ 体験版](http://suezou.dyndns.org/dl2013/cross-over/hana/hanayome_trial.zip) | タイトル | 591d0a0 でタイトルまで |
 | b2013_hulotte | [妹のおかげでモテすぎてヤバい。 体験版](http://suezou.dyndns.org/dl2013/hulotte/moteyaba/moteyaba_trial.zip) | タイトル | 591d0a0 で注意画面からタイトルまで (XOR 暗号の xp3) |
 | b2013_madosoft | [ナマイキデレーション体験版 WEB Ver.](http://suezou.dyndns.org/dl2013/madosoft/namadere/namadere_trial_web.zip) | タイトル | 591d0a0 でタイトルまで |
+| b2014_undermoon | [奪われた学園～罠に落ちた優等生～　体験版](http://suezou.dyndns.org/dl2014/undermoon/ubaware/ubaware_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2015_ammolite | [お兄ちゃん、教えて……～義妹とヒミツの保健実習～　体験版　Ver1.00](http://suezou.dyndns.org/dl2015/ammolite/oni/amml011_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2015_appetite | [愛娘は、マゾ性隷～娘だからって遠慮しないでね？～　体験版　Ver1.00](http://suezou.dyndns.org/dl2015/appetite/musume/apt054_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2016_apadash | [満淫オーク電車～くっ！　任務じゃなければこんな場所…～　体験版　Ver1.00](http://suezou.dyndns.org/dl2016/apadash/oak_train/aptd005_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2016_appetite | [アナル＊ティーチャー～感度良肛！？　逆レッスン～　体験版　Ver1.00](http://suezou.dyndns.org/dl2016/appetite/anaru_teacher/apt068_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2017_appetite | [催眠アプリで寝取りハメ～これまでの恨み、ヤり返してやる！　体験版　Ver1.00](http://suezou.dyndns.org/dl2017/appetite/hypnotism_application/apt098_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2018_appetite | [P.S.あなたを心から愛しています～最期まで気づけなかった妻の苦しみ～　体験版](http://suezou.dyndns.org/dl2018/appetite/ps_iloveyou/apt125_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2019_appetite | [女体化パニック！３～お、俺は男だ！　でも、悔しいけど気持ちいいっ……のか！？　体験版](http://suezou.dyndns.org/dl2019/appetite/nyotaika3/apt133_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2019_dualtail | [VenusBlood FRONTIER International SLG Trial 日本語版](http://suezou.dyndns.org/dl2019/dualtail/vbfi/VBFI_New_SLG_Trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2019_sator | [モウソウスピーカー～Ｈな妄想が聴こえてくるよ～　体験版](http://suezou.dyndns.org/dl2019/sator/mousou_speaker/mousou_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2020_at_sakura | [優来（ゆら）があいつに抱かれる理由（わけ） 体験版](http://suezou.dyndns.org/dl2020/at-sakura/yura_wake/aspc-0112_taiken_ver1.0.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2020_chaos_r | [悪堕ち 魔導処女～絶対支配の触手調教～　体験版](http://suezou.dyndns.org/dl2020/chaos-r/madousyojo/madousyojo_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2020_pin_point | [世話焼き奥さんで人の頼みを断れない亜衣さんにお願いして中出しハメ放題のドスケベ妻になってもらった 体験版](http://suezou.dyndns.org/dl2020/pin-point/wife_ai/PP34_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示。起動時に「フルスクリーンで表示しますか？」の確認ダイアログが出る |
 | b2021_at_sakura | [愛する彼女は画面の中、他の男の上で腰をふる 体験版](http://suezou.dyndns.org/dl2021/at-sakura/ai_gamen/aspc-0123_taiken_ver1.0.zip) | タイトル | 591d0a0 でロゴからタイトルまで。色も正しい |
+| b2021_chaos_r | [神聖昂燐ダクリュオン～正しい天使の育てかた～　体験版](http://suezou.dyndns.org/dl2021/chaos-r/dakr/dakr_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2021_kelp | [アイドル姉妹をエッチにプロデュース！ 体験版](http://suezou.dyndns.org/dl2021/kelp/idol_simai/IDOL_SIMAI_TR.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2021_pin_point | [売国王姫～堕落のメス豚母娘～体験版](http://suezou.dyndns.org/dl2021/pin-point/baikoku_ouhi/PP36_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示。起動時に「フルスクリーンで表示しますか？」の確認ダイアログが出る |
 | b2022_at_sakura | [愛する恋人を大嫌いな旧友に寝取られた件 体験版](http://suezou.dyndns.org/dl2022/at-sakura/ai_tomo/aspc-0125_taiken_ver1.0.zip) | タイトル | 591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動) |
+| b2022_chaos_r | [進軍ゴブリン軍団～人類総苗床化作戦～ 体験版](http://suezou.dyndns.org/dl2022/chaos-r/gobblin_gundan/GOBBLIN_TR.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2022_syoku | [触災の島～Island of the Dead～体験版　Ver1.00](http://suezou.dyndns.org/dl2022/syoku/syokusai_island/Syokusai_Island_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2023_apadash | [最強の人妻ヒロインが寝取られるまで～お願い！夫にはバラさないで…～　体験版　Ver1.00](http://suezou.dyndns.org/dl2023/apadash/hitoduma_heroine/aptd027_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2023_appetite | [洗脳航路～エイリアンの苗床に導かれるエリート女軍人たち～　体験版　Ver1.00](http://suezou.dyndns.org/dl2023/appetite/senno_kouro/apt246_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2023_at_sakura | [堕とされた義姉 体験版](http://suezou.dyndns.org/dl2023/at-sakura/oti_ane/aspc-0138_taiken_ver1.0.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2023_chaos_r | [神聖昂燐エストランジェ体験版](http://suezou.dyndns.org/dl2023/chaos-r/strncxe/strncxe_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2024_at_sakura | [性調教済だった愛する彼女 体験版](http://suezou.dyndns.org/dl2024/at-sakura/seikyo_kano/aspc-0150_taiken_ver1.0.zip) | タイトル | 591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動) |
-| b2006_ninetail | [機械仕掛けのイブ　～Ｄｅａ　Ｅｘ　Ｍａｃｈｉｎａ～](http://suezou.dyndns.org/dl2006/ninetail/eve/0527_eve_trial_ver100.exe) | 起動 | 591d0a0 で黒画面のまま、エンジンのログも出ない (83905b1〜ce3775e ではタイトルまで出ていた) |
-| b2008_akabeesoft | [ＷＬＯ-世界恋愛機構- web用体験版](http://suezou.dyndns.org/dl2008/akabeesoft/wlo/wlo_webtrial.zip) | 起動 | 591d0a0 で注意画面まで |
-| b2008_asa_project | [Hime のち Honey - 体験版](http://suezou.dyndns.org/dl2008/asa-project/himehoney/hime_web_trial1.zip) | 起動 | 591d0a0 でロゴと注意画面まで |
-| b2010_akabeesoft | [置き場がない！ web体験版](http://suezou.dyndns.org/dl2010/akabeesoft/okiba/okiba_webTRIAL.zip) | 起動 | 591d0a0 で注意画面のあと override.tjs(696) stopQuake で「エラーが発生しました」 |
-| b2010_grand_cru | [Reunion～３日間だけのプチ同棲～　体験版](http://suezou.dyndns.org/dl2010/grand-cru/reunion/Reunion_trial.lzh) | 起動 | 591d0a0 でtitle.ks の @s まで進むが黒画面 |
-| b2015_pachipachi_soft | [おしおき生意気ギャル ～エロいオシオキをしたら自分からエッチを求めてきた～ 体験版](http://suezou.dyndns.org/dl2015/pachipachi-soft/oshioki/oshioki_trial.zip) | 起動 | 591d0a0 で黒画面のまま、エンジンのログも出ない (krflash.tpm) |
-| b2016_cube | [間宮くんちの五つ子事情 体験版](http://suezou.dyndns.org/dl2016/cube/mamiya/mamiya_trial.zip) | 起動 | 591d0a0 で真っ白のまま (鍵 hash^0 は検出) |
-| b2025_monoceros_plus | [Vanilla Android　シコ猿DT大学生の俺と美少女アンドロイドがいろんなプレイでハメパコミッション　体験版](http://suezou.dyndns.org/dl2025/monoceros_plus/vanilla_android/VanillaAndroid-trial.zip) | 起動 | 591d0a0 で黒画面のまま、エンジンのログも出ない |
+| b2025_at_sakura | [学生会長・紫藤喜那の淫鬱 体験版](http://suezou.dyndns.org/dl2025/at-sakura/seito_sidou/aspc-0161_taiken_ver1.0.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2025_monoceros_plus | [Vanilla Android　シコ猿DT大学生の俺と美少女アンドロイドがいろんなプレイでハメパコミッション　体験版](http://suezou.dyndns.org/dl2025/monoceros_plus/vanilla_android/VanillaAndroid-trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2008_akabeesoft | [ＷＬＯ-世界恋愛機構- web用体験版](http://suezou.dyndns.org/dl2008/akabeesoft/wlo/wlo_webtrial.zip) | 起動 | 5d1348e で注意書き画面まで。タイトルは未確認 |
+| b2008_asa_project | [Hime のち Honey - 体験版](http://suezou.dyndns.org/dl2008/asa-project/himehoney/hime_web_trial1.zip) | 起動 | 5d1348e でロゴと体験版の注意書きまで。タイトルは未確認 |
+| b2010_akabeesoft | [置き場がない！ web体験版](http://suezou.dyndns.org/dl2010/akabeesoft/okiba/okiba_webTRIAL.zip) | 起動 | 5d1348e で注意書きの後 override.tjs(696) stopQuake でエラー |
 | r1_kag3 | [KAG3 紹介デモ](https://krkrz.github.io/download/kr2_232r2.zip) | 要再確認 | KAG3 のサンプル (xp3 にまとめていない data フォルダ)。開発スレッドでは確認済み |
-| b2006_akabeesoft | [その横顔を見つめてしまう ～a profile完全版～ web体験版](http://suezou.dyndns.org/dl2006/akabeesoft/sonoyoko/sonoyoko_trial.zip) | NG | 591d0a0 で「TypeError: getWasmTableEntry(...) is not a function」(関数ポインタの呼び出し先が無い) |
+| b2006_akabeesoft | [その横顔を見つめてしまう ～a profile完全版～ web体験版](http://suezou.dyndns.org/dl2006/akabeesoft/sonoyoko/sonoyoko_trial.zip) | NG | 5d1348e で「TypeError: getWasmTableEntry(...) is not a function」 |
+| b2008_dualtail | [Venus Blood Chimera](http://suezou.dyndns.org/dl2008/dualtail/vbc/VBC_trial_SLGver100.zip) | NG | 5d1348e で「エンジンを読み込み中」のまま進まない |
+| b2009_dualtail | [魔法少女ラヴィリオン 体験版](http://suezou.dyndns.org/dl2009/dualtail/ravilion/ravi_trial.exe) | NG | 5d1348e で「TypeError: getWasmTableEntry(...) is not a function」 |
+| b2010_grand_cru | [Reunion～３日間だけのプチ同棲～　体験版](http://suezou.dyndns.org/dl2010/grand-cru/reunion/Reunion_trial.lzh) | NG | 5d1348e で黒画面のまま |
 | b2011_nanawind | [ユユカナ 体験版](http://suezou.dyndns.org/dl2011/nanawind/yuyukana/yuyu_taiken01.zip) | NG | cxdec 系 (yuyukana.tpm) で未対応。「Invalid character '\x03'」 |
-| b2012_akabeesoft3 | [JOKER-死線の果ての道化師-](http://suezou.dyndns.org/dl2012/akabeesoft3/joker/joker_web_trial2.zip) | NG | 591d0a0 でfirst.ks(5) で「Member "sysClickSkip" does not exist」 |
-| b2012_alcot | [中の人などいない！　体験版](http://suezou.dyndns.org/dl2012/alcot/naka/nakanohito_trial.exe) | NG | 591d0a0 でoverride.tjs(872) updateMenuItemCaption で「Cannot convert the variable type ((void) to Object)」(MenuItem の caption) |
-| b2012_kai | [リヴォルバーガール☆ハンマーレディ　体験版](http://suezou.dyndns.org/dl2012/kai/rghl/RGHLtrial-WEB.zip) | NG | 591d0a0 でoverride.tjs(872) updateMenuItemCaption で「Cannot convert the variable type ((void) to Object)」(MenuItem の caption) |
-| b2014_undermoon | [奪われた学園～罠に落ちた優等生～　体験版](http://suezou.dyndns.org/dl2014/undermoon/ubaware/ubaware_trial.zip) | NG | 591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」 |
-| b2015_ammolite | [お兄ちゃん、教えて……～義妹とヒミツの保健実習～　体験版　Ver1.00](http://suezou.dyndns.org/dl2015/ammolite/oni/amml011_tr.zip) | NG | 591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」 |
-| b2015_appetite | [愛娘は、マゾ性隷～娘だからって遠慮しないでね？～　体験版　Ver1.00](http://suezou.dyndns.org/dl2015/appetite/musume/apt054_tr.zip) | NG | 591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」 |
-| b2016_apadash | [満淫オーク電車～くっ！　任務じゃなければこんな場所…～　体験版　Ver1.00](http://suezou.dyndns.org/dl2016/apadash/oak_train/aptd005_tr.zip) | NG | 591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」 |
-| b2016_appetite | [アナル＊ティーチャー～感度良肛！？　逆レッスン～　体験版　Ver1.00](http://suezou.dyndns.org/dl2016/appetite/anaru_teacher/apt068_tr.zip) | NG | 591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」 |
-| b2017_appetite | [催眠アプリで寝取りハメ～これまでの恨み、ヤり返してやる！　体験版　Ver1.00](http://suezou.dyndns.org/dl2017/appetite/hypnotism_application/apt098_tr.zip) | NG | 591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」 |
-| b2019_sator | [モウソウスピーカー～Ｈな妄想が聴こえてくるよ～　体験版](http://suezou.dyndns.org/dl2019/sator/mousou_speaker/mousou_tr.zip) | NG | 591d0a0 でWindowResizable.ks(113)「windowEx.dll プラグインが読み込まれていません」 |
-| b2019_tinkle_position | [おにギュＨ＿ＨＣＢ体験版](http://suezou.dyndns.org/dl2019/tinkle-position/onigyu_h/onigyuh_hcbtrial.zip) | NG | 591d0a0 でvoice.tjs(1)「getSample.dll の読み込みに失敗: Member "setDefaultAheads" does not exist」 |
-| b2020_lass_pixy | [リトルシックガール　～桃蜜は妹の香り～　体験版](http://suezou.dyndns.org/dl2020/lass-pixy/lsg03/LSG3_tr.zip) | NG | 591d0a0 で「Cannot find storage k2compat.tjs」 |
-| b2021_chaos_r | [神聖昂燐ダクリュオン～正しい天使の育てかた～　体験版](http://suezou.dyndns.org/dl2021/chaos-r/dakr/dakr_tr.zip) | NG | 591d0a0 でWindowResizable.ks(113)「windowEx.dll プラグインが読み込まれていません」 |
-| b2021_kelp | [アイドル姉妹をエッチにプロデュース！ 体験版](http://suezou.dyndns.org/dl2021/kelp/idol_simai/IDOL_SIMAI_TR.zip) | NG | 591d0a0 でWindowResizable.ks(113)「windowEx.dll プラグインが読み込まれていません」 |
-| b2022_chaos_r | [進軍ゴブリン軍団～人類総苗床化作戦～ 体験版](http://suezou.dyndns.org/dl2022/chaos-r/gobblin_gundan/GOBBLIN_TR.zip) | NG | 591d0a0 でWindowResizable.ks(113)「windowEx.dll プラグインが読み込まれていません」 |
-| b2022_syoku | [触災の島～Island of the Dead～体験版　Ver1.00](http://suezou.dyndns.org/dl2022/syoku/syokusai_island/Syokusai_Island_tr.zip) | NG | 591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」 |
-| b2023_apadash | [最強の人妻ヒロインが寝取られるまで～お願い！夫にはバラさないで…～　体験版　Ver1.00](http://suezou.dyndns.org/dl2023/apadash/hitoduma_heroine/aptd027_tr.zip) | NG | 591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」 |
-| b2023_lump_of_sugar_all | [瑠璃桜](http://suezou.dyndns.org/dl2023/lump-of-sugar_all/rurizakura/Rurizakura_trial.zip) | NG | 591d0a0 でvoice.tjs(1)「getSample.dll の読み込みに失敗: Member "setDefaultAheads" does not exist」 |
+| b2012_akabeesoft3 | [JOKER-死線の果ての道化師-](http://suezou.dyndns.org/dl2012/akabeesoft3/joker/joker_web_trial2.zip) | NG | 「Member "sysClickSkip" does not exist」(first.ks(5)) |
+| b2012_alcot | [中の人などいない！　体験版](http://suezou.dyndns.org/dl2012/alcot/naka/nakanohito_trial.exe) | NG | 「Member "Motion" does not exist」(motion.tjs(20)、E-mote) で未対応 |
+| b2012_cross_over | [美脚隷嬢優奈「脚もお尻もこんなに穢すなんて……絶対に許さない！」体験版](http://suezou.dyndns.org/dl2012/cross-over/yuna/br_yuuna_trial2.zip) | NG | 5d1348e で「エンジンを読み込み中」のまま進まない |
+| b2012_kai | [リヴォルバーガール☆ハンマーレディ　体験版](http://suezou.dyndns.org/dl2012/kai/rghl/RGHLtrial-WEB.zip) | NG | 「Member "Motion" does not exist」(motion.tjs(20)、E-mote) で未対応 |
+| b2013_dualtail | [VenusBlood-GAIA- WEB専用ADV体験版](http://suezou.dyndns.org/dl2013/dualtail/vbg/VBG_WEB_AVGTrial.zip) | NG | mainwindow.tjs(4062) stopQuake でエラー、黒画面 |
+| b2015_mille_feuille | [極煌戦姫ミストルティア 体験版](http://suezou.dyndns.org/dl2015/mille-feuille/mistletear/blazingangel_mistletear_trial.zip) | NG | beltaction.tjs(317) BeltAction_Plugin で Aborted() |
+| b2015_pachipachi_soft | [おしおき生意気ギャル ～エロいオシオキをしたら自分からエッチを求めてきた～ 体験版](http://suezou.dyndns.org/dl2015/pachipachi-soft/oshioki/oshioki_trial.zip) | NG | startup.tjs(6) で「Cannot convert given narrow string to wide string」 |
+| b2016_cube | [間宮くんちの五つ子事情 体験版](http://suezou.dyndns.org/dl2016/cube/mamiya/mamiya_trial.zip) | NG | 5d1348e で真っ白のまま |
+| b2019_tinkle_position | [おにギュＨ＿ＨＣＢ体験版](http://suezou.dyndns.org/dl2019/tinkle-position/onigyu_h/onigyuh_hcbtrial.zip) | NG | custom.tjs(217) onUiloaded で「Cannot convert the variable type ((void) to Object)」 |
+| b2020_akabeesoft3 | [墓多 DYING ZOMBIES -体験版-](http://suezou.dyndns.org/dl2020/akabeesoft3/hakatadyingzombies/ab3_hakatadyingzombies_webtrial.zip) | NG | startup.tjs(6) で「Cannot convert given narrow string to wide string」 |
+| b2020_lass_pixy | [リトルシックガール　～桃蜜は妹の香り～　体験版](http://suezou.dyndns.org/dl2020/lass-pixy/lsg03/LSG3_tr.zip) | NG | 「Cannot find storage k2compat.tjs」(initialize.tjs(375)) |
+| b2022_hending | [リンパにATATA! ～メス牡蠣ミルクどぴゅらっしゅ♡～](http://suezou.dyndns.org/dl2022/hending/atata/atata_trial.zip) | NG | startup.tjs(6) で「Cannot convert given narrow string to wide string」 |
+| b2023_lump_of_sugar_all | [瑠璃桜](http://suezou.dyndns.org/dl2023/lump-of-sugar_all/rurizakura/Rurizakura_trial.zip) | NG | 「Invalid argument count」(quickmenu.tjs(1) EventProxyLayer) |
 | r1_krkr_apt306 | [先輩、好きです……押忍！ 体験版](https://www.appetite-game.com/apt306/image/apt306_tr.zip) | NG | 591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」 |
 | b2006_mille_feuille | [ソウルレイザー☆ユナ 体験版](http://suezou.dyndns.org/dl2006/mille-feuille/yuna/yuna_taiken.zip) | 未確認 |  |
 | b2007_akabeesoft | [g_web_taiken.zip](http://suezou.dyndns.org/dl2007/akabeesoft/gsen/g_web_taiken.zip) | 未確認 |  |
-| b2008_dualtail | [Venus Blood Chimera](http://suezou.dyndns.org/dl2008/dualtail/vbc/VBC_trial_SLGver100.zip) | 未確認 |  |
 | b2008_mille_feuille | [魔法少女沙枝 Vol.2 体験版](http://suezou.dyndns.org/dl2008/mille-feuille/sae2/sae2_trial2.zip) | 未確認 |  |
-| b2009_dualtail | [魔法少女ラヴィリオン 体験版](http://suezou.dyndns.org/dl2009/dualtail/ravilion/ravi_trial.exe) | 未確認 |  |
-| b2012_cross_over | [美脚隷嬢優奈「脚もお尻もこんなに穢すなんて……絶対に許さない！」体験版](http://suezou.dyndns.org/dl2012/cross-over/yuna/br_yuuna_trial2.zip) | 未確認 |  |
-| b2012_parasol | [恋妹SWEET☆DAYS 体験版](http://suezou.dyndns.org/dl2012/parasol/koiimo/koiimo_taiken.zip) | 未確認 |  |
-| b2013_dualtail | [VenusBlood-GAIA- WEB専用ADV体験版](http://suezou.dyndns.org/dl2013/dualtail/vbg/VBG_WEB_AVGTrial.zip) | 未確認 |  |
 | b2014_hibiki_works | [ＰＲＥＴＴＹ×Ｃ∧ＴＩＯＮ](http://suezou.dyndns.org/dl2014/hibiki-works/pretty_cation/pc_web-trial1.01.zip) | 未確認 |  |
-| b2015_mille_feuille | [極煌戦姫ミストルティア 体験版](http://suezou.dyndns.org/dl2015/mille-feuille/mistletear/blazingangel_mistletear_trial.zip) | 未確認 |  |
 | b2015_nanawind | [ALIA’s CARNIVAL! Flowering Sky　体験版(WEB.ver)](http://suezou.dyndns.org/dl2015/nanawind/alias_fs/ALIAs_CARNIVAL_floweringsky_trial.zip) | 未確認 |  |
 | b2016_alcot | [よめがみ My Sweet Goddess! リコＨシーン体験版](http://suezou.dyndns.org/dl2016/alcot/yomegami/yomegami_trial3.exe) | 未確認 |  |
 | b2017_sukerasparo | [ことのは・アムリラート](http://suezou.dyndns.org/dl2017/sukerasparo/kotonoha/kotonoha_trial.zip) | 未確認 |  |
-| b2018_appetite | [P.S.あなたを心から愛しています～最期まで気づけなかった妻の苦しみ～　体験版](http://suezou.dyndns.org/dl2018/appetite/ps_iloveyou/apt125_tr.zip) | 未確認 |  |
-| b2019_appetite | [女体化パニック！３～お、俺は男だ！　でも、悔しいけど気持ちいいっ……のか！？　体験版](http://suezou.dyndns.org/dl2019/appetite/nyotaika3/apt133_tr.zip) | 未確認 |  |
-| b2019_dualtail | [VenusBlood FRONTIER International SLG Trial 日本語版](http://suezou.dyndns.org/dl2019/dualtail/vbfi/VBFI_New_SLG_Trial.zip) | 未確認 |  |
-| b2020_akabeesoft3 | [墓多 DYING ZOMBIES -体験版-](http://suezou.dyndns.org/dl2020/akabeesoft3/hakatadyingzombies/ab3_hakatadyingzombies_webtrial.zip) | 未確認 |  |
-| b2020_at_sakura | [優来（ゆら）があいつに抱かれる理由（わけ） 体験版](http://suezou.dyndns.org/dl2020/at-sakura/yura_wake/aspc-0112_taiken_ver1.0.zip) | 未確認 |  |
-| b2020_chaos_r | [悪堕ち 魔導処女～絶対支配の触手調教～　体験版](http://suezou.dyndns.org/dl2020/chaos-r/madousyojo/madousyojo_tr.zip) | 未確認 |  |
-| b2020_pin_point | [世話焼き奥さんで人の頼みを断れない亜衣さんにお願いして中出しハメ放題のドスケベ妻になってもらった 体験版](http://suezou.dyndns.org/dl2020/pin-point/wife_ai/PP34_trial.zip) | 未確認 |  |
-| b2021_pin_point | [売国王姫～堕落のメス豚母娘～体験版](http://suezou.dyndns.org/dl2021/pin-point/baikoku_ouhi/PP36_trial.zip) | 未確認 |  |
-| b2022_hending | [リンパにATATA! ～メス牡蠣ミルクどぴゅらっしゅ♡～](http://suezou.dyndns.org/dl2022/hending/atata/atata_trial.zip) | 未確認 |  |
-| b2023_appetite | [洗脳航路～エイリアンの苗床に導かれるエリート女軍人たち～　体験版　Ver1.00](http://suezou.dyndns.org/dl2023/appetite/senno_kouro/apt246_tr.zip) | 未確認 |  |
-| b2023_at_sakura | [堕とされた義姉 体験版](http://suezou.dyndns.org/dl2023/at-sakura/oti_ane/aspc-0138_taiken_ver1.0.zip) | 未確認 |  |
-| b2023_chaos_r | [神聖昂燐エストランジェ体験版](http://suezou.dyndns.org/dl2023/chaos-r/strncxe/strncxe_tr.zip) | 未確認 |  |
-| b2025_at_sakura | [学生会長・紫藤喜那の淫鬱 体験版](http://suezou.dyndns.org/dl2025/at-sakura/seito_sidou/aspc-0161_taiken_ver1.0.zip) | 未確認 |  |
 | dl_RJ01677912 | [とける風花とシロうさぎ](https://trial.dlsite.com/doujin/RJ01678000/RJ01677912_trial.zip) | 未確認 |  |
 | dl_VJ01000429 | [【DLsite限定版】進軍ゴブリン軍団2 ～淫獣軍VS.INTRUDER～](https://trial.dlsite.com/professional/VJ01001000/VJ01000429_trial.zip) | 未確認 |  |
 | dl_VJ01000497 | [【DLsite限定版】性感エステ 灯 -AKARI- マキ（28）](https://trial.dlsite.com/professional/VJ01001000/VJ01000497_trial.zip) | 未確認 |  |
