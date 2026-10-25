@@ -19,6 +19,14 @@ use crate::vm::{Flow, Globals, Host, Step, Thread, Value};
 pub const WIDTH: u32 = 1280;
 pub const HEIGHT: u32 = 720;
 
+// The message window. Guessed from the pictures: the engine's own layout is not worked out yet.
+const WINDOW: (f32, f32) = (100.0, 473.0);
+const TEXT: (i32, i32) = (260, 560);
+const LINE: i32 = 36;
+/// the plane of the character pictures (drawn first)
+const STANDS: i32 = i32::MIN;
+const MESSAGE_FONT: &str = "ＭＳゴシック24x24.fnt";
+
 /// A value moving from `from` to `to` over `frames` frames from frame `start`.
 #[derive(Debug, Clone, Copy)]
 struct Tween {
@@ -168,6 +176,8 @@ pub struct Engine {
     thread: Thread,
     scripts: HashMap<String, Rc<Script>>,
     visuals: Vec<Vec<Cell>>,
+    /// Stand.dat: character pictures (row: ?, name, face picture, ?, ?, sprite map, frame, ...)
+    stands: Vec<Vec<Cell>>,
     /// Event.dat: the story's scenes (row: type, title, ?, ?, file, bank, ...)
     events: Vec<Vec<Cell>>,
     images: HashMap<String, Rc<Image>>,
@@ -188,6 +198,10 @@ pub struct Engine {
     click: Option<(i32, i32)>,
     /// the parameters of the bank a jump (0x45) starts at
     pending_params: Vec<i32>,
+    /// the message window's text: pictures and where they go (empty: the window is closed)
+    message: Vec<(Rc<Image>, i32, i32)>,
+    /// the player's family and given names (@u00, @u01)
+    pub names: Vec<Vec<u8>>,
     visual_images: HashMap<usize, Option<(Rc<Image>, i32, i32)>>,
     pub screen: Image,
     logged: HashSet<u32>,
@@ -222,6 +236,11 @@ impl Engine {
             .map(|b| dat::parse(&b))
             .transpose()?
             .unwrap_or_default();
+        let stands = arcs
+            .read(files.as_mut(), "Config", "Stand.dat")
+            .map(|b| dat::parse(&b))
+            .transpose()?
+            .unwrap_or_default();
         let events = arcs
             .read(files.as_mut(), "Config", "Event.dat")
             .map(|b| dat::parse(&b))
@@ -240,6 +259,7 @@ impl Engine {
             thread,
             scripts,
             visuals,
+            stands,
             events,
             images: HashMap::new(),
             spms: HashMap::new(),
@@ -256,6 +276,8 @@ impl Engine {
             seed: 0x2545_f491,
             click: None,
             pending_params: Vec::new(),
+            message: Vec::new(),
+            names: vec![Vec::new(), sjis::encode("主人公")],
             visual_images: HashMap::new(),
             screen: Image::new(WIDTH, HEIGHT),
             logged: HashSet::new(),
@@ -475,6 +497,26 @@ impl Engine {
         font
     }
 
+    /// Puts a message in the window (see [`WINDOW`]).
+    fn show_message(&mut self, name: &[u8], text: &[u8]) {
+        const PAD: i32 = 8;
+        self.message.clear();
+        let Some(font) = self.font(MESSAGE_FONT) else {
+            return;
+        };
+        let name = message_lines(name, &self.names).concat();
+        if !name.is_empty() {
+            let img = font.render(&name, [255, 255, 255], PAD);
+            self.message
+                .push((Rc::new(img), TEXT.0 - PAD, TEXT.1 - LINE - PAD));
+        }
+        for (k, line) in message_lines(text, &self.names).iter().enumerate() {
+            let img = font.render(line, [255, 255, 255], PAD);
+            self.message
+                .push((Rc::new(img), TEXT.0 - PAD, TEXT.1 + LINE * k as i32 - PAD));
+        }
+    }
+
     /// The picture of visual.dat row `n` (the base with a part over it) and its scroll offset.
     fn visual(&mut self, n: usize) -> Option<(Rc<Image>, i32, i32)> {
         if let Some(v) = self.visual_images.get(&n) {
@@ -595,6 +637,46 @@ impl Engine {
                 }
             }
         }
+        if !self.message.is_empty() {
+            if let Some(spm) = self.spm("Interface.spm") {
+                let images: Vec<Rc<Image>> = spm
+                    .images
+                    .iter()
+                    .take(1)
+                    .filter_map(|n| self.image(n))
+                    .collect();
+                let p = place(0.0, 0.0, 1.0, 1.0, 0.0, 1.0, false);
+                for part in spm
+                    .frames
+                    .first()
+                    .map_or(&[][..], |f| &f.parts[..1.min(f.parts.len())])
+                {
+                    let Some(img) = images.get(part.image) else {
+                        continue;
+                    };
+                    let (x, y) = WINDOW;
+                    let d = part.dst.map(|v| v as f32);
+                    gfx::draw(
+                        &mut out,
+                        img,
+                        part.src,
+                        [x + d[0], y + d[1], x + d[2], y + d[3]],
+                        &p,
+                    );
+                }
+            }
+            let p = place(0.0, 0.0, 1.0, 1.0, 0.0, 1.0, false);
+            for (img, x, y) in &self.message {
+                let (w, h) = (img.w as i32, img.h as i32);
+                gfx::draw(
+                    &mut out,
+                    img,
+                    [0, 0, w, h],
+                    [*x as f32, *y as f32, (x + w) as f32, (y + h) as f32],
+                    &p,
+                );
+            }
+        }
         if let Some((from, start, len)) = &self.transition {
             let t = ((now - start) as f32 / (*len).max(1) as f32).clamp(0.0, 1.0);
             let a = (t * 256.0) as u32;
@@ -674,22 +756,38 @@ fn char_at(s: &[u8], k: usize) -> usize {
     sjis::chars(s).iter().take(k).map(|c| c.len()).sum()
 }
 
-/// Text without the message commands (`@` and a letter, with the digits after `@v`).
-fn strip_commands(s: &[u8]) -> Vec<u8> {
-    let mut out = Vec::new();
-    let mut chars = sjis::chars(s).into_iter().peekable();
+/// The lines of a message without its commands: `@n` new line, `@r` text `@` ruby `@` (the
+/// ruby is left out), `@g` and a character (kept), `@u` and two digits (the player's names),
+/// `@v` and eight digits (voice), `@s` and four digits, other `@` and a letter.
+fn message_lines(s: &[u8], names: &[Vec<u8>]) -> Vec<Vec<u8>> {
+    let mut lines = vec![Vec::new()];
+    let mut chars = sjis::chars(s).into_iter();
+    let digits = |chars: &mut std::vec::IntoIter<&[u8]>, n: usize| -> usize {
+        let d: String = chars.by_ref().take(n).map(|c| c[0] as char).collect();
+        d.parse().unwrap_or(0)
+    };
     while let Some(c) = chars.next() {
+        let line = lines.last_mut().unwrap();
         if c != b"@" {
-            out.extend_from_slice(c);
+            line.extend_from_slice(c);
             continue;
         }
-        if chars.next() == Some(b"v") {
-            while chars.peek().is_some_and(|c| c[0].is_ascii_digit()) {
-                chars.next();
+        match chars.next() {
+            Some(b"n") => lines.push(Vec::new()),
+            Some(b"g") => line.extend(chars.next().unwrap_or_default()),
+            Some(b"u") => line.extend(names.get(digits(&mut chars, 2)).map_or(&[][..], |n| n)),
+            Some(b"v") => _ = digits(&mut chars, 8),
+            Some(b"s") => _ = digits(&mut chars, 4),
+            Some(b"r") => {
+                for c in chars.by_ref().take_while(|&c| c != b"@") {
+                    line.extend_from_slice(c);
+                }
+                chars.by_ref().take_while(|&c| c != b"@").for_each(drop);
             }
+            _ => {}
         }
     }
-    out
+    lines
 }
 
 fn text(args: &[Value], k: usize) -> String {
@@ -762,7 +860,10 @@ impl Host for Engine {
                 self.wait = Wait::Select;
                 flow = Flow::Yield;
             }
-            // message (?, ?, name, text)
+            // message window: open (type), close, clear the message
+            0x64 => {}
+            0x65 | 0x69 => self.message.clear(),
+            // message (colour: FontColor.dat row, ?, name, text)
             0x67 => {
                 if self.log {
                     eprintln!(
@@ -773,6 +874,7 @@ impl Host for Engine {
                         text(args, 3)
                     );
                 }
+                self.show_message(&bytes(args, 2), &bytes(args, 3));
                 self.wait = Wait::Click;
                 flow = Flow::Yield;
             }
@@ -880,6 +982,62 @@ impl Host for Engine {
                 self.wait = Wait::Obj(a(0));
                 flow = Flow::Yield;
             }
+            // character pictures: show (slot, Stand.dat row, ?, time, no wait, filter...), with
+            // a place and zoom (slot, row, x, y, zoom%, ?, time, no wait, ...); take away (slot,
+            // -1: all; time, ?, wait). They stand on the bottom of the screen, under the objects.
+            0xf6 | 0xf7 => {
+                let (slot, row) = (a(0), a(1));
+                let (x, y, t, nowait) = if id == 0xf6 {
+                    (0, 0, a(3), a(4))
+                } else {
+                    (a(2), a(3), a(6), a(7))
+                };
+                let Some(r) = self.stands.get(row as usize).cloned() else {
+                    return Err(format!("no stand {row}"));
+                };
+                if let Some(spm) = self.spm(r.get(5).map_or("", |c| c.str())) {
+                    let images = spm
+                        .images
+                        .clone()
+                        .iter()
+                        .filter_map(|n| self.image(n))
+                        .collect();
+                    let frame = r.get(6).map_or(0, |c| c.int()).max(0) as usize;
+                    let key = (STANDS, slot);
+                    let alpha = self.objs.get(&key).map(|o| o.alpha.value(now));
+                    let mut o = Obj::new(
+                        Look::Spm { spm, frame, images },
+                        WIDTH as i32 / 2 + x,
+                        HEIGHT as i32 + y,
+                    );
+                    match alpha {
+                        Some(v) => o.alpha = Tween::at(v),
+                        None => o.alpha.go(1.0, t, now),
+                    }
+                    self.objs.insert(key, o);
+                    if nowait == 0 {
+                        self.wait = Wait::Obj(slot);
+                        flow = Flow::Yield;
+                    }
+                }
+            }
+            0xf8 => {
+                let (slot, t) = (a(0), a(1));
+                if frames(t) == 0 {
+                    self.objs
+                        .retain(|k, _| k.0 != STANDS || (slot >= 0 && k.1 != slot));
+                } else {
+                    for (k, o) in self.objs.iter_mut() {
+                        if k.0 == STANDS && (slot < 0 || k.1 == slot) {
+                            o.alpha.go(0.0, t, now);
+                        }
+                    }
+                }
+                if a(3) != 0 {
+                    self.wait = Wait::Obj(slot);
+                    flow = Flow::Yield;
+                }
+            }
             // object x / y / exists
             0x17e | 0x17f => {
                 if let Some(o) = self.obj(a(0)) {
@@ -897,7 +1055,7 @@ impl Host for Engine {
                     let rgb = [a(5), a(6), a(7)].map(|v| v.clamp(0, 255) as u8);
                     const PAD: i32 = 8;
                     let img = font.render(
-                        &strip_commands(&args.get(2).map(|v| v.bytes()).unwrap_or_default()),
+                        &message_lines(&bytes(args, 2), &self.names).concat(),
                         rgb,
                         PAD,
                     );

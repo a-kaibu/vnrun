@@ -67,7 +67,7 @@ pub struct Frame {
 /// ```text
 /// "SPM VER-2.00\0" n:u32 n x frame  images:u32 images x NUL-terminated name  (named groups ...)
 /// frame = parts:u32 w:i32 h:i32 bounds:[i32; 4] [i32; 3]  parts x part  0:i32
-/// part  = image:i32 ?:i32 dst:[i32; 4] w:i32 h:i32 src:[i32; 4] ?:i32 256:i32
+/// part  = ?:i32 image:i32 dst:[i32; 4] w:i32 h:i32 src:[i32; 4] ?:i32 256:i32
 /// ```
 #[derive(Debug, Clone, Default)]
 pub struct Spm {
@@ -98,8 +98,8 @@ impl Spm {
             }
             let mut parts = Vec::with_capacity(np.min(256));
             for _ in 0..np {
-                let image = i32_()?.max(0) as usize;
                 i32_()?;
+                let image = i32_()?.max(0) as usize;
                 let dst = [i32_()?, i32_()?, i32_()?, i32_()?];
                 i32_()?;
                 i32_()?;
