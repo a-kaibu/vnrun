@@ -1033,6 +1033,33 @@ impl Host for Engine {
                     self.add_obj(a(0), look, a(3), a(4));
                 }
             }
+            // sprite map with a pattern (n, file, animation, pattern, x, y, ...)
+            0x139 => {
+                if let Some(spm) = self.spm(&text(args, 1)) {
+                    let images = spm
+                        .images
+                        .clone()
+                        .iter()
+                        .filter_map(|n| self.image(n))
+                        .collect();
+                    let look = Look::Spm {
+                        spm,
+                        frame: a(2).max(0) as usize,
+                        images,
+                    };
+                    self.add_obj(a(0), look, a(4), a(5));
+                }
+            }
+            // a filled rectangle (n, left, top, right, bottom, r, g, b, ...)
+            0x13c => {
+                let (w, h) = ((a(3) - a(1)).max(1) as u32, (a(4) - a(2)).max(1) as u32);
+                let mut img = Image::new(w, h);
+                let rgb = [a(5), a(6), a(7)].map(|c| c.clamp(0, 255) as u8);
+                for p in img.px.chunks_exact_mut(4) {
+                    p.copy_from_slice(&[rgb[0], rgb[1], rgb[2], 255]);
+                }
+                self.add_obj(a(0), Look::Image(Rc::new(img)), a(1), a(2));
+            }
             0x140 => {
                 if let Some((img, sx, sy)) = usize::try_from(a(1)).ok().and_then(|n| self.visual(n))
                 {
