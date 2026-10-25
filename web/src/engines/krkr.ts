@@ -86,6 +86,23 @@ function configFile(manifest: Manifest): string | undefined {
   return cfs.find((p) => exes.has(p.slice(0, -3).toLowerCase())) ?? cfs[0];
 }
 
+// The version of the game's exe (its FileVersion resource, "2.26.0.915"), if it has one.
+async function exeVersion(fs: EngineContext["fs"], manifest: Manifest): Promise<number[] | undefined> {
+  const exes = (manifest.files || [])
+    .map((f) => f.p)
+    .filter((p) => !p.includes("/") && p.toLowerCase().endsWith(".exe"));
+  for (const exe of exes) {
+    const res = await fetch(fs.fileUrl(exe));
+    if (!res.ok) continue;
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    // Version resources are UTF-16 and 32-bit aligned.
+    const text = new TextDecoder("utf-16le").decode(bytes.subarray(0, bytes.length & ~1));
+    const m = text.match(/FileVersion\0+(\d+)\.(\d+)\./);
+    if (m) return [Number(m[1]), Number(m[2])];
+  }
+  return undefined;
+}
+
 export async function start({ fs, manifest, ui, fonts }: EngineContext): Promise<void> {
   const presenter = await Presenter.create(ui.canvas);
   const create = (await importEngine<{ default: CreateKrkr }>("krkr", "krkr.js")).default;
@@ -149,6 +166,10 @@ export async function start({ fs, manifest, ui, fonts }: EngineContext): Promise
   if (fonts[0]) Module.FS.writeFile(`${POLYFILL}/font.ttf`, fonts[0]);
   Module.FS.writeFile(STARTUP, new TextEncoder().encode(STARTUP_SCRIPT));
 
+  // KiriKiri 2.26 (grand_cru 2010) let a class var keep a native property of the same name and
+  // set it, where later TJS hides the property (patches/krkrz)
+  const version = await exeVersion(fs, manifest);
+  const oldClassVars = version !== undefined && version[0] === 2 && version[1] < 28;
   ui.hide();
   canvas.focus();
   // Scripts without a BOM are Shift_JIS in KiriKiri 2/Z games; KiriKiri SDL2 reads them as UTF-8
@@ -159,5 +180,6 @@ export async function start({ fs, manifest, ui, fonts }: EngineContext): Promise
     // No debug console in the page (KiriKiri Z's k2compat builds Windows dialogs for it).
     "-debugwin=no",
     `-startup=${STARTUP}`,
+    ...(oldClassVars ? ["-vnrunk2classvars=yes"] : []),
   ]);
 }

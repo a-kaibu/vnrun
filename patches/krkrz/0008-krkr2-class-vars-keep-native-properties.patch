@@ -1,0 +1,58 @@
+diff --git a/base/ScriptMgnIntf.cpp b/base/ScriptMgnIntf.cpp
+index 76ffe10f..95b14dfc 100644
+--- a/base/ScriptMgnIntf.cpp
++++ b/base/ScriptMgnIntf.cpp
+@@ -14,6 +14,7 @@
+ 
+ #include "tjs.h"
+ #include "tjsDebug.h"
++#include "tjsInterCodeGen.h"
+ #include "tjsArray.h"
+ #include "ScriptMgnIntf.h"
+ #include "StorageIntf.h"
+@@ -138,6 +139,9 @@ void TVPInitScriptEngine()
+ 			TJSWarnOnExecutionOnDeletingObject = true;
+ 		}
+ 	}
++	// vnrun: -vnrunk2classvars=yes for games made for KiriKiri 2 before 2.28 (see tjsInterCodeGen.cpp)
++	if(TVPGetCommandLine(TJS_W("-vnrunk2classvars"), &val) && ttstr(val) == TJS_W("yes"))
++		TJS::TJSClassVarSetsProperty = true;
+ 	// Set Read text encoding
+ 	if(TVPGetCommandLine(TJS_W("-readencoding"), &val) )
+ 	{
+diff --git a/tjs2/tjsInterCodeGen.cpp b/tjs2/tjsInterCodeGen.cpp
+index 3a20402c..ae2b941d 100644
+--- a/tjs2/tjsInterCodeGen.cpp
++++ b/tjs2/tjsInterCodeGen.cpp
+@@ -39,6 +39,8 @@
+ //---------------------------------------------------------------------------
+ namespace TJS  // following is in the namespace
+ {
++// vnrun: see AddLocalVariable
++bool TJSClassVarSetsProperty = false;
+ //---------------------------------------------------------------------------
+ 
+ 
+@@ -2724,7 +2726,9 @@ void tTJSInterCodeContext::AddLocalVariable(const tjs_char *name, tjs_int init)
+ #ifdef ENABLE_DEBUGGER
+ 		TJSDebuggerAddClassVariable( GetSelfClassName().c_str(), name, TJS_TO_VM_REG_ADDR(dp) );
+ #endif // ENABLE_DEBUGGER
+-		PutCode(VM_SPDS, LEX_POS);
++		// vnrun: in KiriKiri 2.26 a class var leaves a native property of a super class in place
++		// and set it (grand_cru's MessageLayer declares var face, then sets face = dfProvince)
++		PutCode(TJSClassVarSetsProperty ? VM_SPDE : VM_SPDS, LEX_POS);
+ 		PutCode(TJS_TO_VM_REG_ADDR(-1), LEX_POS);
+ 		PutCode(TJS_TO_VM_REG_ADDR(dp), LEX_POS);
+ 		PutCode(TJS_TO_VM_REG_ADDR(init), LEX_POS);
+diff --git a/tjs2/tjsInterCodeGen.h b/tjs2/tjsInterCodeGen.h
+index 7214959f..0493fdab 100644
+--- a/tjs2/tjsInterCodeGen.h
++++ b/tjs2/tjsInterCodeGen.h
+@@ -28,6 +28,7 @@
+ 
+ namespace TJS
+ {
++extern bool TJSClassVarSetsProperty; // vnrun
+ //---------------------------------------------------------------------------
+ //
+ #define TJS_TO_VM_CODE_ADDR(x)  ((x) * (tjs_int)sizeof(tjs_uint32))
