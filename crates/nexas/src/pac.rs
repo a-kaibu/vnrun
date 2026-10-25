@@ -7,8 +7,8 @@
 //! The index is at the end: its bytes are inverted and Huffman-coded (the tree first: a 1 bit is
 //! a node with two subtrees, a 0 bit a leaf with an 8-bit byte; bits are read from the top of each
 //! byte). It decodes to `count` entries of 0x4C bytes: a Shift_JIS name (64 bytes, NUL padded),
-//! offset, size, packed size. Pack type 3 and 4 compress files with zlib (4 stores files whose
-//! packed size equals their size).
+//! offset, size, packed size. Pack type 3 and 4 compress files with zlib, 7 (2019 on) with
+//! zstd; 4 and 7 store files whose packed size equals their size.
 
 use std::collections::HashMap;
 
@@ -135,11 +135,19 @@ impl Index {
 
     /// A file's bytes from its stored bytes.
     pub fn unpack(&self, e: &Entry, raw: &[u8]) -> Result<Vec<u8>, String> {
-        let zlib = matches!(self.pack, 3 | 4)
+        let packed = matches!(self.pack, 3 | 4 | 7)
             && e.size != 0
-            && !(self.pack == 4 && e.size == e.packed_size);
-        if !zlib {
+            && !(self.pack != 3 && e.size == e.packed_size);
+        if !packed {
             return Ok(raw.to_vec());
+        }
+        if self.pack == 7 {
+            let mut out = Vec::with_capacity(e.size as usize);
+            let mut d = ruzstd::decoding::StreamingDecoder::new(raw)
+                .map_err(|err| format!("{}: {err}", e.name))?;
+            std::io::Read::read_to_end(&mut d, &mut out)
+                .map_err(|err| format!("{}: {err}", e.name))?;
+            return Ok(out);
         }
         miniz_oxide::inflate::decompress_to_vec_zlib_with_limit(raw, e.size as usize + 16)
             .map_err(|err| format!("{}: {err:?}", e.name))
