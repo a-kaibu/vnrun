@@ -46,7 +46,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Artemis (art3m1s-core) | 6 |  | 5 |  |  | 1 |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 2 | 17 | 9 | 3 | 2 |  |  |
-| 吉里吉里 (KiriKiri SDL2) | 135 |  | 51 | 4 | 1 | 30 |  | 49 |
+| 吉里吉里 (KiriKiri SDL2) | 135 |  | 51 | 5 | 1 | 29 |  | 49 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 30 | 5 | 1 |  | 1 | 22 | 1 |  |
 | AdvHD (vnrun) | 30 |  |  |  |  |  |  | 30 |
@@ -265,6 +265,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2008_asa_project | [Hime のち Honey - 体験版](http://suezou.dyndns.org/dl2008/asa-project/himehoney/hime_web_trial1.zip) | 起動 | 5d1348e でロゴと体験版の注意書きまで。タイトルは未確認 |
 | b2010_akabeesoft | [置き場がない！ web体験版](http://suezou.dyndns.org/dl2010/akabeesoft/okiba/okiba_webTRIAL.zip) | 起動 | 5d1348e で注意書きの後 override.tjs(696) stopQuake でエラー |
 | dl_VJ01000639 | [【デラックス版】調教カテイ ～性開発された肢体は元カレを忘れられない～](https://trial.dlsite.com/professional/VJ01001000/VJ01000639_trial.zip) | 起動 | 5d1348e でブランドロゴとタイトルロゴまで。メニューは未確認 |
+| s2026_poison_motion_sxs2_me | [姉妹X催眠２ - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2026/poison-motion/sxs2-me/sxs2me_trial.zip) | 起動 | 213e9df で CAUTION 画面まで。タイトルは未確認 |
 | r1_kag3 | [KAG3 紹介デモ](https://krkrz.github.io/download/kr2_232r2.zip) | 要再確認 | KAG3 のサンプル (xp3 にまとめていない data フォルダ)。開発スレッドでは確認済み |
 | b2006_akabeesoft | [その横顔を見つめてしまう ～a profile完全版～ web体験版](http://suezou.dyndns.org/dl2006/akabeesoft/sonoyoko/sonoyoko_trial.zip) | NG | 5d1348e で「TypeError: getWasmTableEntry(...) is not a function」 |
 | b2008_dualtail | [Venus Blood Chimera](http://suezou.dyndns.org/dl2008/dualtail/vbc/VBC_trial_SLGver100.zip) | NG | 5d1348e で「エンジンを読み込み中」のまま進まない |
@@ -277,25 +278,24 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2012_kai | [リヴォルバーガール☆ハンマーレディ　体験版](http://suezou.dyndns.org/dl2012/kai/rghl/RGHLtrial-WEB.zip) | NG | 「Member "Motion" does not exist」(motion.tjs(20)、E-mote) で未対応 |
 | b2013_dualtail | [VenusBlood-GAIA- WEB専用ADV体験版](http://suezou.dyndns.org/dl2013/dualtail/vbg/VBG_WEB_AVGTrial.zip) | NG | mainwindow.tjs(4062) stopQuake でエラー、黒画面 |
 | b2015_mille_feuille | [極煌戦姫ミストルティア 体験版](http://suezou.dyndns.org/dl2015/mille-feuille/mistletear/blazingangel_mistletear_trial.zip) | NG | beltaction.tjs(317) BeltAction_Plugin で Aborted() |
-| b2015_nanawind | [ALIA’s CARNIVAL! Flowering Sky　体験版(WEB.ver)](http://suezou.dyndns.org/dl2015/nanawind/alias_fs/ALIAs_CARNIVAL_floweringsky_trial.zip) | NG | 「Cannot find storage k2compat.tjs」(initialize.tjs(374)) |
+| b2015_nanawind | [ALIA’s CARNIVAL! Flowering Sky　体験版(WEB.ver)](http://suezou.dyndns.org/dl2015/nanawind/alias_fs/ALIAs_CARNIVAL_floweringsky_trial.zip) | NG | 213e9df で k2compat.tjs は読めたが initialize.tjs(375)「Member "Krkr2CompatUtils" does not exist」 |
 | b2015_pachipachi_soft | [おしおき生意気ギャル ～エロいオシオキをしたら自分からエッチを求めてきた～ 体験版](http://suezou.dyndns.org/dl2015/pachipachi-soft/oshioki/oshioki_trial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」 |
 | b2016_cube | [間宮くんちの五つ子事情 体験版](http://suezou.dyndns.org/dl2016/cube/mamiya/mamiya_trial.zip) | NG | 5d1348e で真っ白のまま |
 | b2019_tinkle_position | [おにギュＨ＿ＨＣＢ体験版](http://suezou.dyndns.org/dl2019/tinkle-position/onigyu_h/onigyuh_hcbtrial.zip) | NG | custom.tjs(217) onUiloaded で「Cannot convert the variable type ((void) to Object)」 |
 | b2020_akabeesoft3 | [墓多 DYING ZOMBIES -体験版-](http://suezou.dyndns.org/dl2020/akabeesoft3/hakatadyingzombies/ab3_hakatadyingzombies_webtrial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」 |
-| b2020_lass_pixy | [リトルシックガール　～桃蜜は妹の香り～　体験版](http://suezou.dyndns.org/dl2020/lass-pixy/lsg03/LSG3_tr.zip) | NG | 「Cannot find storage k2compat.tjs」(initialize.tjs(375)) |
+| b2020_lass_pixy | [リトルシックガール　～桃蜜は妹の香り～　体験版](http://suezou.dyndns.org/dl2020/lass-pixy/lsg03/LSG3_tr.zip) | NG | 213e9df で k2compat.tjs は読めたが initialize.tjs(376)「Member "Krkr2CompatUtils" does not exist」 |
 | b2022_hending | [リンパにATATA! ～メス牡蠣ミルクどぴゅらっしゅ♡～](http://suezou.dyndns.org/dl2022/hending/atata/atata_trial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」 |
 | b2023_lump_of_sugar_all | [瑠璃桜](http://suezou.dyndns.org/dl2023/lump-of-sugar_all/rurizakura/Rurizakura_trial.zip) | NG | 「Invalid argument count」(quickmenu.tjs(1) EventProxyLayer) |
 | r1_krkr_apt306 | [先輩、好きです……押忍！ 体験版](https://www.appetite-game.com/apt306/image/apt306_tr.zip) | NG | 591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」 |
 | s2008_dualtail_clarice | [奴隷将校クラリス　－　白濁のグローリエ　－　ＡＤＶパート体験版](http://suezou.dyndns.org/dl2008/dualtail/clarice/Clarice_ADVtrial.exe) | NG | startup.tjs(6) で「Read error」 |
 | s2011_grand_cru_imostar | [しゅ～てぃんぐ妹スター☆ ～おにいちゃん、覚悟しててよね♪～　体験版](http://suezou.dyndns.org/dl2011/grand-cru/imostar/imosta_trial.zip) | NG | 5d1348e で例外なしで黒画面のまま |
 | s2013_hibiki_works_lovely_cation2 | [ＬＯＶＥＬＹ×Ｃ∧ＴＩＯＮ２](http://suezou.dyndns.org/dl2013/hibiki-works/lovely_cation2/LxC2_trial_web.zip) | NG | first.ks(5) / override.tjs(1585) cancelSkip で例外 |
-| s2020_sagaplanets_kakenuke | [かけぬけ★青春スパーキング！ 体験版](http://suezou.dyndns.org/dl2020/sagaplanets/kakenuke/kakenuke_trial.zip) | NG | default.tjs(315) ExtractMojimoGameFont で例外 |
-| s2021_no_strike_Trap_Genesis | [Jyosou Souseiki Trial Ver.](http://suezou.dyndns.org/dl2021/no-strike/Trap_Genesis/Jyosou_Souseiki_Trial.zip) | NG | override.tjs(15)「Member "DrawDeviceForSteam" does not exist」の後 Aborted() |
+| s2020_sagaplanets_kakenuke | [かけぬけ★青春スパーキング！ 体験版](http://suezou.dyndns.org/dl2020/sagaplanets/kakenuke/kakenuke_trial.zip) | NG | 213e9df でも default.tjs(315) ExtractMojimoGameFont 内の Scripts.loadDataPack で例外 (ゲーム側の定義が使われる) |
+| s2021_no_strike_Trap_Genesis | [Jyosou Souseiki Trial Ver.](http://suezou.dyndns.org/dl2021/no-strike/Trap_Genesis/Jyosou_Souseiki_Trial.zip) | NG | 213e9df で DrawDeviceForSteam は通過、kagparser.tjs(96) loadScenario で「narrow→wide」(シナリオが暗号化) |
 | s2022_akabeesoft2_roleplayer_tororo | [ROLEPLAYER：とろろ姉妹の粘膜ポトレ ぐりぐちゃLIVE！](http://suezou.dyndns.org/dl2022/akabeesoft2/roleplayer_tororo/ab2_roleplayer_tororoshimai_webtrial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」 |
 | s2024_no_strike_yuribatake | [Jyosou Yuribatake Trial](http://suezou.dyndns.org/dl2024/no-strike/yuribatake/jyosou_yuribatake_japantrial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。initialize.tjs(303) KAGLoadScript で「Cannot convert given narrow string to wide string」 |
 | s2025_akabeesoft2_roleplayer_ikura | [Role player：いくら姉妹の粘膜ポトレ　ぐりぐちゃLIVE！　体験版](http://suezou.dyndns.org/dl2025/akabeesoft2/roleplayer_ikura/Role_player_ikura_trial.zip) | NG | freeResizeMode の property getter で例外 |
 | s2026_no_strike_jyosou_yuriarashi | [Jyosou Yuriarasi Trial](http://suezou.dyndns.org/dl2026/no-strike/jyosou_yuriarashi/jyosouyuriarashi_trial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。initialize.tjs(303) KAGLoadScript で「Cannot convert given narrow string to wide string」 |
-| s2026_poison_motion_sxs2_me | [姉妹X催眠２ - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2026/poison-motion/sxs2-me/sxs2me_trial.zip) | NG | parser.wtjs(342) loadTransFile で「Member "isExistentDirectory" does not exist」 |
 | b2006_mille_feuille | [ソウルレイザー☆ユナ 体験版](http://suezou.dyndns.org/dl2006/mille-feuille/yuna/yuna_taiken.zip) | 未確認 |  |
 | b2007_akabeesoft | [g_web_taiken.zip](http://suezou.dyndns.org/dl2007/akabeesoft/gsen/g_web_taiken.zip) | 未確認 |  |
 | b2008_mille_feuille | [魔法少女沙枝 Vol.2 体験版](http://suezou.dyndns.org/dl2008/mille-feuille/sae2/sae2_trial2.zip) | 未確認 |  |
