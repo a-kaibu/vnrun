@@ -49,7 +49,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | 吉里吉里 (KiriKiri SDL2) | 135 |  | 79 | 7 | 1 | 38 |  | 10 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 30 | 5 | 1 |  | 1 | 22 | 1 |  |
-| AdvHD (vnrun) | 30 | 19 | 10 |  | 1 |  |  |  |
+| AdvHD (vnrun) | 30 | 20 | 9 |  | 1 |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -419,6 +419,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| b2014_guilty | [ANEWO_trial2.exe](http://suezou.dyndns.org/dl2014/guilty/anewo/ANEWO_trial2.exe) | 本編 | 14cde42 で START から本編テキストまで |
 | b2014_pulltop_latte | [TotoRezo_WFD_Htrial02.exe](http://suezou.dyndns.org/dl2014/pulltop-latte/totoreso/TotoRezo_WFD_Htrial02.exe) | 本編 | b076f1f で START からキャラクター選択画面まで |
 | b2015_ensemble | [marriagefd_trial.exe](http://suezou.dyndns.org/dl2015/ensemble/golden_marriage_jd/marriagefd_trial.exe) | 本編 | b076f1f で START から本編テキストまで |
 | b2015_guilty | [淫らに喘ぐ七人の夜這いする孕女　体験版](http://suezou.dyndns.org/dl2015/guilty/yobai3/yobai3_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
@@ -440,8 +441,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2026_ensemble_sweet_ribichu | [リビドーアバンちゅ～る TRIAL EDITION](http://suezou.dyndns.org/dl2026/ensemble-sweet/ribichu/ribichu_trial.exe) | 本編 | b076f1f で START から本編テキストまで |
 | b2013_ensemble | [お嬢様はご機嫌ナナメ 体験版](http://suezou.dyndns.org/dl2013/ensemble/ojyonana/ojyonana_trial.exe) | タイトル | b076f1f で START を押すと白画面のまま進まない (エラーなし) |
 | b2014_ensemble | [goldenmarriage_trial.exe](http://suezou.dyndns.org/dl2014/ensemble/golden_marriage/goldenmarriage_trial.exe) | タイトル | e51df34 でタイトル画面まで表示 (InstallShield 版) |
-| b2014_ensemble_sweet | [hentai_trial.exe](http://suezou.dyndns.org/dl2014/ensemble-sweet/hentai/hentai_trial.exe) | タイトル | b076f1f でタイトルまで。START 後に「0010.ws2:0x3: unknown command 0x03」 |
-| b2014_guilty | [ANEWO_trial2.exe](http://suezou.dyndns.org/dl2014/guilty/anewo/ANEWO_trial2.exe) | タイトル | b076f1f でタイトルまで。START 後に「t2_000.ws2:0xd4: unknown command 0xb7」 |
+| b2014_ensemble_sweet | [hentai_trial.exe](http://suezou.dyndns.org/dl2014/ensemble-sweet/hentai/hentai_trial.exe) | タイトル | 14cde42 (e3c9f4d 後) でも START 後 0010.ws2:0x3 で unknown command 0x03 |
 | b2026_tokohana | [OfficeLove -クールな上司と秘密のイキ抜き- Trial Edition](http://suezou.dyndns.org/dl2026/tokohana/office_love/OfficeLove_trial.zip) | タイトル | b076f1f でタイトルから名前入力まで。prompt に名前を入れても OK が押されず先に進まない |
 | dl_VJ01003020 | [幸乃下蛍の恋青日和 ～お義姉ちゃんとの秘密同棲～](https://trial.dlsite.com/professional/VJ01004000/VJ01003020_trial.zip) | タイトル | b076f1f で START から名前入力まで。prompt に名前を入れた後、画面上の OK を押す操作は未確認 |
 | dl_VJ015399 | [恋するあまいろホームステイ -留学生はわんこ系幼馴染-](https://trial.dlsite.com/professional/VJ016000/VJ015399_trial.zip) | タイトル | b076f1f で START から名前入力まで。prompt に名前を入れた後、画面上の OK を押す操作は未確認 |
