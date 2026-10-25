@@ -11,7 +11,8 @@ class CSVParser
 
 	function CSVParser(target = void, separator = ",") {
 		this.target = target;
-		this.separator = separator;
+		// games often pass the separator's character code (44, 9)
+		this.separator = typeof(separator) == "Integer" ? $separator : separator;
 	}
 	function finalize() {}
 

@@ -1,0 +1,10 @@
+// vnrun: extrans.dll. Its transitions (ripple, wave, mosaic, turn, rotate*) run as crossfades.
+{
+	global.vnrunExtrans = %[ begin: global.Layer.beginTransition,
+		methods: %[ ripple: 1, wave: 1, mosaic: 1, turn: 1, rotatezoom: 1, rotatevanish: 1, rotateswap: 1, rotatetwist: 1 ] ];
+	global.Layer.beginTransition = function(method, withchildren = true, transsource = null, options = %[]) {
+		var x = global.vnrunExtrans;
+		if (x.methods[method]) method = "crossfade";
+		return (x.begin incontextof this)(method, withchildren, transsource, options);
+	} incontextof null;
+}
