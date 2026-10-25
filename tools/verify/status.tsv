@@ -133,17 +133,17 @@ dl_RJ01650072	タイトル
 dl_RJ01702800	タイトル	
 dl_RJ01720685	本編	クリックで最初の会話まで
 r1_kag3	要再確認	KAG3 のサンプル (xp3 にまとめていない data フォルダ)。開発スレッドでは確認済み
-b2006_ninetail	タイトル	83905b1 / f086ac2 / ce3775e でタイトルまで。効果音の ogg は「Unknown wave format」で鳴らない (続行はできる)
-b2016_cube	NG	xp3 が暗号化されている (plugin/mamiya.tpm)
-b2013_hulotte	NG	xp3 が暗号化されている (plugin/moteyaba.tpm)
-r1_krkr_apt306	NG	startup.tjs から読むスクリプトが「Invalid character '\x16'」(独自の暗号化か)
-b2022_syoku	NG	startup.tjs から読むスクリプトが「Invalid character '\x16'」(r1_krkr_apt306 と同じ)
-b2011_grand_cru	NG	kagparser.tjs(96) の lines.load (シナリオの読み込み) で失敗
-b2015_appetite	NG	startup.tjs(3) の Scripts.execStorage("startup.tjs") で読む中の startup.tjs が「Cannot convert given narrow string to wide string」
-b2015_ammolite	NG	startup.tjs(3) の Scripts.execStorage("startup.tjs") で読む中の startup.tjs が「Cannot convert given narrow string to wide string」
-b2016_apadash	NG	startup.tjs(3) の Scripts.execStorage("startup.tjs") で読む中の startup.tjs が「Cannot convert given narrow string to wide string」
-b2021_at_sakura	タイトル	色がおかしい (肌が青い、赤と青が入れ替わっている?)。効果音と BGM の ogg が鳴らない
-b2025_monoceros_plus	NG	WindowResizable.ks(85) の win.registerExEvent() で止まる (windowEx プラグイン相当が無い)
+b2006_ninetail	起動	591d0a0 で黒画面のまま、エンジンのログも出ない (83905b1〜ce3775e ではタイトルまで出ていた)
+b2016_cube	起動	591d0a0 で真っ白のまま (鍵 hash^0 は検出)
+b2013_hulotte	タイトル	591d0a0 で注意画面からタイトルまで (XOR 暗号の xp3)
+r1_krkr_apt306	NG	591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」
+b2022_syoku	NG	591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」
+b2011_grand_cru	タイトル	591d0a0 で黒地にタイトルのメニュー文字だけ出る
+b2015_appetite	NG	591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」
+b2015_ammolite	NG	591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」
+b2016_apadash	NG	591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」
+b2021_at_sakura	タイトル	591d0a0 でロゴからタイトルまで。色も正しい
+b2025_monoceros_plus	起動	591d0a0 で黒画面のまま、エンジンのログも出ない
 b2018_casket	タイトル	3e4a888 のビルドでタイトルまで
 b2017_no_strike	タイトル	3e4a888 のビルドでタイトルまで
 b2022_casket	タイトル	3e4a888 のビルドでタイトルまで
@@ -159,3 +159,28 @@ dl_VJ01002338	NG	pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn i
 b2010_whirlpool	起動	3e4a888 で真っ白 (ページ下のバーも出ない。タブが落ちた可能性)
 b2014_whirlpool	NG	3e4a888 で「yst00044.ybn: short arguments」
 b2021_whirlpool	NG	3e4a888 で「yst00067.ybn: short arguments」
+b2022_at_sakura	タイトル	591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動)
+b2024_at_sakura	タイトル	591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動)
+b2013_cross_over	タイトル	591d0a0 でタイトルまで
+b2013_madosoft	タイトル	591d0a0 でタイトルまで
+b2008_asa_project	起動	591d0a0 でロゴと注意画面まで
+b2008_akabeesoft	起動	591d0a0 で注意画面まで
+b2010_akabeesoft	起動	591d0a0 で注意画面のあと override.tjs(696) stopQuake で「エラーが発生しました」
+b2006_akabeesoft	NG	591d0a0 で「TypeError: getWasmTableEntry(...) is not a function」(関数ポインタの呼び出し先が無い)
+b2012_akabeesoft3	NG	591d0a0 でfirst.ks(5) で「Member "sysClickSkip" does not exist」
+b2011_nanawind	NG	cxdec 系 (yuyukana.tpm) で未対応。「Invalid character '\x03'」
+b2020_lass_pixy	NG	591d0a0 で「Cannot find storage k2compat.tjs」
+b2015_pachipachi_soft	起動	591d0a0 で黒画面のまま、エンジンのログも出ない (krflash.tpm)
+b2010_grand_cru	起動	591d0a0 でtitle.ks の @s まで進むが黒画面
+b2014_undermoon	NG	591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」
+b2016_appetite	NG	591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」
+b2023_apadash	NG	591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」
+b2017_appetite	NG	591d0a0 でrelease.ks の checkSignature (署名確認) で「エラーが発生しました」
+b2019_sator	NG	591d0a0 でWindowResizable.ks(113)「windowEx.dll プラグインが読み込まれていません」
+b2021_chaos_r	NG	591d0a0 でWindowResizable.ks(113)「windowEx.dll プラグインが読み込まれていません」
+b2021_kelp	NG	591d0a0 でWindowResizable.ks(113)「windowEx.dll プラグインが読み込まれていません」
+b2022_chaos_r	NG	591d0a0 でWindowResizable.ks(113)「windowEx.dll プラグインが読み込まれていません」
+b2019_tinkle_position	NG	591d0a0 でvoice.tjs(1)「getSample.dll の読み込みに失敗: Member "setDefaultAheads" does not exist」
+b2023_lump_of_sugar_all	NG	591d0a0 でvoice.tjs(1)「getSample.dll の読み込みに失敗: Member "setDefaultAheads" does not exist」
+b2012_alcot	NG	591d0a0 でoverride.tjs(872) updateMenuItemCaption で「Cannot convert the variable type ((void) to Object)」(MenuItem の caption)
+b2012_kai	NG	591d0a0 でoverride.tjs(872) updateMenuItemCaption で「Cannot convert the variable type ((void) to Object)」(MenuItem の caption)
