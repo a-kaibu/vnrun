@@ -21,6 +21,7 @@ global.vnrunPlugins = %[
 		"savestruct.dll" => "saveStruct.tjs",
 		"psbfile.dll" => "psbFile.tjs",
 		"textrender.dll" => "textRender.tjs",
+		"alphamovie.dll" => "alphaMovie.tjs",
 	],
 ];
 global.Plugins.link = function(name) {

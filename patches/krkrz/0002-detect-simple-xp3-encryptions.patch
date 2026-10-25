@@ -1,5 +1,5 @@
 diff --git a/base/XP3Archive.cpp b/base/XP3Archive.cpp
-index 19b09ec2..9df8e748 100644
+index 19b09ec2..11fe133b 100644
 --- a/base/XP3Archive.cpp
 +++ b/base/XP3Archive.cpp
 @@ -1,1132 +1,1285 @@
@@ -1726,7 +1726,7 @@ index 19b09ec2..9df8e748 100644
 +		{ TJS_W(".png"), "\x89PNG\r\n\x1a\n\0\0\0\x0dIHDR", "xxxxxxxxxxxxxxxx" },
 +		{ TJS_W(".tlg"), "TLG?.0\0???\x1a", "xxx?xxx???x" },
 +		{ TJS_W(".ogg"), "OggS\0\x02\0\0\0\0\0\0\0\0", "xxxxxxxxxxxxxx" },
-+		{ TJS_W(".jpg"), "\xff\xd8\xff", "xxx" },
++		{ TJS_W(".jpg"), "\xff\xd8\xff\xe0??JFIF\0", "xxxx??xxxxx" },
 +		{ TJS_W(".bmp"), "BM", "xx" },
 +		{ TJS_W(".wav"), "RIFF????WAVEfmt ", "xxxx????xxxxxxxx" },
 +	};

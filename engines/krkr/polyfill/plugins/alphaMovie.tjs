@@ -1,0 +1,16 @@
+// vnrun: AlphaMovie.dll (.amv "AJPM" alpha videos). The format is not decoded yet, so a movie
+// is one empty frame: it shows nothing and a non-looping one ends at once, which lets the
+// scripts that wait for it go on.
+if (typeof(global.AlphaMovie) === "undefined") {
+	class AlphaMovie {
+		var left = 0, top = 0, loop = false, frame = 0;
+		var numOfFrame = 1, FPSRate = 30, FPSScale = 1, screenWidth = 1, screenHeight = 1;
+		function AlphaMovie() {}
+		function finalize() {}
+		function open(storage) { frame = 0; }
+		function play() {}
+		function stop() {}
+		function setNextMovieFile(storage) {}
+		function showNextImage(layer) { return frame = numOfFrame - 1; }
+	}
+}

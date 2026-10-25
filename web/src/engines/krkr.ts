@@ -52,6 +52,7 @@ const POLYFILL_FILES = [
     "saveStruct",
     "psbFile",
     "textRender",
+    "alphaMovie",
   ].map((name) => `plugins/${name}.tjs`),
 ];
 const STARTUP = "/vnrun/startup.tjs";
