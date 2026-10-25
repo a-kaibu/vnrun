@@ -59,11 +59,12 @@ game_root() {
     softpal) m=(-iname data.pac) ;;
     artemis) m=(-iname '*.pfs') ;;
     kirikiri) m=(-iname '*.xp3') ;;
-    yuris) m=(-iname ysbin.ypf -o -iname yscfg.dat) ;;
+    yuris) m=(-iname ysbin.ypf -o -iname yscfg.dat -o -ipath '*/pac/*.ypf') ;;
     nscripter) m=(-iname nscript.dat -o -iname 0.txt -o -iname 00.txt -o -iname '*.nsa' -o -iname '*.sar') ;;
     html) m=(-iname package.json -o -iname index.html -o -iname package.nw) ;;
   esac
-  find "$1" -type f \( "${m[@]}" \) -printf '%d %h\n' 2> /dev/null | sort -n | head -1 | cut -d' ' -f2-
+  # Older YU-RIS releases keep everything in pac/*.ypf; the game root is the folder above pac/.
+  find "$1" -type f \( "${m[@]}" \) -printf '%d %h\n' 2> /dev/null | sort -n | head -1 | cut -d' ' -f2- | sed 's#/pac$##I'
 }
 
 # Serves the title and drives it; prints the game root, or nothing when it has none.
