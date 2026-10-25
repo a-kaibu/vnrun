@@ -60,6 +60,7 @@ game_root() {
     artemis) m=(-iname '*.pfs') ;;
     kirikiri) m=(-iname '*.xp3') ;;
     yuris) m=(-iname ysbin.ypf -o -iname yscfg.dat -o -ipath '*/pac/*.ypf') ;;
+    nexas) m=(-iname script.pac) ;;
     nscripter) m=(-iname nscript.dat -o -iname 0.txt -o -iname 00.txt -o -iname '*.nsa' -o -iname '*.sar') ;;
     html) m=(-iname package.json -o -iname index.html -o -iname package.nw) ;;
   esac

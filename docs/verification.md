@@ -48,6 +48,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 2 | 11 | 14 | 3 | 3 |  |  |
 | 吉里吉里 (KiriKiri SDL2) | 135 |  | 2 |  | 1 | 9 |  | 123 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
+| NeXAS (vnrun) | 30 |  |  |  |  |  |  | 30 |
 
 ### SiglusEngine (siglus_rs)
 
@@ -377,4 +378,39 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2021_whirlpool | [けもの道☆ガーリッシュスクエア　体験版](http://suezou.dyndns.org/dl2021/whirlpool/kemonomichi-gs/kemonomichi-gs_trial.zip) | NG | 3e4a888 で「yst00067.ybn: short arguments」 |
 | dl_VJ01002338 | [いな☆こい！ ～お稲荷さまとモテモテのたたり～](https://trial.dlsite.com/professional/VJ01003000/VJ01002338_trial.zip) | NG | pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」 |
 | r1_yuris | [YU-RIS サンプル](https://yu-ris.net/download/yu-ris_0495_032.zip) | 対象外 | YU-RIS の SDK のサンプル (コンパイル前で ysbin.ypf が無い) |
+
+### NeXAS (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2009_crossover | [美乳淫妹 遥「私にイヤらしいコスプレさせるなんて……この変態！」](http://suezou.dyndns.org/dl2009/crossover/haruka/bnharuka_trial.zip) | 未確認 |  |
+| b2010_giga | [JINKI EXTEND Re:VISION -SECOND IMPACT-](http://suezou.dyndns.org/dl2010/giga/jinkirv/jinki_webtrial.zip) | 未確認 |  |
+| b2010_marine | [paicheer_trial.exe](http://suezou.dyndns.org/dl2010/marine/paicheer/paicheer_trial.exe) | 未確認 |  |
+| b2011_giga | [ホチキス - 体験版](http://suezou.dyndns.org/dl2011/giga/hotchkiss/hotchkiss_trial.zip) | 未確認 |  |
+| b2011_marine | [kyonyutry_trial.exe](http://suezou.dyndns.org/dl2011/marine/kyonyutry/kyonyutry_trial.exe) | 未確認 |  |
+| b2012_giga | [キスベル　体験版](http://suezou.dyndns.org/dl2012/giga/kissbell/kissbell_trial.zip) | 未確認 |  |
+| b2013_giga | [キスアト体験版](http://suezou.dyndns.org/dl2013/giga/kissato/kissato_trial.zip) | 未確認 |  |
+| b2016_giga | [リプキス　体験版](http://suezou.dyndns.org/dl2016/giga/repkiss/repkiss_trial.zip) | 未確認 |  |
+| b2019_giga | [アイキス 豪華体験版](http://suezou.dyndns.org/dl2019/giga/aikiss/aikiss_premium_trial.zip) | 未確認 |  |
+| b2023_turumiku_another | [非道狩～ヒトカリ～ 体験版](http://suezou.dyndns.org/dl2023/turumiku-another/hitokari/hitokari-trial.zip) | 未確認 |  |
+| s2006_giga_ab | [angel breath - エンジェルブレス体験版](http://suezou.dyndns.org/dl2006/giga/ab/ab_trial.zip) | 未確認 |  |
+| s2006_giga_cheerfull | [チアフル！ ～cheerfull!～ 【 体験版 】](http://suezou.dyndns.org/dl2006/giga/cheerfull/cheerfull_trial.exe) | 未確認 |  |
+| s2006_lune_maimiko | [妹巫女・萌](http://suezou.dyndns.org/dl2006/lune/maimiko/maimiko_trial.exe) | 未確認 |  |
+| s2007_giga_himesama | [姫さまっ、お手やわらかに！ -体験版-](http://suezou.dyndns.org/dl2007/giga/himesama/hime_trialc.zip) | 未確認 |  |
+| s2008_giga_sakahari | [さかあがりハリケーン 体験版 Ver.2](http://suezou.dyndns.org/dl2008/giga/sakahari/sakahari_trial2.zip) | 未確認 |  |
+| s2009_giga_curefull | [キュアフル！ 体験版](http://suezou.dyndns.org/dl2009/giga/curefull/curefull_trial.zip) | 未確認 |  |
+| s2010_giga_bittersmile | [bitter smile. ～ビタースマイル～ 体験版２](http://suezou.dyndns.org/dl2010/giga/bittersmile/bittersmile_trial2.zip) | 未確認 |  |
+| s2011_giga_hinataterrace | [ひなたテラス -We don't abandon you.- web体験版２](http://suezou.dyndns.org/dl2011/giga/hinataterrace/hinata_webtrial02c.zip) | 未確認 |  |
+| s2011_marine_marching | [おっぱい学園マーチングバンド部！　体験版](http://suezou.dyndns.org/dl2011/marine/marching/marching_trial.zip) | 未確認 |  |
+| s2012_marine_deka_ane | [デカくてエッチな俺の姉　体験版](http://suezou.dyndns.org/dl2012/marine/deka_ane/dekaane_trial.zip) | 未確認 |  |
+| s2013_lune_kazokusaimin | [巨乳家族催眠　体験版](http://suezou.dyndns.org/dl2013/lune/kazokusaimin/kazokusaimin_trial.zip) | 未確認 |  |
+| s2014_lune_revenge_room | [リベンジルーム　体験版](http://suezou.dyndns.org/dl2014/lune/revenge_room/revenge_room_trial.zip) | 未確認 |  |
+| s2015_giga_renaiphase | [恋愛フェイズ 体験版](http://suezou.dyndns.org/dl2015/giga/renaiphase/RP_trial.zip) | 未確認 |  |
+| s2015_lune_kunoichi_suzaku | [巨乳くのいち朱雀　体験版](http://suezou.dyndns.org/dl2015/lune/kunoichi_suzaku/kunoichisuzaku_trial.zip) | 未確認 |  |
+| s2016_lune_dai_kazoku | [巨乳大家族催眠「家族みんなでイキまくるセックスがやめられないのぉ」](http://suezou.dyndns.org/dl2016/lune/dai_kazoku/dai_kazoku_saimin_trial.zip) | 未確認 |  |
+| s2016_lune_meikoku | [冥刻学園受胎偏・体験版](http://suezou.dyndns.org/dl2016/lune/meikoku/meikoku_jutai_trial.zip) | 未確認 |  |
+| s2016_marine_cospure_harem | [お嬢様学園こすぷれハーレム部！「今日はどの服でエッチしよっか」](http://suezou.dyndns.org/dl2016/marine/cospure_harem/cospure_harem_trial.zip) | 未確認 |  |
+| s2018_lune_elf_saimin | [巨乳エルフ母娘催眠体験版](http://suezou.dyndns.org/dl2018/lune/elf_saimin/elfsaimin_trial.zip) | 未確認 |  |
+| s2019_lune_dogeza_saimin | [巨乳女戦士・土下座催眠「ちくしょうっ……アタシはお前の思い通りになんか、ならないからな……！」](http://suezou.dyndns.org/dl2019/lune/dogeza_saimin/dogeza_saimin_trial.zip) | 未確認 |  |
+| s2025_milimili_hanako | [ちょっとナマイキなトイレの花子さん ～えっちぃ学園のおばけとエロエロ搾精性活～ 【体験版】](http://suezou.dyndns.org/dl2025/milimili/hanako/hanako_try2.zip) | 未確認 |  |
 <!-- /matrix -->
