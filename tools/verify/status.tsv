@@ -136,3 +136,11 @@ r1_kag3	要再確認	KAG3 のサンプル (xp3 にまとめていない data フ
 b2006_ninetail	タイトル	83905b1 / f086ac2 / ce3775e でタイトルまで。効果音の ogg は「Unknown wave format」で鳴らない (続行はできる)
 b2016_cube	NG	xp3 が暗号化されている (plugin/mamiya.tpm)
 b2013_hulotte	NG	xp3 が暗号化されている (plugin/moteyaba.tpm)
+r1_krkr_apt306	NG	startup.tjs から読むスクリプトが「Invalid character '\x16'」(独自の暗号化か)
+b2022_syoku	NG	startup.tjs から読むスクリプトが「Invalid character '\x16'」(r1_krkr_apt306 と同じ)
+b2011_grand_cru	NG	kagparser.tjs(96) の lines.load (シナリオの読み込み) で失敗
+b2015_appetite	NG	startup.tjs(3) の Scripts.execStorage("startup.tjs") で読む中の startup.tjs が「Cannot convert given narrow string to wide string」
+b2015_ammolite	NG	startup.tjs(3) の Scripts.execStorage("startup.tjs") で読む中の startup.tjs が「Cannot convert given narrow string to wide string」
+b2016_apadash	NG	startup.tjs(3) の Scripts.execStorage("startup.tjs") で読む中の startup.tjs が「Cannot convert given narrow string to wide string」
+b2021_at_sakura	タイトル	色がおかしい (肌が青い、赤と青が入れ替わっている?)。効果音と BGM の ogg が鳴らない
+b2025_monoceros_plus	NG	WindowResizable.ks(85) の win.registerExEvent() で止まる (windowEx プラグイン相当が無い)
