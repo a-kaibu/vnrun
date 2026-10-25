@@ -4,7 +4,8 @@
 
 use advhd::engine::Engine;
 use advhd::files::Files;
-use js_sys::{Float32Array, Uint8Array};
+use advhd::state::Sound;
+use js_sys::{Array, Float32Array, Object, Reflect, Uint8Array};
 use nexas::gfx::Draw;
 use wasm_bindgen::prelude::*;
 
@@ -65,7 +66,10 @@ impl Game {
             e.set_font(font).map_err(|e| JsError::new(&e))?;
         }
         e.set_time(js_sys::Date::now() / 1000.0);
-        Ok(Game { e, draws: Vec::new() })
+        Ok(Game {
+            e,
+            draws: Vec::new(),
+        })
     }
 
     pub fn width(&self) -> u32 {
@@ -95,6 +99,41 @@ impl Game {
     }
 
     /// Whether the game waits for typed text (a name).
+    /// Sounds to start and stop since the last call: objects {kind: "play", ch, data, looped,
+    /// volume, fade} or {kind: "stop", ch, fade} (fade in ms).
+    pub fn sounds(&mut self) -> Array {
+        let out = Array::new();
+        for snd in self.e.take_sounds() {
+            let o = Object::new();
+            let set = |k: &str, v: JsValue| {
+                let _ = Reflect::set(&o, &k.into(), &v);
+            };
+            match snd {
+                Sound::Play {
+                    ch,
+                    data,
+                    looped,
+                    volume,
+                    fade_ms,
+                } => {
+                    set("kind", "play".into());
+                    set("ch", ch.into());
+                    set("data", Uint8Array::from(&data[..]).into());
+                    set("looped", looped.into());
+                    set("volume", volume.into());
+                    set("fade", fade_ms.into());
+                }
+                Sound::Stop { ch, fade_ms } => {
+                    set("kind", "stop".into());
+                    set("ch", ch.into());
+                    set("fade", fade_ms.into());
+                }
+            }
+            out.push(&o);
+        }
+        out
+    }
+
     pub fn input_wanted(&self) -> bool {
         self.e.input_wanted()
     }

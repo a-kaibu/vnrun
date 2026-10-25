@@ -158,7 +158,13 @@ impl Engine {
 
     /// Calls a global Lua function, reporting errors; nothing when it doesn't exist.
     fn set_names(&self) -> Vec<String> {
-        self.st.borrow().screen.sets.iter().map(|x| x.name.clone()).collect()
+        self.st
+            .borrow()
+            .screen
+            .sets
+            .iter()
+            .map(|x| x.name.clone())
+            .collect()
     }
 
     fn call(&mut self, name: &str, args: Vec<Value>) -> Vec<Value> {
@@ -192,6 +198,11 @@ impl Engine {
     }
 
     /// Whether a text field waits for the player's text (a name to enter).
+    /// The sounds to start and stop since the last call.
+    pub fn take_sounds(&mut self) -> Vec<crate::state::Sound> {
+        std::mem::take(&mut self.st.borrow_mut().sounds)
+    }
+
     pub fn input_wanted(&self) -> bool {
         self.st.borrow().input.is_some()
     }
@@ -741,7 +752,11 @@ impl Engine {
                 // a menu (openCharSelect, openGallery) returns true and the scenario waits
                 // until it closes, which is when the sets it made are removed
                 if r.first().is_some_and(|v| v.truthy()) {
-                    let new: Vec<String> = self.set_names().into_iter().filter(|n| !before.contains(n)).collect();
+                    let new: Vec<String> = self
+                        .set_names()
+                        .into_iter()
+                        .filter(|n| !before.contains(n))
+                        .collect();
                     if !new.is_empty() {
                         self.wait = Wait::Menu(new);
                     }
@@ -854,7 +869,22 @@ impl Engine {
                     }
                 }
             }
-            0x1e | 0x1f | 0x20 | 0x28 | 0x29 | 0x2a | 0x30 => {} // sound: not yet
+            // play on a channel: channel, file, fade in (s), ?, loops (65535: for ever), volume
+            // (of 10), ...; 0x1e music, 0x28 sound effects and voices
+            0x1e | 0x28 => {
+                let looped = a(4).int() != 0;
+                let volume = a(5).int() as f32 / 10.0;
+                let fade = a(2).num() as f64 * 1000.0;
+                self.st
+                    .borrow_mut()
+                    .play(a(0).text(), a(1).text(), looped, volume, fade);
+            }
+            // stop a channel ("*": all): channel, fade out (s)
+            0x1f | 0x29 => {
+                let fade = a(1).num() as f64 * 1000.0;
+                self.st.borrow_mut().stop(a(0).text(), fade);
+            }
+            0x20 | 0x2a | 0x30 => {} // volume changes and the like: not yet
             0x6e => {
                 if a(0).text().starts_with('@') {
                     self.st
@@ -883,7 +913,10 @@ impl Engine {
                     .layer(SCENE, a(1).text())
                     .map(|l| l.file.clone())
                     .unwrap_or_default();
-                self.st.borrow_mut().strings.insert(a(0).text().to_string(), file);
+                self.st
+                    .borrow_mut()
+                    .strings
+                    .insert(a(0).text().to_string(), file);
             }
             0x2e | 0x13 | 0x17 | 0x18 | 0x1b | 0x32 | 0x38 | 0x53 | 0x66 | 0x68 | 0x6f | 0x71
             | 0xfb | 0xfc | 0xfd => {}

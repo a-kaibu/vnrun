@@ -657,10 +657,26 @@ fn snap(s: &mut State, set: &str) -> Vec<Value> {
 }
 
 const SOUNDS: &[(&str, HostFn)] = &[
-    ("SndPlay", |_, _| ok(true)),
-    ("SndStop", |_, _| vec![]),
-    ("BgmPlay", |_, _| ok(true)),
-    ("BgmStop", |_, _| vec![]),
+    // (channel, archive, file, volume 0..1000)
+    ("SndPlay", |s, a| {
+        let v = if a.0.len() > 3 { a.f(3) / 1000.0 } else { 1.0 };
+        s.play(&a.s(0), &a.s(2), false, v, 0.0);
+        ok(true)
+    }),
+    ("SndStop", |s, a| {
+        s.stop(&a.s(0), a.n(1));
+        vec![]
+    }),
+    ("BgmPlay", |s, a| {
+        let v = if a.0.len() > 3 { a.f(3) / 1000.0 } else { 1.0 };
+        s.play(&a.s(0), &a.s(2), true, v, 0.0);
+        ok(true)
+    }),
+    // (channel, fade ms)
+    ("BgmStop", |s, a| {
+        s.stop(&a.s(0), a.n(1));
+        vec![]
+    }),
     ("IsPlaying", |_, _| ok(false)),
 ];
 

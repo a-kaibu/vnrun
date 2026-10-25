@@ -5,7 +5,7 @@
 //! Each `frame` is saved as `<out prefix><frame>.png`; with `:x:y`, there is also a click there
 //! on that frame (`-1:-1`: a click on nothing, as Enter). The last frame is always saved.
 //! ADVHD_FONT names a TrueType font (default: web/public/fonts/ipag.ttf), ADVHD_TRACE lists
-//! commands as they run, ADVHD_START=frame:script jumps to a script on that frame, ADVHD_NAME is the text for text fields.
+//! commands as they run, ADVHD_START=frame:script jumps to a script on that frame, ADVHD_NAME is the text for text fields, ADVHD_SOUNDS lists sounds.
 
 use advhd::engine::Engine;
 use advhd::files::Disk;
@@ -49,6 +49,7 @@ fn main() -> Result<(), String> {
         .as_deref()
         .and_then(|s| s.split_once(':'))
         .and_then(|(f, s)| Some((f.parse::<u64>().ok()?, s)));
+    let sounds = std::env::var_os("ADVHD_SOUNDS").is_some();
     for f in 1..=frames {
         if let Some((_, s)) = start.filter(|x| x.0 == f) {
             e.goto(s)?;
@@ -59,6 +60,26 @@ fn main() -> Result<(), String> {
             }
         }
         e.frame()?;
+        // ADVHD_SOUNDS lists what would play
+        for snd in e.take_sounds() {
+            if sounds {
+                match snd {
+                    advhd::state::Sound::Play {
+                        ch,
+                        data,
+                        looped,
+                        volume,
+                        fade_ms,
+                    } => eprintln!(
+                        "{f}: play {ch} {} bytes looped={looped} volume={volume} fade={fade_ms}",
+                        data.len()
+                    ),
+                    advhd::state::Sound::Stop { ch, fade_ms } => {
+                        eprintln!("{f}: stop {ch} fade={fade_ms}")
+                    }
+                }
+            }
+        }
         if e.input_wanted() {
             e.enter_text(&std::env::var("ADVHD_NAME").unwrap_or_else(|_| "vnrun".into()));
         }

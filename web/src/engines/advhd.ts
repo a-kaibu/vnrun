@@ -1,6 +1,7 @@
 // AdvHD (WillPlus) through our own engine (crates/advhd), built by engines/advhd/build.sh into
 // public/engines/advhd/. The engine runs the scripts and says which pictures to draw where; this
-// side runs it 60 times a second, draws the pictures with WebGPU and passes clicks and saves.
+// side runs it 60 times a second, draws the pictures with WebGPU, plays its sounds with WebAudio
+// and passes clicks and saves.
 import { importEngine, type EngineContext } from "../engine";
 import type { GameFS } from "../gamefs";
 import { Compositor } from "../compositor";
@@ -17,7 +18,12 @@ interface Game {
   enter_text(text: string): void;
   draws(): Float32Array;
   texture(id: number): Uint8Array;
+  sounds(): SoundEvent[];
 }
+
+type SoundEvent =
+  | { kind: "play"; ch: string; data: Uint8Array; looped: boolean; volume: number; fade: number }
+  | { kind: "stop"; ch: string; fade: number };
 
 interface AdvhdModule {
   default(): Promise<unknown>;
@@ -26,6 +32,58 @@ interface AdvhdModule {
 
 // Saves get their own folder so they never shadow a game file of the same name.
 const SAVES = "advhd-save";
+
+// Sounds by channel ("bgm01", "se01", a character's voice); "*" stops them all.
+class Sounds {
+  private readonly context = new AudioContext();
+  private readonly playing = new Map<string, { source: AudioBufferSourceNode; gain: GainNode }>();
+
+  constructor() {
+    // Browsers start audio suspended until the first tap or key.
+    const resume = () => void this.context.resume();
+    window.addEventListener("pointerdown", resume, { once: true });
+    window.addEventListener("keydown", resume, { once: true });
+  }
+
+  private stop(ch: string, fade: number): void {
+    const s = this.playing.get(ch);
+    if (!s) return;
+    this.playing.delete(ch);
+    const now = this.context.currentTime;
+    s.gain.gain.cancelScheduledValues(now);
+    s.gain.gain.setValueAtTime(s.gain.gain.value, now);
+    s.gain.gain.linearRampToValueAtTime(0, now + fade / 1000);
+    s.source.stop(now + fade / 1000);
+  }
+
+  handle(e: SoundEvent): void {
+    if (e.kind === "stop") {
+      for (const ch of e.ch === "*" ? [...this.playing.keys()] : [e.ch]) this.stop(ch, e.fade);
+      return;
+    }
+    this.stop(e.ch, 0);
+    // a later play on the channel replaces this one even before it is decoded
+    const source = this.context.createBufferSource();
+    const gain = this.context.createGain();
+    this.playing.set(e.ch, { source, gain });
+    this.context.decodeAudioData(e.data.slice().buffer).then(
+      (buffer) => {
+        if (this.playing.get(e.ch)?.source !== source) return;
+        source.buffer = buffer;
+        source.loop = e.looped;
+        const now = this.context.currentTime;
+        gain.gain.setValueAtTime(e.fade > 0 ? 0 : e.volume, now);
+        if (e.fade > 0) gain.gain.linearRampToValueAtTime(e.volume, now + e.fade / 1000);
+        source.connect(gain).connect(this.context.destination);
+        source.onended = () => {
+          if (this.playing.get(e.ch)?.source === source) this.playing.delete(e.ch);
+        };
+        source.start();
+      },
+      (error: unknown) => console.warn(`sound ${e.ch}: ${String(error)}`),
+    );
+  }
+}
 
 function bind(fs: GameFS): void {
   const save = (name: string) => `${SAVES}/${name}`;
@@ -46,6 +104,7 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
   await advhd.default();
   const game = new advhd.Game(fonts[0] ?? new Uint8Array());
   const compositor = new Compositor(presenter.device, game.width(), game.height());
+  const sounds = new Sounds();
   const { canvas } = ui;
   canvas.addEventListener("pointerdown", (event) => {
     canvas.focus();
@@ -75,6 +134,7 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
         frames += 1;
         ran = true;
       }
+      for (const e of game.sounds()) sounds.handle(e);
       if (game.ended()) {
         void ui.exit();
         return;

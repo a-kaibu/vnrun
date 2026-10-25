@@ -22,8 +22,27 @@ pub struct Text {
     drawn: Option<usize>,
 }
 
+/// What the player is asked to do with sounds, by channel ("bgm01", "se01", "charSIN", ...).
+#[derive(Debug)]
+pub enum Sound {
+    /// `data`: the file (Ogg Vorbis or WAV); `volume` 0..1
+    Play {
+        ch: String,
+        data: Vec<u8>,
+        looped: bool,
+        volume: f32,
+        fade_ms: f64,
+    },
+    Stop {
+        ch: String,
+        fade_ms: f64,
+    },
+}
+
 pub struct State {
     pub files: Box<dyn Files>,
+    /// sounds for the player since it last took them
+    pub sounds: Vec<Sound>,
     pub arcs: Archives,
     pub screen: Screen,
     /// ms since the start
@@ -75,11 +94,36 @@ impl State {
             pnas: HashMap::new(),
             input: None,
             unknown: Default::default(),
+            sounds: Vec::new(),
         }
     }
 
     pub fn read(&mut self, name: &str) -> Option<Vec<u8>> {
         self.arcs.read(self.files.as_mut(), name)
+    }
+
+    /// Starts a sound on a channel, in place of what it played.
+    pub fn play(&mut self, ch: &str, file: &str, looped: bool, volume: f32, fade_ms: f64) {
+        let Some(data) = self.read(file) else {
+            eprintln!("advhd: no sound {file}");
+            return;
+        };
+        let volume = volume.clamp(0.0, 1.0);
+        self.sounds.push(Sound::Play {
+            ch: ch.to_string(),
+            data,
+            looped,
+            volume,
+            fade_ms,
+        });
+    }
+
+    /// Stops a channel ("*": all of them).
+    pub fn stop(&mut self, ch: &str, fade_ms: f64) {
+        self.sounds.push(Sound::Stop {
+            ch: ch.to_string(),
+            fade_ms,
+        });
     }
 
     pub fn image(&mut self, name: &str) -> Option<Rc<Image>> {
