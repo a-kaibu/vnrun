@@ -180,8 +180,8 @@ b2019_sator	タイトル	5d1348e でタイトル画面まで表示
 b2021_chaos_r	タイトル	5d1348e でタイトル画面まで表示
 b2021_kelp	タイトル	5d1348e でタイトル画面まで表示
 b2022_chaos_r	タイトル	5d1348e でタイトル画面まで表示
-b2019_tinkle_position	NG	ae3efe1 で PSBFile は読めるが「psb://quickmenu.pimg/3.tlg」で Not supported media type "psb"
-b2023_lump_of_sugar_all	NG	ae3efe1 でも Member "quickmenu" does not exist
+b2019_tinkle_position	タイトル	1929e7a でタイトル画面まで表示 (psb:// 対応)
+b2023_lump_of_sugar_all	NG	1929e7a でも式「GetUIFile(quickmenu.pimg)」の評価で Member "quickmenu" does not exist
 b2012_alcot	NG	「Member "Motion" does not exist」(motion.tjs(20)、E-mote) で未対応
 b2012_kai	NG	「Member "Motion" does not exist」(motion.tjs(20)、E-mote) で未対応
 b2010_giga	NG	64d6316 (2015 年版の表) で「System.bin: string is cut short」
@@ -330,6 +330,6 @@ s2013_guilty_yobai	本編	71cd396 で START から「誰の所へ行きますか
 dl_VJ01004836	本編	b076f1f で START から本編テキストまで
 s2018_ensemble_otostuki	本編	b75e0c9 で注意画面 → タイトル → START から本編テキストまで (zip を取り直し)
 s2008_ninetail_amatu	タイトル	
-dl_RJ01677912	NG	ae3efe1 で custom.ks まで進み白画面。kagenvimage.tjs storePropValue で Member "charAt" does not exist
+dl_RJ01677912	タイトル	1929e7a でロゴからタイトル画面まで表示
 b2016_alcot	タイトル	ae3efe1 でタイトル画面まで表示 (起動から約 2 分)
 b2014_hibiki_works	NG	e7d5b88 でロゴと注意書きまで出るが、AlphaMovie (AlphaMovie.dll) が無く停止
