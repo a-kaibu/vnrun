@@ -35,3 +35,20 @@ if (typeof(global.ExtractMojimoGameFont) === "undefined")
 // (layerLeft/layerTop are obsolete too), so the quake doesn't shake and nothing fails.
 if (typeof(global.Window.setLayerPos) === "undefined")
 	global.Window.setLayerPos = function(l, t) {} incontextof null;
+
+// Window.getNormalRect (newer Windows builds): the window's rect when not maximized. There is
+// only one state here, the current one.
+if (typeof(global.Window.getNormalRect) === "undefined")
+	global.Window.getNormalRect = function() {
+		return %[ x: left, y: top, w: width, h: height, left: left, top: top, width: width, height: height ];
+	} incontextof null;
+
+// Gamepad plugins export XInput's button bits as gp* globals; games map them even when no pad
+// is ever read (excelchiffon's padButtonKeyMap).
+if (typeof(global.gpButtonA) === "undefined") {
+	global.gpButtonA = 0x1000; global.gpButtonB = 0x2000; global.gpButtonX = 0x4000; global.gpButtonY = 0x8000;
+	global.gpButtonBack = 0x20; global.gpButtonStart = 0x10;
+	global.gpButtonLeftShoulder = 0x100; global.gpButtonRightShoulder = 0x200;
+	global.gpButtonLeftThumb = 0x40; global.gpButtonRightThumb = 0x80;
+	global.gpTimer = 0; global.gpTouchDown = 30; // XINPUT_GAMEPAD_TRIGGER_THRESHOLD
+}
