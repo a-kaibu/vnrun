@@ -51,6 +51,7 @@ const POLYFILL_FILES = [
     "extrans",
     "saveStruct",
     "psbFile",
+    "textRender",
   ].map((name) => `plugins/${name}.tjs`),
 ];
 const STARTUP = "/vnrun/startup.tjs";

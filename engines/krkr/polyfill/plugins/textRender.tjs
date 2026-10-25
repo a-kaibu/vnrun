@@ -1,0 +1,342 @@
+// vnrun: textrender.dll, the KAGEX text layout engine (TextRenderBase). It lays out the
+// TagTextConverter markup into character dicts; TextRender.tjs draws them.
+// Markup: \n newline, \k key wait, \i/\r indent, \w space, \x nul, \c escape;
+// [ruby]c or [ruby,n]c..: ruby over the next 1+n chars; &storage; graph; $exp; eval;
+// #aarrggbb; color (#; resets); %b %i %s %e + 0/1/d flags; %e#..; %s#..; edge/shadow colors;
+// %f<face>; %<percent>; %B %S size; %r font reset; %L %C %R align; %p<n>; pitch;
+// %t<ms>; or %t$label; wait; %w<percent>; wc; %d<percent>; / %a<ms>; speed; %l<name>; link.
+// Horizontal text only.
+class TextRenderBase
+{
+	var renderLeft = 0, renderTop = 0, renderRight = 0, renderBottom = 0;
+	var renderDelay = 0, renderText = "", vertical = false, fontScale = 1.0;
+	var defaultBold = false, defaultItalic = false, defaultFontSize = 24, defaultChColor = 0xffffff;
+	var defaultRubySize = 10, defaultRubyOffset = -2, defaultShadow = false, defaultShadowColor = 0;
+	var defaultEdge = false, defaultEdgeColor = 0, defaultLineSpacing = 6, defaultPitch = 0;
+	var defaultAlign = "left", defaultValign = "top", defaultLineSize = 0, defaultFace = "user";
+	var userFace = "";
+
+	var _vtrOpt = %["following" => "", "leading" => "", "begin" => "", "end" => ""];
+	var _vtrW = 0, _vtrH = 0;
+	var _vtrChars = [], _vtrWaits = [];
+	var _vtrLine = [];         // indexes of the chars on the open line
+	var _vtrLines = [];        // closed lines: [first, last, align, width]
+	var _vtrX = 0, _vtrY = 0, _vtrIndent = 0, _vtrTime = 0, _vtrDiff = 0, _vtrBaseDiff = 0;
+	var _vtrFont = %[], _vtrAlign = "left", _vtrPitch = 0, _vtrLink = void;
+	var _vtrMeasured = void;   // font props the last onFontChange announced
+
+	function TextRenderBase() { _vtrClear(); }
+	function finalize() {}
+
+	function setOption(o) {
+		var a = []; a.assign(o);
+		for (var i = 0; i < a.count; i += 2) _vtrOpt[a[i]] = a[i + 1];
+	}
+
+	// keys are the lower-case names without "default"
+	var _vtrDefaultKeys = %[
+		"face" => "defaultFace", "fontsize" => "defaultFontSize", "size" => "defaultFontSize",
+		"bold" => "defaultBold", "italic" => "defaultItalic", "color" => "defaultChColor",
+		"chcolor" => "defaultChColor", "rubysize" => "defaultRubySize", "rubyoffset" => "defaultRubyOffset",
+		"shadow" => "defaultShadow", "shadowcolor" => "defaultShadowColor", "edge" => "defaultEdge",
+		"edgecolor" => "defaultEdgeColor", "linespacing" => "defaultLineSpacing", "pitch" => "defaultPitch",
+		"align" => "defaultAlign", "valign" => "defaultValign", "linesize" => "defaultLineSize"];
+	function setDefault(o) {
+		var a = []; a.assign(o);
+		for (var i = 0; i < a.count; i += 2) {
+			var k = _vtrDefaultKeys[((string)a[i]).toLowerCase()];
+			if (k !== void && a[i + 1] !== void) this[k] = a[i + 1];
+		}
+	}
+
+	function setRenderSize(w, h) { _vtrW = +w; _vtrH = +h; }
+	function clear() { _vtrClear(); }
+	function resetFont() {
+		_vtrFont = %["face" => defaultFace, "bold" => !!defaultBold, "italic" => !!defaultItalic, "pct" => 100,
+			"color" => defaultChColor, "edge" => !!defaultEdge, "edgeColor" => defaultEdgeColor,
+			"shadow" => !!defaultShadow, "shadowColor" => defaultShadowColor];
+	}
+	function resetStyle() { _vtrAlign = defaultAlign; _vtrPitch = +defaultPitch; }
+	// TextRenderBase.setFont(%[face, bold, italic]): change the current font
+	function setFont(o) {
+		if (typeof(o) != "Object" || o === null) return;
+		if (o.face !== void) _vtrFont.face = o.face;
+		if (o.bold !== void) _vtrFont.bold = !!o.bold;
+		if (o.italic !== void) _vtrFont.italic = !!o.italic;
+		_vtrMeasured = void;
+	}
+	function newline() { _vtrNewline(true); }
+
+	function render(text, autoIndent, diff, all, same, mode) {
+		_vtrBaseDiff = _vtrDiff = all ? 0 : +diff;
+		_vtrParse((string)text, autoIndent);
+		return 0;
+	}
+
+	function done() {
+		if (_vtrLine.count) _vtrCloseLine();
+		var n = _vtrChars.count;
+		renderDelay = _vtrTime;
+		renderLeft = renderTop = renderRight = renderBottom = 0;
+		if (!n) return;
+		var lastLine = _vtrLines[_vtrLines.count - 1];
+		var totalH = _vtrY - +defaultLineSpacing, dy = 0;
+		var va = defaultValign;
+		if (_vtrH > 0 && (va == "center" || va === 0)) dy = (_vtrH - totalH) \ 2;
+		else if (_vtrH > 0 && (va == "bottom" || va === 1)) dy = _vtrH - totalH;
+		if (dy < 0) dy = 0;
+		var l = 0, t = 0, r = 0, b = 0;
+		for (var j = 0; j < _vtrLines.count; j++) {
+			var ln = _vtrLines[j], dx = 0, al = ln[2];
+			if (_vtrW > 0 && (al == "center" || al === 0)) dx = (_vtrW - ln[3]) \ 2;
+			else if (_vtrW > 0 && (al == "right" || al === 1)) dx = _vtrW - ln[3];
+			if (dx < 0) dx = 0;
+			for (var i = ln[0]; i <= ln[1]; i++) {
+				var ch = _vtrChars[i];
+				ch.x += dx; ch.y += dy;
+				if (i == 0 || ch.x < l) l = ch.x;
+				if (i == 0 || ch.y < t) t = ch.y;
+				if (ch.x + ch.cw > r) r = ch.x + ch.cw;
+				if (ch.y + ch.size > b) b = ch.y + ch.size;
+			}
+		}
+		renderLeft = l; renderTop = t; renderRight = r; renderBottom = b;
+	}
+
+	function getCharacters(s = 0, e = 0) {
+		var n = _vtrChars.count, a = [];
+		if (e <= 0 || e > n) e = n;
+		for (var i = s; i < e; i++) a.add(_vtrChars[i]);
+		return a;
+	}
+	function getKeyWait() {
+		var a = [];
+		for (var i = 0; i < _vtrWaits.count; i++) a.add(%["pos" => _vtrWaits[i].pos, "time" => _vtrWaits[i].time]);
+		return a;
+	}
+	// the number of chars shown after t ms
+	function calcShowCount(t) {
+		var n = 0;
+		while (n < _vtrChars.count && _vtrChars[n].delay <= t) n++;
+		return n;
+	}
+
+	function getLinkRects(link) {
+		var a = [];
+		for (var i = 0; i < _vtrChars.count; i++) {
+			var ch = _vtrChars[i];
+			if (ch.link !== void && (link === void || ch.link == link))
+				a.add(%["left" => ch.x, "top" => ch.y, "width" => ch.cw, "height" => ch.size, "link" => ch.link]);
+		}
+		return a;
+	}
+	function getLinkOfPosition(x, y) {
+		for (var i = 0; i < _vtrChars.count; i++) {
+			var ch = _vtrChars[i];
+			if (ch.link !== void && x >= ch.x && x < ch.x + ch.cw && y >= ch.y && y < ch.y + ch.size) return ch.link;
+		}
+		return void;
+	}
+	function isLinkContains(link, x, y) { var l = getLinkOfPosition(x, y); return l !== void && l == link; }
+
+	// ---- layout ----
+	function _vtrClear() {
+		_vtrChars = []; _vtrWaits = []; _vtrLine = []; _vtrLines = [];
+		_vtrX = _vtrY = _vtrIndent = _vtrTime = 0;
+		_vtrLink = void; _vtrMeasured = void;
+		renderText = ""; renderDelay = 0;
+		renderLeft = renderTop = renderRight = renderBottom = 0;
+		resetFont(); resetStyle();
+	}
+
+	function _vtrSize() {
+		var s = (int)(+defaultFontSize * +fontScale * _vtrFont.pct / 100);
+		return s > 0 ? s : 1;
+	}
+
+	function _vtrWidth(text, size) {
+		var f = _vtrFont;
+		if (_vtrMeasured === void || _vtrMeasured.face != f.face || _vtrMeasured.bold != f.bold || _vtrMeasured.italic != f.italic) {
+			_vtrMeasured = %["face" => f.face, "bold" => f.bold, "italic" => f.italic];
+			if (typeof(this.onFontChange) == "Object") onFontChange(%["face" => f.face, "bold" => f.bold, "italic" => f.italic, "size" => size]);
+		}
+		var w;
+		if (typeof(this.onGetTextWidth) == "Object") w = onGetTextWidth(text, size);
+		if (typeof(w) != "Integer" && typeof(w) != "Real") {
+			w = 0;
+			for (var i = 0; i < text.length; i++) w += #text.charAt(i) < 0x100 ? size \ 2 : size;
+		}
+		return w;
+	}
+
+	function _vtrCloseLine() {
+		var maxs = +defaultLineSize, w = 0;
+		for (var i = 0; i < _vtrLine.count; i++) {
+			var ch = _vtrChars[_vtrLine[i]];
+			if (ch.size > maxs) maxs = ch.size;
+			if (ch.x + ch.cw > w) w = ch.x + ch.cw;
+		}
+		if (maxs <= 0) maxs = _vtrSize();
+		for (var i = 0; i < _vtrLine.count; i++) {
+			var ch = _vtrChars[_vtrLine[i]];
+			ch.y = _vtrY + maxs - ch.size;
+		}
+		if (_vtrLine.count) _vtrLines.add([_vtrLine[0], _vtrLine[_vtrLine.count - 1], _vtrAlign, w]);
+		_vtrY += maxs + +defaultLineSpacing;
+		_vtrLine = [];
+	}
+
+	function _vtrNewline(force) {
+		if (_vtrLine.count) _vtrCloseLine();
+		else if (force) _vtrY += _vtrSize() + +defaultLineSpacing;
+		_vtrX = _vtrIndent;
+	}
+
+	function _vtrPut(text, graph = false) {
+		var f = _vtrFont, size, cw;
+		if (graph) {
+			var g = typeof(this.onGetGraphSize) == "Object" ? onGetGraphSize(text) : void;
+			cw = g !== void ? +g.width : 0; size = g !== void ? +g.height : 0;
+		} else {
+			size = _vtrSize(); cw = _vtrWidth(text, size);
+		}
+		var wide = cw + _vtrPitch;
+		if (_vtrW > 0 && _vtrLine.count && _vtrX + cw > _vtrW && _vtrOpt.following.indexOf(text) < 0) {
+			// a line-leading forbidden char (「 etc.) moves down with the char that follows it
+			var carry = void, last = _vtrChars[_vtrLine[_vtrLine.count - 1]];
+			if (_vtrLine.count > 1 && _vtrOpt.leading.indexOf(last.text) >= 0) { carry = _vtrLine[_vtrLine.count - 1]; _vtrLine.erase(_vtrLine.count - 1); }
+			_vtrNewline(false);
+			if (carry !== void) {
+				last.x = _vtrX; _vtrX += last.cw + _vtrPitch; _vtrLine.add(carry);
+			}
+		}
+		var ch = %["text" => text, "x" => _vtrX, "y" => 0, "cw" => cw, "size" => size, "delay" => _vtrTime,
+			"face" => f.face, "bold" => f.bold, "italic" => f.italic, "color" => f.color,
+			"edge" => f.edge, "edgeColor" => f.edgeColor, "shadow" => f.shadow, "shadowColor" => f.shadowColor,
+			"graph" => graph, "vertical" => false, "link" => _vtrLink];
+		_vtrLine.add(_vtrChars.count);
+		_vtrChars.add(ch);
+		_vtrX += wide;
+		_vtrTime += _vtrDiff;
+		if (!graph) renderText += text;
+		return ch;
+	}
+
+	function _vtrRuby(first, rtext) {
+		var a = _vtrChars[first], b = _vtrChars[_vtrChars.count - 1];
+		var span = b.y == a.y && b.x >= a.x ? b.x + b.cw - a.x : a.cw;
+		var rs = +defaultRubySize; if (rs <= 0) rs = 10;
+		var rw = _vtrWidth(rtext, rs);
+		a.ruby = %["text" => rtext, "x" => (span - rw) \ 2, "y" => -(rs + +defaultRubyOffset), "size" => rs];
+	}
+
+	// text up to the next ';' from i; returns [value, next index]
+	function _vtrArg(text, i) {
+		var e = text.indexOf(";", i);
+		if (e < 0) return [text.substr(i), text.length];
+		return [text.substr(i, e - i), e + 1];
+	}
+
+	function _vtrFlag(c, f, key, dflt) {
+		if (c == "1") f[key] = true; else if (c == "0") f[key] = false; else f[key] = !!dflt;
+	}
+
+	function _vtrColor(s, dflt) { return s == "" ? dflt : (int)("0x" + s); }
+
+	function _vtrParse(text, autoIndent) {
+		var n = text.length, i = 0, rubyText = void, rubyLeft = 0, rubyFirst = -1, indentOpen = false;
+		var opt = _vtrOpt, f;
+		while (i < n) {
+			var c = text.charAt(i++);
+			f = _vtrFont;
+			if (c == "\\") {
+				var d = i < n ? text.charAt(i++) : "";
+				if (d == "n") { _vtrNewline(true); renderText += "\n"; continue; }
+				if (d == "k") { _vtrWaits.add(%["pos" => _vtrChars.count, "time" => _vtrTime]); continue; }
+				if (d == "i") { _vtrIndent = _vtrX; continue; }
+				if (d == "r") { _vtrIndent = 0; continue; }
+				if (d == "w") { _vtrX += _vtrSize() \ 2; continue; }
+				if (d == "x") continue;
+				c = d;
+			} else if (c == "[") {
+				var e = text.indexOf("]", i);
+				if (e >= 0) {
+					var body = text.substr(i, e - i), comma = body.indexOf(",");
+					i = e + 1;
+					if (comma >= 0) { rubyText = body.substr(0, comma); rubyLeft = +body.substr(comma + 1) + 1; }
+					else { rubyText = body; rubyLeft = 1; }
+					rubyFirst = -1;
+					continue;
+				}
+			} else if (c == "&") {
+				var r = _vtrArg(text, i); i = r[1];
+				_vtrPut(r[0], true);
+				continue;
+			} else if (c == "$") {
+				var exp;
+				if (i < n && text.charAt(i) == "{") {
+					var e = text.indexOf("}", i);
+					if (e < 0) e = n;
+					exp = text.substr(i + 1, e - i - 1); i = e + 1;
+				} else { var r = _vtrArg(text, i); exp = r[0]; i = r[1]; }
+				var s = typeof(this.onEval) == "Object" ? onEval(exp) : "";
+				s = s === void ? "" : (string)s;
+				for (var k = 0; k < s.length; k++) _vtrPut(s.charAt(k));
+				continue;
+			} else if (c == "#") {
+				var r = _vtrArg(text, i); i = r[1];
+				f.color = _vtrColor(r[0], defaultChColor);
+				continue;
+			} else if (c == "%") {
+				var d = i < n ? text.charAt(i) : ";";
+				if (d == "b" || d == "i") { _vtrFlag(text.charAt(i + 1), f, d == "b" ? "bold" : "italic", d == "b" ? defaultBold : defaultItalic); i += 2; }
+				else if (d == "s" || d == "e") {
+					var shadow = d == "s";
+					if (text.charAt(i + 1) == "#") {
+						var r = _vtrArg(text, i + 2); i = r[1];
+						if (shadow) f.shadowColor = _vtrColor(r[0], defaultShadowColor);
+						else f.edgeColor = _vtrColor(r[0], defaultEdgeColor);
+					} else {
+						_vtrFlag(text.charAt(i + 1), f, shadow ? "shadow" : "edge", shadow ? defaultShadow : defaultEdge);
+						i += 2;
+					}
+				}
+				else if (d == "f") { var r = _vtrArg(text, i + 1); i = r[1]; f.face = r[0] == "" ? defaultFace : r[0]; }
+				else if (d == "B") { f.pct = 150; i++; }
+				else if (d == "S") { f.pct = 70; i++; }
+				else if (d == "r") { resetFont(); i++; }
+				else if (d == "L") { _vtrAlign = "left"; i++; }
+				else if (d == "C") { _vtrAlign = "center"; i++; }
+				else if (d == "R") { _vtrAlign = "right"; i++; }
+				else if (d == ";" || (#d >= 0x30 && #d <= 0x39)) { var r = _vtrArg(text, i); i = r[1]; f.pct = r[0] == "" ? 100 : +r[0]; }
+				else {
+					var r = _vtrArg(text, i + 1), v = r[0]; i = r[1];
+					if (d == "p") _vtrPitch = v == "" ? +defaultPitch : +v;
+					else if (d == "t") {
+						if (v.charAt(0) == "$") {
+							var lt = typeof(this.onLabel) == "Object" ? +onLabel(v.substr(1)) : 0;
+							if (lt > _vtrTime) _vtrTime = lt;
+						} else _vtrTime += +v;
+					}
+					else if (d == "w") { if (v.charAt(0) != "$") _vtrTime += _vtrDiff * +v / 100; }
+					else if (d == "d") _vtrDiff = v == "" ? _vtrBaseDiff : _vtrBaseDiff * +v / 100;
+					else if (d == "a") _vtrDiff = +v;
+					else if (d == "l") _vtrLink = v == "" ? void : v;
+					// %n (xr) and %D (talk wait) need nothing here
+				}
+				continue;
+			}
+			// a plain character
+			var first = _vtrChars.count == 0 && _vtrLine.count == 0;
+			var ch = _vtrPut(c);
+			if (autoIndent && first && opt.begin.indexOf(c) >= 0) { _vtrIndent = ch.x + ch.cw; indentOpen = true; }
+			else if (indentOpen && opt.end.indexOf(c) >= 0) { _vtrIndent = 0; indentOpen = false; }
+			if (rubyText !== void) {
+				var idx = _vtrChars.count - 1;
+				if (rubyFirst < 0) rubyFirst = idx;
+				if (--rubyLeft <= 0) { _vtrRuby(rubyFirst, rubyText); rubyText = void; }
+			}
+		}
+		if (rubyText !== void && rubyFirst >= 0) _vtrRuby(rubyFirst, rubyText);
+	}
+}
