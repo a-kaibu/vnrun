@@ -280,3 +280,29 @@ s2022_at_sakura_konya_aitu	タイトル	5d1348e でタイトル画面まで表�
 dl_VJ01003070	タイトル	5d1348e でタイトル画面まで表示
 s2014_cross_over_tori	タイトル	5d1348e でタイトル画面まで表示
 s2023_hending_hassyakusama	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」
+b2014_ensemble_sweet	タイトル	b076f1f でタイトル画面まで表示
+b2014_guilty	タイトル	b076f1f でタイトル画面まで表示
+b2014_pulltop_latte	タイトル	b076f1f でタイトル画面まで表示
+b2015_ensemble	タイトル	b076f1f でタイトル画面まで表示
+b2015_guilty	タイトル	b076f1f でタイトル画面まで表示
+b2018_ensemble	タイトル	b076f1f でタイトル画面まで表示
+b2018_guilty	タイトル	b076f1f でタイトル画面まで表示
+b2018_tokohana	タイトル	b076f1f でタイトル画面まで表示
+b2022_ensemble	タイトル	b076f1f でタイトル画面まで表示
+b2025_ensemble_sweet	タイトル	b076f1f でタイトル画面まで表示
+b2025_guilty	タイトル	b076f1f でタイトル画面まで表示
+b2026_tokohana	タイトル	b076f1f でタイトル画面まで表示
+dl_VJ01002397	タイトル	b076f1f でタイトル画面まで表示
+dl_VJ01003020	タイトル	b076f1f でタイトル画面まで表示
+dl_VJ01004020	タイトル	b076f1f でタイトル画面まで表示
+dl_VJ01004594	タイトル	b076f1f でタイトル画面まで表示
+dl_VJ015399	タイトル	b076f1f でタイトル画面まで表示
+s2015_ensemble_koikata	タイトル	b076f1f でタイトル画面まで表示
+s2015_ensemble_sweet_yakimochi	タイトル	b076f1f でタイトル画面まで表示
+s2016_ensemble_sweet_hanayome	タイトル	b076f1f でタイトル画面まで表示
+s2019_guilty_harame	タイトル	b076f1f でタイトル画面まで表示
+s2022_ensemble_sweet_otoshita	タイトル	b076f1f でタイトル画面まで表示
+s2026_ensemble_sweet_ribichu	タイトル	b076f1f でタイトル画面まで表示
+r1_advhd	起動	b076f1f でタイトル画像の左上の一部だけが拡大表示される (解像度の扱い?)
+b2014_ensemble	NG	b076f1f で例外なしの黒画面のまま (InstallShield 版)
+s2013_pulltop_cocoro	NG	b076f1f で例外なしの白画面のまま (InstallShield 版)
