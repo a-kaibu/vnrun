@@ -1,5 +1,6 @@
-// vnrun: fstat.dll. The browser build has no file system calls for scripts, so these only
-// answer from what Storages already knows; changes to files are not made.
+// vnrun: fstat.dll. The browser build has no file system calls for scripts, so these mostly
+// answer from what Storages already knows; files are only moved and deleted (vnrunMoveFile and
+// vnrunDeleteFile, for saves written to a temporary file first).
 {
 	var S = global.Storages;
 	if (typeof(S.fstat) === "undefined")
@@ -14,9 +15,9 @@
 	if (typeof(S.removeDirectory) === "undefined")
 		S.removeDirectory = function(name) { return false; };
 	if (typeof(S.deleteFile) === "undefined")
-		S.deleteFile = function(name) { return false; };
+		S.deleteFile = function(name) { return global.vnrunDeleteFile(name); };
 	if (typeof(S.moveFile) === "undefined")
-		S.moveFile = function(from, to) { return false; };
+		S.moveFile = function(from, to) { return global.vnrunMoveFile(from, to); };
 	if (typeof(S.dirlist) === "undefined")
 		S.dirlist = function(name) { return []; };
 	if (typeof(S.dirlistEx) === "undefined")

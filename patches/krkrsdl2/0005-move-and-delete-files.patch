@@ -1,0 +1,45 @@
+diff --git a/src/core/base/sdl2/StorageImpl.cpp b/src/core/base/sdl2/StorageImpl.cpp
+index 9a7e687..cedee65 100644
+--- a/src/core/base/sdl2/StorageImpl.cpp
++++ b/src/core/base/sdl2/StorageImpl.cpp
+@@ -1659,3 +1659,40 @@ TJS_END_NATIVE_STATIC_METHOD_DECL_OUTER(/*object to register*/cls,
+ }
+ //---------------------------------------------------------------------------
+ 
++
++#ifdef __EMSCRIPTEN__
++#include "Extension.h"
++// vnrun: vnrunMoveFile(from, to) and vnrunDeleteFile(name) on the page's file system, for the
++// fstat.dll stand-in (polyfill/plugins/fstat.tjs): games save to a temporary file and rename it.
++static bool vnrun_local(const tTJSVariant &v, std::string &out)
++{
++	ttstr name = TVPNormalizeStorageName(ttstr(v));
++	TVPGetLocalName(name);
++	return !name.IsEmpty() && TVPUtf16ToUtf8(out, name.AsStdString());
++}
++static tjs_error TJS_INTF_METHOD vnrun_move_file(tTJSVariant *result, tjs_int numparams,
++	tTJSVariant **param, iTJSDispatch2 *objthis)
++{
++	if (numparams < 2) return TJS_E_BADPARAMCOUNT;
++	std::string from, to;
++	bool ok = vnrun_local(*param[0], from) && vnrun_local(*param[1], to);
++	if (ok) { remove(to.c_str()); ok = 0 == rename(from.c_str(), to.c_str()); }
++	if (ok) { TVPClearStorageCaches(); Application->SyncSavedata(); }
++	if (result) *result = ok;
++	return TJS_S_OK;
++}
++static tjs_error TJS_INTF_METHOD vnrun_delete_file(tTJSVariant *result, tjs_int numparams,
++	tTJSVariant **param, iTJSDispatch2 *objthis)
++{
++	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
++	std::string name;
++	bool ok = vnrun_local(*param[0], name) && 0 == remove(name.c_str());
++	if (ok) { TVPClearStorageCaches(); Application->SyncSavedata(); }
++	if (result) *result = ok;
++	return TJS_S_OK;
++}
++static iTJSDispatch2 *vnrun_create_move_file(iTJSDispatch2 *) { return TJSCreateNativeClassMethod(vnrun_move_file); }
++static iTJSDispatch2 *vnrun_create_delete_file(iTJSDispatch2 *) { return TJSCreateNativeClassMethod(vnrun_delete_file); }
++static tTVPAtInstallClass vnrun_install_move_file(TJS_W("vnrunMoveFile"), vnrun_create_move_file, TJS_W(""));
++static tTVPAtInstallClass vnrun_install_delete_file(TJS_W("vnrunDeleteFile"), vnrun_create_delete_file, TJS_W(""));
++#endif
