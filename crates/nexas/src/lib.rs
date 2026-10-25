@@ -4,6 +4,7 @@
 //! [`vm`] (the script machine).
 
 pub mod files;
+pub mod gfx;
 pub mod pac;
 pub mod script;
 pub mod sjis;
