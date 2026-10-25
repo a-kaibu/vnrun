@@ -303,8 +303,8 @@ s2016_ensemble_sweet_hanayome	本編	b076f1f で START から本編テキスト�
 s2019_guilty_harame	本編	b076f1f で START から本編テキストまで
 s2022_ensemble_sweet_otoshita	本編	b076f1f で START から本編テキストまで
 s2026_ensemble_sweet_ribichu	本編	b076f1f で START から本編テキストまで
-r1_advhd	タイトル	775114f でタイトル画面まで正しいサイズで表示
-b2014_ensemble	タイトル	e51df34 でタイトル画面まで表示 (InstallShield 版)
+r1_advhd	本編	b75e0c9 で START から「1 Day」を経て本編テキストまで
+b2014_ensemble	本編	b75e0c9 で START から本編テキストまで
 s2013_pulltop_cocoro	本編	3fe627e で START からキャラクター選択画面まで
 s2024_appetite_isekai_cyoroin	タイトル	d51f3e8 系のページでタイトル画面まで表示
 s2024_appetite_inyoku_train	タイトル	d51f3e8 系のページでタイトル画面まで表示
