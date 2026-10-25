@@ -53,6 +53,8 @@ pub struct Engine {
     trace: bool,
     /// the choice the interface reported
     chosen: Option<i64>,
+    /// string variables ("@NAME"), which stand for their value in other commands' strings
+    svars: HashMap<String, String>,
 }
 
 fn lua_str(v: &Value) -> String {
@@ -89,6 +91,7 @@ impl Engine {
             ended: false,
             trace: false,
             chosen: None,
+            svars: HashMap::new(),
         };
         e.init_lua();
         e.cur = e.script("start").ok_or("no start.ws2")?;
@@ -439,7 +442,25 @@ impl Engine {
             eprintln!("{}:{:06x} {:02x} {:?}", self.cur.name, ins.at, ins.op, ins.args);
         }
         self.pc = ins.next;
+        let ins = self.resolve(ins);
         self.exec(&ins)
+    }
+
+    /// Puts string variables' values in for "@NAME" strings, but not where a command names
+    /// the variable it sets (the first string of 0x6e, 0x73 and 0x75).
+    fn resolve(&self, mut ins: Ins) -> Ins {
+        if self.svars.is_empty() {
+            return ins;
+        }
+        let skip = matches!(ins.op, 0x6e | 0x73 | 0x75) as usize;
+        for a in ins.args.iter_mut().skip(skip) {
+            if let Arg::Str(s) = a {
+                if let Some(v) = self.svars.get(s.as_str()) {
+                    *s = v.clone();
+                }
+            }
+        }
+        ins
     }
 
     fn ret(&mut self) -> Result<(), String> {
@@ -653,7 +674,23 @@ impl Engine {
                 }
             }
             0x1e | 0x1f | 0x20 | 0x28 | 0x29 | 0x2a | 0x30 => {} // sound: not yet
-            0x2e | 0x13 | 0x17 | 0x18 | 0x1b | 0x32 | 0x38 | 0x53 | 0x66 | 0x68 | 0x6e | 0x6f | 0x71 | 0xfb | 0xfc | 0xfd => {}
+            0x6e => {
+                if a(0).text().starts_with('@') {
+                    self.svars.insert(a(0).text().to_string(), a(1).text().to_string());
+                }
+            }
+            0x73 => {
+                // flag = (string variable == text)
+                let v = self.svars.get(a(0).text()).map(String::as_str).unwrap_or("");
+                let same = v.eq_ignore_ascii_case(a(1).text());
+                self.st.borrow_mut().set_flag(a(2).int(), same);
+            }
+            0x75 => {
+                // string variable = the picture file of a scene layer
+                let file = self.st.borrow_mut().screen.layer(SCENE, a(1).text()).map(|l| l.file.clone()).unwrap_or_default();
+                self.svars.insert(a(0).text().to_string(), file);
+            }
+            0x2e | 0x13 | 0x17 | 0x18 | 0x1b | 0x32 | 0x38 | 0x53 | 0x66 | 0x68 | 0x6f | 0x71 | 0xfb | 0xfc | 0xfd => {}
             op => self.st.borrow_mut().unknown(&format!("command {op:#04x}")),
         }
         Ok(())

@@ -122,7 +122,7 @@ impl State {
         } else {
             self.image(file).map_or(Content::None, Content::Image)
         };
-        Layer::new(name, content)
+        Layer { file: file.to_string(), ..Layer::new(name, content) }
     }
 
     pub fn flag(&self, i: i64) -> bool {

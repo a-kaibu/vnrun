@@ -197,6 +197,8 @@ pub struct Layer {
     pub hit: bool,
     pub effects: Vec<Effect>,
     pub parent: Option<String>,
+    /// the picture file shown, as the script named it
+    pub file: String,
 }
 
 impl Layer {
@@ -217,6 +219,7 @@ impl Layer {
         };
         Layer {
             name: name.to_string(),
+            file: String::new(),
             content,
             visible: true,
             p: Params::default(),
