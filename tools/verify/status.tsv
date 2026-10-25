@@ -328,7 +328,7 @@ s2012_ninetail_gears_of_dragoon	タイトル	d084599 (setLayerPos) でタイト�
 b2013_ensemble	本編	14cde42 で START から本編テキストまで (START 後しばらく白画面)
 s2013_guilty_yobai	本編	71cd396 で START から「誰の所へ行きますか？」のマップ選択まで (背景も表示)
 dl_VJ01004836	本編	b076f1f で START から本編テキストまで
-s2018_ensemble_otostuki	要再確認	zip の展開が不完全で Rio.arc が見つからない (Bgm/Chip*.arc のみ)
+s2018_ensemble_otostuki	本編	b75e0c9 で注意画面 → タイトル → START から本編テキストまで (zip を取り直し)
 s2008_ninetail_amatu	タイトル	
 dl_RJ01677912	NG	7c0d7c6 でスクリプトの例外は出なくなったが、起動後も黒画面のまま (エラーなし)
 b2016_alcot	NG	csvParser 代替が区切り文字の文字コード指定 (44/9) を扱えず、quickmenu の names が空。黒画面

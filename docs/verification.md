@@ -49,7 +49,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | 吉里吉里 (KiriKiri SDL2) | 135 |  | 79 | 7 | 1 | 38 |  | 10 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 30 | 5 | 1 |  | 1 | 22 | 1 |  |
-| AdvHD (vnrun) | 30 | 29 |  |  | 1 |  |  |  |
+| AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -445,8 +445,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2015_ensemble_koikata | [恋する気持ちのかさねかた_Hシーン体験版](http://suezou.dyndns.org/dl2015/ensemble/koikata/koikata_H_trial.zip) | 本編 | b076f1f で START からキャラクター選択画面まで |
 | s2015_ensemble_sweet_yakimochi | [エッチでヘンタイ！ヤキモチお嬢様！！　ヘンタイ性癖解放Ver．体験版](http://suezou.dyndns.org/dl2015/ensemble-sweet/yakimochi/Dohentai_trial.exe) | 本編 | b076f1f で START からキャラクター選択画面まで |
 | s2016_ensemble_sweet_hanayome | [恋するお嬢様はエッチな花嫁　体験版](http://suezou.dyndns.org/dl2016/ensemble-sweet/hanayome/hanayome_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
+| s2018_ensemble_otostuki | [乙女が結ぶ月夜の煌めき　体験版](http://suezou.dyndns.org/dl2018/ensemble/otostuki/ototsuki_trial.zip) | 本編 | b75e0c9 で注意画面 → タイトル → START から本編テキストまで (zip を取り直し) |
 | s2019_guilty_harame | [孕女～精子を欲しがる淫らな教え子～ 体験版](http://suezou.dyndns.org/dl2019/guilty/harame/harame_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
 | s2022_ensemble_sweet_otoshita | [乙女とふれあう、ひとつ屋根の下 TRIAL EDITION](http://suezou.dyndns.org/dl2022/ensemble-sweet/otoshita/otoshita_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
 | s2026_ensemble_sweet_ribichu | [リビドーアバンちゅ～る TRIAL EDITION](http://suezou.dyndns.org/dl2026/ensemble-sweet/ribichu/ribichu_trial.exe) | 本編 | b076f1f で START から本編テキストまで |
-| s2018_ensemble_otostuki | [乙女が結ぶ月夜の煌めき　体験版](http://suezou.dyndns.org/dl2018/ensemble/otostuki/ototsuki_trial.zip) | 要再確認 | zip の展開が不完全で Rio.arc が見つからない (Bgm/Chip*.arc のみ) |
 <!-- /matrix -->
