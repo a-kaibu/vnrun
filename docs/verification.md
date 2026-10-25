@@ -49,7 +49,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | 吉里吉里 (KiriKiri SDL2) | 135 |  | 78 | 7 | 1 | 36 |  | 13 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 30 | 5 | 1 |  | 1 | 22 | 1 |  |
-| AdvHD (vnrun) | 30 |  | 29 |  | 1 |  |  |  |
+| AdvHD (vnrun) | 30 | 9 | 20 |  | 1 |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -419,20 +419,20 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| b2014_pulltop_latte | [TotoRezo_WFD_Htrial02.exe](http://suezou.dyndns.org/dl2014/pulltop-latte/totoreso/TotoRezo_WFD_Htrial02.exe) | 本編 | b076f1f で START からキャラクター選択画面まで |
+| b2015_ensemble | [marriagefd_trial.exe](http://suezou.dyndns.org/dl2015/ensemble/golden_marriage_jd/marriagefd_trial.exe) | 本編 | b076f1f で START から本編テキストまで |
+| b2015_guilty | [淫らに喘ぐ七人の夜這いする孕女　体験版](http://suezou.dyndns.org/dl2015/guilty/yobai3/yobai3_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
+| b2018_ensemble | [恋はそっと咲く花のように　体験版](http://suezou.dyndns.org/dl2018/ensemble/koihana/KOIHANA_WEB_TRIAL.zip) | 本編 | b076f1f で START から本編テキストまで |
+| b2018_guilty | [俺の上であがく六人の伽女　体験版２](http://suezou.dyndns.org/dl2018/guilty/togime/togime_trial2.zip) | 本編 | b076f1f で START からゲーム内の選択肢「どの体験版をプレイしますか？」まで |
+| b2018_tokohana | [僕と彼女のご奉仕同棲　体験版](http://suezou.dyndns.org/dl2018/tokohana/gohoushidousei/gohoushidousei_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
+| b2022_ensemble | [華は短し、踊れよ乙女 - 体験版](http://suezou.dyndns.org/dl2022/ensemble/hanaoto/hanaoto_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
+| b2025_ensemble_sweet | [のーぶるバトラー TRIAL EDITION](http://suezou.dyndns.org/dl2025/ensemble-sweet/noblebutler/noblebutler_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
+| b2025_guilty | [虜ノ焔 ～淫欲の炎に満ちた地下闘技場～ 体験版](http://suezou.dyndns.org/dl2025/guilty/torikonohomura/torikonohomura_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
 | b2013_ensemble | [お嬢様はご機嫌ナナメ 体験版](http://suezou.dyndns.org/dl2013/ensemble/ojyonana/ojyonana_trial.exe) | タイトル | b076f1f でタイトル画面まで表示 (InstallShield 版) |
 | b2014_ensemble | [goldenmarriage_trial.exe](http://suezou.dyndns.org/dl2014/ensemble/golden_marriage/goldenmarriage_trial.exe) | タイトル | e51df34 でタイトル画面まで表示 (InstallShield 版) |
-| b2014_ensemble_sweet | [hentai_trial.exe](http://suezou.dyndns.org/dl2014/ensemble-sweet/hentai/hentai_trial.exe) | タイトル | b076f1f でタイトル画面まで表示 |
-| b2014_guilty | [ANEWO_trial2.exe](http://suezou.dyndns.org/dl2014/guilty/anewo/ANEWO_trial2.exe) | タイトル | b076f1f でタイトル画面まで表示 |
-| b2014_pulltop_latte | [TotoRezo_WFD_Htrial02.exe](http://suezou.dyndns.org/dl2014/pulltop-latte/totoreso/TotoRezo_WFD_Htrial02.exe) | タイトル | b076f1f でタイトル画面まで表示 |
-| b2015_ensemble | [marriagefd_trial.exe](http://suezou.dyndns.org/dl2015/ensemble/golden_marriage_jd/marriagefd_trial.exe) | タイトル | b076f1f でタイトル画面まで表示 |
-| b2015_guilty | [淫らに喘ぐ七人の夜這いする孕女　体験版](http://suezou.dyndns.org/dl2015/guilty/yobai3/yobai3_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
-| b2018_ensemble | [恋はそっと咲く花のように　体験版](http://suezou.dyndns.org/dl2018/ensemble/koihana/KOIHANA_WEB_TRIAL.zip) | タイトル | b076f1f でタイトル画面まで表示 |
-| b2018_guilty | [俺の上であがく六人の伽女　体験版２](http://suezou.dyndns.org/dl2018/guilty/togime/togime_trial2.zip) | タイトル | b076f1f でタイトル画面まで表示 |
-| b2018_tokohana | [僕と彼女のご奉仕同棲　体験版](http://suezou.dyndns.org/dl2018/tokohana/gohoushidousei/gohoushidousei_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
-| b2022_ensemble | [華は短し、踊れよ乙女 - 体験版](http://suezou.dyndns.org/dl2022/ensemble/hanaoto/hanaoto_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
-| b2025_ensemble_sweet | [のーぶるバトラー TRIAL EDITION](http://suezou.dyndns.org/dl2025/ensemble-sweet/noblebutler/noblebutler_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
-| b2025_guilty | [虜ノ焔 ～淫欲の炎に満ちた地下闘技場～ 体験版](http://suezou.dyndns.org/dl2025/guilty/torikonohomura/torikonohomura_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
-| b2026_tokohana | [OfficeLove -クールな上司と秘密のイキ抜き- Trial Edition](http://suezou.dyndns.org/dl2026/tokohana/office_love/OfficeLove_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
+| b2014_ensemble_sweet | [hentai_trial.exe](http://suezou.dyndns.org/dl2014/ensemble-sweet/hentai/hentai_trial.exe) | タイトル | b076f1f でタイトルまで。START 後に「0010.ws2:0x3: unknown command 0x03」 |
+| b2014_guilty | [ANEWO_trial2.exe](http://suezou.dyndns.org/dl2014/guilty/anewo/ANEWO_trial2.exe) | タイトル | b076f1f でタイトルまで。START 後に「t2_000.ws2:0xd4: unknown command 0xb7」 |
+| b2026_tokohana | [OfficeLove -クールな上司と秘密のイキ抜き- Trial Edition](http://suezou.dyndns.org/dl2026/tokohana/office_love/OfficeLove_trial.zip) | タイトル | b076f1f でタイトルから名前入力まで。prompt に名前を入れても OK が押されず先に進まない |
 | dl_VJ01002397 | [僕の好きな人の好きな人は、女装した僕でした。](https://trial.dlsite.com/professional/VJ01003000/VJ01002397_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
 | dl_VJ01003020 | [幸乃下蛍の恋青日和 ～お義姉ちゃんとの秘密同棲～](https://trial.dlsite.com/professional/VJ01004000/VJ01003020_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |
 | dl_VJ01004020 | [のーぶる・バトラー](https://trial.dlsite.com/professional/VJ01005000/VJ01004020_trial.zip) | タイトル | b076f1f でタイトル画面まで表示 |

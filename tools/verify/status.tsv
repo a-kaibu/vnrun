@@ -280,18 +280,18 @@ s2022_at_sakura_konya_aitu	タイトル	5d1348e でタイトル画面まで表�
 dl_VJ01003070	タイトル	5d1348e でタイトル画面まで表示
 s2014_cross_over_tori	タイトル	5d1348e でタイトル画面まで表示
 s2023_hending_hassyakusama	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」
-b2014_ensemble_sweet	タイトル	b076f1f でタイトル画面まで表示
-b2014_guilty	タイトル	b076f1f でタイトル画面まで表示
-b2014_pulltop_latte	タイトル	b076f1f でタイトル画面まで表示
-b2015_ensemble	タイトル	b076f1f でタイトル画面まで表示
-b2015_guilty	タイトル	b076f1f でタイトル画面まで表示
-b2018_ensemble	タイトル	b076f1f でタイトル画面まで表示
-b2018_guilty	タイトル	b076f1f でタイトル画面まで表示
-b2018_tokohana	タイトル	b076f1f でタイトル画面まで表示
-b2022_ensemble	タイトル	b076f1f でタイトル画面まで表示
-b2025_ensemble_sweet	タイトル	b076f1f でタイトル画面まで表示
-b2025_guilty	タイトル	b076f1f でタイトル画面まで表示
-b2026_tokohana	タイトル	b076f1f でタイトル画面まで表示
+b2014_ensemble_sweet	タイトル	b076f1f でタイトルまで。START 後に「0010.ws2:0x3: unknown command 0x03」
+b2014_guilty	タイトル	b076f1f でタイトルまで。START 後に「t2_000.ws2:0xd4: unknown command 0xb7」
+b2014_pulltop_latte	本編	b076f1f で START からキャラクター選択画面まで
+b2015_ensemble	本編	b076f1f で START から本編テキストまで
+b2015_guilty	本編	b076f1f で START から本編テキストまで
+b2018_ensemble	本編	b076f1f で START から本編テキストまで
+b2018_guilty	本編	b076f1f で START からゲーム内の選択肢「どの体験版をプレイしますか？」まで
+b2018_tokohana	本編	b076f1f で START から本編テキストまで
+b2022_ensemble	本編	b076f1f で START から本編テキストまで
+b2025_ensemble_sweet	本編	b076f1f で START から本編テキストまで
+b2025_guilty	本編	b076f1f で START から本編テキストまで
+b2026_tokohana	タイトル	b076f1f でタイトルから名前入力まで。prompt に名前を入れても OK が押されず先に進まない
 dl_VJ01002397	タイトル	b076f1f でタイトル画面まで表示
 dl_VJ01003020	タイトル	b076f1f でタイトル画面まで表示
 dl_VJ01004020	タイトル	b076f1f でタイトル画面まで表示
