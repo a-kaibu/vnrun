@@ -1,0 +1,26 @@
+diff --git a/visual/LayerIntf.cpp b/visual/LayerIntf.cpp
+index f8719552..f1340fd0 100644
+--- a/visual/LayerIntf.cpp
++++ b/visual/LayerIntf.cpp
+@@ -459,6 +459,21 @@ tTJSNI_BaseLayer::Construct(tjs_int numparams, tTJSVariant **param,
+ 	// layer manager is the same as the parent, if the parent is given
+ 	if(lay)
+ 	{
++		// vnrun: a parent whose constructor has not run yet (KiriKiri 2 games make children
++		// before calling super.Layer(); KiriKiri 2 took the manager from the window) gets the
++		// manager of the window's primary layer now.
++		if(!lay->Manager)
++		{
++			tTJSVariant pv;
++			tTJSVariantClosure wclo = param[0]->AsObjectClosureNoAddRef();
++			tTJSNI_BaseLayer *primary = NULL;
++			if(TJS_SUCCEEDED(wclo.PropGet(0, TJS_W("primaryLayer"), NULL, &pv, NULL)) && pv.Type() == tvtObject && pv.AsObjectNoAddRef())
++				pv.AsObjectNoAddRef()->NativeInstanceSupport(TJS_NIS_GETINSTANCE, tTJSNC_Layer::ClassID, (iTJSNativeInstance**)&primary);
++			if(!primary || !primary->Manager) TVPThrowExceptionMessage(TVPSpecifyLayer);
++			lay->Manager = primary->Manager;
++			lay->Manager->AddRef();
++		}
++		if(Manager) Manager->Release(); // set while this was such a parent
+ 		Manager = lay->GetManager();
+ 		Manager->AddRef(); // lock manager
+ 	}
