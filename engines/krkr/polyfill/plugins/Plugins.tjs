@@ -16,6 +16,7 @@ global.vnrunPlugins = %[
 		"sigcheck.dll" => "sigcheck.tjs",
 		"getsample.dll" => "getSample.tjs",
 		"gamepad.dll" => "gamepad.tjs",
+		"layerexalpha.dll" => "layerExAlpha.tjs",
 	],
 ];
 global.Plugins.link = function(name) {

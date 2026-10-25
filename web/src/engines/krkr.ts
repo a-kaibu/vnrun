@@ -47,6 +47,7 @@ const POLYFILL_FILES = [
     "sigcheck",
     "getSample",
     "gamepad",
+    "layerExAlpha",
   ].map((name) => `plugins/${name}.tjs`),
 ];
 const STARTUP = "/vnrun/startup.tjs";

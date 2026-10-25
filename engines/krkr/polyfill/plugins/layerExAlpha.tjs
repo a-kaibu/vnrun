@@ -1,0 +1,11 @@
+// vnrun: layerExAlpha.dll. Its alpha-channel effects (masking, glows, outlines) are not drawn;
+// the layers keep their own pixels, so effects show without them instead of failing.
+{
+	var L = global.Layer;
+	var methods = [
+		"MaskRect", "AlphaAdd", "AlphaBlend", "AlphaColorRect", "AlphaDivide", "BlackForAlpha",
+		"ColorAlphaAdd", "ColorVectorEffectAdd", "ExtraColorVectorEffectAdd", "WhiteToBlueBlurAdd",
+		"turnAlpha", "turnOutline"];
+	for (var i = 0; i < methods.count; i++)
+		if (typeof(L[methods[i]]) === "undefined") L[methods[i]] = function() {} incontextof null;
+}
