@@ -198,6 +198,9 @@ impl Lua {
 }
 
 pub fn run(lua: &mut Lua, cl: Rc<Closure>, args: Vec<Value>) -> LuaResult<Vec<Value>> {
+    if lua.trace {
+        eprintln!("{:1$}{2}:{3}", "", lua.depth, cl.proto.source, cl.proto.line);
+    }
     let base = lua.stack.len();
     let r = frame(lua, &cl, base, args);
     lua.close_upvals(base);

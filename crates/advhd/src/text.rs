@@ -46,6 +46,9 @@ pub fn plain(s: &str) -> Vec<char> {
     out
 }
 
+/// Characters that don't begin a line (kinsoku); they hang past the margin instead.
+const NO_LINE_START: &str = "、。，．・：；？！）」』】〉》〕｝ー～…‥ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ";
+
 pub struct Style {
     pub size: f32,
     pub color: [u8; 3],
@@ -69,7 +72,7 @@ pub fn render(font: &fontdue::Font, text: &[char], shown: usize, b: &TextBox, st
             continue;
         }
         let (m, bitmap) = font.rasterize(c, st.size);
-        if x + m.advance_width > right && x > left {
+        if x + m.advance_width > right && x > left && !NO_LINE_START.contains(c) {
             x = left;
             y += line_h;
         }

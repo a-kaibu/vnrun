@@ -5,7 +5,7 @@
 //! Each `frame` is saved as `<out prefix><frame>.png`; with `:x:y`, there is also a click there
 //! on that frame (`-1:-1`: a click on nothing, as Enter). The last frame is always saved.
 //! ADVHD_FONT names a TrueType font (default: web/public/fonts/ipag.ttf), ADVHD_TRACE lists
-//! commands as they run.
+//! commands as they run, ADVHD_START=frame:script jumps to a script on that frame.
 
 use advhd::engine::Engine;
 use advhd::files::Disk;
@@ -34,7 +34,13 @@ fn main() -> Result<(), String> {
         Ok(b) => e.set_font(&b)?,
         Err(err) => eprintln!("advhd: {font}: {err} (no text)"),
     }
+    // ADVHD_START=frame:script jumps to a script on that frame
+    let start = std::env::var("ADVHD_START").ok();
+    let start = start.as_deref().and_then(|s| s.split_once(':')).and_then(|(f, s)| Some((f.parse::<u64>().ok()?, s)));
     for f in 1..=frames {
+        if let Some((_, s)) = start.filter(|x| x.0 == f) {
+            e.goto(s)?;
+        }
         for (_, click) in marks.iter().filter(|m| m.0 == f) {
             if let Some((x, y)) = click {
                 e.click(*x, *y);

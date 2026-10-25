@@ -29,6 +29,8 @@ enum Wait {
     /// message text coming out
     Typing,
     Click,
+    /// choices on screen until the interface reports one (LegacyGame__lua_SelectItem)
+    Select(Vec<Arg>),
 }
 
 pub struct Engine {
@@ -49,6 +51,8 @@ pub struct Engine {
     order: Vec<String>,
     ended: bool,
     trace: bool,
+    /// the choice the interface reported
+    chosen: Option<i64>,
 }
 
 fn lua_str(v: &Value) -> String {
@@ -84,6 +88,7 @@ impl Engine {
             order: Vec::new(),
             ended: false,
             trace: false,
+            chosen: None,
         };
         e.init_lua();
         e.cur = e.script("start").ok_or("no start.ws2")?;
@@ -150,6 +155,14 @@ impl Engine {
 
     pub fn set_trace(&mut self, on: bool) {
         self.trace = on;
+        self.lua.trace = on && std::env::var_os("ADVHD_LUA").is_some();
+    }
+
+    /// Starts the scenario over at the top of a script (for trying out a part of the game).
+    pub fn goto(&mut self, script: &str) -> Result<(), String> {
+        self.stack.clear();
+        self.wait = Wait::None;
+        self.jump_file(script)
     }
 
     pub fn width(&self) -> u32 {
@@ -185,10 +198,13 @@ impl Engine {
             })
             .collect();
         format!(
-            "{}:{:#x} wait {:?}{} {}",
+            "{}:{:#x} wait {}{} {}",
             self.cur.name,
             self.pc,
-            self.wait,
+            match &self.wait {
+                Wait::Select(c) => format!("Select({} choices)", c.len()),
+                w => format!("{w:?}"),
+            },
             if s.paused { " (paused by Lua)" } else { "" },
             sets.join(" ")
         )
@@ -228,7 +244,9 @@ impl Engine {
         };
         self.lua.clock = now / 1000.0;
         // the interface's effects move on when asked whether they are running
+        // the interface finishes its effects when asked about them
         self.call("isSystemEffect", vec![]);
+        self.call("isMessageWindowEffect", vec![]);
         self.input();
         self.requests();
         let mut n = 0;
@@ -269,6 +287,9 @@ impl Engine {
             if x >= 0.0 {
                 self.st.borrow_mut().cursor = (x, y);
                 let a = self.mouse_args(x, y);
+                if self.trace {
+                    eprintln!("click {x},{y}: {:?}", &a[..3]);
+                }
                 self.call("onMouseMove", a.clone());
                 self.call("onLButtonDown", a.clone());
                 self.call("onLButtonUp", a);
@@ -307,6 +328,7 @@ impl Engine {
                     }
                 }
                 2 => self.ended = true,
+                -1 => self.chosen = Some(v),
                 _ => self.st.borrow_mut().unknown(&format!("NeedProcess {k} {v}")),
             }
         }
@@ -374,6 +396,31 @@ impl Engine {
                 false
             }
             Wait::Click => false,
+            Wait::Select(c) => {
+                // asked every frame: the interface finishes its effects here
+                let busy = self.call("isSelectEffect", vec![]).first().is_some_and(|v| v.truthy());
+                let Some(i) = self.chosen.filter(|_| !busy) else { return false };
+                self.chosen = None;
+                self.wait = Wait::None;
+                match c.get(i as usize) {
+                    Some(Arg::List(c)) => self.take_choice(c),
+                    _ => eprintln!("advhd: no choice {i}"),
+                }
+                true
+            }
+        }
+    }
+
+    /// Goes where a choice of command 0x0f leads: [id, text, ?, ?, ?, kind, target].
+    fn take_choice(&mut self, c: &[Arg]) {
+        match c.get(5).map(|x| x.int()) {
+            Some(6) => self.pc = c[6].int() as usize,
+            Some(7) => {
+                if let Err(e) = self.jump_file(c[6].text()) {
+                    eprintln!("advhd: {e}");
+                }
+            }
+            _ => {}
         }
     }
 
@@ -471,15 +518,20 @@ impl Engine {
                 }
             }
             0x0f => {
-                // choices: not drawn yet; take the first
-                self.st.borrow_mut().unknown("choices (0x0f)");
-                if let Arg::List(c) = a(0) {
-                    match c.get(5).map(|x| x.int()) {
-                        Some(6) => self.pc = c[6].int() as usize,
-                        Some(7) => self.jump_file(c[6].text())?,
-                        _ => {}
-                    }
+                let n = i.args.len();
+                self.call("initSelect", vec![Value::Int(n as i64)]);
+                for (k, c) in i.args.iter().enumerate() {
+                    let key = self.call("getSelectTextKey", vec![Value::Int(k as i64)]);
+                    let (set, layer) = (key.first().map(lua_str).unwrap_or_default(), key.get(1).map(lua_str).unwrap_or_default());
+                    let text = match c {
+                        Arg::List(c) => c.get(1).map(|t| t.text().to_string()).unwrap_or_default(),
+                        _ => String::new(),
+                    };
+                    self.st.borrow_mut().set_text(&set, &layer, &text, None);
+                    self.call("setSelectTextColor", vec![Value::Int(k as i64), Value::Int(0)]);
                 }
+                self.chosen = None;
+                self.wait = Wait::Select(i.args.clone());
             }
             0x11 => {
                 self.timers.insert(a(0).text().to_string(), now + a(2).num() as f64 * 1000.0);

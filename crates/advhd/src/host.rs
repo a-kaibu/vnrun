@@ -539,6 +539,7 @@ pub fn install(lua: &mut Lua, st: &St) {
     }
     lua.set_global("cclass", Value::Table(cclass));
     lua.set_global("cfunc", Value::Table(host_table(st, "cfunc", CFUNC, false)));
+    crate::io::install(lua, st);
     // "include" loads another script of Script.arc
     let st2 = st.clone();
     lua.set_global(

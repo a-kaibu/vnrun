@@ -67,6 +67,8 @@ pub struct Lua {
     /// seconds since 1970 when `clock` was 0, for os.time (natively the time Lua was made; the
     /// browser has no clock here, so its host sets it)
     pub epoch: f64,
+    /// print each Lua function as it is entered (for finding where a script goes)
+    pub trace: bool,
     seed: u64,
     /// the host's state, for native functions
     pub host: Option<Box<dyn std::any::Any>>,
@@ -99,6 +101,7 @@ impl Lua {
             v51: false,
             clock: 0.0,
             epoch: now(),
+            trace: false,
             seed: 0x2545_f491_4f6c_dd1d,
             host: None,
         };

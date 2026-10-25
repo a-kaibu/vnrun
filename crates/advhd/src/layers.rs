@@ -87,7 +87,7 @@ impl Params {
     fn add(&mut self, kind: i32, d: [f32; 4], k: f32) {
         let add3 = |a: &mut [f32; 3]| (0..3).for_each(|i| a[i] += d[i] * k);
         match kind {
-            0 => self.color[3] += d[3] * k,
+            0 => self.color[3] = (self.color[3] + d[3] * k).clamp(0.0, 1.0),
             1 => add3(&mut self.pos),
             2 => add3(&mut self.scale),
             3 => add3(&mut self.rot),
