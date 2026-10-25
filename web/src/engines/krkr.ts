@@ -9,7 +9,10 @@ import type { Manifest } from "../gamefs";
 import { Presenter } from "../present";
 
 interface KrkrModule {
-  FS: EmFS & { syncfs(populate: boolean, done: (error: unknown) => void): void };
+  FS: EmFS & {
+    syncfs(populate: boolean, done: (error: unknown) => void): void;
+    symlink(target: string, path: string): void;
+  };
   callMain(args: string[]): void;
   _vnrun_mouse(x: number, y: number, button: number, down: number): void;
   _vnrun_wheel(dy: number): void;
@@ -23,10 +26,19 @@ const DATA_PATH = "/libsdl/krkrsdl2";
 // SDL_BUTTON_* for the DOM's MouseEvent.button.
 const BUTTONS = [1, 2, 3];
 const POLYFILL = "/vnrun/polyfill";
+const POLYFILL_FILES = [
+  "PolyfillInitialize.tjs",
+  "MenuItem_stub.tjs",
+  "KAGParser.tjs",
+  ...["Plugins", "csvParser", "fstat", "windowEx", "layerExDraw", "scriptsEx", "KAGParserEx"].map(
+    (name) => `plugins/${name}.tjs`,
+  ),
+];
 const STARTUP = "/vnrun/startup.tjs";
 // ASCII only: the engine reads BOM-less scripts as Shift_JIS.
 const STARTUP_SCRIPT = `global.KirikiriPolyfillRoot = "${POLYFILL}/";
 Scripts.execStorage(global.KirikiriPolyfillRoot + "PolyfillInitialize.tjs");
+Scripts.execStorage(global.KirikiriPolyfillRoot + "plugins/Plugins.tjs");
 Scripts.execStorage("startup.tjs");
 `;
 
@@ -49,13 +61,16 @@ export async function start({ fs, manifest, ui, fonts }: EngineContext): Promise
     print: (text: string) => console.info(`krkr: ${text}`),
     printErr: (text: string) => console.warn(`krkr: ${text}`),
     vnrunPresent: (pixels: Uint8Array, pitch: number, width: number, height: number) =>
-      presenter.show(pixels, width, height, "rgba8unorm", pitch),
+      presenter.show(pixels, width, height, "bgra8unorm", pitch),
   });
   // KiriKiri matches names case-insensitively itself (OPTION_ENABLE_CASEINSENSITIVITY).
   mountGame(Module.FS, fs, manifest);
   const saves = new Saves(Module.FS, fs, SAVES, DATA_PATH);
-  // The exe is in the data path (patches/krkrsdl2), and KAG writes to savedata/ beside it.
+  // The exe is in the game folder (patches/krkrsdl2), and KAG writes to savedata/ beside it:
+  // that goes to the data path, which is kept as saves.
   Module.FS.mkdirTree(`${DATA_PATH}/savedata`);
+  if (!Module.FS.analyzePath("/game/savedata").exists)
+    Module.FS.symlink(`${DATA_PATH}/savedata`, "/game/savedata");
   // After writing save data the engine runs `FS.syncfs(false, ...)`
   // (src/core/environ/sdl2/Application.cpp): that is when saves go to the server.
   Module.FS.syncfs = (_populate, done) => {
@@ -85,10 +100,10 @@ export async function start({ fs, manifest, ui, fonts }: EngineContext): Promise
     { passive: false },
   );
 
-  // KiriKiri SDL2 has no menus, KAGParser plugin or default font. Its own stand-ins
-  // (engines/krkr/polyfill, with the player's font) run before the game's startup.tjs.
-  Module.FS.mkdirTree(POLYFILL);
-  for (const name of ["PolyfillInitialize.tjs", "MenuItem_stub.tjs", "KAGParser.tjs"]) {
+  // KiriKiri SDL2 has no menus, plugins or default font. Its own stand-ins and ours for common
+  // plugins (engines/krkr/polyfill, with the player's font) run before the game's startup.tjs.
+  Module.FS.mkdirTree(`${POLYFILL}/plugins`);
+  for (const name of POLYFILL_FILES) {
     const res = await fetch(engineUrl("krkr", `polyfill/${name}`));
     if (!res.ok) throw new Error(`polyfill/${name}: HTTP ${res.status}`);
     Module.FS.writeFile(`${POLYFILL}/${name}`, new Uint8Array(await res.arrayBuffer()));

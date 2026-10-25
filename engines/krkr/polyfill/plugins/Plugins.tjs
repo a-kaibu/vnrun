@@ -1,0 +1,25 @@
+// vnrun: KiriKiri SDL2 cannot load Windows plugins (Plugins.link does nothing). For the
+// plugins games use most, Plugins.link runs a script that stands in for the plugin instead.
+global.vnrunPlugins = %[
+	root: global.KirikiriPolyfillRoot + "plugins/",
+	link: global.Plugins.link,
+	loaded: %[],
+	standIns: %[
+		"csvparser.dll" => "csvParser.tjs",
+		"fstat.dll" => "fstat.tjs",
+		"windowex.dll" => "windowEx.tjs",
+		"layerexdraw.dll" => "layerExDraw.tjs",
+		"scriptsex.dll" => "scriptsEx.tjs",
+		"kagparserex.dll" => "KAGParserEx.tjs",
+	],
+];
+global.Plugins.link = function(name) {
+	var p = global.vnrunPlugins;
+	var key = Storages.extractStorageName(name).toLowerCase();
+	var script = p.standIns[key];
+	if (script === void) return p.link(name);
+	if (p.loaded[key]) return;
+	p.loaded[key] = true;
+	Debug.message("(vnrun) " + name + ": " + script);
+	Scripts.execStorage(p.root + script);
+} incontextof global;

@@ -1,0 +1,3 @@
+// vnrun: KAGParserEx.dll extends KAGParser; the polyfill's KAGParser stands in for both.
+if (typeof(global.KAGParser) !== "Object")
+	Scripts.execStorage(global.KirikiriPolyfillRoot + "KAGParser.tjs");

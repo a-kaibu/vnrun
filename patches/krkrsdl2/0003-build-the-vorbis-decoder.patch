@@ -1,0 +1,12 @@
+diff --git a/src/config/src_list/kirikirisdl2/sources.txt b/src/config/src_list/kirikirisdl2/sources.txt
+index 063fe75..8e53ef4 100644
+--- a/src/config/src_list/kirikirisdl2/sources.txt
++++ b/src/config/src_list/kirikirisdl2/sources.txt
+@@ -13,6 +13,7 @@ external/krkrz/extension/Extension.cpp
+ external/krkrz/msg/MsgIntf.cpp
+ external/krkrz/sound/MathAlgorithms.cpp
+ external/krkrz/sound/OpusCodecDecoder.cpp
++external/krkrz/sound/VorbisDecoder.cpp
+ external/krkrz/sound/PhaseVocoderDSP.cpp
+ external/krkrz/sound/PhaseVocoderFilter.cpp
+ external/krkrz/sound/QueueSoundBufferImpl.cpp

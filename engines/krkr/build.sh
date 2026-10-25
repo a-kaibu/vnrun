@@ -19,10 +19,12 @@ for p in "$ROOT"/patches/krkrsdl2/*.patch; do
   [[ -e "$p" ]] && git -C "$SRC" apply "$p"
 done
 # And for its KiriKiri Z (a submodule of it), patches/krkrz/*.patch.
-git -C "$SRC/external/krkrz" checkout -q -- .
+git -C "$SRC/external/krkrz" checkout -q -- . && git -C "$SRC/external/krkrz" clean -fdq
 for p in "$ROOT"/patches/krkrz/*.patch; do
   [[ -e "$p" ]] && git -C "$SRC/external/krkrz" apply "$p"
 done
+# stb_vorbis (public domain or MIT) for its Ogg Vorbis decoder (patches/krkrz/0003).
+cp "$ROOT/engines/krkr/stb_vorbis.c" "$SRC/external/krkrz/sound/"
 if ! command -v emcc > /dev/null; then
   # shellcheck disable=SC1091
   source "${EMSDK:?install Emscripten or set EMSDK}/emsdk_env.sh" > /dev/null
@@ -43,7 +45,7 @@ mkdir -p "$OUT"
 cp "$WORK/krkrsdl2.js" "$OUT/krkr.js"
 cp "$WORK/krkrsdl2.wasm" "$OUT/"
 # KiriKiri SDL2's stand-ins for what it lacks (menus, the KAGParser plugin, a default font),
-# from the KAG3 it ships (KAG3 license: free to modify and distribute). The page runs them
-# before the game's startup.tjs.
+# from the KAG3 it ships (KAG3 license: free to modify and distribute), and ours for common
+# plugins (polyfill/plugins). The page runs them before the game's startup.tjs.
 cp -r "$ROOT/engines/krkr/polyfill" "$OUT/"
 git -C "$SRC" rev-parse HEAD > "$OUT/REVISION"

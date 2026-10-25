@@ -1,0 +1,66 @@
+// vnrun: csvParser.dll. new CSVParser(target, separator=","), then init(text) or
+// initStorage(name) and getNextLine() until void, or parse(text) / parseStorage(name), which
+// call target.doLine(fields, lineNumber). Quoted fields may hold separators, "" and newlines.
+// Empty lines are skipped.
+class CSVParser
+{
+	var target, separator;
+	var text = "", pos = 0;
+	var currentLineNumber = 0;
+
+	function CSVParser(target = void, separator = ",") {
+		this.target = target;
+		this.separator = separator;
+	}
+	function finalize() {}
+
+	function init(text) {
+		this.text = text === void ? "" : (string)text;
+		pos = 0;
+		currentLineNumber = 0;
+	}
+	function initStorage(name, utf8 = false) {
+		var lines = [];
+		lines.load(name);
+		init(lines.join("\n"));
+	}
+
+	function getNextLine() {
+		var len = text.length;
+		while (pos < len) {
+			var fields = [], field = "", quoted = false, any = false;
+			currentLineNumber++;
+			while (pos < len) {
+				var c = text[pos];
+				if (quoted) {
+					if (c == "\"") {
+						if (pos + 1 < len && text[pos + 1] == "\"") { field += "\""; pos += 2; continue; }
+						quoted = false; pos++; continue;
+					}
+					if (c == "\n") currentLineNumber++;
+					field += c; pos++; continue;
+				}
+				if (c == "\"") { quoted = true; any = true; pos++; continue; }
+				if (c == separator) { fields.add(field); field = ""; any = true; pos++; continue; }
+				if (c == "\r") { pos++; continue; }
+				if (c == "\n") { pos++; break; }
+				field += c; any = true; pos++;
+			}
+			if (!any) continue;
+			fields.add(field);
+			return fields;
+		}
+		return void;
+	}
+
+	function parse(text = void) {
+		if (text !== void) init(text);
+		var fields;
+		while ((fields = getNextLine()) !== void)
+			if (target !== void) target.doLine(fields, currentLineNumber);
+	}
+	function parseStorage(name, utf8 = false) {
+		initStorage(name, utf8);
+		parse();
+	}
+}

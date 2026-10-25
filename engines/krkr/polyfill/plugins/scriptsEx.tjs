@@ -1,0 +1,42 @@
+// vnrun: scriptsEx.dll, the object helpers on Scripts.
+{
+	var S = global.Scripts;
+	// [key, value, key, value, ...] of a dictionary
+	S.vnrunPairs = function(obj) { var a = []; a.assign(obj); return a; } incontextof global;
+	if (typeof(S.getObjectKeys) === "undefined")
+		S.getObjectKeys = function(obj) {
+			var a = Scripts.vnrunPairs(obj), keys = [];
+			for (var i = 0; i < a.count; i += 2) keys.add(a[i]);
+			return keys;
+		} incontextof global;
+	if (typeof(S.getObjectCount) === "undefined")
+		S.getObjectCount = function(obj) { return Scripts.vnrunPairs(obj).count \ 2; } incontextof global;
+	if (typeof(S.foreach) === "undefined")
+		S.foreach = function(obj, func, *) {
+			if (obj instanceof "Array") {
+				for (var i = 0; i < obj.count; i++)
+					if (func(i, obj[i], *)) break;
+				return;
+			}
+			var a = Scripts.vnrunPairs(obj);
+			for (var i = 0; i < a.count; i += 2)
+				if (func(a[i], a[i + 1], *)) break;
+		} incontextof global;
+	if (typeof(S.equalStruct) === "undefined")
+		S.equalStruct = function(a, b) {
+			if (typeof(a) != "Object" || typeof(b) != "Object" || a === null || b === null) return a === b;
+			var x = [], y = [];
+			if (a instanceof "Array") { if (!(b instanceof "Array")) return false; x.assign(a); y.assign(b); }
+			else { x = Scripts.vnrunPairs(a); y = Scripts.vnrunPairs(b); }
+			if (x.count != y.count) return false;
+			for (var i = 0; i < x.count; i++)
+				if (!Scripts.equalStruct(x[i], y[i])) return false;
+			return true;
+		} incontextof global;
+	if (typeof(S.clone) === "undefined")
+		S.clone = function(obj) {
+			if (typeof(obj) != "Object" || obj === null) return obj;
+			if (obj instanceof "Array") { var a = []; a.assignStruct(obj); return a; }
+			var d = %[]; d.assignStruct(obj); return d;
+		} incontextof global;
+}

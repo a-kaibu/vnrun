@@ -1,0 +1,27 @@
+// vnrun: windowEx.dll. Window extras that mean nothing in a page do nothing.
+{
+	var nop = function() {};
+	var W = global.Window;
+	var methods = [
+		"registerExEvent", "minimize", "maximize", "showRestore", "resetWindowIcon",
+		"setWindowIcon", "focusMenuByKey", "setOverlayBitmap", "bringTo", "sendToBack",
+		"resetExSystemMenu", "setMessageHook", "setMinimizeBox",
+		"setMaximizeBox", "setDisableResize"];
+	for (var i = 0; i < methods.count; i++)
+		if (typeof(W[methods[i]]) === "undefined") W[methods[i]] = nop;
+	if (typeof(W.getWindowRect) === "undefined")
+		W.getWindowRect = function() { return %[ x: left, y: top, w: width, h: height ]; };
+	if (typeof(W.getClientRect) === "undefined")
+		W.getClientRect = function() { return %[ x: 0, y: 0, w: innerWidth, h: innerHeight ]; };
+	var S = global.System;
+	if (typeof(S.getDisplayMonitors) === "undefined")
+		S.getDisplayMonitors = function() { return [ System.getMonitorInfo() ]; };
+	if (typeof(S.getMonitorInfo) === "undefined")
+		S.getMonitorInfo = function() {
+			var r = %[ x: 0, y: 0, w: System.screenWidth, h: System.screenHeight ];
+			return %[ monitor: r, work: r, primary: true, name: "vnrun" ];
+		};
+	if (typeof(S.getCursorPos) === "undefined")
+		S.getCursorPos = function() { return %[ x: 0, y: 0 ]; };
+	if (typeof(S.setCursorPos) === "undefined") S.setCursorPos = nop;
+}

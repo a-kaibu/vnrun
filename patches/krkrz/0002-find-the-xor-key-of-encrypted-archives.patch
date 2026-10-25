@@ -1,0 +1,132 @@
+diff --git a/base/XP3Archive.cpp b/base/XP3Archive.cpp
+index 19b09ec2..47ee0bbe 100644
+--- a/base/XP3Archive.cpp
++++ b/base/XP3Archive.cpp
+@@ -544,6 +544,94 @@ tTVPXP3Archive::tTVPXP3Archive(const ttstr & name) : tTVPArchive(name)
+ 	delete st;
+ 
+ 	TVPAddLog( TVPFormatMessage( TVPInfoDoneWithContains, ttstr(Count), ttstr(segmentcount) ) );
++
++	if(!TVPXP3ArchiveExtractionFilter) DetectXor();
++}
++//---------------------------------------------------------------------------
++// vnrun: finds the XOR key from the start of files whose first bytes are known (images,
++// sounds), or failing those from scripts, which read as text with the right key. Each file
++// votes for a key both as a plain key and as a key XOR the file hash; the key with most votes
++// wins, and the hash mode only when the files disagree on the plain key.
++void tTVPXP3Archive::DetectXor()
++{
++	static const struct { const tjs_char *ext; tjs_uint8 magic[4]; tjs_uint len; } magics[] = {
++		{ TJS_W(".png"), { 0x89, 'P', 'N', 'G' }, 4 },
++		{ TJS_W(".tlg"), { 'T', 'L', 'G', 0 }, 3 },
++		{ TJS_W(".ogg"), { 'O', 'g', 'g', 'S' }, 4 },
++		{ TJS_W(".jpg"), { 0xff, 0xd8, 0xff, 0 }, 3 },
++		{ TJS_W(".bmp"), { 'B', 'M', 0, 0 }, 2 },
++		{ TJS_W(".wav"), { 'R', 'I', 'F', 'F' }, 4 },
++	};
++	static const tjs_char *texts[] = { TJS_W(".tjs"), TJS_W(".ks"), TJS_W(".txt"), TJS_W(".csv") };
++	tjs_uint votes[2][256] = {};
++	tjs_uint nmagic = 0, ntext = 0;
++	for(tjs_uint i = 0; i < ItemVector.size() && (nmagic < 16 || ntext < 8); i++)
++	{
++		const tArchiveItem &item = ItemVector[i];
++		if(item.OrgSize < 16) continue;
++		ttstr ext = TVPExtractStorageExt(item.Name);
++		ext.ToLowerCase();
++		int magic = -1, text = 0;
++		for(tjs_uint m = 0; m < sizeof(magics) / sizeof(magics[0]); m++)
++			if(ext == magics[m].ext) magic = m;
++		for(tjs_uint t = 0; t < sizeof(texts) / sizeof(texts[0]); t++)
++			if(ext == texts[t]) text = 1;
++		if(magic < 0 ? (!text || ntext >= 8) : nmagic >= 16) continue;
++
++		tjs_uint8 buf[256];
++		tjs_uint size = 0;
++		try
++		{
++			tTJSBinaryStream *st = CreateStreamByIndex(i);
++			size = st->Read(buf, sizeof(buf));
++			delete st;
++		}
++		catch(...)
++		{
++			continue;
++		}
++		if(size < 16) continue;
++		tjs_uint8 hash = (tjs_uint8)item.FileHash;
++		if(magic >= 0)
++		{
++			tjs_uint8 key = buf[0] ^ magics[magic].magic[0];
++			bool all = true;
++			for(tjs_uint b = 1; b < magics[magic].len; b++)
++				all = all && (tjs_uint8)(buf[b] ^ key) == magics[magic].magic[b];
++			if(!all) continue;
++			votes[0][key] += 4;
++			votes[1][key ^ hash] += 4;
++			nmagic++;
++		}
++		else
++		{
++			// the key under which most bytes are ASCII text (or the zeros of UTF-16)
++			tjs_uint best = 0, bestn = 0;
++			for(tjs_uint key = 0; key < 256; key++)
++			{
++				tjs_uint n = 0;
++				for(tjs_uint b = 0; b < size; b++)
++				{
++					tjs_uint8 c = buf[b] ^ key;
++					n += c == 0 || c == '\t' || c == '\n' || c == '\r' || (c >= 0x20 && c < 0x7f);
++				}
++				if(n > bestn) best = key, bestn = n;
++			}
++			if(bestn * 10 < size * 9) continue;
++			votes[0][best]++;
++			votes[1][best ^ hash]++;
++			ntext++;
++		}
++	}
++	tjs_uint mode = 0, key = 0;
++	for(tjs_uint m = 0; m < 2; m++)
++		for(tjs_uint k = 0; k < 256; k++)
++			if(votes[m][k] > votes[mode][key]) mode = m, key = k;
++	if(votes[mode][key] == 0 || (mode == 0 && key == 0)) return;
++	XorMode = mode ? XorWithHash : XorKeyOnly;
++	XorKey = (tjs_uint8)key;
++	TVPAddLog(TJS_W("(vnrun) XOR encrypted archive: key 0x") + ttstr(TJSInt32ToHex(key)) +
++		(mode ? TJS_W(" with the file hash") : TJS_W("")));
+ }
+ //---------------------------------------------------------------------------
+ tTVPXP3Archive::~tTVPXP3Archive()
+@@ -1022,6 +1110,14 @@ tjs_uint TJS_INTF_METHOD tTVPXP3ArchiveStream::Read(void *buffer, tjs_uint read_
+ 			TVPXP3ArchiveExtractionFilter
+ 				( (tTVPXP3ExtractionFilterInfo*) &info );
+ 		}
++		else if(Owner->XorMode != tTVPXP3Archive::XorNone)
++		{
++			tjs_uint8 key = Owner->XorKey;
++			if(Owner->XorMode == tTVPXP3Archive::XorWithHash)
++				key ^= (tjs_uint8)Owner->GetFileHash(StorageIndex);
++			tjs_uint8 *p = (tjs_uint8*)buffer + write_size;
++			for(tjs_uint i = 0; i < one_size; i++) p[i] ^= key;
++		}
+ 
+ 		// adjust members
+ 		SegmentPos += one_size;
+diff --git a/base/XP3Archive.h b/base/XP3Archive.h
+index e413b047..cf69d57f 100644
+--- a/base/XP3Archive.h
++++ b/base/XP3Archive.h
+@@ -109,7 +109,13 @@ class tTVPXP3Archive : public tTVPArchive
+ 	tjs_int Count;
+ 
+ 	std::vector<tArchiveItem> ItemVector;
++
++	void DetectXor();
+ public:
++	// vnrun: archives encrypted by XORing every byte with a key, or with the low byte of the
++	// file hash XOR a key (the TPM plugins of many titles); found by DetectXor.
++	enum { XorNone, XorKeyOnly, XorWithHash } XorMode = XorNone;
++	tjs_uint8 XorKey = 0;
+ 	tTVPXP3Archive(const ttstr & name);
+ 	~tTVPXP3Archive();
+ 

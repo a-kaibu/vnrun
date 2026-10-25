@@ -1,0 +1,110 @@
+diff --git a/sound/VorbisDecoder.cpp b/sound/VorbisDecoder.cpp
+new file mode 100644
+index 00000000..8667d036
+--- /dev/null
++++ b/sound/VorbisDecoder.cpp
+@@ -0,0 +1,84 @@
++// vnrun: Ogg Vorbis (.ogg), which KiriKiri reads through the wuvorbis plugin on Windows;
++// decoded with stb_vorbis (engines/krkr/stb_vorbis.c, copied here by the build).
++#define STB_VORBIS_NO_STDIO
++#define STB_VORBIS_NO_PUSHDATA_API
++#include "stb_vorbis.c"
++
++#include "tjsCommHead.h"
++#include "StorageIntf.h"
++#include "WaveIntf.h"
++
++#include <memory>
++#include <vector>
++
++class tTVPWD_Vorbis : public tTVPWaveDecoder
++{
++	std::vector<unsigned char> Data;
++	stb_vorbis *Vorbis = nullptr;
++	tTVPWaveFormat Format;
++
++public:
++	explicit tTVPWD_Vorbis(std::vector<unsigned char> &&data) : Data(std::move(data)) {}
++	~tTVPWD_Vorbis() override { if (Vorbis) stb_vorbis_close(Vorbis); }
++
++	bool Open() {
++		int error = 0;
++		Vorbis = stb_vorbis_open_memory(Data.data(), (int)Data.size(), &error, nullptr);
++		if (!Vorbis) return false;
++		stb_vorbis_info info = stb_vorbis_get_info(Vorbis);
++		memset(&Format, 0, sizeof(Format));
++		Format.SamplesPerSec = info.sample_rate;
++		Format.Channels = info.channels;
++		Format.BitsPerSample = 16;
++		Format.BytesPerSample = 2;
++		Format.Seekable = true;
++		Format.TotalSamples = stb_vorbis_stream_length_in_samples(Vorbis);
++		Format.TotalTime = info.sample_rate ? Format.TotalSamples * 1000 / info.sample_rate : 0;
++		return true;
++	}
++
++	void GetFormat(tTVPWaveFormat &format) override { format = Format; }
++
++	bool Render(void *buf, tjs_uint bufsamplelen, tjs_uint &rendered) override {
++		short *out = (short *)buf;
++		const int ch = Format.Channels;
++		tjs_uint done = 0;
++		while (done < bufsamplelen) {
++			int n = stb_vorbis_get_samples_short_interleaved(Vorbis, ch, out + done * ch,
++				(int)((bufsamplelen - done) * ch));
++			if (n <= 0) break;
++			done += n;
++		}
++		rendered = done;
++		return done == bufsamplelen;
++	}
++
++	bool SetPosition(tjs_uint64 samplepos) override {
++		return stb_vorbis_seek(Vorbis, (unsigned int)samplepos) != 0;
++	}
++};
++
++class tTVPWDC_Vorbis : public tTVPWaveDecoderCreator
++{
++public:
++	tTVPWaveDecoder *Create(const ttstr &storagename, const ttstr &extension) override {
++		if (extension != TJS_W(".ogg")) return nullptr;
++		try {
++			std::unique_ptr<tTJSBinaryStream> stream(TVPCreateStream(storagename));
++			if (!stream) return nullptr;
++			std::vector<unsigned char> data((size_t)stream->GetSize());
++			stream->ReadBuffer(data.data(), (tjs_uint)data.size());
++			std::unique_ptr<tTVPWD_Vorbis> decoder(new tTVPWD_Vorbis(std::move(data)));
++			if (!decoder->Open()) return nullptr;
++			return decoder.release();
++		} catch (...) {
++			return nullptr;
++		}
++	}
++};
++
++static tTVPWDC_Vorbis VorbisDecoderCreator;
++void TVPRegisterVorbisDecoderCreator()
++{
++	TVPRegisterWaveDecoderCreator(&VorbisDecoderCreator);
++}
+diff --git a/sound/WaveIntf.cpp b/sound/WaveIntf.cpp
+index a0525043..a1bdfa6b 100644
+--- a/sound/WaveIntf.cpp
++++ b/sound/WaveIntf.cpp
+@@ -795,6 +795,7 @@ tTVPWaveDecoder * tTVPWDC_RIFFWave::Create(const ttstr & storagename,
+ #ifdef TVP_OPUS_DECODER_IMPLEMENT
+ extern void TVPRegisterOpusDecoderCreator();
+ #endif
++extern void TVPRegisterVorbisDecoderCreator();
+ //---------------------------------------------------------------------------
+ // tTVPWaveDecoder interface management
+ //---------------------------------------------------------------------------
+@@ -811,6 +812,7 @@ struct tTVPWaveDecoderManager
+ #ifdef TVP_OPUS_DECODER_IMPLEMENT
+ 		TVPRegisterOpusDecoderCreator();
+ #endif
++		TVPRegisterVorbisDecoderCreator();
+ 	}
+ 
+ 	~tTVPWaveDecoderManager()

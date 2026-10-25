@@ -1,0 +1,169 @@
+// vnrun: layerExDraw.dll (GDI+ drawing on layers), roughly: shapes fill their bounding box
+// with the brushes and lines are drawn with the pens' colour and width; curves are not
+// traced. Strings are drawn with the layer's font, edged by the pens.
+class GdiPlusAppearance
+{
+	var brushes = [], pens = [];
+	function GdiPlusAppearance() {}
+	function finalize() {}
+	function clear() { brushes.clear(); pens.clear(); }
+	function colorOf(b) {
+		if (typeof(b) != "Object") return +b;
+		if (b.color !== void) return +b.color;
+		if (b.color1 !== void) return +b.color1;
+		if (b.foreColor !== void) return +b.foreColor;
+		if (b.colors !== void && b.colors.count) return +b.colors[0];
+		return 0xff000000;
+	}
+	function addBrush(brush, ox = 0, oy = 0) { brushes.add(colorOf(brush)); }
+	function addPen(brush, pen = 1, ox = 0, oy = 0) {
+		var width = typeof(pen) == "Object" ? (pen.width !== void ? +pen.width : 1) : +pen;
+		pens.add(%[ color: colorOf(brush), width: width < 1 ? 1 : width ]);
+	}
+}
+
+class GdiPlusFont
+{
+	var familyName, emSize, style;
+	function GdiPlusFont(familyName = "", emSize = 12, style = 0) {
+		this.familyName = familyName;
+		this.emSize = emSize;
+		this.style = style;
+	}
+	function finalize() {}
+	property ascent { getter { return emSize * 0.88; } }
+	property descent { getter { return emSize * 0.12; } }
+	property lineSpacing { getter { return emSize * 1.2; } }
+	property ascentLeading { getter { return 0; } }
+	property descentLeading { getter { return 0; } }
+}
+
+global.GdiPlus = %[
+	Appearance: GdiPlusAppearance,
+	Font: GdiPlusFont,
+	addPrivateFont: function(name) {},
+	showPrivateFontList: function() {},
+	FontStyleRegular: 0, FontStyleBold: 1, FontStyleItalic: 2, FontStyleBoldItalic: 3,
+	FontStyleUnderline: 4, FontStyleStrikeout: 8,
+	BrushTypeSolidColor: 0, BrushTypeHatchFill: 1, BrushTypeTextureFill: 2,
+	BrushTypePathGradient: 3, BrushTypeLinearGradient: 4,
+	LineCapFlat: 0, LineCapSquare: 1, LineCapRound: 2, LineCapTriangle: 3,
+	DashStyleSolid: 0, DashStyleDash: 1, DashStyleDot: 2,
+	LineJoinMiter: 0, LineJoinBevel: 1, LineJoinRound: 2,
+	SmoothingModeAntiAlias: 4, TextRenderingHintAntiAlias: 4,
+];
+
+class VnrunGdiDraw
+{
+	function rect(x, y, w, h) {
+		return %[ x: x, y: y, width: w, height: h, left: x, top: y, right: x + w, bottom: y + h ];
+	}
+	function paint(l, c, x, y, w, h) {
+		x = int x; y = int y; w = int w; h = int h;
+		if (w > 0 && h > 0) l.colorRect(x, y, w, h, c & 0xffffff, (c >> 24) & 0xff);
+	}
+	function points(list) {
+		var out = [];
+		for (var i = 0; i < list.count; i++) {
+			var p = list[i];
+			if (typeof(p) != "Object") continue;
+			if (p instanceof "Array") out.add([ +p[0], +p[1] ]);
+			else out.add([ +p.x, +p.y ]);
+		}
+		return out;
+	}
+	function line(l, app, x1, y1, x2, y2) {
+		for (var i = 0; i < app.pens.count; i++) {
+			var pen = app.pens[i], w = pen.width, h = w / 2;
+			var dx = x2 - x1, dy = y2 - y1;
+			if (dx == 0 || dy == 0) {
+				paint(l, pen.color, Math.min(x1, x2) - h, Math.min(y1, y2) - h, Math.abs(dx) + w, Math.abs(dy) + w);
+				continue;
+			}
+			var steps = int (Math.max(Math.abs(dx), Math.abs(dy)) / w) + 1;
+			for (var s = 0; s <= steps; s++)
+				paint(l, pen.color, x1 + dx * s / steps - h, y1 + dy * s / steps - h, w, w);
+		}
+	}
+	function box(l, app, x, y, w, h) {
+		for (var i = 0; i < app.brushes.count; i++) paint(l, app.brushes[i], x, y, w, h);
+		if (app.pens.count) {
+			line(l, app, x, y, x + w, y);
+			line(l, app, x + w, y, x + w, y + h);
+			line(l, app, x + w, y + h, x, y + h);
+			line(l, app, x, y + h, x, y);
+		}
+		return rect(x, y, w, h);
+	}
+	function shape(l, app, list) {
+		var p = points(list);
+		if (!p.count) return rect(0, 0, 0, 0);
+		var x0 = p[0][0], y0 = p[0][1], x1 = x0, y1 = y0;
+		for (var i = 1; i < p.count; i++) {
+			x0 = Math.min(x0, p[i][0]); y0 = Math.min(y0, p[i][1]);
+			x1 = Math.max(x1, p[i][0]); y1 = Math.max(y1, p[i][1]);
+		}
+		return box(l, app, x0, y0, x1 - x0, y1 - y0);
+	}
+	function path(l, app, list) {
+		var p = points(list);
+		for (var i = 1; i < p.count; i++) line(l, app, p[i - 1][0], p[i - 1][1], p[i][0], p[i][1]);
+		return rect(0, 0, l.width, l.height);
+	}
+}
+
+{
+	var L = global.Layer;
+	L.drawRectangle = function(app, x, y, w, h) { return VnrunGdiDraw.box(this, app, x, y, w, h); };
+	L.drawRectangles = function(app, rects) {
+		for (var i = 0; i < rects.count; i++) {
+			var r = rects[i];
+			if (r instanceof "Array") VnrunGdiDraw.box(this, app, r[0], r[1], r[2], r[3]);
+			else VnrunGdiDraw.box(this, app, r.x, r.y, r.width, r.height);
+		}
+		return VnrunGdiDraw.rect(0, 0, width, height);
+	};
+	L.drawEllipse = function(app, x, y, w, h) { return VnrunGdiDraw.box(this, app, x, y, w, h); };
+	L.drawPie = function(app, x, y, w, h, start, sweep) { return VnrunGdiDraw.box(this, app, x, y, w, h); };
+	L.drawArc = function(app, x, y, w, h, start, sweep) { return VnrunGdiDraw.rect(x, y, w, h); };
+	L.drawLine = function(app, x1, y1, x2, y2) {
+		VnrunGdiDraw.line(this, app, x1, y1, x2, y2);
+		return VnrunGdiDraw.rect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
+	};
+	L.drawLines = function(app, list) { return VnrunGdiDraw.path(this, app, list); };
+	L.drawBezier = function(app, x1, y1, x2, y2, x3, y3, x4, y4) {
+		VnrunGdiDraw.line(this, app, x1, y1, x4, y4);
+		return VnrunGdiDraw.rect(0, 0, width, height);
+	};
+	L.drawBeziers = function(app, list) { return VnrunGdiDraw.shape(this, app, list); };
+	L.drawPolygon = function(app, list) { return VnrunGdiDraw.shape(this, app, list); };
+	L.drawClosedCurve = function(app, list) { return VnrunGdiDraw.shape(this, app, list); };
+	L.drawClosedCurve2 = function(app, list, tension) { return VnrunGdiDraw.shape(this, app, list); };
+	L.drawCurve = function(app, list) { return VnrunGdiDraw.path(this, app, list); };
+	L.drawCurve2 = function(app, list, tension) { return VnrunGdiDraw.path(this, app, list); };
+	L.drawCurve3 = function(app, list, offset, num, tension) { return VnrunGdiDraw.path(this, app, list); };
+	L.drawPathString = function(font, app, x, y, text) {
+		var f = this.font;
+		f.height = int font.emSize;
+		f.bold = (font.style & 1) != 0;
+		f.italic = (font.style & 2) != 0;
+		for (var i = 0; i < app.pens.count; i++) {
+			var pen = app.pens[i];
+			drawText(x, y, text, pen.color & 0xffffff, (pen.color >> 24) & 0xff, true,
+				1024, pen.color & 0xffffff, int pen.width, 0, 0);
+		}
+		for (var i = 0; i < app.brushes.count; i++) {
+			var c = app.brushes[i];
+			drawText(x, y, text, c & 0xffffff, (c >> 24) & 0xff, true);
+		}
+		return VnrunGdiDraw.rect(x, y, f.getTextWidth(text), f.getTextHeight(text));
+	};
+	L.drawString = function(font, app, x, y, text) { return drawPathString(font, app, x, y, text); };
+	L.measureString = function(font, text) {
+		var f = this.font;
+		f.height = int font.emSize;
+		return VnrunGdiDraw.rect(0, 0, f.getTextWidth(text), f.getTextHeight(text));
+	};
+	L.measureStringInternal = L.measureString;
+	L.drawImage = function(x, y, image) { return VnrunGdiDraw.rect(x, y, 0, 0); };
+}
