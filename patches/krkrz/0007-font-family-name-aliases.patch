@@ -1,0 +1,29 @@
+diff --git a/visual/FreeType.cpp b/visual/FreeType.cpp
+index ed71dd37..74ecff1e 100644
+--- a/visual/FreeType.cpp
++++ b/visual/FreeType.cpp
+@@ -229,8 +229,11 @@ static void TVPLoadFont( FT_Open_Args& arg, std::vector<FontInfo*>& fonts, std::
+ 			// populate font aliases
+ 			FT_SfntName name_tmp;
+ 			for (int i = 0; !FT_Get_Sfnt_Name(face, i, &name_tmp); i++) {
++				// vnrun: the family names too (all languages), as Windows lists them: games ask for
++				// "源ノ明朝 JP", the Japanese family of Source Han Serif JP.
+ 				if (name_tmp.platform_id == TT_PLATFORM_MICROSOFT &&
+-					name_tmp.name_id == TT_NAME_ID_FULL_NAME) {
++					(name_tmp.name_id == TT_NAME_ID_FULL_NAME || name_tmp.name_id == TT_NAME_ID_FONT_FAMILY ||
++					 name_tmp.name_id == TT_NAME_ID_PREFERRED_FAMILY)) {
+ 					switch (name_tmp.encoding_id) {
+ 					case TT_MS_ID_SJIS:
+ 					{
+@@ -424,6 +427,11 @@ void tTVPFreeTypeFaceList::GetFontList(std::vector<ttstr> & list, tjs_uint32 fla
+ 			ttstr facename( (*i)->facename );
+ 			if(std::find(list.begin(), list.end(), facename) == list.end())
+ 				list.push_back( facename );
++			for( auto &a : (*i)->aliases ) { // vnrun: and the names GetFace finds them by
++				ttstr alias( a );
++				if(std::find(list.begin(), list.end(), alias) == list.end())
++					list.push_back( alias );
++			}
+ 		}
+ 	}
+ 	for( auto i = systemfaces_.begin(); i != systemfaces_.end(); i++ ) {

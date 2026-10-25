@@ -1,7 +1,7 @@
 // vnrun: csvParser.dll. new CSVParser(target, separator=","), then init(text) or
 // initStorage(name) and getNextLine() until void, or parse(text) / parseStorage(name), which
 // call target.doLine(fields, lineNumber) (no target: this.doLine). Quoted fields may hold
-// separators, "" and newlines. Spaces and tabs around unquoted fields are dropped (UI .func files
+// separators, "" and newlines; quotes inside an unquoted field are kept. Spaces and tabs around unquoted fields are dropped (UI .func files
 // line their columns up with tabs). Empty lines are skipped.
 class CSVParser
 {
@@ -42,7 +42,8 @@ class CSVParser
 					if (c == "\n") currentLineNumber++;
 					field += c; pos++; continue;
 				}
-				if (c == "\"") { if (!wasQuoted) field = trim(field); quoted = wasQuoted = true; any = true; pos++; continue; }
+				// a quote opens a quoted field only at its start: &f("x") keeps its quotes
+				if (c == "\"" && (wasQuoted || trim(field) == "")) { if (!wasQuoted) field = ""; quoted = wasQuoted = true; any = true; pos++; continue; }
 				if (c == separator) { fields.add(wasQuoted ? field : trim(field)); field = ""; wasQuoted = false; any = true; pos++; continue; }
 				if (c == "\r") { pos++; continue; }
 				if (c == "\n") { pos++; break; }
