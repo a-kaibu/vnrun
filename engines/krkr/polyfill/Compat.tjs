@@ -53,8 +53,13 @@ if (typeof(global.gpButtonA) === "undefined") {
 	global.gpTimer = 0; global.gpTouchDown = 30; // XINPUT_GAMEPAD_TRIGGER_THRESHOLD
 }
 
-// Border icons (Delphi's TBorderIcon set) for Window.borderIcons-style menus of Windows builds.
-if (typeof(global.biMinimize) === "undefined") {
-	global.biSystemMenu = 1; global.biMinimize = 2; global.biMaximize = 4; global.biHelp = 8;
-	global.Window.biSystemMenu = 1; global.Window.biMinimize = 2; global.Window.biMaximize = 4; global.Window.biHelp = 8;
+// Windows builds give menu items the title bar's bitmaps (HBMMENU_*) for window control menus.
+if (typeof(global.MenuItem.biMinimize) === "undefined") {
+	var M = global.MenuItem;
+	M.biSystem = 1; M.biRestore = 2; M.biMinimize = 3; M.biMaximize = 10; M.biClose = 5;
+	M.biPopupClose = 8; M.biPopupRestore = 9; M.biPopupMaximize = 10; M.biPopupMinimize = 11;
 }
+
+// The window handle, which games hand to plugins (gamepad.dll); there is none here.
+if (typeof(global.Window.HWND) === "undefined")
+	global.Window.HWND = 0;
