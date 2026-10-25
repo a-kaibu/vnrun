@@ -13,14 +13,20 @@
 		S.getObjectCount = function(obj) { return Scripts.vnrunPairs(obj).count \ 2; } incontextof global;
 	if (typeof(S.foreach) === "undefined")
 		S.foreach = function(obj, func, *) {
+			// a true result stops the walk and is returned (KAGEX findAffineSource picks its
+			// image source class so)
 			if (obj instanceof "Array") {
-				for (var i = 0; i < obj.count; i++)
-					if (func(i, obj[i], *)) break;
+				for (var i = 0; i < obj.count; i++) {
+					var r = func(i, obj[i], *);
+					if (r) return r;
+				}
 				return;
 			}
 			var a = Scripts.vnrunPairs(obj);
-			for (var i = 0; i < a.count; i += 2)
-				if (func(a[i], a[i + 1], *)) break;
+			for (var i = 0; i < a.count; i += 2) {
+				var r = func(a[i], a[i + 1], *);
+				if (r) return r;
+			}
 		} incontextof null; // a callback without a context runs on the caller's this, as in scriptsEx
 	if (typeof(S.equalStruct) === "undefined")
 		S.equalStruct = function(a, b) {
