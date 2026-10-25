@@ -1,0 +1,58 @@
+diff --git a/crates/ethornell-app/src/lib.rs b/crates/ethornell-app/src/lib.rs
+index 7ed8c22..8a699e8 100644
+--- a/crates/ethornell-app/src/lib.rs
++++ b/crates/ethornell-app/src/lib.rs
+@@ -5498,7 +5498,7 @@ impl RuntimeTraceApi {
+             // CDspObjBackML (sub_41E060), BackRPL (sub_41ED70: 255 -> +0x164,
+             // 256 alpha bitmap), BackRTT (sub_41F160: 128/257) and BackSTR
+             // (sub_41F9D0: 258) keep their values for the background renderer.
+-            (Some(NativeBackgroundClass::BackMl), 0x41 | 0x80 | 0x81 | 0x82 | 0x8f)
++            (Some(NativeBackgroundClass::BackMl), 0x41 | 0x80 | 0x81 | 0x82 | 0x8e | 0x8f)
+             | (Some(NativeBackgroundClass::BackStr), 258) => {
+                 if property == 258 && ((extra as u16) < 2 || (extra as u32 >> 16) < 2) {
+                     return Err(254);
+diff --git a/crates/ethornell-app/src/native_backml.rs b/crates/ethornell-app/src/native_backml.rs
+index 9959772..4ceb259 100644
+--- a/crates/ethornell-app/src/native_backml.rs
++++ b/crates/ethornell-app/src/native_backml.rs
+@@ -80,8 +80,9 @@ impl RuntimeTraceApi {
+             if !matches!(sf, 1 | 2) {
+                 continue;
+             }
+-            let advance =
+-                |delta: i32| ((i64::from(delta) * i64::from(progress as u32)) >> 24) as i32;
++            // Curve 0 is linear: delta * progress >> 24.
++            let source_curve = crate::animation::target_curve_fixed_16(record.source_curve, progress);
++            let advance = |delta: i32| ((i64::from(delta) * i64::from(source_curve)) >> 16) as i32;
+             let source_x = record.source_x.wrapping_add(advance(record.source_delta_x));
+             let source_y = record.source_y.wrapping_add(advance(record.source_delta_y));
+             let angle_curve = crate::animation::target_curve_fixed_16(record.auxiliary_a, progress);
+@@ -266,6 +267,7 @@ impl RuntimeTraceApi {
+                 record.scale_delta_x = value;
+                 record.scale_delta_y = extra;
+             }
++            0x8e => record.source_curve = value,
+             0x8f => {
+                 record.auxiliary_a = value;
+                 record.auxiliary_b = extra;
+diff --git a/crates/ethornell-app/src/native_graph_sys91.rs b/crates/ethornell-app/src/native_graph_sys91.rs
+index c09f135..a08f0da 100644
+--- a/crates/ethornell-app/src/native_graph_sys91.rs
++++ b/crates/ethornell-app/src/native_graph_sys91.rs
+@@ -42,6 +42,8 @@ pub(super) struct Graph91MultiLayerRecord {
+     pub scale_y: i32,
+     pub auxiliary_a: i32,
+     pub auxiliary_b: i32,
++    /// 1.7x property 0x8E (+0x184): the curve of the source motion.
++    pub source_curve: i32,
+     pub source_delta_x: i32,
+     pub source_delta_y: i32,
+     pub rotation_delta: i32,
+@@ -68,6 +70,7 @@ impl Default for Graph91MultiLayerRecord {
+             scale_y: 0x1_0000,
+             auxiliary_a: 0,
+             auxiliary_b: 0,
++            source_curve: 0,
+             source_delta_x: 0,
+             source_delta_y: 0,
+             rotation_delta: 0,
