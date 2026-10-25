@@ -1,0 +1,69 @@
+--- a/src/core/sdl2/SDLApplication.cpp
++++ b/src/core/sdl2/SDLApplication.cpp
+@@ -936,6 +936,20 @@
+ 
+ void TVPWindowWindow::SetPaintBoxSize(tjs_int w, tjs_int h)
+ {
++#ifdef __EMSCRIPTEN__
++	// vnrun: the window surface is the frame the page shows, so it takes the primary layer's size
++	if (this->window && !this->renderer && this->surface && (this->surface->w != w || this->surface->h != h))
++	{
++		SDL_SetWindowSize(this->window, w, h);
++		this->bitmapCompletion->surface = nullptr;
++		this->surface = SDL_GetWindowSurface(this->window);
++		if (!this->surface)
++		{
++			TVPThrowExceptionMessage(TJS_W("Cannot get surface from SDL window: %1"), ttstr(SDL_GetError()));
++		}
++		this->bitmapCompletion->surface = this->surface;
++	}
++#endif
+ #ifdef KRKRSDL2_ENABLE_ZOOM
+ 	this->LayerWidth = w;
+ 	this->LayerHeight = h;
+@@ -1352,7 +1366,9 @@
+ }
+ void TVPWindowWindow::SetWidth(tjs_int w)
+ {
+-#ifndef KRKRSDL2_WINDOW_SIZE_IS_LAYER_SIZE
++// vnrun: on the web the surface follows the primary layer (SetPaintBoxSize), not the size
++	// scripts give the window (a smaller one would be zoomed on Windows)
++#if !defined(KRKRSDL2_WINDOW_SIZE_IS_LAYER_SIZE) && !defined(__EMSCRIPTEN__)
+ 	if (this->window)
+ 	{
+ 		int h;
+@@ -1378,7 +1394,9 @@
+ }
+ void TVPWindowWindow::SetHeight(tjs_int h)
+ {
+-#ifndef KRKRSDL2_WINDOW_SIZE_IS_LAYER_SIZE
++// vnrun: on the web the surface follows the primary layer (SetPaintBoxSize), not the size
++	// scripts give the window (a smaller one would be zoomed on Windows)
++#if !defined(KRKRSDL2_WINDOW_SIZE_IS_LAYER_SIZE) && !defined(__EMSCRIPTEN__)
+ 	if (this->window)
+ 	{
+ 		int w;
+@@ -1404,7 +1422,9 @@
+ }
+ void TVPWindowWindow::SetSize(tjs_int w, tjs_int h)
+ {
+-#ifndef KRKRSDL2_WINDOW_SIZE_IS_LAYER_SIZE
++// vnrun: on the web the surface follows the primary layer (SetPaintBoxSize), not the size
++	// scripts give the window (a smaller one would be zoomed on Windows)
++#if !defined(KRKRSDL2_WINDOW_SIZE_IS_LAYER_SIZE) && !defined(__EMSCRIPTEN__)
+ 	if (this->window)
+ 	{
+ 		SDL_SetWindowSize(this->window, w, h);
+--- a/src/core/sdl2/SDLBitmapCompletion.cpp
++++ b/src/core/sdl2/SDLBitmapCompletion.cpp
+@@ -30,6 +30,10 @@
+ 		w = 0;
+ 		h = 0;
+ 	}
++	// vnrun: the window surface can be smaller than the primary layer (a script set a smaller
++	// innerWidth); copying past it wrote over the heap
++	if (w > surface->w) w = surface->w;
++	if (h > surface->h) h = surface->h;
+ 	if(
+ 		!(x < 0 || y < 0 ||
+ 			x + cliprect.get_width() > w ||
