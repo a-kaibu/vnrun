@@ -169,7 +169,7 @@ b2010_akabeesoft	起動	5d1348e で注意書きの後 override.tjs(696) stopQuak
 b2006_akabeesoft	NG	5d1348e で「TypeError: getWasmTableEntry(...) is not a function」
 b2012_akabeesoft3	NG	「Member "sysClickSkip" does not exist」(first.ks(5))
 b2011_nanawind	NG	cxdec 系 (yuyukana.tpm) で未対応。「Invalid character '\x03'」
-b2020_lass_pixy	NG	a491dc8 で win32dialog は通過、lass_menu.tjs(33) reparent で「Member "dispDoubleBufferMenu" does not exist」(メニュー項目)
+b2020_lass_pixy	NG	d51f3e8 で dispDoubleBufferMenu は通過、lass_menu.tjs(6) menu.parent.remove(menu) で「Cannot convert the variable type ((void) to Object)」(ダミーメニューの parent が void)
 b2015_pachipachi_soft	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」
 b2010_grand_cru	NG	5d1348e で黒画面のまま
 b2014_undermoon	タイトル	5d1348e でタイトル画面まで表示
