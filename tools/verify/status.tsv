@@ -319,7 +319,7 @@ s2026_poison_motion_sxs_me	起動	d51f3e8 系のページでCAUTION とブラン
 s2025_poison_extasy_paizuri_me	起動	d51f3e8 系のページで注意書きとブランドロゴまで。タイトルは未確認
 s2011_hulotte_with_ribbon	起動	d51f3e8 系のページで注意書きまで。クリック後は白画面 (OpenAL Error A004 あり)
 s2014_cube_koikano	NG	d51f3e8 系のページで例外なしの白画面のまま
-dl_RJ01677912	NG	e0a3162 で bi* は通過、menus.tjs(1) SetWindowControlMenu (ip 561) で「Member "rightJustify" does not exist」、黒画面
+dl_RJ01677912	NG	d2b3a3e でメニュー初期化は通過、ゲーム側が「HOTKEYの登録ができません」で致命的エラー。saveSystemVariables の rename も失敗、黒画面
 s2021_nanawind_kanade_gram_ch1	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」
 s2010_akabeesoft_lavender	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」
 s2021_akabeesoft2_roleplayer	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」
