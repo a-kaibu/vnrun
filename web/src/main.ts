@@ -19,6 +19,7 @@ const ENGINES: Record<string, () => Promise<EngineModule>> = {
   kirikiri: () => import("./engines/krkr"),
   yuris: () => import("./engines/yuris"),
   nexas: () => import("./engines/nexas"),
+  advhd: () => import("./engines/advhd"),
   html: () => import("./engines/html"),
 };
 

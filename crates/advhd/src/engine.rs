@@ -143,6 +143,11 @@ impl Engine {
         Ok(())
     }
 
+    /// Seconds since 1970, for Lua's os.time where the engine can't tell (the browser).
+    pub fn set_time(&mut self, secs: f64) {
+        self.lua.epoch = secs - self.lua.clock;
+    }
+
     pub fn set_trace(&mut self, on: bool) {
         self.trace = on;
     }
@@ -221,6 +226,7 @@ impl Engine {
             s.screen.step(now);
             now
         };
+        self.lua.clock = now / 1000.0;
         // the interface's effects move on when asked whether they are running
         self.call("isSystemEffect", vec![]);
         self.input();

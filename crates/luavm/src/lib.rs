@@ -64,9 +64,22 @@ pub struct Lua {
     pub v51: bool,
     /// seconds for os.clock (the host advances it)
     pub clock: f64,
+    /// seconds since 1970 when `clock` was 0, for os.time (natively the time Lua was made; the
+    /// browser has no clock here, so its host sets it)
+    pub epoch: f64,
     seed: u64,
     /// the host's state, for native functions
     pub host: Option<Box<dyn std::any::Any>>,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn now() -> f64 {
+    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64())
+}
+
+#[cfg(target_arch = "wasm32")]
+fn now() -> f64 {
+    0.0
 }
 
 impl Default for Lua {
@@ -85,6 +98,7 @@ impl Lua {
             depth: 0,
             v51: false,
             clock: 0.0,
+            epoch: now(),
             seed: 0x2545_f491_4f6c_dd1d,
             host: None,
         };

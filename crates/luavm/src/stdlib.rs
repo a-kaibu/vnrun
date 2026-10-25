@@ -306,13 +306,7 @@ pub fn open(lua: &mut Lua) {
     g.set_str("math", Value::table(math));
 
     let mut os = Table::default();
-    reg(&mut os, "time", |_, _| {
-        let t = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_secs())
-            .unwrap_or(0);
-        Ok(vec![Value::Int(t as i64)])
-    });
+    reg(&mut os, "time", |lua, _| Ok(vec![Value::Int((lua.epoch + lua.clock) as i64)]));
     reg(&mut os, "clock", |lua, _| Ok(vec![Value::Num(lua.clock)]));
     reg(&mut os, "date", |_, _| {
         Ok(vec![Value::str("2000/01/01 00:00:00")])
