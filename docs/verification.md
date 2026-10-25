@@ -48,7 +48,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 2 | 17 | 9 | 3 | 2 |  |  |
 | 吉里吉里 (KiriKiri SDL2) | 135 |  | 7 | 8 | 1 | 21 |  | 98 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
-| NeXAS (vnrun) | 30 |  | 1 | 3 | 1 | 24 | 1 |  |
+| NeXAS (vnrun) | 30 | 1 | 1 | 1 | 1 | 25 | 1 |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -383,15 +383,15 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| s2015_giga_renaiphase | [恋愛フェイズ 体験版](http://suezou.dyndns.org/dl2015/giga/renaiphase/RP_trial.zip) | タイトル | 64d6316 でタイトル (Digest Story / H Story) まで |
-| b2011_giga | [ホチキス - 体験版](http://suezou.dyndns.org/dl2011/giga/hotchkiss/hotchkiss_trial.zip) | 起動 | 64d6316 (2015 年版の表) で真っ白 (ページ下のバーも出ない。タブが落ちた可能性) |
-| b2012_giga | [キスベル　体験版](http://suezou.dyndns.org/dl2012/giga/kissbell/kissbell_trial.zip) | 起動 | 64d6316 (2015 年版の表) で真っ白 (ページ下のバーも出ない。タブが落ちた可能性) |
-| b2013_giga | [キスアト体験版](http://suezou.dyndns.org/dl2013/giga/kissato/kissato_trial.zip) | 起動 | 64d6316 (2015 年版の表) で真っ白 (ページ下のバーも出ない。タブが落ちた可能性) |
+| b2012_giga | [キスベル　体験版](http://suezou.dyndns.org/dl2012/giga/kissbell/kissbell_trial.zip) | 本編 | b425e77 (2012 年版の表) で New Game から本編の文章まで |
+| s2015_giga_renaiphase | [恋愛フェイズ 体験版](http://suezou.dyndns.org/dl2015/giga/renaiphase/RP_trial.zip) | タイトル | b425e77 でもタイトルまで |
+| b2011_giga | [ホチキス - 体験版](http://suezou.dyndns.org/dl2011/giga/hotchkiss/hotchkiss_trial.zip) | 起動 | b425e77 でも真っ白 (ページ下のバーも出ない。タブが落ちた可能性) |
 | s2006_giga_cheerfull | [チアフル！ ～cheerfull!～ 【 体験版 】](http://suezou.dyndns.org/dl2006/giga/cheerfull/cheerfull_trial.exe) | 要再確認 | 自己展開 exe のダウンロード/展開に失敗 |
 | b2009_crossover | [美乳淫妹 遥「私にイヤらしいコスプレさせるなんて……この変態！」](http://suezou.dyndns.org/dl2009/crossover/haruka/bnharuka_trial.zip) | NG | 64d6316 (2015 年版の表) で「no Script.pac」(DATA/ フォルダの形) |
 | b2010_giga | [JINKI EXTEND Re:VISION -SECOND IMPACT-](http://suezou.dyndns.org/dl2010/giga/jinkirv/jinki_webtrial.zip) | NG | 64d6316 (2015 年版の表) で「System.bin: string is cut short」 |
 | b2010_marine | [paicheer_trial.exe](http://suezou.dyndns.org/dl2010/marine/paicheer/paicheer_trial.exe) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
 | b2011_marine | [kyonyutry_trial.exe](http://suezou.dyndns.org/dl2011/marine/kyonyutry/kyonyutry_trial.exe) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
+| b2013_giga | [キスアト体験版](http://suezou.dyndns.org/dl2013/giga/kissato/kissato_trial.zip) | NG | b425e77 で「System.bin runs without stopping at None:54」 |
 | b2016_giga | [リプキス　体験版](http://suezou.dyndns.org/dl2016/giga/repkiss/repkiss_trial.zip) | NG | 64d6316 (2015 年版の表) で「Script.pac has no Title」 |
 | b2019_giga | [アイキス 豪華体験版](http://suezou.dyndns.org/dl2019/giga/aikiss/aikiss_premium_trial.zip) | NG | 64d6316 (2015 年版の表) で「4247762216 columns」 |
 | b2023_turumiku_another | [非道狩～ヒトカリ～ 体験版](http://suezou.dyndns.org/dl2023/turumiku-another/hitokari/hitokari-trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
