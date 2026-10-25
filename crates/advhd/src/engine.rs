@@ -31,6 +31,8 @@ enum Wait {
     Click,
     /// choices on screen until the interface reports one (LegacyGame__lua_SelectItem)
     Select(Vec<Arg>),
+    /// a menu the scenario opened (0x1c, the function said true) until its sets are gone
+    Menu(Vec<String>),
 }
 
 pub struct Engine {
@@ -158,6 +160,10 @@ impl Engine {
     }
 
     /// Calls a global Lua function, reporting errors; nothing when it doesn't exist.
+    fn set_names(&self) -> Vec<String> {
+        self.st.borrow().screen.sets.iter().map(|x| x.name.clone()).collect()
+    }
+
     fn call(&mut self, name: &str, args: Vec<Value>) -> Vec<Value> {
         let f = self.lua.global(name);
         if f.is_nil() {
@@ -489,6 +495,14 @@ impl Engine {
                 false
             }
             Wait::Click => false,
+            Wait::Menu(sets) => {
+                let open = self.set_names();
+                let done = !sets.iter().any(|n| open.contains(n));
+                if done {
+                    self.wait = Wait::None;
+                }
+                done
+            }
             Wait::Select(c) => {
                 // asked every frame: the interface finishes its effects here
                 let busy = self
@@ -712,7 +726,16 @@ impl Engine {
                     Value::Int(a(2).int()),
                     Value::Int(a(3).int()),
                 ];
-                self.call(a(0).text(), args);
+                let before = self.set_names();
+                let r = self.call(a(0).text(), args);
+                // a menu (openCharSelect, openGallery) returns true and the scenario waits
+                // until it closes, which is when the sets it made are removed
+                if r.first().is_some_and(|v| v.truthy()) {
+                    let new: Vec<String> = self.set_names().into_iter().filter(|n| !before.contains(n)).collect();
+                    if !new.is_empty() {
+                        self.wait = Wait::Menu(new);
+                    }
+                }
             }
             0x33 | 0x34 => {
                 let mut s = self.st.borrow_mut();
