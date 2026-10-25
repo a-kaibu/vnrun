@@ -42,9 +42,10 @@ if (!url || !out) {
   page.on("console", (m) => log.push(`[${m.type()}] ${m.text()}`));
   page.on("pageerror", (e) => log.push(`[pageerror] ${e.message}`));
   // alert/confirm from the game (KiriKiri's System.inform, yes/no dialogs): logged, answered no.
+  // prompt (AdvHD name entry): accepted with its default, or a placeholder name when it has none.
   page.on("dialog", (d) => {
     log.push(`[dialog ${d.type()}] ${d.message()}`);
-    d.dismiss().catch(() => {});
+    (d.type() === "prompt" ? d.accept(d.defaultValue() || "テスト") : d.dismiss()).catch(() => {});
   });
   page.on("worker", (w) => w.on("console", (m) => log.push(`[worker ${m.type()}] ${m.text()}`)));
   process.on("exit", () => fs.writeFileSync(`${out}.log`, log.join("\n")));
