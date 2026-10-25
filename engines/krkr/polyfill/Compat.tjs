@@ -29,3 +29,9 @@ if (typeof(global.ExtractMojimoGameFont) === "undefined")
 			global.Window[names[i]] = item;
 		}
 }
+
+// Window.setLayerPos is built only with USE_OBSOLETE_FUNCTIONS; KAG 2 era quakes (stopQuake)
+// still call it. It would move the layers inside the window, which the SDL form ignores anyway
+// (layerLeft/layerTop are obsolete too), so the quake doesn't shake and nothing fails.
+if (typeof(global.Window.setLayerPos) === "undefined")
+	global.Window.setLayerPos = function(l, t) {} incontextof null;
