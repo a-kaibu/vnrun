@@ -21,7 +21,7 @@
 			var a = Scripts.vnrunPairs(obj);
 			for (var i = 0; i < a.count; i += 2)
 				if (func(a[i], a[i + 1], *)) break;
-		} incontextof global;
+		} incontextof null; // a callback without a context runs on the caller's this, as in scriptsEx
 	if (typeof(S.equalStruct) === "undefined")
 		S.equalStruct = function(a, b) {
 			if (typeof(a) != "Object" || typeof(b) != "Object" || a === null || b === null) return a === b;
