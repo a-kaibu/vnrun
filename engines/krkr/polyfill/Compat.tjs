@@ -18,8 +18,14 @@ if (typeof(global.ExtractMojimoGameFont) === "undefined")
 // Games written for KiriKiri 2 build some menus only there (@if (!kirikiriz)) and use them
 // anyway, e.g. lass_pixy's dispDoubleBufferMenu: windows have a menu nobody sees for them.
 {
+	// under a parent of their own, as scripts move them elsewhere (menu.parent.remove(menu))
+	var hidden = new MenuItem(null, "");
+	hidden.visible = false;
 	var names = [ "dispDoubleBufferMenu", "useDoubleBufferMenuItem" ];
 	for (var i = 0; i < names.count; i++)
-		if (typeof(global.Window[names[i]]) === "undefined")
-			global.Window[names[i]] = new MenuItem(null, "");
+		if (typeof(global.Window[names[i]]) === "undefined") {
+			var item = new MenuItem(null, "");
+			hidden.add(item);
+			global.Window[names[i]] = item;
+		}
 }
