@@ -134,7 +134,7 @@ dl_RJ01702800	タイトル
 dl_RJ01720685	本編	クリックで最初の会話まで
 r1_kag3	要再確認	KAG3 のサンプル (xp3 にまとめていない data フォルダ)。開発スレッドでは確認済み
 b2006_ninetail	タイトル	5d1348e でタイトル画面まで表示
-b2016_cube	NG	5d1348e で真っ白のまま
+b2016_cube	タイトル	0c62865 で白画面からクリック 2 回でタイトル画面まで表示
 b2013_hulotte	タイトル	591d0a0 で注意画面からタイトルまで (XOR 暗号の xp3)
 r1_krkr_apt306	タイトル	e7d5b88 でタイトル画面まで表示
 b2022_syoku	タイトル	5d1348e でタイトル画面まで表示
@@ -253,7 +253,7 @@ s2019_appetite_aniyome_furin	タイトル	5d1348e でタイトル画面まで表
 s2018_pin_point_yakyurare	タイトル	5d1348e でタイトル画面まで表示。起動時に「フルスクリーンで表示しますか？」の確認ダイアログが出る
 dl_VJ01000639	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
 s2014_hibiki_works	NG	customhistorylayer.tjs(124) ScrollBarInit で例外、「Invalid TLG header or unsupported TLG version」
-s2013_hibiki_works_lovely_cation2	NG	first.ks(5) / override.tjs(1585) cancelSkip で例外
+s2013_hibiki_works_lovely_cation2	起動	0c62865 でロゴと注意書き 2 枚まで (開発側では名前入力まで確認)
 b2015_nanawind	NG	PackinOne / E-mote (motionplayer, psbfile) で未対応。default.tjs(174) で PaddingInfo.tjs が見つからない
 s2024_no_strike_yuribatake	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。initialize.tjs(303) KAGLoadScript で「Cannot convert given narrow string to wide string」
 s2026_no_strike_jyosou_yuriarashi	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。initialize.tjs(303) KAGLoadScript で「Cannot convert given narrow string to wide string」
@@ -261,7 +261,7 @@ s2022_akabeesoft2_roleplayer_tororo	NG	スクリプトが exe 内蔵の暗号 (c
 s2008_dualtail_clarice	タイトル	e7d5b88 でタイトル画面まで表示
 s2021_no_strike_Trap_Genesis	NG	暗号化 (シナリオ、未対応)。213e9df で DrawDeviceForSteam は通過、kagparser.tjs(96) loadScenario で「narrow→wide」
 s2025_akabeesoft2_roleplayer_ikura	タイトル	f99fe3f でタイトル画面まで表示 (起動から約 2 分)
-s2020_sagaplanets_kakenuke	NG	暗号化 (Mojimo ゲームフォント、Scripts.loadDataPack の IV 付き、未対応)。default.tjs(315) で例外
+s2020_sagaplanets_kakenuke	NG	0c62865 で例外なしの灰色画面のまま
 s2026_poison_motion_sxs2_me	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
 s2011_grand_cru_imostar	NG	5d1348e で例外なしで黒画面のまま
 dl_VJ01004136	タイトル	5d1348e でタイトル画面まで表示
@@ -332,4 +332,4 @@ s2018_ensemble_otostuki	本編	b75e0c9 で注意画面 → タイトル → STAR
 s2008_ninetail_amatu	タイトル	
 dl_RJ01677912	本編	1929e7a で START から本編テキストまで (立ち絵・名前欄・文章)
 b2016_alcot	タイトル	ae3efe1 でタイトル画面まで表示 (起動から約 2 分)
-b2014_hibiki_works	NG	e7d5b88 でロゴと注意書きまで出るが、AlphaMovie (AlphaMovie.dll) が無く停止
+b2014_hibiki_works	起動	0c62865 で AlphaMovie は通過し、ロゴと注意書き 2 枚まで (さらにクリックが必要)
