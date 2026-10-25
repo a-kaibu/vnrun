@@ -46,7 +46,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Artemis (art3m1s-core) | 6 |  | 5 |  |  | 1 |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 2 | 17 | 9 | 3 | 2 |  |  |
-| 吉里吉里 (KiriKiri SDL2) | 135 | 2 | 88 | 9 | 1 | 25 |  | 10 |
+| 吉里吉里 (KiriKiri SDL2) | 135 | 2 | 94 | 2 | 1 | 26 |  | 10 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 30 | 5 | 1 |  | 1 | 22 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
@@ -214,10 +214,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_RJ01677912 | [とける風花とシロうさぎ](https://trial.dlsite.com/doujin/RJ01678000/RJ01677912_trial.zip) | 本編 | 1929e7a で START から本編テキストまで (立ち絵・名前欄・文章) |
 | b2006_akabeesoft | [その横顔を見つめてしまう ～a profile完全版～ web体験版](http://suezou.dyndns.org/dl2006/akabeesoft/sonoyoko/sonoyoko_trial.zip) | タイトル | dc42573 でタイトル画面まで表示 |
 | b2006_ninetail | [機械仕掛けのイブ　～Ｄｅａ　Ｅｘ　Ｍａｃｈｉｎａ～](http://suezou.dyndns.org/dl2006/ninetail/eve/0527_eve_trial_ver100.exe) | タイトル | 5d1348e でタイトル画面まで表示 |
+| b2008_akabeesoft | [ＷＬＯ-世界恋愛機構- web用体験版](http://suezou.dyndns.org/dl2008/akabeesoft/wlo/wlo_webtrial.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
 | b2008_dualtail | [Venus Blood Chimera](http://suezou.dyndns.org/dl2008/dualtail/vbc/VBC_trial_SLGver100.zip) | タイトル | e7d5b88 でタイトル画面まで表示 |
 | b2009_dualtail | [魔法少女ラヴィリオン 体験版](http://suezou.dyndns.org/dl2009/dualtail/ravilion/ravi_trial.exe) | タイトル | dc42573 でタイトル画面まで表示 (クリックで設定画面も開く) |
 | b2010_akabeesoft | [置き場がない！ web体験版](http://suezou.dyndns.org/dl2010/akabeesoft/okiba/okiba_webTRIAL.zip) | タイトル | d084599 (setLayerPos) でタイトル画面まで表示 |
 | b2011_grand_cru | [はっぴぃふぁくとりー　体験版](http://suezou.dyndns.org/dl2011/grand-cru/hf/hp_trial.zip) | タイトル | 591d0a0 で黒地にタイトルのメニュー文字だけ出る |
+| b2012_akabeesoft3 | [JOKER-死線の果ての道化師-](http://suezou.dyndns.org/dl2012/akabeesoft3/joker/joker_web_trial2.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
 | b2012_cross_over | [美脚隷嬢優奈「脚もお尻もこんなに穢すなんて……絶対に許さない！」体験版](http://suezou.dyndns.org/dl2012/cross-over/yuna/br_yuuna_trial2.zip) | タイトル | e7d5b88 でタイトル画面まで表示 |
 | b2012_parasol | [恋妹SWEET☆DAYS 体験版](http://suezou.dyndns.org/dl2012/parasol/koiimo/koiimo_taiken.zip) | タイトル | 5d1348e でタイトル画面まで表示。クリック後に黒画面 |
 | b2013_cross_over | [花嫁狩凌 ～絶対快楽の白濁淫毒～ 体験版](http://suezou.dyndns.org/dl2013/cross-over/hana/hanayome_trial.zip) | タイトル | 591d0a0 でタイトルまで |
@@ -257,6 +259,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_VJ01000497 | [【DLsite限定版】性感エステ 灯 -AKARI- マキ（28）](https://trial.dlsite.com/professional/VJ01001000/VJ01000497_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | dl_VJ01000502 | [堕とされていくお姉ちゃんと、何もできないボク ～憧れの彼女は、淫落し痴態をさらけ出す～](https://trial.dlsite.com/professional/VJ01001000/VJ01000502_trial.zip) | タイトル | d51f3e8 系のページでタイトル画面まで表示 |
 | dl_VJ01000564 | [VenusBlood GAIA International R-18版](https://trial.dlsite.com/professional/VJ01001000/VJ01000564_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
+| dl_VJ01000639 | [【デラックス版】調教カテイ ～性開発された肢体は元カレを忘れられない～](https://trial.dlsite.com/professional/VJ01001000/VJ01000639_trial.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
 | dl_VJ01000679 | [居座りカノジョとのドキドキ同居生活 ～ねぇねぇ、おじさんしたいでしょ♪～](https://trial.dlsite.com/professional/VJ01001000/VJ01000679_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | dl_VJ01001109 | [最強の人妻ヒロインが寝取られるまで ～お願い！夫にはバラさないで…～](https://trial.dlsite.com/professional/VJ01002000/VJ01001109_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | dl_VJ01002065 | [快楽セックスで堕とされていた愛する妻 ～他の男の手で身も心もイキ狂っていく最愛妻](https://trial.dlsite.com/professional/VJ01003000/VJ01002065_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
@@ -300,15 +303,11 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2024_appetite_isekai_cyoroin | [異世界チョロインは、いとも簡単に堕とされる～あれ、ボクの彼女…寝取られちゃいました？～　体験版](http://suezou.dyndns.org/dl2024/appetite/isekai_cyoroin/apt251_tr.zip) | タイトル | d51f3e8 系のページでタイトル画面まで表示 |
 | s2024_at_sakura_iede_takamura | [家出少女・高邑緋雪の秘蜜 体験版](http://suezou.dyndns.org/dl2024/at-sakura/iede_takamura/aspc-0155_taiken_ver1.0.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2025_akabeesoft2_roleplayer_ikura | [Role player：いくら姉妹の粘膜ポトレ　ぐりぐちゃLIVE！　体験版](http://suezou.dyndns.org/dl2025/akabeesoft2/roleplayer_ikura/Role_player_ikura_trial.zip) | タイトル | f99fe3f でタイトル画面まで表示 (起動から約 2 分) |
-| b2008_akabeesoft | [ＷＬＯ-世界恋愛機構- web用体験版](http://suezou.dyndns.org/dl2008/akabeesoft/wlo/wlo_webtrial.zip) | 起動 | 5d1348e で注意書き画面まで。タイトルは未確認 |
-| b2008_asa_project | [Hime のち Honey - 体験版](http://suezou.dyndns.org/dl2008/asa-project/himehoney/hime_web_trial1.zip) | 起動 | 5d1348e でロゴと体験版の注意書きまで。タイトルは未確認 |
-| b2012_akabeesoft3 | [JOKER-死線の果ての道化師-](http://suezou.dyndns.org/dl2012/akabeesoft3/joker/joker_web_trial2.zip) | 起動 | e7d5b88 でロゴと注意書きまで。タイトルは未確認 |
-| dl_VJ01000639 | [【デラックス版】調教カテイ ～性開発された肢体は元カレを忘れられない～](https://trial.dlsite.com/professional/VJ01001000/VJ01000639_trial.zip) | 起動 | 5d1348e でブランドロゴとタイトルロゴまで。メニューは未確認 |
-| s2011_hulotte_with_ribbon | [With Ribbon Hシーン体験版](http://suezou.dyndns.org/dl2011/hulotte/with-ribbon/with-ribbon_trial2.zip) | 起動 | d51f3e8 系のページで注意書きまで。クリック後は白画面 (OpenAL Error A004 あり) |
+| s2025_poison_extasy_paizuri_me | [最高に都合の良いパイズリ上手のマリーさん - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2025/poison-extasy/paizuri_me/paizuri_me_tr.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
+| s2026_poison_motion_sxs2_me | [姉妹X催眠２ - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2026/poison-motion/sxs2-me/sxs2me_trial.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
+| s2026_poison_motion_sxs_me | [姉妹X催眠 - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2026/poison-motion/sxs-me/sxsme_trial.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
+| b2008_asa_project | [Hime のち Honey - 体験版](http://suezou.dyndns.org/dl2008/asa-project/himehoney/hime_web_trial1.zip) | 起動 | d40622e でロゴと注意書き 2 枚まで (さらにクリックが必要) |
 | s2017_nanawind_alice_gram | [春音アリス＊グラム　体験版](http://suezou.dyndns.org/dl2017/nanawind/alice_gram/harugra_trial.zip) | 起動 | f99fe3f で例外は出なくなったが、操作なしでは 3 分たっても黒画面 (開発側ではタイトルと本編まで確認済み) |
-| s2025_poison_extasy_paizuri_me | [最高に都合の良いパイズリ上手のマリーさん - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2025/poison-extasy/paizuri_me/paizuri_me_tr.zip) | 起動 | d51f3e8 系のページで注意書きとブランドロゴまで。タイトルは未確認 |
-| s2026_poison_motion_sxs2_me | [姉妹X催眠２ - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2026/poison-motion/sxs2-me/sxs2me_trial.zip) | 起動 | 213e9df で CAUTION 画面まで。タイトルは未確認 |
-| s2026_poison_motion_sxs_me | [姉妹X催眠 - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2026/poison-motion/sxs-me/sxsme_trial.zip) | 起動 | d51f3e8 系のページでCAUTION とブランドロゴまで。タイトルは未確認 |
 | r1_kag3 | [KAG3 紹介デモ](https://krkrz.github.io/download/kr2_232r2.zip) | 要再確認 | KAG3 のサンプル (xp3 にまとめていない data フォルダ)。開発スレッドでは確認済み |
 | b2010_grand_cru | [Reunion～３日間だけのプチ同棲～　体験版](http://suezou.dyndns.org/dl2010/grand-cru/reunion/Reunion_trial.lzh) | NG | 5d1348e で黒画面のまま |
 | b2011_nanawind | [ユユカナ 体験版](http://suezou.dyndns.org/dl2011/nanawind/yuyukana/yuyu_taiken01.zip) | NG | cxdec 系 (yuyukana.tpm) で未対応。「Invalid character '\x03'」 |
@@ -324,6 +323,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2022_hending | [リンパにATATA! ～メス牡蠣ミルクどぴゅらっしゅ♡～](http://suezou.dyndns.org/dl2022/hending/atata/atata_trial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」 |
 | s2010_akabeesoft_lavender | [光輪の町、ラベンダーの少女　体験版](http://suezou.dyndns.org/dl2010/akabeesoft/lavender/lavender_webTRIAL.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」 |
 | s2011_grand_cru_imostar | [しゅ～てぃんぐ妹スター☆ ～おにいちゃん、覚悟しててよね♪～　体験版](http://suezou.dyndns.org/dl2011/grand-cru/imostar/imosta_trial.zip) | NG | 5d1348e で例外なしで黒画面のまま |
+| s2011_hulotte_with_ribbon | [With Ribbon Hシーン体験版](http://suezou.dyndns.org/dl2011/hulotte/with-ribbon/with-ribbon_trial2.zip) | NG | d40622e で注意書きの後、クリックすると白画面のまま |
 | s2013_hibiki_works_lovely_cation2 | [ＬＯＶＥＬＹ×Ｃ∧ＴＩＯＮ２](http://suezou.dyndns.org/dl2013/hibiki-works/lovely_cation2/LxC2_trial_web.zip) | NG | first.ks(5) / override.tjs(1585) cancelSkip で例外 |
 | s2014_cube_koikano | [恋する彼女の不器用な舞台 体験版](http://suezou.dyndns.org/dl2014/cube/koikano/koikanoTrial.zip) | NG | d51f3e8 系のページで例外なしの白画面のまま |
 | s2020_sagaplanets_kakenuke | [かけぬけ★青春スパーキング！ 体験版](http://suezou.dyndns.org/dl2020/sagaplanets/kakenuke/kakenuke_trial.zip) | NG | 暗号化 (Mojimo ゲームフォント、Scripts.loadDataPack の IV 付き、未対応)。default.tjs(315) で例外 |
