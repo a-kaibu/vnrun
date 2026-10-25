@@ -9,6 +9,8 @@ class MenuItem
 	var radio = false;
 	var shortcut = "";
 	var visible = true;
+	var rightJustify = false;
+	var bmpItem = 0;
 	var parent;
 	var children;
 	var root;
