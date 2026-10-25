@@ -331,5 +331,5 @@ dl_VJ01004836	本編	b076f1f で START から本編テキストまで
 s2018_ensemble_otostuki	要再確認	zip の展開が不完全で Rio.arc が見つからない (Bgm/Chip*.arc のみ)
 s2008_ninetail_amatu	タイトル	
 dl_RJ01677912	NG	0a37f6c で getNotificationNum は通過、uiloader.tjs で Scripts.loadDataPack が無く停止
-b2016_alcot	NG	quickmenu.tjs の EventProxyLayer で owner.names に "qsave" が無く、dm() が Invalid argument count。黒画面
-b2014_hibiki_works	NG	arc/image.xp3 の TLG (先頭 5 バイト平文 + (adler>>12) XOR) で方式判定を誤り TLG Read Error。黒画面
+b2016_alcot	NG	14cde42 でも quickmenu.tjs の EventProxyLayer で owner.names に "qsave" が無い。黒画面
+b2014_hibiki_works	NG	14cde42 で TLG は読めるようになった。effect.ks(1608) で layerExAlpha.dll の Layer.MaskRect が無く停止
