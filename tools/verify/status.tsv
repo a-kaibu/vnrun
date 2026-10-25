@@ -34,17 +34,17 @@ b2013_lumpofsugar	タイトル	c27e445 で直った
 b2019_sukerasparo	タイトル	
 b2011_lumpofsugar	タイトル	
 b2015_lump_of_sugar	タイトル	3b42c00 で解消
-b2010_lumpofsugar	要再確認	f81eded のビルドでは 4 分間黒画面のまま (MPEG のオープニング?)。以前のビルドではタイトルまで出ていた
+b2010_lumpofsugar	タイトル	1c16d6c (0009、ipl の中の目印ファイル名) でタイトルまで
 s2015_smee_pure_connect	タイトル	c27e445 で直った
 s2014_hooksoft_meltymoment	タイトル	c27e445 で直った
 s2021_smee_pureconnect_hd	タイトル	3b42c00 で解消
 s2016_hooksoft_amenitys_life	本編	f81eded 以降も本編まで
 s2020_hooksoft_houkago	タイトル	c27e445 で直った
-s2010_lumpofsugar_prismrhythm	要再確認	f81eded のビルドでは 4 分間黒画面のまま (MPEG のオープニング?)。以前のビルドではタイトルまで出ていた
-dl_VJ01004381	要再確認	f81eded のビルドでは 4 分間黒画面のまま (MPEG のオープニング?)。以前のビルドではタイトルまで出ていた
+s2010_lumpofsugar_prismrhythm	タイトル	1c16d6c (0009、ipl の中の目印ファイル名) でタイトルまで。800x600 の画面が中央に小さく出る
+dl_VJ01004381	起動	1c16d6c でも2分間黒画面のまま (エラーなし)
 s2022_hooksoft_houkago2	タイトル	f81eded (BackML 0x8E) でタイトルまで
-s2011_lumpofsugar_gackoh	要再確認	f81eded のビルドでは 4 分間黒画面のまま (MPEG のオープニング?)。以前のビルドではタイトルまで出ていた
-s2023_quince_soft_little_proncess_go	タイトル	インストール用の目印ファイルを無視する 3b42c00 で解消
+s2011_lumpofsugar_gackoh	タイトル	1c16d6c (0009、ipl の中の目印ファイル名) でタイトルまで
+s2023_quince_soft_little_proncess_go	タイトル	1c16d6c でもタイトルまで
 s2019_lump_of_sugar_wakabairono_quartet	タイトル	3b42c00 で解消
 r1_artemis	タイトル	
 s2023_j_studio_reaero_dt	タイトル	
@@ -212,5 +212,5 @@ s2019_lune_dogeza_saimin	NG	Script.pac が無く srp.pac / grd.pac 形式 (ル�
 s2016_marine_cospure_harem	NG	Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応
 s2011_marine_marching	NG	Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応
 s2025_milimili_hanako	対象外	中身は Unity 製 (vnbox の NeXAS 判定が誤り)
-s2015_giga_renaiphase	要再確認	展開が途中で切れて Script.pac が取れなかった (開発側ではタイトル→本編まで確認済み)
+s2015_giga_renaiphase	タイトル	64d6316 でタイトル (Digest Story / H Story) まで
 s2006_giga_cheerfull	要再確認	自己展開 exe のダウンロード/展開に失敗
