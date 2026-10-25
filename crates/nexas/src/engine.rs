@@ -85,7 +85,8 @@ enum Look {
     Spm {
         spm: Rc<Spm>,
         frame: usize,
-        images: Vec<Rc<Image>>,
+        /// by the sprite map's image index; None: the file is missing
+        images: Vec<Option<Rc<Image>>>,
     },
 }
 
@@ -695,7 +696,7 @@ impl Engine {
                         continue;
                     };
                     for part in &f.parts {
-                        let Some(img) = images.get(part.image) else {
+                        let Some(Some(img)) = images.get(part.image) else {
                             continue;
                         };
                         let d = part.dst;
@@ -717,19 +718,15 @@ impl Engine {
         }
         if !self.message.is_empty() {
             if let Some(spm) = self.spm("Interface.spm") {
-                let images: Vec<Rc<Image>> = spm
-                    .images
-                    .iter()
-                    .take(1)
-                    .filter_map(|n| self.image(n))
-                    .collect();
+                let images: Vec<Option<Rc<Image>>> =
+                    spm.images.iter().take(1).map(|n| self.image(n)).collect();
                 let p = place(0.0, 0.0, 1.0, 1.0, 0.0, 1.0, false);
                 for part in spm
                     .frames
                     .first()
                     .map_or(&[][..], |f| &f.parts[..1.min(f.parts.len())])
                 {
-                    let Some(img) = images.get(part.image) else {
+                    let Some(Some(img)) = images.get(part.image) else {
                         continue;
                     };
                     let (x, y) = WINDOW;
@@ -1040,12 +1037,7 @@ impl Host for Engine {
             }
             0x138 => {
                 if let Some(spm) = self.spm(&text(args, 1)) {
-                    let images = spm
-                        .images
-                        .clone()
-                        .iter()
-                        .filter_map(|n| self.image(n))
-                        .collect();
+                    let images = spm.images.clone().iter().map(|n| self.image(n)).collect();
                     let look = Look::Spm {
                         spm,
                         frame: a(2).max(0) as usize,
@@ -1057,12 +1049,7 @@ impl Host for Engine {
             // sprite map with a pattern (n, file, animation, pattern, x, y, ...)
             0x139 => {
                 if let Some(spm) = self.spm(&text(args, 1)) {
-                    let images = spm
-                        .images
-                        .clone()
-                        .iter()
-                        .filter_map(|n| self.image(n))
-                        .collect();
+                    let images = spm.images.clone().iter().map(|n| self.image(n)).collect();
                     let look = Look::Spm {
                         spm,
                         frame: a(2).max(0) as usize,
@@ -1167,12 +1154,7 @@ impl Host for Engine {
                     return Err(format!("no stand {row}"));
                 };
                 if let Some(spm) = self.spm(r.get(5).map_or("", |c| c.str())) {
-                    let images = spm
-                        .images
-                        .clone()
-                        .iter()
-                        .filter_map(|n| self.image(n))
-                        .collect();
+                    let images = spm.images.clone().iter().map(|n| self.image(n)).collect();
                     let frame = r.get(6).map_or(0, |c| c.int()).max(0) as usize;
                     let key = (STANDS, slot);
                     let alpha = self.objs.get(&key).map(|o| o.alpha.value(now));
