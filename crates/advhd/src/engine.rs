@@ -125,6 +125,14 @@ impl Engine {
                 }
             }
         }
+        // getAppInfo: (?, width, height, name, ...)
+        let info = self.call("getAppInfo", vec![]);
+        let size = |i: usize| info.get(i).and_then(|v| v.to_num()).filter(|&n| n >= 1.0).map(|n| n as u32);
+        if let (Some(w), Some(h)) = (size(1), size(2)) {
+            let mut s = self.st.borrow_mut();
+            s.screen.w = w;
+            s.screen.h = h;
+        }
         self.call("checkInitVersion", vec![]);
         self.call("initLegacyGame", vec![]);
         self.call("initSystemScreen", vec![]);
