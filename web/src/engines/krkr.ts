@@ -66,39 +66,24 @@ function project(manifest: Manifest): string {
 
 // The settings of the game's exe in the game folder: the .cf named like an exe, else any .cf.
 function configFile(manifest: Manifest): string | undefined {
-  const files = (manifest.files || [])
-    .map((f) => f.p)
-    .filter((p) => !p.includes("/"));
+  const files = (manifest.files || []).map((f) => f.p).filter((p) => !p.includes("/"));
   const cfs = files.filter((p) => p.toLowerCase().endsWith(".cf"));
   const exes = new Set(
-    files
-      .filter((p) => p.toLowerCase().endsWith(".exe"))
-      .map((p) => p.slice(0, -4).toLowerCase()),
+    files.filter((p) => p.toLowerCase().endsWith(".exe")).map((p) => p.slice(0, -4).toLowerCase()),
   );
   return cfs.find((p) => exes.has(p.slice(0, -3).toLowerCase())) ?? cfs[0];
 }
 
-export async function start({
-  fs,
-  manifest,
-  ui,
-  fonts,
-}: EngineContext): Promise<void> {
+export async function start({ fs, manifest, ui, fonts }: EngineContext): Promise<void> {
   const presenter = await Presenter.create(ui.canvas);
-  const create = (
-    await importEngine<{ default: CreateKrkr }>("krkr", "krkr.js")
-  ).default;
+  const create = (await importEngine<{ default: CreateKrkr }>("krkr", "krkr.js")).default;
   const Module = await create({
     // SDL needs a canvas for its window, but frames go to the presenter instead.
     canvas: document.createElement("canvas"),
     print: (text: string) => console.info(`krkr: ${text}`),
     printErr: (text: string) => console.warn(`krkr: ${text}`),
-    vnrunPresent: (
-      pixels: Uint8Array,
-      pitch: number,
-      width: number,
-      height: number,
-    ) => presenter.show(pixels, width, height, "bgra8unorm", pitch),
+    vnrunPresent: (pixels: Uint8Array, pitch: number, width: number, height: number) =>
+      presenter.show(pixels, width, height, "bgra8unorm", pitch),
   });
   // KiriKiri matches names case-insensitively itself (OPTION_ENABLE_CASEINSENSITIVITY).
   mountGame(Module.FS, fs, manifest);
@@ -110,8 +95,7 @@ export async function start({
     Module.FS.symlink(`${DATA_PATH}/savedata`, "/game/savedata");
   // Many startup.tjs read the exe's settings, <exe name>.cf, and quit without it.
   const cf = configFile(manifest);
-  if (cf && !Module.FS.analyzePath("/game/game.cf").exists)
-    Module.FS.symlink(`/game/${cf}`, "/game/game.cf");
+  if (cf && !Module.FS.analyzePath("/game/game.cf").exists) Module.FS.symlink(`/game/${cf}`, "/game/game.cf");
   // After writing save data the engine runs `FS.syncfs(false, ...)`
   // (src/core/environ/sdl2/Application.cpp): that is when saves go to the server.
   Module.FS.syncfs = (_populate, done) => {
@@ -130,9 +114,7 @@ export async function start({
     mouse(e, BUTTONS[e.button] ?? 0, true);
     e.preventDefault();
   });
-  canvas.addEventListener("pointerup", (e) =>
-    mouse(e, BUTTONS[e.button] ?? 0, false),
-  );
+  canvas.addEventListener("pointerup", (e) => mouse(e, BUTTONS[e.button] ?? 0, false));
   canvas.addEventListener("contextmenu", (e) => e.preventDefault());
   canvas.addEventListener(
     "wheel",
@@ -149,10 +131,7 @@ export async function start({
   for (const name of POLYFILL_FILES) {
     const res = await fetch(engineUrl("krkr", `polyfill/${name}`));
     if (!res.ok) throw new Error(`polyfill/${name}: HTTP ${res.status}`);
-    Module.FS.writeFile(
-      `${POLYFILL}/${name}`,
-      new Uint8Array(await res.arrayBuffer()),
-    );
+    Module.FS.writeFile(`${POLYFILL}/${name}`, new Uint8Array(await res.arrayBuffer()));
   }
   if (fonts[0]) Module.FS.writeFile(`${POLYFILL}/font.ttf`, fonts[0]);
   Module.FS.writeFile(STARTUP, new TextEncoder().encode(STARTUP_SCRIPT));

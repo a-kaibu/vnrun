@@ -154,12 +154,10 @@ class Compositor {
         format: "rgba8unorm",
         usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
       });
-      this.device.queue.writeTexture(
-        { texture },
-        pixels as Uint8Array<ArrayBuffer>,
-        { bytesPerRow: w * 4 },
-        [w, h],
-      );
+      this.device.queue.writeTexture({ texture }, pixels as Uint8Array<ArrayBuffer>, { bytesPerRow: w * 4 }, [
+        w,
+        h,
+      ]);
       t = { texture, used: this.frame };
       this.textures.set(id, t);
     }
