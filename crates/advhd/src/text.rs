@@ -47,7 +47,8 @@ pub fn plain(s: &str) -> Vec<char> {
 }
 
 /// Characters that don't begin a line (kinsoku); they hang past the margin instead.
-const NO_LINE_START: &str = "、。，．・：；？！）」』】〉》〕｝ー～…‥ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ";
+const NO_LINE_START: &str =
+    "、。，．・：；？！）」』】〉》〕｝ー～…‥ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮヵヶ";
 
 pub struct Style {
     pub size: f32,
@@ -64,7 +65,9 @@ pub fn render(font: &fontdue::Font, text: &[char], shown: usize, b: &TextBox, st
     let (left, top) = (b.margin[0] as f32, b.margin[1] as f32);
     let right = w as f32 - b.margin[2] as f32;
     let (mut x, mut y) = (left, top);
-    let ascent = font.horizontal_line_metrics(st.size).map_or(st.size * 0.88, |m| m.ascent);
+    let ascent = font
+        .horizontal_line_metrics(st.size)
+        .map_or(st.size * 0.88, |m| m.ascent);
     for &c in text.iter().take(shown) {
         if c == '\n' {
             x = left;
@@ -107,7 +110,8 @@ fn blit(img: &mut Image, cov: &[u8], cw: usize, gx: i32, gy: i32, rgb: [u8; 3]) 
             let sa = a as u32;
             let oa = sa + da * (255 - sa) / 255;
             for k in 0..3 {
-                d[k] = ((rgb[k] as u32 * sa + d[k] as u32 * da * (255 - sa) / 255) / oa.max(1)) as u8;
+                d[k] =
+                    ((rgb[k] as u32 * sa + d[k] as u32 * da * (255 - sa) / 255) / oa.max(1)) as u8;
             }
             d[3] = oa as u8;
         }
@@ -118,7 +122,9 @@ fn blit(img: &mut Image, cov: &[u8], cw: usize, gx: i32, gy: i32, rgb: [u8; 3]) 
 mod tests {
     #[test]
     fn plain() {
-        let s: String = super::plain("「…{私:わたくし}は」\\n%K%P").into_iter().collect();
+        let s: String = super::plain("「…{私:わたくし}は」\\n%K%P")
+            .into_iter()
+            .collect();
         assert_eq!(s, "「…私は」\n");
         let s: String = super::plain("%LC詩乃").into_iter().collect();
         assert_eq!(s, "詩乃");

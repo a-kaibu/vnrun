@@ -16,8 +16,14 @@ fn show(a: &Arg) -> String {
 
 fn main() -> Result<(), String> {
     let args: Vec<String> = std::env::args().collect();
-    let dir = std::path::PathBuf::from(args.get(1).ok_or("usage: advhd-dis <game folder> [script ...]")?);
-    let mut disk = Disk { root: dir.clone(), saves: dir.join("vnrun-saves") };
+    let dir = std::path::PathBuf::from(
+        args.get(1)
+            .ok_or("usage: advhd-dis <game folder> [script ...]")?,
+    );
+    let mut disk = Disk {
+        root: dir.clone(),
+        saves: dir.join("vnrun-saves"),
+    };
     let arcs = Archives::open(&mut disk);
     let exe = disk
         .list()
@@ -26,10 +32,18 @@ fn main() -> Result<(), String> {
         .and_then(|n| disk.read(&n))
         .ok_or("no AdvHD.exe")?;
     let fm = advhd::exe::formats(&exe);
-    let names: Vec<String> = if args.len() > 2 { args[2..].to_vec() } else { arcs.names_with(".ws2") };
+    let names: Vec<String> = if args.len() > 2 {
+        args[2..].to_vec()
+    } else {
+        arcs.names_with(".ws2")
+    };
     let mut bad = 0;
     for n in names {
-        let n = if n.contains('.') { n } else { format!("{n}.ws2") };
+        let n = if n.contains('.') {
+            n
+        } else {
+            format!("{n}.ws2")
+        };
         let raw = arcs.read(&mut disk, &n).ok_or_else(|| format!("no {n}"))?;
         let s = Script::new(&n, &raw);
         println!("== {n}");
@@ -41,7 +55,11 @@ fn main() -> Result<(), String> {
             }
             match s.read(&fm, at) {
                 Ok(i) => {
-                    println!("{at:06x} {:02x} {}", i.op, i.args.iter().map(show).collect::<Vec<_>>().join(", "));
+                    println!(
+                        "{at:06x} {:02x} {}",
+                        i.op,
+                        i.args.iter().map(show).collect::<Vec<_>>().join(", ")
+                    );
                     at = i.next;
                 }
                 Err(e) => {

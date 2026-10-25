@@ -39,7 +39,13 @@ impl Pna {
             return Err("not a PNA picture".into());
         }
         let u32_at = |i: usize| -> Result<u32, String> {
-            Ok(u32::from_le_bytes(bytes.get(i..i + 4).ok_or("PNA is cut short")?.try_into().unwrap()))
+            Ok(u32::from_le_bytes(
+                bytes
+                    .get(i..i + 4)
+                    .ok_or("PNA is cut short")?
+                    .try_into()
+                    .unwrap(),
+            ))
         };
         let (w, h, n) = (u32_at(8)? as i32, u32_at(12)? as i32, u32_at(16)? as usize);
         let mut at = 0x14 + n * 0x28;

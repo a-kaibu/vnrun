@@ -30,7 +30,9 @@ impl File {
                 let skip = rest.iter().take_while(|c| c.is_ascii_whitespace()).count();
                 let len = rest[skip..]
                     .iter()
-                    .take_while(|c| c.is_ascii_digit() || b"+-.eExX".contains(c) || c.is_ascii_hexdigit())
+                    .take_while(|c| {
+                        c.is_ascii_digit() || b"+-.eExX".contains(c) || c.is_ascii_hexdigit()
+                    })
                     .count();
                 self.pos += skip + len;
                 luavm::value::parse_number(&rest[skip..skip + len]).unwrap_or(Value::Nil)
@@ -53,7 +55,10 @@ impl File {
 }
 
 fn name(path: &[u8]) -> String {
-    let base = path.rsplit(|&c| c == b'/' || c == b'\\').next().unwrap_or(path);
+    let base = path
+        .rsplit(|&c| c == b'/' || c == b'\\')
+        .next()
+        .unwrap_or(path);
     encoding_rs::SHIFT_JIS.decode(base).0.into_owned()
 }
 
@@ -63,8 +68,15 @@ pub fn install(lua: &mut Lua, st: &St) {
     io.set_str(
         "open",
         Value::native("io.open", move |_, args| {
-            let path = args.first().and_then(|v| v.as_bytes()).ok_or_else(|| LuaError::new("io.open: no file name"))?;
-            let mode = args.get(1).and_then(|v| v.as_bytes()).unwrap_or(b"r").to_vec();
+            let path = args
+                .first()
+                .and_then(|v| v.as_bytes())
+                .ok_or_else(|| LuaError::new("io.open: no file name"))?;
+            let mode = args
+                .get(1)
+                .and_then(|v| v.as_bytes())
+                .unwrap_or(b"r")
+                .to_vec();
             let name = name(path);
             let old = st.borrow_mut().files.read_save(&name);
             let write = mode.iter().any(|c| b"wa+".contains(c));
@@ -73,11 +85,28 @@ pub fn install(lua: &mut Lua, st: &St) {
                 Some(b'a') => old.unwrap_or_default(),
                 _ => match old {
                     Some(b) => b,
-                    None => return Ok(vec![Value::Nil, Value::str(&format!("{name}: No such file or directory"))]),
+                    None => {
+                        return Ok(vec![
+                            Value::Nil,
+                            Value::str(&format!("{name}: No such file or directory")),
+                        ]);
+                    }
                 },
             };
-            let pos = if mode.first() == Some(&b'a') { buf.len() } else { 0 };
-            Ok(vec![file(&st, File { name, buf, pos, write })])
+            let pos = if mode.first() == Some(&b'a') {
+                buf.len()
+            } else {
+                0
+            };
+            Ok(vec![file(
+                &st,
+                File {
+                    name,
+                    buf,
+                    pos,
+                    write,
+                },
+            )])
         }),
     );
     lua.set_global("io", Value::table(io));
@@ -102,7 +131,9 @@ fn file(st: &St, f: File) -> Value {
         "lines",
         Value::native("file:lines", move |_, _| {
             let g = g.clone();
-            Ok(vec![Value::native("lines", move |_, _| Ok(vec![g.borrow_mut().read(&Value::str("l"))]))])
+            Ok(vec![Value::native("lines", move |_, _| {
+                Ok(vec![g.borrow_mut().read(&Value::str("l"))])
+            })])
         }),
     );
     let (g, st) = (f.clone(), st.clone());
@@ -125,7 +156,10 @@ fn file(st: &St, f: File) -> Value {
             Ok(vec![args.first().cloned().unwrap_or(Value::Nil)])
         }),
     );
-    t.set_str("close", Value::native("file:close", |_, _| Ok(vec![Value::Bool(true)])));
+    t.set_str(
+        "close",
+        Value::native("file:close", |_, _| Ok(vec![Value::Bool(true)])),
+    );
     t.set_str("flush", Value::native("file:flush", |_, _| Ok(vec![])));
     Value::table(t)
 }

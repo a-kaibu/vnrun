@@ -58,7 +58,9 @@ pub struct Engine {
 }
 
 fn lua_str(v: &Value) -> String {
-    v.as_bytes().map(|b| String::from_utf8_lossy(b).into_owned()).unwrap_or_default()
+    v.as_bytes()
+        .map(|b| String::from_utf8_lossy(b).into_owned())
+        .unwrap_or_default()
 }
 
 impl Engine {
@@ -66,7 +68,11 @@ impl Engine {
         let st: St = Rc::new(RefCell::new(State::new(files, 1280, 720)));
         let exe = {
             let mut s = st.borrow_mut();
-            let name = s.files.list().into_iter().find(|n| n.eq_ignore_ascii_case("advhd.exe"));
+            let name = s
+                .files
+                .list()
+                .into_iter()
+                .find(|n| n.eq_ignore_ascii_case("advhd.exe"));
             name.and_then(|n| s.files.read(&n)).ok_or("no AdvHD.exe")?
         };
         let fm = crate::exe::formats(&exe);
@@ -102,7 +108,12 @@ impl Engine {
     /// set itself up.
     fn init_lua(&mut self) {
         let read = |st: &St, n: &str| st.borrow_mut().read(n);
-        for n in ["VersionInfo.lua", "GameInfo.lua", "VariableSize.lua", "LegacyGame.lua"] {
+        for n in [
+            "VersionInfo.lua",
+            "GameInfo.lua",
+            "VariableSize.lua",
+            "LegacyGame.lua",
+        ] {
             if let Some(c) = read(&self.st, n)
                 && let Err(e) = self.lua.exec(&c, n)
             {
@@ -111,7 +122,10 @@ impl Engine {
         }
         let inc = read(&self.st, "LegacyGame.inc").unwrap_or_default();
         for line in String::from_utf8_lossy(&inc).lines() {
-            if let Some(name) = line.trim().strip_prefix("include").map(|r| r.trim().trim_matches('"').to_string())
+            if let Some(name) = line
+                .trim()
+                .strip_prefix("include")
+                .map(|r| r.trim().trim_matches('"').to_string())
                 && !name.is_empty()
             {
                 let file = format!("{name}.lua");
@@ -127,7 +141,12 @@ impl Engine {
         }
         // getAppInfo: (?, width, height, name, ...)
         let info = self.call("getAppInfo", vec![]);
-        let size = |i: usize| info.get(i).and_then(|v| v.to_num()).filter(|&n| n >= 1.0).map(|n| n as u32);
+        let size = |i: usize| {
+            info.get(i)
+                .and_then(|v| v.to_num())
+                .filter(|&n| n >= 1.0)
+                .map(|n| n as u32)
+        };
         if let (Some(w), Some(h)) = (size(1), size(2)) {
             let mut s = self.st.borrow_mut();
             s.screen.w = w;
@@ -176,9 +195,14 @@ impl Engine {
 
     /// Gives the waiting text field its text, as if typed and confirmed.
     pub fn enter_text(&mut self, text: &str) {
-        let Some(set) = self.st.borrow_mut().input.take() else { return };
+        let Some(set) = self.st.borrow_mut().input.take() else {
+            return;
+        };
         // the last argument says the entry was cancelled
-        self.call("onIMEnd", vec![Value::str(&set), Value::str(text), Value::Bool(false)]);
+        self.call(
+            "onIMEnd",
+            vec![Value::str(&set), Value::str(text), Value::Bool(false)],
+        );
     }
 
     /// Starts the scenario over at the top of a script (for trying out a part of the game).
@@ -216,8 +240,18 @@ impl Engine {
             .sets
             .iter()
             .map(|x| {
-                let ls: Vec<&str> = x.layers.iter().filter(|l| l.visible).map(|l| l.name.as_str()).collect();
-                format!("[{}{}: {}]", x.name, if x.snap.is_some() { " snap" } else { "" }, ls.join(" "))
+                let ls: Vec<&str> = x
+                    .layers
+                    .iter()
+                    .filter(|l| l.visible)
+                    .map(|l| l.name.as_str())
+                    .collect();
+                format!(
+                    "[{}{}: {}]",
+                    x.name,
+                    if x.snap.is_some() { " snap" } else { "" },
+                    ls.join(" ")
+                )
             })
             .collect();
         format!(
@@ -246,7 +280,11 @@ impl Engine {
 
     fn script(&mut self, name: &str) -> Option<Rc<Script>> {
         let key = name.to_lowercase();
-        let key = if key.ends_with(".ws2") { key } else { format!("{key}.ws2") };
+        let key = if key.ends_with(".ws2") {
+            key
+        } else {
+            format!("{key}.ws2")
+        };
         if let Some(s) = self.scripts.get(&key) {
             return Some(s.clone());
         }
@@ -277,7 +315,10 @@ impl Engine {
             self.step()?;
             n += 1;
             if n > 10000 {
-                return Err(format!("{}:{:#x}: the script runs without waiting", self.cur.name, self.pc));
+                return Err(format!(
+                    "{}:{:#x}: the script runs without waiting",
+                    self.cur.name, self.pc
+                ));
             }
         }
         self.st.borrow_mut().draw_texts();
@@ -286,9 +327,18 @@ impl Engine {
 
     /// The set taking the mouse, and what is under it there.
     fn hit(&mut self, x: f32, y: f32) -> (String, Value, i64) {
-        let set = self.call("getSystemSet", vec![]).first().map(lua_str).unwrap_or_else(|| "system".into());
+        let set = self
+            .call("getSystemSet", vec![])
+            .first()
+            .map(lua_str)
+            .unwrap_or_else(|| "system".into());
         let s = self.st.borrow();
-        let h = s.screen.sets.iter().find(|s| s.name == set).and_then(|s| s.hit(x, y));
+        let h = s
+            .screen
+            .sets
+            .iter()
+            .find(|s| s.name == set)
+            .and_then(|s| s.hit(x, y));
         let (n, layer) = h.map_or((-1, Value::Nil), |(n, l)| (n as i64, Value::str(l)));
         drop(s);
         (set, layer, n)
@@ -296,7 +346,14 @@ impl Engine {
 
     fn mouse_args(&mut self, x: f32, y: f32) -> Vec<Value> {
         let (set, layer, n) = self.hit(x, y);
-        vec![Value::str(&set), layer, Value::Int(n), Value::Num(x as f64), Value::Num(y as f64), Value::Int(0)]
+        vec![
+            Value::str(&set),
+            layer,
+            Value::Int(n),
+            Value::Num(x as f64),
+            Value::Num(y as f64),
+            Value::Int(0),
+        ]
     }
 
     fn input(&mut self) {
@@ -352,7 +409,10 @@ impl Engine {
                 }
                 2 => self.ended = true,
                 -1 => self.chosen = Some(v),
-                _ => self.st.borrow_mut().unknown(&format!("NeedProcess {k} {v}")),
+                _ => self
+                    .st
+                    .borrow_mut()
+                    .unknown(&format!("NeedProcess {k} {v}")),
             }
         }
     }
@@ -383,14 +443,24 @@ impl Engine {
                 }
             }
             Wait::Transition => {
-                let busy = self.st.borrow_mut().screen.set(SCENE).is_some_and(|s| s.fading());
+                let busy = self
+                    .st
+                    .borrow_mut()
+                    .screen
+                    .set(SCENE)
+                    .is_some_and(|s| s.fading());
                 if !busy {
                     self.wait = Wait::None;
                 }
                 !busy
             }
             Wait::Effects(l) => {
-                let busy = self.st.borrow_mut().screen.layer(SCENE, &l).is_some_and(|l| l.busy());
+                let busy = self
+                    .st
+                    .borrow_mut()
+                    .screen
+                    .layer(SCENE, &l)
+                    .is_some_and(|l| l.busy());
                 if !busy {
                     self.wait = Wait::None;
                 }
@@ -421,8 +491,13 @@ impl Engine {
             Wait::Click => false,
             Wait::Select(c) => {
                 // asked every frame: the interface finishes its effects here
-                let busy = self.call("isSelectEffect", vec![]).first().is_some_and(|v| v.truthy());
-                let Some(i) = self.chosen.filter(|_| !busy) else { return false };
+                let busy = self
+                    .call("isSelectEffect", vec![])
+                    .first()
+                    .is_some_and(|v| v.truthy());
+                let Some(i) = self.chosen.filter(|_| !busy) else {
+                    return false;
+                };
                 self.chosen = None;
                 self.wait = Wait::None;
                 match c.get(i as usize) {
@@ -448,7 +523,9 @@ impl Engine {
     }
 
     fn jump_file(&mut self, name: &str) -> Result<(), String> {
-        self.cur = self.script(name).ok_or_else(|| format!("no script {name}"))?;
+        self.cur = self
+            .script(name)
+            .ok_or_else(|| format!("no script {name}"))?;
         self.pc = 0;
         Ok(())
     }
@@ -459,7 +536,10 @@ impl Engine {
         }
         let ins = self.cur.read(&self.fm, self.pc)?;
         if self.trace {
-            eprintln!("{}:{:06x} {:02x} {:?}", self.cur.name, ins.at, ins.op, ins.args);
+            eprintln!(
+                "{}:{:06x} {:02x} {:?}",
+                self.cur.name, ins.at, ins.op, ins.args
+            );
         }
         self.pc = ins.next;
         let ins = self.resolve(ins);
@@ -502,7 +582,11 @@ impl Engine {
             0x01 => {
                 if !self.condition(i) {
                     let t = a(3).int();
-                    self.pc = if t != 0 { t as usize } else { a(4).int() as usize };
+                    self.pc = if t != 0 {
+                        t as usize
+                    } else {
+                        a(4).int() as usize
+                    };
                 }
             }
             0x02 | 0x06 => self.pc = a(0).int() as usize,
@@ -516,21 +600,37 @@ impl Engine {
             0x08 => self.ended = true,
             0x09 | 0x0a => {
                 // mode (bit 7: the value is a variable), variable, value
-                let (mode, var) = if i.op == 0x09 { (a(0).int(), a(1).int()) } else { (0x7f, a(0).int()) };
+                let (mode, var) = if i.op == 0x09 {
+                    (a(0).int(), a(1).int())
+                } else {
+                    (0x7f, a(0).int())
+                };
                 let raw = if i.op == 0x09 { a(2).num() } else { a(1).num() };
                 let mut s = self.st.borrow_mut();
-                let v = if mode & 0x80 != 0 && i.op == 0x09 { s.var(raw as i64) } else { raw };
+                let v = if mode & 0x80 != 0 && i.op == 0x09 {
+                    s.var(raw as i64)
+                } else {
+                    raw
+                };
                 let x = s.var(var);
                 let r = match (i.op, mode & 0x7f) {
                     (0x0a, _) => {
-                        if v == 0.0 { x } else { x % v }
+                        if v == 0.0 {
+                            x
+                        } else {
+                            x % v
+                        }
                     }
                     (_, 0) => v,
                     (_, 1) => x + v,
                     (_, 2) => x - v,
                     (_, 3) => x * v,
                     (_, 4) => {
-                        if v == 0.0 { x } else { x / v }
+                        if v == 0.0 {
+                            x
+                        } else {
+                            x / v
+                        }
                     }
                     _ => x,
                 };
@@ -563,25 +663,35 @@ impl Engine {
                 self.call("initSelect", vec![Value::Int(n as i64)]);
                 for (k, c) in i.args.iter().enumerate() {
                     let key = self.call("getSelectTextKey", vec![Value::Int(k as i64)]);
-                    let (set, layer) = (key.first().map(lua_str).unwrap_or_default(), key.get(1).map(lua_str).unwrap_or_default());
+                    let (set, layer) = (
+                        key.first().map(lua_str).unwrap_or_default(),
+                        key.get(1).map(lua_str).unwrap_or_default(),
+                    );
                     let text = match c {
                         Arg::List(c) => c.get(1).map(|t| t.text().to_string()).unwrap_or_default(),
                         _ => String::new(),
                     };
                     self.st.borrow_mut().set_text(&set, &layer, &text, None);
-                    self.call("setSelectTextColor", vec![Value::Int(k as i64), Value::Int(0)]);
+                    self.call(
+                        "setSelectTextColor",
+                        vec![Value::Int(k as i64), Value::Int(0)],
+                    );
                 }
                 self.chosen = None;
                 self.wait = Wait::Select(i.args.clone());
             }
             0x11 => {
-                self.timers.insert(a(0).text().to_string(), now + a(2).num() as f64 * 1000.0);
+                self.timers
+                    .insert(a(0).text().to_string(), now + a(2).num() as f64 * 1000.0);
             }
             0x12 => self.wait = Wait::Timer(a(0).text().to_string()),
             0x14 => self.message(a(2).text()),
             0x15 => {
                 let key = self.call("getNameWindowKey", vec![]);
-                let (set, layer) = (key.first().map(lua_str).unwrap_or_default(), key.get(1).map(lua_str).unwrap_or_default());
+                let (set, layer) = (
+                    key.first().map(lua_str).unwrap_or_default(),
+                    key.get(1).map(lua_str).unwrap_or_default(),
+                );
                 let name = a(0).text().to_string();
                 self.st.borrow_mut().set_text(&set, &layer, &name, None);
                 let shown: String = crate::text::plain(&name).into_iter().collect();
@@ -597,7 +707,11 @@ impl Engine {
                 self.call(a(0).text(), vec![]);
             }
             0x1c => {
-                let args = vec![Value::str(a(1).text()), Value::Int(a(2).int()), Value::Int(a(3).int())];
+                let args = vec![
+                    Value::str(a(1).text()),
+                    Value::Int(a(2).int()),
+                    Value::Int(a(3).int()),
+                ];
                 self.call(a(0).text(), args);
             }
             0x33 | 0x34 => {
@@ -636,7 +750,10 @@ impl Engine {
             0x45 => {
                 // layer, parameter, 4 variables to put it in
                 let mut s = self.st.borrow_mut();
-                let v = s.screen.layer(SCENE, a(0).text()).map_or([0.0; 4], |l| l.p.get(a(1).int() as i32));
+                let v = s
+                    .screen
+                    .layer(SCENE, a(0).text())
+                    .map_or([0.0; 4], |l| l.p.get(a(1).int() as i32));
                 for (k, x) in v.into_iter().enumerate() {
                     s.set_var(a(2 + k).num() as i64, x);
                 }
@@ -653,7 +770,14 @@ impl Engine {
                 // layer, effect, kind, ease, mask, 4 values, seconds, ...
                 let mut s = self.st.borrow_mut();
                 let v = self.values(&s, i, 5, a(4).int(), 5);
-                let e = Effect::new(a(1).text(), a(2).int() as i32, [v[0], v[1], v[2], v[3]], a(3).int() as i32, v[4] as f64 * 1000.0, 0.0);
+                let e = Effect::new(
+                    a(1).text(),
+                    a(2).int() as i32,
+                    [v[0], v[1], v[2], v[3]],
+                    a(3).int() as i32,
+                    v[4] as f64 * 1000.0,
+                    0.0,
+                );
                 if let Some(l) = s.screen.layer(SCENE, a(0).text()) {
                     l.effects.push(e);
                 }
@@ -677,7 +801,11 @@ impl Engine {
                 if a(0).int() < 0xfe {
                     let mut s = self.st.borrow_mut();
                     let image = Rc::new(s.screen.render(now, Some(SCENE)));
-                    s.screen.add(SCENE).snap = Some(Snap { image, fade: None, under: false });
+                    s.screen.add(SCENE).snap = Some(Snap {
+                        image,
+                        fade: None,
+                        under: false,
+                    });
                 }
             }
             0x65 => {
@@ -696,21 +824,33 @@ impl Engine {
             0x1e | 0x1f | 0x20 | 0x28 | 0x29 | 0x2a | 0x30 => {} // sound: not yet
             0x6e => {
                 if a(0).text().starts_with('@') {
-                    self.svars.insert(a(0).text().to_string(), a(1).text().to_string());
+                    self.svars
+                        .insert(a(0).text().to_string(), a(1).text().to_string());
                 }
             }
             0x73 => {
                 // flag = (string variable == text)
-                let v = self.svars.get(a(0).text()).map(String::as_str).unwrap_or("");
+                let v = self
+                    .svars
+                    .get(a(0).text())
+                    .map(String::as_str)
+                    .unwrap_or("");
                 let same = v.eq_ignore_ascii_case(a(1).text());
                 self.st.borrow_mut().set_flag(a(2).int(), same);
             }
             0x75 => {
                 // string variable = the picture file of a scene layer
-                let file = self.st.borrow_mut().screen.layer(SCENE, a(1).text()).map(|l| l.file.clone()).unwrap_or_default();
+                let file = self
+                    .st
+                    .borrow_mut()
+                    .screen
+                    .layer(SCENE, a(1).text())
+                    .map(|l| l.file.clone())
+                    .unwrap_or_default();
                 self.svars.insert(a(0).text().to_string(), file);
             }
-            0x2e | 0x13 | 0x17 | 0x18 | 0x1b | 0x32 | 0x38 | 0x53 | 0x66 | 0x68 | 0x6f | 0x71 | 0xfb | 0xfc | 0xfd => {}
+            0x2e | 0x13 | 0x17 | 0x18 | 0x1b | 0x32 | 0x38 | 0x53 | 0x66 | 0x68 | 0x6f | 0x71
+            | 0xfb | 0xfc | 0xfd => {}
             op => self.st.borrow_mut().unknown(&format!("command {op:#04x}")),
         }
         Ok(())
@@ -721,7 +861,11 @@ impl Engine {
         (0..n)
             .map(|k| {
                 let v = i.arg(at + k).num();
-                if mask & (0x80 >> k) != 0 { s.var(v as i64) } else { v }
+                if mask & (0x80 >> k) != 0 {
+                    s.var(v as i64)
+                } else {
+                    v
+                }
             })
             .collect()
     }
@@ -734,10 +878,18 @@ impl Engine {
         let which = i.arg(1).int();
         let raw = i.arg(2).num();
         let (x, v) = if kind & 0x80 != 0 {
-            let v = if kind & 0x40 != 0 { s.var(raw as i64) } else { raw };
+            let v = if kind & 0x40 != 0 {
+                s.var(raw as i64)
+            } else {
+                raw
+            };
             (s.var(which), v)
         } else {
-            let v = if kind & 0x40 != 0 { s.flag(raw as i64) as i32 as f32 } else { (raw != 0.0) as i32 as f32 };
+            let v = if kind & 0x40 != 0 {
+                s.flag(raw as i64) as i32 as f32
+            } else {
+                (raw != 0.0) as i32 as f32
+            };
             (s.flag(which) as i32 as f32, v)
         };
         match kind & 0x3f {
@@ -758,7 +910,12 @@ impl Engine {
         let order = self.order.clone();
         let mut s = self.st.borrow_mut();
         let set = s.screen.add(SCENE);
-        set.layers.sort_by_key(|l| order.iter().position(|n| *n == l.name.to_lowercase()).unwrap_or(usize::MAX));
+        set.layers.sort_by_key(|l| {
+            order
+                .iter()
+                .position(|n| *n == l.name.to_lowercase())
+                .unwrap_or(usize::MAX)
+        });
     }
 
     fn message(&mut self, text: &str) {
@@ -775,7 +932,13 @@ impl Engine {
             if s.screen.layer(&set, &layer).is_none() {
                 // no text layer from the interface: one of our own over the bottom of the screen
                 let (w, h) = (s.screen.w as i32, s.screen.h as i32);
-                let b = crate::layers::TextBox { w: w - 200, h: 160, margin: [10, 10, 10, 10], line_gap: 0.2, image: None };
+                let b = crate::layers::TextBox {
+                    w: w - 200,
+                    h: 160,
+                    margin: [10, 10, 10, 10],
+                    line_gap: 0.2,
+                    image: None,
+                };
                 s.text_layer(&set, &layer, b);
                 if let Some(l) = s.screen.layer(&set, &layer) {
                     l.p.pos = [100.0, (h - 180) as f32, 0.0];
@@ -791,6 +954,10 @@ impl Engine {
 impl Engine {
     /// A layer of the scenario (for tests and tools).
     pub fn scene_layer(&self, name: &str) -> bool {
-        self.st.borrow_mut().screen.layer(SCENE, name).is_some_and(|l| !matches!(l.content, Content::None))
+        self.st
+            .borrow_mut()
+            .screen
+            .layer(SCENE, name)
+            .is_some_and(|l| !matches!(l.content, Content::None))
     }
 }

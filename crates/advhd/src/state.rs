@@ -125,11 +125,17 @@ impl State {
         } else {
             self.image(file).map_or(Content::None, Content::Image)
         };
-        Layer { file: file.to_string(), ..Layer::new(name, content) }
+        Layer {
+            file: file.to_string(),
+            ..Layer::new(name, content)
+        }
     }
 
     pub fn flag(&self, i: i64) -> bool {
-        usize::try_from(i).ok().and_then(|i| self.flags.get(i).copied()).unwrap_or(false)
+        usize::try_from(i)
+            .ok()
+            .and_then(|i| self.flags.get(i).copied())
+            .unwrap_or(false)
     }
 
     pub fn set_flag(&mut self, i: i64, v: bool) {
@@ -139,7 +145,10 @@ impl State {
     }
 
     pub fn var(&self, i: i64) -> f32 {
-        usize::try_from(i).ok().and_then(|i| self.vars.get(i).copied()).unwrap_or(0.0)
+        usize::try_from(i)
+            .ok()
+            .and_then(|i| self.vars.get(i).copied())
+            .unwrap_or(0.0)
     }
 
     pub fn set_var(&mut self, i: i64, v: f32) {
@@ -151,13 +160,16 @@ impl State {
     pub fn set_text(&mut self, set: &str, layer: &str, s: &str, shown: Option<usize>) {
         let chars = text::plain(s);
         let shown = shown.unwrap_or(chars.len());
-        let t = self.texts.entry((set.to_string(), layer.to_string())).or_insert(Text {
-            chars: Vec::new(),
-            shown: 0,
-            size: 28.0,
-            color: [255, 255, 255],
-            drawn: None,
-        });
+        let t = self
+            .texts
+            .entry((set.to_string(), layer.to_string()))
+            .or_insert(Text {
+                chars: Vec::new(),
+                shown: 0,
+                size: 28.0,
+                color: [255, 255, 255],
+                drawn: None,
+            });
         t.chars = chars;
         t.shown = shown;
         t.drawn = None;
@@ -165,14 +177,22 @@ impl State {
 
     /// Draws text layers whose text changed.
     pub fn draw_texts(&mut self) {
-        let Some(font) = self.font.clone() else { return };
+        let Some(font) = self.font.clone() else {
+            return;
+        };
         for ((set, layer), t) in &mut self.texts {
             if t.drawn == Some(t.shown) {
                 continue;
             }
-            let Some(l) = self.screen.layer(set, layer) else { continue };
+            let Some(l) = self.screen.layer(set, layer) else {
+                continue;
+            };
             if let Content::Text(b) = &mut l.content {
-                let st = text::Style { size: t.size, color: t.color, shadow: true };
+                let st = text::Style {
+                    size: t.size,
+                    color: t.color,
+                    shadow: true,
+                };
                 b.image = Some(Rc::new(text::render(&font, &t.chars, t.shown, b, &st)));
                 t.drawn = Some(t.shown);
             }
@@ -180,7 +200,9 @@ impl State {
     }
 
     pub fn text_layer(&mut self, set: &str, name: &str, b: TextBox) {
-        self.screen.add(set).insert(Layer::new(name, Content::Text(b)));
+        self.screen
+            .add(set)
+            .insert(Layer::new(name, Content::Text(b)));
         if let Some(t) = self.texts.get_mut(&(set.to_string(), name.to_string())) {
             t.drawn = None;
         }

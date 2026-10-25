@@ -17,5 +17,8 @@ pub mod ws2;
 
 /// Shift_JIS (CP932) text, the encoding of script strings before engine 2.1.
 pub fn sjis(b: &[u8]) -> String {
-    encoding_rs::SHIFT_JIS.decode_without_bom_handling(b).0.into_owned()
+    encoding_rs::SHIFT_JIS
+        .decode_without_bom_handling(b)
+        .0
+        .into_owned()
 }

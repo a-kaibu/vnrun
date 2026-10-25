@@ -5,7 +5,7 @@
 //! and methods skip their `self`. Calls the engine doesn't know return nothing and are reported
 //! once.
 
-use crate::layers::{Effect, Snap, TextBox, SIZE};
+use crate::layers::{Effect, SIZE, Snap, TextBox};
 use crate::state::State;
 use luavm::{Lua, LuaError, Table, TableRef, Value};
 use std::cell::RefCell;
@@ -15,47 +15,136 @@ pub type St = Rc<RefCell<State>>;
 
 /// The constants AdvHD.exe gives Lua (those not listed are 0, as LUA_PARAM_POS is).
 const CONSTS: &[(&str, f64)] = &[
-    ("LUA_LAYER_PNA", 0.0), ("LUA_LAYER_STD", 1.0), ("LUA_LAYER_EMOTE", 2.0), ("LUA_LAYER_SPINE", 3.0),
-    ("LUA_LAYER_EFFEKSEER", 4.0), ("LUA_EFFECT_COLOR", 0.0),
-    ("LUA_PARAM_POS", 0.0), ("LUA_PARAM_ROTATE", 1.0), ("LUA_PARAM_SCALE", 2.0), ("LUA_PARAM_CENTERZ", 3.0),
-    ("LUA_PARAM_CENTERR", 4.0), ("LUA_PARAM_OFFSET", 5.0), ("LUA_PARAM_COLOR", 6.0), ("LUA_PARAM_RECT", 7.0),
-    ("LUA_PARAM_SIZE", 8.0), ("LUA_PARAM_DISSOLVE_PROGRESS", 9.0), ("LUA_PARAM_MASK_OFFSET", 10.0),
-    ("LUA_EFFECT_OPACITY", 0.0), ("LUA_EFFECT_POS", 1.0), ("LUA_EFFECT_SCALE", 2.0), ("LUA_EFFECT_ROTATE", 3.0),
-    ("LUA_EFFECT_OFFSET", 4.0), ("LUA_EFFECT_RECT", 5.0), ("LUA_EFFECT_GAZE", 6.0), ("LUA_EFFECT_ANGLE", 7.0),
-    ("LUA_EFFECT_HERMITE", 8.0), ("LUA_EFFECT_MASK", 9.0), ("LUA_EFFECT_MASK_OFFSET", 10.0),
-    ("LUA_SKIPSPEED_OMIT", 0.33), ("LUA_SKIPSPEED_NONE", 1e-6),
-    ("EFFECT_LINEAR", 0.0), ("EFFECT_EASEIN", 1.0), ("EFFECT_EASEOUT", 2.0), ("EFFECT_EASEINOUT", 3.0),
-    ("LUA_STATE_MSGSKIP", 0.0), ("LUA_STATE_MSGCTRLSKIP", 1.0), ("LUA_STATE_MSGAUTO", 2.0), ("LUA_STATE_MSGHIDE", 3.0),
-    ("LUA_STATE_MSGOPEN", 4.0), ("LUA_STATE_DISABLEDATA", 10.0), ("LUA_STATE_ENABLELOAD", 11.0),
-    ("LUA_STATE_ENABLEQLOAD", 12.0), ("LUA_STATE_ENABLESKIP", 13.0), ("LUA_STATE_ENABLEVOICEREPEAT", 14.0),
-    ("LUA_STATE_ENABLELOG", 15.0), ("LUA_STATE_ENABLESELECTLOAD", 16.0), ("LUA_STATE_ENABLEMENUSAVE", 17.0),
-    ("LUA_STATE_EXTENDGAME", 18.0), ("LUA_STATE_TRANSITION", 20.0),
-    ("LUA_PROCESS_VOICEREPEAT", 1.0), ("LUA_PROCESS_QUIT", 2.0), ("LUA_PROCESS_LOG_VOICEPLAY", 3.0),
-    ("LUA_PROCESS_GAME_PAUSED", 4.0), ("LUA_PROCESS_GAME_UNPAUSED", 5.0), ("LUA_PROCESS_TITLE", 6.0),
-    ("LUA_PROCESS_SAVEGAME", 7.0), ("LUA_PROCESS_LOADGAME", 8.0), ("LUA_PROCESS_QUICKSAVEGAME", 9.0),
-    ("LUA_PROCESS_QUICKLOADGAME", 10.0), ("LUA_PROCESS_AUTOSAVEGAME", 11.0), ("LUA_PROCESS_AUTOLOADGAME", 12.0),
-    ("LUA_PROCESS_INTERRUPT", 13.0), ("LUA_PROCESS_SCREENMODE", 14.0), ("LUA_PROCESS_ASPECTMODE", 15.0),
-    ("LUA_PROCESS_UPDATEPAN", 16.0), ("LUA_PROCESS_UPDATEVOLUME", 17.0), ("LUA_PROCESS_UPDATEBGV", 18.0),
-    ("LUA_PROCESS_MINIMIZED", 19.0), ("LUA_PROCESS_UPDATEBGMCUT", 20.0), ("LUA_PROCESS_RTSNAP", 21.0),
-    ("LUA_PROCESS_MOUSEMOVE", 22.0), ("LUA_PROCESS_PREVIEW", 23.0), ("LUA_PROCESS_UPDATEMSGSPEED", 24.0),
-    ("LUA_PROCESS_BACKGAME", 25.0), ("LUA_PROCESS_SELECTSAVEGAME", 26.0), ("LUA_PROCESS_SELECTLOADGAME", 27.0),
-    ("LUA_PROCESS_SAVEPREVIEW", 28.0), ("LUA_PROCESS_SHELL", 29.0), ("LUA_PROCESS_DELETEGAME", 30.0),
-    ("LUA_PROCESS_QUICKDELETEGAME", 31.0), ("LUA_PROCESS_LOGPREVIEW", 32.0), ("LUA_PROCESS_GOFILE", 33.0),
-    ("LUA_PROCESS_INETEVENT", 34.0), ("LUA_PROCESS_LOADFILE", 35.0), ("LUA_PROCESS_ACHIEVEMENT", 36.0),
-    ("LUA_PROCESS_UPDATEDATA", 37.0), ("LUA_PROCESS_CHANGELANGUAGE", 38.0),
-    ("LUA_CONFIRM_TITLE", 1.0), ("LUA_CONFIRM_ALBUM", 2.0), ("LUA_CONFIRM_OVERWRITE", 3.0), ("LUA_CONFIRM_LOAD", 4.0),
-    ("LUA_CONFIRM_QUICKLOAD", 5.0), ("LUA_CONFIRM_QUIT", 6.0), ("LUA_CONFIRM_DEFAULT", 7.0), ("LUA_CONFIRM_MEMLOAD", 8.0),
-    ("LUA_CONFIRM_SELECTLOAD", 9.0), ("LUA_CONFIRM_SAVE", 10.0),
-    ("LUA_KEYCODE_PAGEUP", 33.0), ("LUA_KEYCODE_PAGEDOWN", 34.0), ("LUA_KEYCODE_HOME", 36.0), ("LUA_KEYCODE_END", 35.0),
-    ("LUA_KEYCODE_UP", 38.0), ("LUA_KEYCODE_DOWN", 40.0), ("LUA_KEYCODE_LEFT", 37.0), ("LUA_KEYCODE_RIGHT", 39.0),
-    ("LUA_KEYCODE_ENTER", 13.0), ("LUA_KEYCODE_SPACE", 32.0),
-    ("LUA_TRANSITION_NORMAL", 0.0), ("LUA_TRANSITION_ERASE", 1.0),
-    ("DATA_MODE_NORMAL", 0.0), ("DATA_MODE_QUICK", 1.0), ("DATA_MODE_AUTO", 2.0), ("DATA_MODE_SELECT", 3.0),
-    ("DATA_SORT_UPDATEDATE", 0.0), ("DATA_SORT_CREATEDATE", 1.0), ("DATA_SORT_NUMBER", 2.0),
-    ("DATA_ORDER_ASC", 0.0), ("DATA_ORDER_DESC", 1.0),
-    ("ANSI_CHARSET", 0.0), ("SYMBOL_CHARSET", 2.0), ("SHIFTJIS_CHARSET", 128.0), ("HANGUL_CHARSET", 129.0),
-    ("GB2312_CHARSET", 134.0), ("CHINESEBIG5_CHARSET", 136.0), ("GREEK_CHARSET", 161.0), ("TURKISH_CHARSET", 162.0),
-    ("VIETNAMESE_CHARSET", 163.0), ("BALTIC_CHARSET", 186.0), ("RUSSIAN_CHARSET", 204.0), ("EASTEUROPE_CHARSET", 238.0),
+    ("LUA_LAYER_PNA", 0.0),
+    ("LUA_LAYER_STD", 1.0),
+    ("LUA_LAYER_EMOTE", 2.0),
+    ("LUA_LAYER_SPINE", 3.0),
+    ("LUA_LAYER_EFFEKSEER", 4.0),
+    ("LUA_EFFECT_COLOR", 0.0),
+    ("LUA_PARAM_POS", 0.0),
+    ("LUA_PARAM_ROTATE", 1.0),
+    ("LUA_PARAM_SCALE", 2.0),
+    ("LUA_PARAM_CENTERZ", 3.0),
+    ("LUA_PARAM_CENTERR", 4.0),
+    ("LUA_PARAM_OFFSET", 5.0),
+    ("LUA_PARAM_COLOR", 6.0),
+    ("LUA_PARAM_RECT", 7.0),
+    ("LUA_PARAM_SIZE", 8.0),
+    ("LUA_PARAM_DISSOLVE_PROGRESS", 9.0),
+    ("LUA_PARAM_MASK_OFFSET", 10.0),
+    ("LUA_EFFECT_OPACITY", 0.0),
+    ("LUA_EFFECT_POS", 1.0),
+    ("LUA_EFFECT_SCALE", 2.0),
+    ("LUA_EFFECT_ROTATE", 3.0),
+    ("LUA_EFFECT_OFFSET", 4.0),
+    ("LUA_EFFECT_RECT", 5.0),
+    ("LUA_EFFECT_GAZE", 6.0),
+    ("LUA_EFFECT_ANGLE", 7.0),
+    ("LUA_EFFECT_HERMITE", 8.0),
+    ("LUA_EFFECT_MASK", 9.0),
+    ("LUA_EFFECT_MASK_OFFSET", 10.0),
+    ("LUA_SKIPSPEED_OMIT", 0.33),
+    ("LUA_SKIPSPEED_NONE", 1e-6),
+    ("EFFECT_LINEAR", 0.0),
+    ("EFFECT_EASEIN", 1.0),
+    ("EFFECT_EASEOUT", 2.0),
+    ("EFFECT_EASEINOUT", 3.0),
+    ("LUA_STATE_MSGSKIP", 0.0),
+    ("LUA_STATE_MSGCTRLSKIP", 1.0),
+    ("LUA_STATE_MSGAUTO", 2.0),
+    ("LUA_STATE_MSGHIDE", 3.0),
+    ("LUA_STATE_MSGOPEN", 4.0),
+    ("LUA_STATE_DISABLEDATA", 10.0),
+    ("LUA_STATE_ENABLELOAD", 11.0),
+    ("LUA_STATE_ENABLEQLOAD", 12.0),
+    ("LUA_STATE_ENABLESKIP", 13.0),
+    ("LUA_STATE_ENABLEVOICEREPEAT", 14.0),
+    ("LUA_STATE_ENABLELOG", 15.0),
+    ("LUA_STATE_ENABLESELECTLOAD", 16.0),
+    ("LUA_STATE_ENABLEMENUSAVE", 17.0),
+    ("LUA_STATE_EXTENDGAME", 18.0),
+    ("LUA_STATE_TRANSITION", 20.0),
+    ("LUA_PROCESS_VOICEREPEAT", 1.0),
+    ("LUA_PROCESS_QUIT", 2.0),
+    ("LUA_PROCESS_LOG_VOICEPLAY", 3.0),
+    ("LUA_PROCESS_GAME_PAUSED", 4.0),
+    ("LUA_PROCESS_GAME_UNPAUSED", 5.0),
+    ("LUA_PROCESS_TITLE", 6.0),
+    ("LUA_PROCESS_SAVEGAME", 7.0),
+    ("LUA_PROCESS_LOADGAME", 8.0),
+    ("LUA_PROCESS_QUICKSAVEGAME", 9.0),
+    ("LUA_PROCESS_QUICKLOADGAME", 10.0),
+    ("LUA_PROCESS_AUTOSAVEGAME", 11.0),
+    ("LUA_PROCESS_AUTOLOADGAME", 12.0),
+    ("LUA_PROCESS_INTERRUPT", 13.0),
+    ("LUA_PROCESS_SCREENMODE", 14.0),
+    ("LUA_PROCESS_ASPECTMODE", 15.0),
+    ("LUA_PROCESS_UPDATEPAN", 16.0),
+    ("LUA_PROCESS_UPDATEVOLUME", 17.0),
+    ("LUA_PROCESS_UPDATEBGV", 18.0),
+    ("LUA_PROCESS_MINIMIZED", 19.0),
+    ("LUA_PROCESS_UPDATEBGMCUT", 20.0),
+    ("LUA_PROCESS_RTSNAP", 21.0),
+    ("LUA_PROCESS_MOUSEMOVE", 22.0),
+    ("LUA_PROCESS_PREVIEW", 23.0),
+    ("LUA_PROCESS_UPDATEMSGSPEED", 24.0),
+    ("LUA_PROCESS_BACKGAME", 25.0),
+    ("LUA_PROCESS_SELECTSAVEGAME", 26.0),
+    ("LUA_PROCESS_SELECTLOADGAME", 27.0),
+    ("LUA_PROCESS_SAVEPREVIEW", 28.0),
+    ("LUA_PROCESS_SHELL", 29.0),
+    ("LUA_PROCESS_DELETEGAME", 30.0),
+    ("LUA_PROCESS_QUICKDELETEGAME", 31.0),
+    ("LUA_PROCESS_LOGPREVIEW", 32.0),
+    ("LUA_PROCESS_GOFILE", 33.0),
+    ("LUA_PROCESS_INETEVENT", 34.0),
+    ("LUA_PROCESS_LOADFILE", 35.0),
+    ("LUA_PROCESS_ACHIEVEMENT", 36.0),
+    ("LUA_PROCESS_UPDATEDATA", 37.0),
+    ("LUA_PROCESS_CHANGELANGUAGE", 38.0),
+    ("LUA_CONFIRM_TITLE", 1.0),
+    ("LUA_CONFIRM_ALBUM", 2.0),
+    ("LUA_CONFIRM_OVERWRITE", 3.0),
+    ("LUA_CONFIRM_LOAD", 4.0),
+    ("LUA_CONFIRM_QUICKLOAD", 5.0),
+    ("LUA_CONFIRM_QUIT", 6.0),
+    ("LUA_CONFIRM_DEFAULT", 7.0),
+    ("LUA_CONFIRM_MEMLOAD", 8.0),
+    ("LUA_CONFIRM_SELECTLOAD", 9.0),
+    ("LUA_CONFIRM_SAVE", 10.0),
+    ("LUA_KEYCODE_PAGEUP", 33.0),
+    ("LUA_KEYCODE_PAGEDOWN", 34.0),
+    ("LUA_KEYCODE_HOME", 36.0),
+    ("LUA_KEYCODE_END", 35.0),
+    ("LUA_KEYCODE_UP", 38.0),
+    ("LUA_KEYCODE_DOWN", 40.0),
+    ("LUA_KEYCODE_LEFT", 37.0),
+    ("LUA_KEYCODE_RIGHT", 39.0),
+    ("LUA_KEYCODE_ENTER", 13.0),
+    ("LUA_KEYCODE_SPACE", 32.0),
+    ("LUA_TRANSITION_NORMAL", 0.0),
+    ("LUA_TRANSITION_ERASE", 1.0),
+    ("DATA_MODE_NORMAL", 0.0),
+    ("DATA_MODE_QUICK", 1.0),
+    ("DATA_MODE_AUTO", 2.0),
+    ("DATA_MODE_SELECT", 3.0),
+    ("DATA_SORT_UPDATEDATE", 0.0),
+    ("DATA_SORT_CREATEDATE", 1.0),
+    ("DATA_SORT_NUMBER", 2.0),
+    ("DATA_ORDER_ASC", 0.0),
+    ("DATA_ORDER_DESC", 1.0),
+    ("ANSI_CHARSET", 0.0),
+    ("SYMBOL_CHARSET", 2.0),
+    ("SHIFTJIS_CHARSET", 128.0),
+    ("HANGUL_CHARSET", 129.0),
+    ("GB2312_CHARSET", 134.0),
+    ("CHINESEBIG5_CHARSET", 136.0),
+    ("GREEK_CHARSET", 161.0),
+    ("TURKISH_CHARSET", 162.0),
+    ("VIETNAMESE_CHARSET", 163.0),
+    ("BALTIC_CHARSET", 186.0),
+    ("RUSSIAN_CHARSET", 204.0),
+    ("EASTEUROPE_CHARSET", 238.0),
 ];
 
 /// Arguments of a host call.
@@ -63,7 +152,11 @@ struct A(Vec<Value>);
 
 impl A {
     fn s(&self, i: usize) -> String {
-        self.0.get(i).and_then(|v| v.as_bytes()).map(|b| String::from_utf8_lossy(b).into_owned()).unwrap_or_default()
+        self.0
+            .get(i)
+            .and_then(|v| v.as_bytes())
+            .map(|b| String::from_utf8_lossy(b).into_owned())
+            .unwrap_or_default()
     }
     fn n(&self, i: usize) -> f64 {
         self.0.get(i).and_then(|v| v.to_num()).unwrap_or(0.0)
@@ -107,7 +200,12 @@ fn table() -> TableRef {
 }
 
 /// A table of host functions; `method`: called with `self` first. Missing names are reported.
-fn host_table(st: &St, name: &'static str, fns: &[(&'static str, HostFn)], method: bool) -> TableRef {
+fn host_table(
+    st: &St,
+    name: &'static str,
+    fns: &[(&'static str, HostFn)],
+    method: bool,
+) -> TableRef {
     let t = table();
     for &(n, f) in fns {
         let st = st.clone();
@@ -118,7 +216,12 @@ fn host_table(st: &St, name: &'static str, fns: &[(&'static str, HostFn)], metho
                 let a = A(args.into_iter().skip(skip).collect());
                 let r = f(&mut st.borrow_mut(), &a);
                 if log_calls() {
-                    let show = |v: &[Value]| v.iter().map(|x| String::from_utf8_lossy(&lua.tostring_raw(x)).into_owned()).collect::<Vec<_>>().join(", ");
+                    let show = |v: &[Value]| {
+                        v.iter()
+                            .map(|x| String::from_utf8_lossy(&lua.tostring_raw(x)).into_owned())
+                            .collect::<Vec<_>>()
+                            .join(", ")
+                    };
                     eprintln!("{name}.{n}({}) -> {}", show(&a.0), show(&r));
                 }
                 Ok(r)
@@ -146,16 +249,26 @@ fn class(st: &St, name: &'static str, fns: &[(&'static str, HostFn)]) -> TableRe
         let me = Rc::downgrade(&t);
         t.borrow_mut().set_str(
             n,
-            Value::native(n, move |_, _| Ok(me.upgrade().map(Value::Table).into_iter().collect())),
+            Value::native(n, move |_, _| {
+                Ok(me.upgrade().map(Value::Table).into_iter().collect())
+            }),
         );
     }
-    t.borrow_mut().set_str("delete", Value::native("delete", |_, _| Ok(vec![])));
+    t.borrow_mut()
+        .set_str("delete", Value::native("delete", |_, _| Ok(vec![])));
     t
 }
 
 fn effect(a: &A, at: usize) -> Effect {
     // name, kind, x y z w, ease, time (ms), delay
-    Effect::new(&a.s(at), a.i(at + 1) as i32, a.v4(at + 2), a.i(at + 6) as i32, a.n(at + 7), a.n(at + 8))
+    Effect::new(
+        &a.s(at),
+        a.i(at + 1) as i32,
+        a.v4(at + 2),
+        a.i(at + 6) as i32,
+        a.n(at + 7),
+        a.n(at + 8),
+    )
 }
 
 const LAYERS: &[(&str, HostFn)] = &[
@@ -170,21 +283,30 @@ const LAYERS: &[(&str, HostFn)] = &[
     }),
     ("insertCommandLineLayer", |s, a| {
         // set, name, ...: a text field; the player asks for the text (State::input)
-        s.screen.add(&a.s(0)).insert(crate::layers::Layer::new(&a.s(1), crate::layers::Content::None));
+        s.screen.add(&a.s(0)).insert(crate::layers::Layer::new(
+            &a.s(1),
+            crate::layers::Content::None,
+        ));
         s.input = Some(a.s(0));
         ok(true)
     }),
     ("focusCommandLine", |_, _| ok(true)),
     ("insertNullLayer", |s, a| {
         // set, name: a layer that only holds others
-        s.screen.add(&a.s(0)).insert(crate::layers::Layer::new(&a.s(1), crate::layers::Content::None));
+        s.screen.add(&a.s(0)).insert(crate::layers::Layer::new(
+            &a.s(1),
+            crate::layers::Content::None,
+        ));
         ok(true)
     }),
     ("onGameSpeedChanged", |_, _| {
         // an object the interface gives a function to call when the game speed changes, which
         // it doesn't here
         let mut t = Table::default();
-        t.set_str("setCallback", Value::native("setCallback", |_, _| Ok(vec![])));
+        t.set_str(
+            "setCallback",
+            Value::native("setCallback", |_, _| Ok(vec![])),
+        );
         vec![Value::table(t)]
     }),
     ("insertLayer", |s, a| {
@@ -207,29 +329,51 @@ const LAYERS: &[(&str, HostFn)] = &[
         ok(true)
     }),
     ("setVisible", |s, a| {
-        let Some(l) = s.screen.layer(&a.s(0), &a.s(1)) else { return ok(false) };
+        let Some(l) = s.screen.layer(&a.s(0), &a.s(1)) else {
+            return ok(false);
+        };
         l.visible = a.b(2);
         ok(true)
     }),
-    ("isVisible", |s, a| ok(s.screen.layer(&a.s(0), &a.s(1)).is_some_and(|l| l.visible))),
-    ("isAvailable", |s, a| ok(s.screen.layer(&a.s(0), &a.s(1)).is_some())),
+    ("isVisible", |s, a| {
+        ok(s.screen.layer(&a.s(0), &a.s(1)).is_some_and(|l| l.visible))
+    }),
+    ("isAvailable", |s, a| {
+        ok(s.screen.layer(&a.s(0), &a.s(1)).is_some())
+    }),
     ("initSubLayer", |s, a| {
-        let Some(sub) = s.screen.layer(&a.s(0), &a.s(1)).and_then(|l| l.sub(a.i(2) as i32)) else { return ok(false) };
+        let Some(sub) = s
+            .screen
+            .layer(&a.s(0), &a.s(1))
+            .and_then(|l| l.sub(a.i(2) as i32))
+        else {
+            return ok(false);
+        };
         sub.visible = a.b(3);
         ok(true)
     }),
     ("setSubLayerVisible", |s, a| {
-        let Some(sub) = s.screen.layer(&a.s(0), &a.s(1)).and_then(|l| l.sub(a.i(2) as i32)) else { return ok(false) };
+        let Some(sub) = s
+            .screen
+            .layer(&a.s(0), &a.s(1))
+            .and_then(|l| l.sub(a.i(2) as i32))
+        else {
+            return ok(false);
+        };
         sub.visible = a.b(3);
         ok(true)
     }),
     ("setParam", |s, a| {
-        let Some(l) = s.screen.layer(&a.s(0), &a.s(1)) else { return ok(false) };
+        let Some(l) = s.screen.layer(&a.s(0), &a.s(1)) else {
+            return ok(false);
+        };
         l.p.set(a.i(2) as i32, a.v4(3));
         ok(true)
     }),
     ("getParam", |s, a| {
-        let Some(l) = s.screen.layer(&a.s(0), &a.s(1)) else { return nums([0.0; 4]) };
+        let Some(l) = s.screen.layer(&a.s(0), &a.s(1)) else {
+            return nums([0.0; 4]);
+        };
         let k = a.i(2) as i32;
         if k == SIZE {
             let (w, h) = l.size();
@@ -238,12 +382,20 @@ const LAYERS: &[(&str, HostFn)] = &[
         nums(l.p.get(k))
     }),
     ("setSubLayerParam", |s, a| {
-        let Some(sub) = s.screen.layer(&a.s(0), &a.s(1)).and_then(|l| l.sub(a.i(2) as i32)) else { return ok(false) };
+        let Some(sub) = s
+            .screen
+            .layer(&a.s(0), &a.s(1))
+            .and_then(|l| l.sub(a.i(2) as i32))
+        else {
+            return ok(false);
+        };
         sub.p.set(a.i(3) as i32, a.v4(4));
         ok(true)
     }),
     ("getSubLayerParam", |s, a| {
-        let Some(l) = s.screen.layer(&a.s(0), &a.s(1)) else { return nums([0.0; 4]) };
+        let Some(l) = s.screen.layer(&a.s(0), &a.s(1)) else {
+            return nums([0.0; 4]);
+        };
         let (id, k) = (a.i(2) as i32, a.i(3) as i32);
         if k == SIZE {
             if let crate::layers::Content::Pna(p) = &l.content
@@ -257,34 +409,59 @@ const LAYERS: &[(&str, HostFn)] = &[
     }),
     ("setEffect", |s, a| {
         let e = effect(a, 2);
-        let Some(l) = s.screen.layer(&a.s(0), &a.s(1)) else { return ok(false) };
+        let Some(l) = s.screen.layer(&a.s(0), &a.s(1)) else {
+            return ok(false);
+        };
         l.effects.push(e);
         ok(true)
     }),
     ("startEffect", |s, a| {
         let now = s.now;
-        let Some(l) = s.screen.layer(&a.s(0), &a.s(1)) else { return ok(false) };
+        let Some(l) = s.screen.layer(&a.s(0), &a.s(1)) else {
+            return ok(false);
+        };
         l.start_effect(&a.s(2), now);
         ok(true)
     }),
     ("setSubLayerEffect", |s, a| {
         // set, layer, name, sub id, kind, x y z w, ease, time, delay
-        let e = Effect::new(&a.s(2), a.i(4) as i32, a.v4(5), a.i(9) as i32, a.n(10), a.n(11));
-        let Some(sub) = s.screen.layer(&a.s(0), &a.s(1)).and_then(|l| l.sub(a.i(3) as i32)) else { return ok(false) };
+        let e = Effect::new(
+            &a.s(2),
+            a.i(4) as i32,
+            a.v4(5),
+            a.i(9) as i32,
+            a.n(10),
+            a.n(11),
+        );
+        let Some(sub) = s
+            .screen
+            .layer(&a.s(0), &a.s(1))
+            .and_then(|l| l.sub(a.i(3) as i32))
+        else {
+            return ok(false);
+        };
         sub.effects.push(e);
         ok(true)
     }),
     ("startSubLayerEffect", |s, a| {
         let (now, name) = (s.now, a.s(2));
-        let Some(l) = s.screen.layer(&a.s(0), &a.s(1)) else { return ok(false) };
+        let Some(l) = s.screen.layer(&a.s(0), &a.s(1)) else {
+            return ok(false);
+        };
         for sub in &mut l.subs {
-            for e in sub.effects.iter_mut().filter(|e| e.name == name && e.start.is_none()) {
+            for e in sub
+                .effects
+                .iter_mut()
+                .filter(|e| e.name == name && e.start.is_none())
+            {
                 e.start = Some(now);
             }
         }
         ok(true)
     }),
-    ("isEffect", |s, a| ok(s.screen.layer(&a.s(0), &a.s(1)).is_some_and(|l| l.busy()))),
+    ("isEffect", |s, a| {
+        ok(s.screen.layer(&a.s(0), &a.s(1)).is_some_and(|l| l.busy()))
+    }),
     ("cancelEffect", |s, a| {
         if let Some(l) = s.screen.layer(&a.s(0), &a.s(1)) {
             l.finish_effects(&a.s(2));
@@ -297,9 +474,17 @@ const LAYERS: &[(&str, HostFn)] = &[
         }
         ok(true)
     }),
-    ("isTransition", |s, a| ok(s.screen.set(&a.s(0)).is_some_and(|x| x.fading()))),
+    ("isTransition", |s, a| {
+        ok(s.screen.set(&a.s(0)).is_some_and(|x| x.fading()))
+    }),
     ("setSubLayerHitTest", |s, a| {
-        let Some(sub) = s.screen.layer(&a.s(0), &a.s(1)).and_then(|l| l.sub(a.i(2) as i32)) else { return ok(false) };
+        let Some(sub) = s
+            .screen
+            .layer(&a.s(0), &a.s(1))
+            .and_then(|l| l.sub(a.i(2) as i32))
+        else {
+            return ok(false);
+        };
         sub.hit = a.b(3);
         ok(true)
     }),
@@ -323,13 +508,21 @@ const LAYERS: &[(&str, HostFn)] = &[
         ok(true)
     }),
     ("removeSubLayer", |s, a| {
-        if let Some(sub) = s.screen.layer(&a.s(0), &a.s(1)).and_then(|l| l.sub(a.i(2) as i32)) {
+        if let Some(sub) = s
+            .screen
+            .layer(&a.s(0), &a.s(1))
+            .and_then(|l| l.sub(a.i(2) as i32))
+        {
             sub.visible = false;
         }
         ok(true)
     }),
     ("getCursorPos", |s, a| {
-        let n = s.screen.set(&a.s(0)).and_then(|x| x.hit(a.f(1), a.f(2))).map_or(0, |h| h.0);
+        let n = s
+            .screen
+            .set(&a.s(0))
+            .and_then(|x| x.hit(a.f(1), a.f(2)))
+            .map_or(0, |h| h.0);
         vec![Value::Int(n as i64)]
     }),
     ("setText", |s, a| {
@@ -338,7 +531,11 @@ const LAYERS: &[(&str, HostFn)] = &[
     }),
     ("AddText", |s, a| {
         let key = (a.s(0), a.s(1));
-        let old: String = s.texts.get(&key).map(|t| t.chars.iter().collect()).unwrap_or_default();
+        let old: String = s
+            .texts
+            .get(&key)
+            .map(|t| t.chars.iter().collect())
+            .unwrap_or_default();
         s.set_text(&key.0, &key.1, &(old + &a.s(2)), None);
         ok(true)
     }),
@@ -347,19 +544,31 @@ const LAYERS: &[(&str, HostFn)] = &[
         ok(true)
     }),
     ("getString", |s, a| {
-        let t: Option<String> = s.texts.get(&(a.s(0), a.s(1))).map(|t| t.chars.iter().collect());
+        let t: Option<String> = s
+            .texts
+            .get(&(a.s(0), a.s(1)))
+            .map(|t| t.chars.iter().collect());
         vec![t.map_or(Value::Nil, |t| Value::str(&t))]
     }),
     ("messageLength", |s, a| {
-        vec![Value::Int(s.texts.get(&(a.s(0), a.s(1))).map_or(0, |t| t.chars.len()) as i64)]
+        vec![Value::Int(
+            s.texts.get(&(a.s(0), a.s(1))).map_or(0, |t| t.chars.len()) as i64,
+        )]
     }),
     ("setSnap", |s, a| snap(s, &a.s(0))),
     ("setSnap2", |s, a| snap(s, &a.s(0))),
     ("rtSnap", |s, a| snap(s, &a.s(0))),
     ("copySnap", |s, a| {
-        let img = s.screen.set(&a.s(1)).and_then(|x| x.snap.as_ref().map(|p| p.image.clone()));
+        let img = s
+            .screen
+            .set(&a.s(1))
+            .and_then(|x| x.snap.as_ref().map(|p| p.image.clone()));
         if let Some(image) = img {
-            s.screen.add(&a.s(0)).snap = Some(Snap { image, fade: None, under: true });
+            s.screen.add(&a.s(0)).snap = Some(Snap {
+                image,
+                fade: None,
+                under: true,
+            });
         }
         vec![]
     }),
@@ -382,7 +591,11 @@ const LAYERS: &[(&str, HostFn)] = &[
     }),
     ("swapLayerOrder", |s, a| {
         if let Some(set) = s.screen.set(&a.s(0)) {
-            let find = |n: &str| set.layers.iter().position(|l| l.name.eq_ignore_ascii_case(n));
+            let find = |n: &str| {
+                set.layers
+                    .iter()
+                    .position(|l| l.name.eq_ignore_ascii_case(n))
+            };
             if let (Some(i), Some(j)) = (find(&a.s(1)), find(&a.s(2))) {
                 set.layers.swap(i, j);
                 return ok(true);
@@ -393,7 +606,11 @@ const LAYERS: &[(&str, HostFn)] = &[
     ("forwardLayerOrder", |s, a| {
         // puts layer 1 just above layer 2
         if let Some(set) = s.screen.set(&a.s(0)) {
-            let find = |set: &crate::layers::Set, n: &str| set.layers.iter().position(|l| l.name.eq_ignore_ascii_case(n));
+            let find = |set: &crate::layers::Set, n: &str| {
+                set.layers
+                    .iter()
+                    .position(|l| l.name.eq_ignore_ascii_case(n))
+            };
             if let Some(i) = find(set, &a.s(1)) {
                 let l = set.layers.remove(i);
                 let at = find(set, &a.s(2)).map_or(set.layers.len(), |j| j + 1);
@@ -431,7 +648,11 @@ const LAYERS: &[(&str, HostFn)] = &[
 /// Freezes a set as the screen shows it up to that set.
 fn snap(s: &mut State, set: &str) -> Vec<Value> {
     let image = Rc::new(s.screen.render(s.now, Some(set)));
-    s.screen.add(set).snap = Some(Snap { image, fade: None, under: false });
+    s.screen.add(set).snap = Some(Snap {
+        image,
+        fade: None,
+        under: false,
+    });
     vec![]
 }
 
@@ -455,7 +676,9 @@ const CURSOR: &[(&str, HostFn)] = &[
 
 const REGISTRY: &[(&str, HostFn)] = &[
     ("IsKeyDWORD", |s, a| ok(s.registry.contains_key(&a.s(0)))),
-    ("GetDWORD", |s, a| vec![Value::Int(s.registry.get(&a.s(0)).copied().unwrap_or(0))]),
+    ("GetDWORD", |s, a| {
+        vec![Value::Int(s.registry.get(&a.s(0)).copied().unwrap_or(0))]
+    }),
     ("SetDWORD", |s, a| {
         s.registry.insert(a.s(0), a.i(1));
         ok(true)
@@ -485,17 +708,25 @@ const CFUNC: &[(&str, HostFn)] = &[
         s.set_flag(a.i(0), a.b(1));
         vec![]
     }),
-    ("LegacyGame__lua_GetVariable", |s, a| vec![Value::Num(s.var(a.i(0)) as f64)]),
+    ("LegacyGame__lua_GetVariable", |s, a| {
+        vec![Value::Num(s.var(a.i(0)) as f64)]
+    }),
     ("LegacyGame__lua_SetVariable", |s, a| {
         s.set_var(a.i(0), a.f(1));
         vec![]
     }),
-    ("LegacyGame__lua_GetString", |s, a| vec![Value::str(s.strings.get(&a.i(0)).map_or("", |x| x))]),
+    ("LegacyGame__lua_GetString", |s, a| {
+        vec![Value::str(s.strings.get(&a.i(0)).map_or("", |x| x))]
+    }),
     ("LegacyGame__lua_SetString", |s, a| {
         s.strings.insert(a.i(0), a.s(1));
         vec![]
     }),
-    ("LegacyGame__lua_GetGameState", |s, a| vec![Value::Num(s.game_state.get(&a.i(0)).copied().unwrap_or(0.0))]),
+    ("LegacyGame__lua_GetGameState", |s, a| {
+        vec![Value::Num(
+            s.game_state.get(&a.i(0)).copied().unwrap_or(0.0),
+        )]
+    }),
     ("LegacyGame__lua_SetGameState", |s, a| {
         s.game_state.insert(a.i(0), a.n(1));
         vec![]
@@ -531,19 +762,39 @@ const CFUNC: &[(&str, HostFn)] = &[
     ("LegacyGame__lua_GetChapter", |_, _| vec![Value::str("")]),
     ("CSaveDataManager__lua_IsData", |_, _| ok(false)),
     ("CSaveDataManager__lua_GetEnabled", |_, _| ok(true)),
-    ("CSaveDataManager__lua_FindNewData", |_, _| vec![Value::Int(-1)]),
-    ("CSaveDataManager__lua_GetEmptyNo", |_, _| vec![Value::Int(0)]),
-    ("CSaveDataManager__lua_GetSaveDataDate", |_, _| vec![Value::str("")]),
-    ("CSaveDataManager__lua_GetSaveDataText", |_, _| vec![Value::str("")]),
-    ("CSaveDataManager__lua_GetSaveDataChapter", |_, _| vec![Value::str("")]),
-    ("CSaveDataManager__lua_GetSavePath", |_, _| vec![Value::str("")]),
+    ("CSaveDataManager__lua_FindNewData", |_, _| {
+        vec![Value::Int(-1)]
+    }),
+    ("CSaveDataManager__lua_GetEmptyNo", |_, _| {
+        vec![Value::Int(0)]
+    }),
+    ("CSaveDataManager__lua_GetSaveDataDate", |_, _| {
+        vec![Value::str("")]
+    }),
+    ("CSaveDataManager__lua_GetSaveDataText", |_, _| {
+        vec![Value::str("")]
+    }),
+    ("CSaveDataManager__lua_GetSaveDataChapter", |_, _| {
+        vec![Value::str("")]
+    }),
+    ("CSaveDataManager__lua_GetSavePath", |_, _| {
+        vec![Value::str("")]
+    }),
     ("CSaveDataManager__lua_IsResume", |_, _| ok(false)),
-    ("CSaveDataManager__lua_GetDataPath", |_, _| vec![Value::str("")]),
-    ("CSaveDataManager__lua_GetThumbnailPath", |_, _| vec![Value::str("")]),
+    ("CSaveDataManager__lua_GetDataPath", |_, _| {
+        vec![Value::str("")]
+    }),
+    ("CSaveDataManager__lua_GetThumbnailPath", |_, _| {
+        vec![Value::str("")]
+    }),
     ("D3DApp__lua_PostMouseMove", |_, _| vec![]),
     ("MySystem__lua_IsJapaneseUI", |_, _| ok(true)),
-    ("MyConv__lua_utf8tosjis", |_, a| vec![a.0.first().cloned().unwrap_or_default()]),
-    ("MyConv__lua_sjistoutf8", |_, a| vec![a.0.first().cloned().unwrap_or_default()]),
+    ("MyConv__lua_utf8tosjis", |_, a| {
+        vec![a.0.first().cloned().unwrap_or_default()]
+    }),
+    ("MyConv__lua_sjistoutf8", |_, a| {
+        vec![a.0.first().cloned().unwrap_or_default()]
+    }),
 ];
 
 /// Gives Lua the host's classes, functions and constants.
@@ -558,7 +809,17 @@ pub fn install(lua: &mut Lua, st: &St) {
             lua.set_global(&format!("LUA_REQUEST_{rest}"), v);
         }
     }
-    for (i, n) in ["REBOOT", "NISMODE", "CALLFILE", "RESUMEGAME", "WINDOWMINIMUMSIZE", "WINDOWDBYDSIZE"].iter().enumerate() {
+    for (i, n) in [
+        "REBOOT",
+        "NISMODE",
+        "CALLFILE",
+        "RESUMEGAME",
+        "WINDOWMINIMUMSIZE",
+        "WINDOWDBYDSIZE",
+    ]
+    .iter()
+    .enumerate()
+    {
         lua.set_global(&format!("LUA_REQUEST_{n}"), 100.0 + i as f64);
     }
     let cclass = table();
@@ -575,7 +836,9 @@ pub fn install(lua: &mut Lua, st: &St) {
         ("lua_VoiceFavoriteData", &[]),
         ("lua_utf8split", &[]),
     ] {
-        cclass.borrow_mut().set_str(name, Value::Table(class(st, name, fns)));
+        cclass
+            .borrow_mut()
+            .set_str(name, Value::Table(class(st, name, fns)));
     }
     lua.set_global("cclass", Value::Table(cclass));
     lua.set_global("cfunc", Value::Table(host_table(st, "cfunc", CFUNC, false)));
@@ -586,7 +849,11 @@ pub fn install(lua: &mut Lua, st: &St) {
         "include",
         Value::native("include", move |lua, args| {
             let name = A(args).s(0);
-            let file = if name.contains('.') { name.clone() } else { format!("{name}.lua") };
+            let file = if name.contains('.') {
+                name.clone()
+            } else {
+                format!("{name}.lua")
+            };
             let chunk = st2.borrow_mut().read(&file);
             match chunk {
                 Some(c) => lua.exec(&c, &file),

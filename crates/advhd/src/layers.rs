@@ -133,7 +133,9 @@ impl Effect {
 
     /// Brings `p` to time `now`; true once the effect is over.
     fn step(&mut self, p: &mut Params, now: f64) -> bool {
-        let Some(start) = self.start else { return false };
+        let Some(start) = self.start else {
+            return false;
+        };
         let t = if self.time <= 0.0 {
             if now >= start + self.delay { 1.0 } else { 0.0 }
         } else {
@@ -210,7 +212,10 @@ impl Layer {
                 .map(|p| Sub {
                     id: p.id,
                     visible: false,
-                    p: Params { pos: [p.x as f32, p.y as f32, 0.0], ..Params::default() },
+                    p: Params {
+                        pos: [p.x as f32, p.y as f32, 0.0],
+                        ..Params::default()
+                    },
                     hit: false,
                     effects: Vec::new(),
                 })
@@ -245,11 +250,18 @@ impl Layer {
     }
 
     pub fn busy(&self) -> bool {
-        self.effects.iter().chain(self.subs.iter().flat_map(|s| &s.effects)).any(|e| e.start.is_some())
+        self.effects
+            .iter()
+            .chain(self.subs.iter().flat_map(|s| &s.effects))
+            .any(|e| e.start.is_some())
     }
 
     pub fn start_effect(&mut self, name: &str, now: f64) {
-        for e in self.effects.iter_mut().filter(|e| e.name == name && e.start.is_none()) {
+        for e in self
+            .effects
+            .iter_mut()
+            .filter(|e| e.name == name && e.start.is_none())
+        {
             e.start = Some(now);
         }
     }
@@ -298,7 +310,9 @@ pub struct Set {
 
 impl Set {
     pub fn layer(&mut self, name: &str) -> Option<&mut Layer> {
-        self.layers.iter_mut().find(|l| l.name.eq_ignore_ascii_case(name))
+        self.layers
+            .iter_mut()
+            .find(|l| l.name.eq_ignore_ascii_case(name))
     }
 
     pub fn remove(&mut self, name: &str) {
@@ -307,7 +321,11 @@ impl Set {
 
     /// Adds a layer in place of one of the same name (keeping its place in the order).
     pub fn insert(&mut self, layer: Layer) {
-        match self.layers.iter_mut().find(|l| l.name.eq_ignore_ascii_case(&layer.name)) {
+        match self
+            .layers
+            .iter_mut()
+            .find(|l| l.name.eq_ignore_ascii_case(&layer.name))
+        {
             Some(l) => *l = layer,
             None => self.layers.push(layer),
         }
@@ -326,7 +344,10 @@ impl Set {
         let mut o = [l.p.pos[0] + l.p.offset[0], l.p.pos[1] + l.p.offset[1]];
         if let Some(parent) = &l.parent
             && depth < 8
-            && let Some(pl) = self.layers.iter().find(|p| p.name.eq_ignore_ascii_case(parent))
+            && let Some(pl) = self
+                .layers
+                .iter()
+                .find(|p| p.name.eq_ignore_ascii_case(parent))
         {
             let po = self.origin(pl, depth + 1);
             o[0] += po[0];
@@ -358,16 +379,30 @@ impl Set {
                 flip: (false, false),
                 clip,
             };
-            let mut one = |image: Rc<Image>, x: f32, y: f32, rect: Option<[f32; 4]>, place: Place| {
-                let src = match rect {
-                    Some(r) if r[2] > 0.0 && r[3] > 0.0 => {
-                        [r[0] as i32, r[1] as i32, (r[0] + r[2]) as i32, (r[1] + r[3]) as i32]
-                    }
-                    _ => [0, 0, image.w as i32, image.h as i32],
+            let mut one =
+                |image: Rc<Image>, x: f32, y: f32, rect: Option<[f32; 4]>, place: Place| {
+                    let src = match rect {
+                        Some(r) if r[2] > 0.0 && r[3] > 0.0 => [
+                            r[0] as i32,
+                            r[1] as i32,
+                            (r[0] + r[2]) as i32,
+                            (r[1] + r[3]) as i32,
+                        ],
+                        _ => [0, 0, image.w as i32, image.h as i32],
+                    };
+                    let dst = [
+                        x,
+                        y,
+                        x + (src[2] - src[0]) as f32,
+                        y + (src[3] - src[1]) as f32,
+                    ];
+                    out.push(Draw {
+                        image,
+                        src,
+                        dst,
+                        place,
+                    });
                 };
-                let dst = [x, y, x + (src[2] - src[0]) as f32, y + (src[3] - src[1]) as f32];
-                out.push(Draw { image, src, dst, place });
-            };
             match &l.content {
                 Content::None => {}
                 Content::Image(img) => one(img.clone(), ox, oy, l.p.rect, place),
@@ -426,7 +461,11 @@ pub struct Screen {
 
 impl Screen {
     pub fn new(w: u32, h: u32) -> Screen {
-        Screen { w, h, sets: Vec::new() }
+        Screen {
+            w,
+            h,
+            sets: Vec::new(),
+        }
     }
 
     pub fn set(&mut self, name: &str) -> Option<&mut Set> {
@@ -438,7 +477,12 @@ impl Screen {
         match self.sets.iter().position(|s| s.name == name) {
             Some(i) => &mut self.sets[i],
             None => {
-                self.sets.push(Set { name: name.to_string(), layers: Vec::new(), snap: None, until: 0.0 });
+                self.sets.push(Set {
+                    name: name.to_string(),
+                    layers: Vec::new(),
+                    snap: None,
+                    until: 0.0,
+                });
                 self.sets.last_mut().unwrap()
             }
         }
@@ -475,15 +519,27 @@ impl Screen {
         let mut out = Vec::new();
         for s in &self.sets {
             match &s.snap {
-                Some(Snap { image, fade: None, under }) => {
+                Some(Snap {
+                    image,
+                    fade: None,
+                    under,
+                }) => {
                     full(&mut out, image.clone(), 1.0, w, h);
                     if *under {
                         s.draws(&mut out, w, h);
                     }
                 }
-                Some(Snap { image, fade: Some((start, len)), .. }) => {
+                Some(Snap {
+                    image,
+                    fade: Some((start, len)),
+                    ..
+                }) => {
                     s.draws(&mut out, w, h);
-                    let t = if *len > 0.0 { ((now - start) / len).clamp(0.0, 1.0) as f32 } else { 1.0 };
+                    let t = if *len > 0.0 {
+                        ((now - start) / len).clamp(0.0, 1.0) as f32
+                    } else {
+                        1.0
+                    };
                     full(&mut out, image.clone(), 1.0 - t, w, h);
                 }
                 None => s.draws(&mut out, w, h),

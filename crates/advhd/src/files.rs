@@ -88,7 +88,8 @@ impl Archives {
                     let arc = a.arcs.len();
                     a.arcs.push(name);
                     for (n, offset, size) in entries {
-                        a.files.insert(n.to_lowercase(), Entry { arc, offset, size });
+                        a.files
+                            .insert(n.to_lowercase(), Entry { arc, offset, size });
                     }
                 }
                 Err(e) => eprintln!("advhd: {name}: {e}"),
@@ -108,12 +109,19 @@ impl Archives {
 
     /// The archive a file is in.
     pub fn arc_of(&self, name: &str) -> Option<&str> {
-        self.files.get(&name.to_lowercase()).map(|e| self.arcs[e.arc].as_str())
+        self.files
+            .get(&name.to_lowercase())
+            .map(|e| self.arcs[e.arc].as_str())
     }
 
     /// Names (lower case) with this extension.
     pub fn names_with(&self, ext: &str) -> Vec<String> {
-        let mut v: Vec<String> = self.files.keys().filter(|n| n.ends_with(ext)).cloned().collect();
+        let mut v: Vec<String> = self
+            .files
+            .keys()
+            .filter(|n| n.ends_with(ext))
+            .cloned()
+            .collect();
         v.sort();
         v
     }
@@ -127,7 +135,9 @@ pub struct Disk {
 
 impl Files for Disk {
     fn size(&mut self, path: &str) -> Option<u64> {
-        std::fs::metadata(self.root.join(path)).ok().map(|m| m.len())
+        std::fs::metadata(self.root.join(path))
+            .ok()
+            .map(|m| m.len())
     }
     fn read_range(&mut self, path: &str, offset: u64, len: usize) -> Option<Vec<u8>> {
         use std::io::{Read, Seek, SeekFrom};
@@ -139,7 +149,10 @@ impl Files for Disk {
     }
     fn list(&mut self) -> Vec<String> {
         let mut v: Vec<String> = std::fs::read_dir(&self.root)
-            .map(|d| d.filter_map(|e| e.ok()?.file_name().into_string().ok()).collect())
+            .map(|d| {
+                d.filter_map(|e| e.ok()?.file_name().into_string().ok())
+                    .collect()
+            })
             .unwrap_or_default();
         v.sort();
         v

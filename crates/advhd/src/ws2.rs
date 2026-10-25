@@ -119,9 +119,17 @@ impl Script {
             i += 1;
         }
         if p > b.len() {
-            return Err(format!("{}:{at:#x}: command {op:#04x} is cut short", self.name));
+            return Err(format!(
+                "{}:{at:#x}: command {op:#04x} is cut short",
+                self.name
+            ));
         }
-        Ok(Ins { at, op, args, next: p })
+        Ok(Ins {
+            at,
+            op,
+            args,
+            next: p,
+        })
     }
 
     /// Command 0x0f (show choices) has a layout the table can't express: a u8 count, then per
@@ -153,7 +161,12 @@ impl Script {
         if p > b.len() {
             return Err(format!("{}:{at:#x}: command 0x0f is cut short", self.name));
         }
-        Ok(Ins { at, op: 0x0f, args, next: p })
+        Ok(Ins {
+            at,
+            op: 0x0f,
+            args,
+            next: p,
+        })
     }
 }
 
@@ -172,12 +185,21 @@ fn read_arg(b: &[u8], p: &mut usize, t: u8, w: bool) -> Result<Arg, String> {
         4 => Arg::Int(i32::from_le_bytes(take(p, 4)?.try_into().unwrap()) as i64),
         5 => Arg::Num(f32::from_le_bytes(take(p, 4)?.try_into().unwrap())),
         6 | 9 | 10 if w => {
-            let n = b.get(*p..).and_then(|s| s.chunks_exact(2).position(|c| c == [0, 0])).ok_or("string is cut short")?;
-            let u: Vec<u16> = take(p, 2 * n)?.chunks_exact(2).map(|c| u16::from_le_bytes([c[0], c[1]])).collect();
+            let n = b
+                .get(*p..)
+                .and_then(|s| s.chunks_exact(2).position(|c| c == [0, 0]))
+                .ok_or("string is cut short")?;
+            let u: Vec<u16> = take(p, 2 * n)?
+                .chunks_exact(2)
+                .map(|c| u16::from_le_bytes([c[0], c[1]]))
+                .collect();
             Arg::Str(String::from_utf16_lossy(&u))
         }
         6 | 9 | 10 => {
-            let n = b.get(*p..).and_then(|s| s.iter().position(|&c| c == 0)).ok_or("string is cut short")?;
+            let n = b
+                .get(*p..)
+                .and_then(|s| s.iter().position(|&c| c == 0))
+                .ok_or("string is cut short")?;
             Arg::Str(crate::sjis(take(p, n)?))
         }
         t => return Err(format!("argument type {t}")),
