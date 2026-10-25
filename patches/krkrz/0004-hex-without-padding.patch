@@ -1,0 +1,13 @@
+diff --git a/tjs2/tjsString.cpp b/tjs2/tjsString.cpp
+index 7ba339f8..f79d4cae 100644
+--- a/tjs2/tjsString.cpp
++++ b/tjs2/tjsString.cpp
+@@ -299,7 +299,7 @@ tTJSString TJSInt32ToHex(tjs_uint32 num, int zeropad)
+ 		*(p++) = (TJS_W("0123456789ABCDEF"))[num % 16];
+ 		num /= 16;
+ 		zeropad --;
+-	} while(zeropad || num);
++	} while(zeropad > 0 || num); // vnrun: zeropad 0 looped until the buffer overflowed
+ 
+ 	p--;
+ 	while(buf <= p) *(d++) = *(p--);
