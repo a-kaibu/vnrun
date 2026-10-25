@@ -155,6 +155,28 @@ impl Obj {
             },
         }
     }
+    /// Whether (x, y) is on what the object draws: a frame's bounds can be the whole screen
+    /// while its parts are one menu item.
+    fn hit(&self, now: u64, x: f32, y: f32) -> bool {
+        let inside = |r: [f32; 4]| x >= r[0] && y >= r[1] && x < r[2] && y < r[3];
+        match &self.look {
+            Look::Spm { spm, frame, .. } => {
+                let (ox, oy) = (self.x.value(now), self.y.value(now));
+                spm.frames.get(*frame).is_some_and(|f| {
+                    f.parts.iter().any(|p| {
+                        let d = p.dst;
+                        inside([
+                            ox + d[0] as f32,
+                            oy + d[1] as f32,
+                            ox + d[2] as f32,
+                            oy + d[3] as f32,
+                        ])
+                    })
+                })
+            }
+            Look::Image(_) => inside(self.rect(now)),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -466,10 +488,7 @@ impl Engine {
         self.objs
             .iter()
             .rev()
-            .find(|(_, o)| {
-                let r = o.rect(self.now);
-                o.button && x >= r[0] && y >= r[1] && x < r[2] && y < r[3]
-            })
+            .find(|(_, o)| o.button && o.hit(self.now, x, y))
             .map(|(k, _)| k.1)
     }
 
