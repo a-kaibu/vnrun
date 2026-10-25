@@ -11,7 +11,7 @@ use std::rc::Rc;
 use crate::dat::{self, Cell};
 use crate::files::{Archives, Files};
 use crate::font::Font;
-use crate::gfx::{self, Image, Place, Spm};
+use crate::gfx::{self, Draw, Image, Place, Spm};
 use crate::script::{self, Script};
 use crate::sjis;
 use crate::vm::{Flow, Globals, Host, Step, Thread, Value};
@@ -187,7 +187,7 @@ pub struct Engine {
     objs: BTreeMap<(i32, i32), Obj>,
     /// the background: visual.dat row
     background: Option<usize>,
-    transition: Option<(Image, u64, u64)>,
+    transition: Option<(Rc<Image>, u64, u64)>,
     /// the scene as it was drawn last frame, for transitions: objects, background
     before: Option<(BTreeMap<(i32, i32), Obj>, Option<usize>)>,
     wait: Wait,
@@ -306,6 +306,11 @@ impl Engine {
             );
         }
         out
+    }
+
+    /// The scripts have run to their end.
+    pub fn ended(&self) -> bool {
+        self.thread.done
     }
 
     /// A click at (x, y) on the screen.
@@ -554,20 +559,19 @@ impl Engine {
         Some((img, cell(3), cell(4)))
     }
 
-    fn render(&mut self) {
+    /// What to draw for this frame, bottom first, over black.
+    pub fn draws(&mut self) -> Vec<Draw> {
         let now = self.now;
-        let mut out = Image::new(WIDTH, HEIGHT);
-        out.fill([0, 0, 0, 255]);
+        let mut out = Vec::new();
         if let Some((img, sx, sy)) = self.background.and_then(|n| self.visual(n)) {
             let p = place(0.0, 0.0, 1.0, 1.0, 0.0, 1.0, false);
             let (w, h) = (img.w as i32, img.h as i32);
-            gfx::draw(
-                &mut out,
-                &img,
-                [0, 0, w, h],
-                [-sx as f32, -sy as f32, (w - sx) as f32, (h - sy) as f32],
-                &p,
-            );
+            out.push(Draw {
+                image: img.clone(),
+                src: [0, 0, w, h],
+                dst: [-sx as f32, -sy as f32, (w - sx) as f32, (h - sy) as f32],
+                place: p,
+            });
         }
         for o in self.objs.values() {
             let (x, y) = (o.x.value(now), o.y.value(now));
@@ -609,13 +613,12 @@ impl Engine {
             match &o.look {
                 Look::Image(img) => {
                     let (w, h) = (img.w as i32, img.h as i32);
-                    gfx::draw(
-                        &mut out,
-                        img,
-                        [0, 0, w, h],
-                        [x, y, x + w as f32, y + h as f32],
-                        &p,
-                    );
+                    out.push(Draw {
+                        image: img.clone(),
+                        src: [0, 0, w, h],
+                        dst: [x, y, x + w as f32, y + h as f32],
+                        place: p,
+                    });
                 }
                 Look::Spm { spm, frame, images } => {
                     let Some(f) = spm.frames.get(*frame) else {
@@ -632,7 +635,12 @@ impl Engine {
                             x + d[2] as f32,
                             y + d[3] as f32,
                         ];
-                        gfx::draw(&mut out, img, part.src, dst, &p);
+                        out.push(Draw {
+                            image: img.clone(),
+                            src: part.src,
+                            dst: dst,
+                            place: p,
+                        });
                     }
                 }
             }
@@ -656,35 +664,44 @@ impl Engine {
                     };
                     let (x, y) = WINDOW;
                     let d = part.dst.map(|v| v as f32);
-                    gfx::draw(
-                        &mut out,
-                        img,
-                        part.src,
-                        [x + d[0], y + d[1], x + d[2], y + d[3]],
-                        &p,
-                    );
+                    out.push(Draw {
+                        image: img.clone(),
+                        src: part.src,
+                        dst: [x + d[0], y + d[1], x + d[2], y + d[3]],
+                        place: p,
+                    });
                 }
             }
             let p = place(0.0, 0.0, 1.0, 1.0, 0.0, 1.0, false);
             for (img, x, y) in &self.message {
                 let (w, h) = (img.w as i32, img.h as i32);
-                gfx::draw(
-                    &mut out,
-                    img,
-                    [0, 0, w, h],
-                    [*x as f32, *y as f32, (x + w) as f32, (y + h) as f32],
-                    &p,
-                );
+                out.push(Draw {
+                    image: img.clone(),
+                    src: [0, 0, w, h],
+                    dst: [*x as f32, *y as f32, (x + w) as f32, (y + h) as f32],
+                    place: p,
+                });
             }
         }
+        // the screen before the transition, fading out over it
         if let Some((from, start, len)) = &self.transition {
             let t = ((now - start) as f32 / (*len).max(1) as f32).clamp(0.0, 1.0);
-            let a = (t * 256.0) as u32;
-            for (d, s) in out.px.chunks_exact_mut(4).zip(from.px.chunks_exact(4)) {
-                for k in 0..3 {
-                    d[k] = ((d[k] as u32 * a + s[k] as u32 * (256 - a)) >> 8) as u8;
-                }
-            }
+            let (w, h) = (from.w as i32, from.h as i32);
+            out.push(Draw {
+                image: from.clone(),
+                src: [0, 0, w, h],
+                dst: [0.0, 0.0, w as f32, h as f32],
+                place: place(0.0, 0.0, 1.0, 1.0, 0.0, 1.0 - t, false),
+            });
+        }
+        out
+    }
+
+    fn render(&mut self) {
+        let mut out = Image::new(WIDTH, HEIGHT);
+        out.fill([0, 0, 0, 255]);
+        for d in self.draws() {
+            gfx::draw(&mut out, &d.image, d.src, d.dst, &d.place);
         }
         self.screen = out;
     }
@@ -890,7 +907,7 @@ impl Host for Engine {
             0x8a | 0x90 => {
                 let len = frames(a(0));
                 if len > 0 {
-                    self.transition = Some((self.last_screen(), now, len));
+                    self.transition = Some((Rc::new(self.last_screen()), now, len));
                     if a(1) == 0 {
                         self.wait = Wait::Transition;
                         flow = Flow::Yield;

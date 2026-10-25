@@ -1,17 +1,39 @@
 //! Pictures: PNG images, SPM sprite maps (named rectangles of a PNG) and drawing them with
 //! position, scale, rotation and opacity.
 
-/// RGBA, not premultiplied.
-#[derive(Debug, Clone, Default)]
+use std::rc::Rc;
+use std::sync::atomic::{AtomicU32, Ordering};
+
+/// RGBA, not premultiplied. Each image has its own `id`, so that a copy of its pixels elsewhere
+/// (a GPU texture) can be kept by it.
+#[derive(Debug, Default)]
 pub struct Image {
+    pub id: u32,
     pub w: u32,
     pub h: u32,
     pub px: Vec<u8>,
 }
 
+fn next_id() -> u32 {
+    static NEXT: AtomicU32 = AtomicU32::new(1);
+    NEXT.fetch_add(1, Ordering::Relaxed)
+}
+
+impl Clone for Image {
+    fn clone(&self) -> Image {
+        Image {
+            id: next_id(),
+            w: self.w,
+            h: self.h,
+            px: self.px.clone(),
+        }
+    }
+}
+
 impl Image {
     pub fn new(w: u32, h: u32) -> Image {
         Image {
+            id: next_id(),
             w,
             h,
             px: vec![0; (w * h * 4) as usize],
@@ -23,6 +45,7 @@ impl Image {
             .map_err(|e| e.to_string())?
             .to_rgba8();
         Ok(Image {
+            id: next_id(),
             w: img.width(),
             h: img.height(),
             px: img.into_raw(),
@@ -150,6 +173,31 @@ pub struct Place {
     pub flip: (bool, bool),
     /// only this part of the screen is drawn: left, top, right, bottom
     pub clip: [f32; 4],
+}
+
+/// One picture to draw: `src` of `image` covering `dst` (before scaling and turning).
+#[derive(Debug, Clone)]
+pub struct Draw {
+    pub image: Rc<Image>,
+    pub src: [i32; 4],
+    pub dst: [f32; 4],
+    pub place: Place,
+}
+
+impl Draw {
+    /// Where the corners of `dst` land on the screen: top left, top right, bottom left, bottom
+    /// right (of the picture as it is shown, flips included).
+    pub fn corners(&self) -> [[f32; 2]; 4] {
+        let (p, d) = (&self.place, self.dst);
+        let (sin, cos) = p.rot.sin_cos();
+        let fwd = |x: f32, y: f32| {
+            let (dx, dy) = ((x - p.cx) * p.sx, (y - p.cy) * p.sy);
+            [p.cx + dx * cos - dy * sin, p.cy + dx * sin + dy * cos]
+        };
+        let (l, r) = if p.flip.0 { (d[2], d[0]) } else { (d[0], d[2]) };
+        let (t, b) = if p.flip.1 { (d[3], d[1]) } else { (d[1], d[3]) };
+        [fwd(l, t), fwd(r, t), fwd(l, b), fwd(r, b)]
+    }
 }
 
 /// Draws `src[sr]` so that it covers `dst` (before scaling and turning) on `out`.

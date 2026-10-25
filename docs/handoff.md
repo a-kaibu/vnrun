@@ -102,6 +102,11 @@ docs/protocol.md     プレイヤーとサーバーの約束事
   - `patches/sena-rs/0006`: 2011-2012 年の版 (りとるびっち体験版で確認)。`sp_set_ex` が z なしの 4 引数なので、スクリプトの呼び出し直前の push の数を数えて見分ける (`CoreAssets::short_extcalls`、`old_softpal()`)。引数の数が違う extcall は足りない後ろの引数を 0 で補い、多い分は捨てる (sp_set_ex 4→5、bgm_play 4→7、se_stop 3→2)。SYSTEM.INI がなく画面は exe の 800x600 で、スクリプト座標から内部の 1920x1080 への倍率を 1.5 固定から画面の比に。ボタンの flags 0 はマウスで押せる扱い、押したボタンの点へは gosub ではなくジャンプ (ハンドラの `ret` がボタン待ちの関数から抜ける)。
   - `patches/sena-rs/0007`: 実装の無い extcall (引数の数も分からないもの) は、スクリプトがその直前に push した数だけ捨てる。残すと呼び出し元が保存した arg_base がずれ、temp_mem に 2^28 番地を書こうとしてブラウザで capacity overflow になった (爆乳遊廓の 0x12_0033)。ネイティブで同じ所に行くには 1500 フレームほど回す必要があった。ブラウザ版の wasm は関数名を残す (`--keep-debug`、約 1MB) ので panic の呼び出し元が見える。
   - 確認には sena のネイティブ版 (`cargo build --release -p pal-vm --bin sena`) の `--headless --diagnostic-png-at <frame>:<png> --trace-script` が便利。
+- NeXAS (自作、`crates/nexas`、ブラウザは `crates/nexas-web` + `web/src/engines/nexas.ts`):
+  - PAC、コンパイル済みスクリプト (2010 年以降の形) の VM、.dat の表、SPM、.fnt (ビットマップフォント) を読む。組み込み命令の番号は exe ごとに違い、`engine.rs` は 2015 年の版 (恋愛フェイズ) の番号。
+  - エンジンは「何をどこに描くか」の一覧 (`Engine::draws`) を出し、ページが WebGPU で四角形として描く (回転・拡大・加算・クリップ)。ネイティブ (`nexas-run <game> <frames> <prefix> [frame[:x:y] ...]`) は同じ一覧を CPU で描いて PNG に書く。
+  - 確認: 恋愛フェイズ体験版でロゴ → 注意書き → タイトル → ダイジェスト選択 → 本編 (チャット画面、メッセージウィンドウ、立ち絵) まで。ブラウザでもタイトルと本編を確認。
+  - まだ: 音 (BGM・ボイス・効果音)、セーブ、メッセージウィンドウの正しい位置 (System.dat の値を推測で使っている)、主人公の名前 (@u00/@u01 は仮)、パーティクル (0x189 系)、ほかの版の命令表。
 - **Siglus の二次鍵はブラウザでは探さない** (siglus_rs の wasm ビルドは key.toml を読むだけ)。`vnrun-prep <ゲームのフォルダ>` (crates/prep、ネイティブ) が鍵を復元して key.toml を書く。プリマドールで 1 秒以下。vnrun のサーバーがゲームを取り込むときにこれを呼ぶ想定 (未実装)。
 - movie (OMV / MPEG2 / WMV) の再生も siglus_rs の中で `thread::spawn` を使う箇所が残っている。ムービーのある作品で同じ panic が出るはずなので、出たら同様に直す。
 - 気にしておくこと: 丸ごと読みなので、大きい音声アーカイブ (Siglus の .ovk など) で同期 XHR が重くなる可能性。必要なら siglus_rs 側に範囲読みを足す。音声の自動再生制限 (最初のタップ) の扱いも未確認。
@@ -122,7 +127,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 | NScripter | 4 | [OnscripterYuri](https://github.com/YuriSizuku/OnscripterYuri)、onscripter-ru-wasm | C++ | あり | |
 | AliceSoft System4 | 3 | [xsystem4](https://github.com/kichikuou/xsystem4)、system3-sdl2 (Web 版あり) | C | System3 のみ | |
 | YU-RIS | 29 | なし | | | 自作候補 |
-| NeXAS | 26 | なし | | | 自作候補 |
+| NeXAS | 26 | 自作 (`crates/nexas`) | Rust | あり (WebGPU) | 2015 年の版 (恋愛フェイズ体験版) で本編まで。ほかの版は組み込み命令の番号が違う |
 | AdvHD | 18 | なし | | | |
 | LiveMaker / WillPlus | 各 9 | なし | | | |
 | CatSystem2 / Escude / EntisGLS | 各 8 | なし | | | |

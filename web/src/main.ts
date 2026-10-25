@@ -18,6 +18,7 @@ const ENGINES: Record<string, () => Promise<EngineModule>> = {
   nscripter: () => import("./engines/onscripter"),
   kirikiri: () => import("./engines/krkr"),
   yuris: () => import("./engines/yuris"),
+  nexas: () => import("./engines/nexas"),
   html: () => import("./engines/html"),
 };
 
