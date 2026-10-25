@@ -88,7 +88,7 @@ dl_VJ01002655	タイトル	654935e 以降でタイトルまで
 s2023_casket_oshitona_vtuber02	タイトル	
 s2023_casket_oshitona_vtuber03	タイトル	
 s2020_casket_ayakashi03	タイトル	
-s2011_whirlpool_maikaze	起動	5224635 以降は ysc.ybn エラーは出ないが、黒画面のまま (エラーなし)
+s2011_whirlpool_maikaze	起動	3e4a888 でも黒画面 (ネイティブの yuris-run でも黒)。YSTB 550
 s2023_milimili_onaho_yokai	NG	起動時に panic (capacity overflow)
 r1_tyrano	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)。exe を zip として展開すれば読めるはず
 dl_VJ01000810	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)
@@ -99,11 +99,11 @@ dl_RJ01730521	起動	読み込み中の表示のまま進まない
 dl_RJ01741863	起動	読み込み中の表示のまま進まない
 dl_RJ01642779	タイトル	RPGツクール。画面が拡大されない
 s2019_no_strike_jyosou_jinjya	要再確認	pac/ フォルダがゲームのルートとして選ばれ、白画面のまま
-s2014_whirlpool_tearstilla	NG	5224635 以降も「ysbin/ysc.ybn is missing」
+s2014_whirlpool_tearstilla	タイトル	6b6e16b / 3e4a888 (YU-RIS 554) でタイトルまで。初期化に40秒ほどかかる
 dl_VJ01001386	タイトル	5224635 (YU-RIS 482) でタイトルまで
 dl_VJ01004582	タイトル	5224635 (YU-RIS 482) でタイトルまで
 dl_VJ01000315	タイトル	5224635 (YU-RIS 482) でタイトルまで
-dl_VJ01002327	起動	5224635 以降は ysc.ybn エラーは出ないが、黒画面のまま (エラーなし)
+dl_VJ01002327	NG	3e4a888 でも白画面。ネイティブでは「動作には65536色以上表示可能な環境が必要です」のダイアログで終了し、pac/op.ypf は YPF ではない。YSTB 551
 dl_RJ01648691	本編	416970b (IndexedDB) 以降。クリックでマップ画面まで進む
 dl_RJ01618221	起動	IndexedDB のエラーは消えたが、読み込み中の表示のまま進まない (エラーなし)
 dl_RJ357058	NG	「Unexpected end of JSON input」
