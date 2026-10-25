@@ -1,0 +1,14 @@
+// vnrun: psbfile.dll. PSBFile reads an M2 PSB file (KAGEX's .scn scenarios) with the engine's
+// vnrunLoadPSB; root is its tree as Arrays and Dictionaries, resources as octets.
+class PSBFile
+{
+	var root;
+	function PSBFile(storage) { if (storage !== void) load(storage); }
+	function finalize() {}
+	function load(storage)
+	{
+		try { root = global.vnrunLoadPSB(storage); }
+		catch (e) { Debug.message("(vnrun) PSBFile: " + e.message); root = void; return false; }
+		return true;
+	}
+}

@@ -1,0 +1,172 @@
+--- a/src/core/base/sdl2/StorageImpl.cpp
++++ b/src/core/base/sdl2/StorageImpl.cpp
+@@ -1945,3 +1945,169 @@
+ static iTJSDispatch2 *vnrun_create_load_data_pack(iTJSDispatch2 *) { return TJSCreateNativeClassMethod(vnrun_load_data_pack); }
+ static tTVPAtInstallClass vnrun_install_load_data_pack(TJS_W("vnrunLoadDataPack"), vnrun_create_load_data_pack, TJS_W(""));
+ #endif
++
++#ifdef __EMSCRIPTEN__
++#include <zlib.h>
++// vnrun: vnrunLoadPSB(storage), which polyfill/plugins/psbfile.tjs makes PSBFile.root: the tree in
++// an M2 PSB file (KAGEX's compiled .scn scenarios), optionally in an "mdf" zlib wrapper. The
++// header gives the offsets of the key names (three PSB arrays coding a trie), the strings (an
++// array of offsets to NUL-ended UTF-8), the resource chunks, and the root value. A PSB array is
++// a byte 0xd+k with a (k+1)-byte count, a byte 0xd+j, and count (j+1)-byte unsigned numbers.
++struct vnrun_psb
++{
++	std::vector<tjs_uint8> d;
++	std::vector<ttstr> names;
++	std::vector<tjs_uint64> strofs, chunkofs, chunklen;
++	tjs_uint32 strdata, chunkdata;
++	void need(size_t p, size_t n) { if(p > d.size() || d.size() - p < n) TVPThrowExceptionMessage(TJS_W("PSB: truncated")); }
++	tjs_uint64 uint(size_t &p, int n) { need(p, n); tjs_uint64 v = 0; for(int i = 0; i < n; i++) v |= (tjs_uint64)d[p + i] << (8 * i); p += n; return v; }
++	std::vector<tjs_uint64> array(size_t &p)
++	{
++		need(p, 1);
++		int cn = d[p++] - 0xc;
++		if(cn < 1 || cn > 8) TVPThrowExceptionMessage(TJS_W("PSB: bad array"));
++		tjs_uint64 count = uint(p, cn);
++		need(p, 1);
++		int en = d[p++] - 0xc;
++		if(en < 1 || en > 8 || count > d.size()) TVPThrowExceptionMessage(TJS_W("PSB: bad array"));
++		std::vector<tjs_uint64> a((size_t)count);
++		for(auto &v : a) v = uint(p, en);
++		return a;
++	}
++	ttstr utf8(const std::string &s) { tjs_string w; TVPUtf8ToUtf16(w, s); return ttstr(w.c_str()); }
++	void load()
++	{
++		if(d.size() < 40 || memcmp(d.data(), "PSB\0", 4) != 0) TVPThrowExceptionMessage(TJS_W("PSB: not a PSB file"));
++		if(d[6] | d[7]) TVPThrowExceptionMessage(TJS_W("PSB: enciphered header"));
++		size_t p = 12;
++		size_t onames = (size_t)uint(p, 4), ostrs = (size_t)uint(p, 4);
++		strdata = (tjs_uint32)uint(p, 4);
++		size_t ochunkofs = (size_t)uint(p, 4), ochunklen = (size_t)uint(p, 4);
++		chunkdata = (tjs_uint32)uint(p, 4);
++		root = (size_t)uint(p, 4);
++		p = onames;
++		std::vector<tjs_uint64> charset = array(p), data = array(p), index = array(p);
++		for(tjs_uint64 i : index)
++		{
++			std::string s;
++			for(tjs_uint64 c = i < data.size() ? data[i] : 0; c && c < data.size(); )
++			{
++				tjs_uint64 code = data[c];
++				if(code >= charset.size()) break;
++				s += (char)(c - charset[code]);
++				c = code;
++			}
++			std::reverse(s.begin(), s.end());
++			names.push_back(utf8(s));
++		}
++		p = ostrs; strofs = array(p);
++		p = ochunkofs; chunkofs = array(p);
++		p = ochunklen; chunklen = array(p);
++	}
++	size_t root;
++	tTJSVariant value(size_t p)
++	{
++		need(p, 1);
++		tjs_uint8 t = d[p++];
++		if(t <= 1) return tTJSVariant();
++		if(t <= 3) return tTJSVariant((tjs_int)(t == 3));
++		if(t <= 0xc)
++		{
++			int n = t - 4;
++			if(!n) return tTJSVariant((tjs_int64)0);
++			tjs_uint64 v = uint(p, n);
++			if(n < 8 && (v >> (8 * n - 1) & 1)) v |= ~(tjs_uint64)0 << (8 * n);
++			return tTJSVariant((tjs_int64)v);
++		}
++		if(t <= 0x14)
++		{
++			p--;
++			std::vector<tjs_uint64> a = array(p);
++			iTJSDispatch2 *arr = TJSCreateArrayObject();
++			tTJSVariant r(arr, arr);
++			arr->Release();
++			for(size_t i = 0; i < a.size(); i++) { tTJSVariant v((tjs_int64)a[i]); arr->PropSetByNum(TJS_MEMBERENSURE, (tjs_int)i, &v, arr); }
++			return r;
++		}
++		if(t <= 0x18)
++		{
++			tjs_uint64 i = uint(p, t - 0x14);
++			if(i >= strofs.size()) TVPThrowExceptionMessage(TJS_W("PSB: bad string"));
++			size_t s = strdata + (size_t)strofs[i], e = s;
++			while(e < d.size() && d[e]) e++;
++			need(s, e - s);
++			return tTJSVariant(utf8(std::string((const char *)&d[s], e - s)));
++		}
++		if(t <= 0x1c)
++		{
++			tjs_uint64 i = uint(p, t - 0x18);
++			if(i >= chunkofs.size() || i >= chunklen.size()) return tTJSVariant();
++			size_t s = chunkdata + (size_t)chunkofs[i], n = (size_t)chunklen[i];
++			need(s, n);
++			return tTJSVariant(n ? &d[s] : NULL, (tjs_uint)n);
++		}
++		if(t == 0x1d) return tTJSVariant(0.0);
++		if(t == 0x1e) { need(p, 4); float f; memcpy(&f, &d[p], 4); return tTJSVariant((double)f); }
++		if(t == 0x1f) { need(p, 8); double f; memcpy(&f, &d[p], 8); return tTJSVariant(f); }
++		if(t == 0x20)
++		{
++			std::vector<tjs_uint64> ofs = array(p);
++			iTJSDispatch2 *arr = TJSCreateArrayObject();
++			tTJSVariant r(arr, arr);
++			arr->Release();
++			for(size_t i = 0; i < ofs.size(); i++) { tTJSVariant v = value(p + (size_t)ofs[i]); arr->PropSetByNum(TJS_MEMBERENSURE, (tjs_int)i, &v, arr); }
++			return r;
++		}
++		if(t == 0x21)
++		{
++			std::vector<tjs_uint64> keys = array(p), ofs = array(p);
++			iTJSDispatch2 *dic = TJSCreateDictionaryObject();
++			tTJSVariant r(dic, dic);
++			dic->Release();
++			for(size_t i = 0; i < keys.size() && i < ofs.size(); i++)
++			{
++				if(keys[i] >= names.size()) TVPThrowExceptionMessage(TJS_W("PSB: bad key"));
++				tTJSVariant v = value(p + (size_t)ofs[i]);
++				dic->PropSet(TJS_MEMBERENSURE, names[(size_t)keys[i]].c_str(), NULL, &v, dic);
++			}
++			return r;
++		}
++		if(t <= 0x25) return tTJSVariant(); // extra resources (version 4)
++		TVPThrowExceptionMessage(TJS_W("PSB: unknown value type %1"), ttstr((tjs_int)t));
++		return tTJSVariant();
++	}
++};
++static tjs_error TJS_INTF_METHOD vnrun_load_psb(tTJSVariant *result, tjs_int numparams,
++	tTJSVariant **param, iTJSDispatch2 *objthis)
++{
++	if (numparams < 1) return TJS_E_BADPARAMCOUNT;
++	vnrun_psb psb;
++	tTJSBinaryStream *st = TVPCreateStream(TVPSearchPlacedPath(ttstr(*param[0])));
++	try
++	{
++		psb.d.resize((size_t)st->GetSize());
++		if(!psb.d.empty()) st->ReadBuffer(psb.d.data(), (tjs_uint)psb.d.size());
++	}
++	catch(...)
++	{
++		delete st;
++		throw;
++	}
++	delete st;
++	if(psb.d.size() >= 8 && memcmp(psb.d.data(), "mdf\0", 4) == 0)
++	{
++		uLongf n = psb.d[4] | psb.d[5] << 8 | psb.d[6] << 16 | (uLongf)psb.d[7] << 24;
++		std::vector<tjs_uint8> out(n);
++		if(uncompress(out.data(), &n, psb.d.data() + 8, (uLong)(psb.d.size() - 8)) != Z_OK)
++			TVPThrowExceptionMessage(TJS_W("PSB: broken mdf data: %1"), ttstr(*param[0]));
++		out.resize(n);
++		psb.d.swap(out);
++	}
++	psb.load();
++	tTJSVariant v = psb.value(psb.root);
++	if (result) *result = v;
++	return TJS_S_OK;
++}
++static iTJSDispatch2 *vnrun_create_load_psb(iTJSDispatch2 *) { return TJSCreateNativeClassMethod(vnrun_load_psb); }
++static tTVPAtInstallClass vnrun_install_load_psb(TJS_W("vnrunLoadPSB"), vnrun_create_load_psb, TJS_W(""));
++#endif

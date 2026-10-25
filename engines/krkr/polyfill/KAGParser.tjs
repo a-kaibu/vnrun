@@ -1618,11 +1618,12 @@ class __internal_KAGParser
 								var newbuf = this.curLineStr.substring(0, tagstartpos);
 
 								// count '['
-								// escape '['
+								// escape '[' (KAGParserEx: unless escape=false, which embeds tags)
+								var escape = this.dicObj["escape"] !== "false";
 								var exp_pos = 0;
 								while (exp.length !== exp_pos)
 								{
-									if (exp[exp_pos] === "[")
+									if (escape && exp[exp_pos] === "[")
 									{
 										newbuf += "[[";
 									}

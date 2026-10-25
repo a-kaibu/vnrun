@@ -50,6 +50,7 @@ const POLYFILL_FILES = [
     "layerExAlpha",
     "extrans",
     "saveStruct",
+    "psbFile",
   ].map((name) => `plugins/${name}.tjs`),
 ];
 const STARTUP = "/vnrun/startup.tjs";
