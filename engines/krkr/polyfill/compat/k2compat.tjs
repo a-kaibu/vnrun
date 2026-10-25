@@ -5,3 +5,6 @@
 // What initialize.tjs of KiriKiri Z games sets up after loading this file.
 if (typeof(global.Krkr2CompatUtils) === "undefined")
 	global.Krkr2CompatUtils = %[ scriptBase: "" ];
+
+// The real one links win32dialog.dll, whose names (DS_MODALFRAME, ...) games then use.
+Plugins.link("win32dialog.dll");
