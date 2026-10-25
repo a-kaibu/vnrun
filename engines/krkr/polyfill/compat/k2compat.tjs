@@ -1,0 +1,3 @@
+// vnrun: KiriKiri Z releases come with k2compat.tjs (KiriKiri 2 compatibility), and some games
+// load it without shipping it. What it adds for a page (menus, plugins, the font) the other
+// polyfill scripts already give, so this one is empty.

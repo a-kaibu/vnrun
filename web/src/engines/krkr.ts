@@ -32,6 +32,8 @@ const POLYFILL_FILES = [
   "KAGParser.tjs",
   "SelfRestart.tjs",
   "ModalDialog.tjs",
+  "Compat.tjs",
+  "compat/k2compat.tjs",
   ...[
     "Plugins",
     "csvParser",
@@ -51,6 +53,7 @@ const STARTUP = "/vnrun/startup.tjs";
 const STARTUP_SCRIPT = `global.KirikiriPolyfillRoot = "${POLYFILL}/";
 Scripts.execStorage(global.KirikiriPolyfillRoot + "PolyfillInitialize.tjs");
 Scripts.execStorage(global.KirikiriPolyfillRoot + "plugins/Plugins.tjs");
+Scripts.execStorage(global.KirikiriPolyfillRoot + "Compat.tjs");
 Scripts.execStorage(global.KirikiriPolyfillRoot + "SelfRestart.tjs");
 Scripts.execStorage(global.KirikiriPolyfillRoot + "ModalDialog.tjs");
 Scripts.execStorage("startup.tjs");
@@ -130,6 +133,7 @@ export async function start({ fs, manifest, ui, fonts }: EngineContext): Promise
   // KiriKiri SDL2 has no menus, plugins or default font. Its own stand-ins and ours for common
   // plugins (engines/krkr/polyfill, with the player's font) run before the game's startup.tjs.
   Module.FS.mkdirTree(`${POLYFILL}/plugins`);
+  Module.FS.mkdirTree(`${POLYFILL}/compat`);
   for (const name of POLYFILL_FILES) {
     const res = await fetch(engineUrl("krkr", `polyfill/${name}`));
     if (!res.ok) throw new Error(`polyfill/${name}: HTTP ${res.status}`);
