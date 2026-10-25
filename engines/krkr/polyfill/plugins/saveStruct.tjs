@@ -1,0 +1,11 @@
+// vnrun: savestruct.dll. Its writers (save2, saveStruct2) differ from the built-in ones only in
+// the text format details, so the built-in ones stand in.
+{
+	var A = global.Array, D = global.Dictionary;
+	if (typeof(A.save2) === "undefined")
+		A.save2 = function(name, mode = "") { return (global.Array.save incontextof this)(name, mode); } incontextof null;
+	if (typeof(A.saveStruct2) === "undefined")
+		A.saveStruct2 = function(name, mode = "") { return (global.Array.saveStruct incontextof this)(name, mode); } incontextof null;
+	if (typeof(D.saveStruct2) === "undefined")
+		D.saveStruct2 = function(name, mode = "") { return (global.Dictionary.saveStruct incontextof this)(name, mode); } incontextof null;
+}
