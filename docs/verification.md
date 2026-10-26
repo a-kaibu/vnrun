@@ -46,7 +46,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Artemis (art3m1s-core) | 6 |  | 5 |  |  | 1 |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 2 | 17 | 9 | 3 | 2 |  |  |
-| 吉里吉里 (KiriKiri SDL2) | 135 | 2 | 99 | 2 | 1 | 21 |  | 10 |
+| 吉里吉里 (KiriKiri SDL2) | 135 | 4 | 100 |  | 1 | 20 |  | 10 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 30 | 5 | 1 |  | 1 | 22 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
@@ -210,8 +210,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| b2010_grand_cru | [Reunion～３日間だけのプチ同棲～　体験版](http://suezou.dyndns.org/dl2010/grand-cru/reunion/Reunion_trial.lzh) | 本編 | a29c215 で Start から本編テキストまで |
 | b2019_tinkle_position | [おにギュＨ＿ＨＣＢ体験版](http://suezou.dyndns.org/dl2019/tinkle-position/onigyu_h/onigyuh_hcbtrial.zip) | 本編 | 1929e7a で「はじめる」からハグクリックの説明画面まで |
 | dl_RJ01677912 | [とける風花とシロうさぎ](https://trial.dlsite.com/doujin/RJ01678000/RJ01677912_trial.zip) | 本編 | 1929e7a で START から本編テキストまで (立ち絵・名前欄・文章) |
+| s2017_nanawind_alice_gram | [春音アリス＊グラム　体験版](http://suezou.dyndns.org/dl2017/nanawind/alice_gram/harugra_trial.zip) | 本編 | a29c215 で STORY から本編テキストまで |
 | b2006_akabeesoft | [その横顔を見つめてしまう ～a profile完全版～ web体験版](http://suezou.dyndns.org/dl2006/akabeesoft/sonoyoko/sonoyoko_trial.zip) | タイトル | dc42573 でタイトル画面まで表示 |
 | b2006_ninetail | [機械仕掛けのイブ　～Ｄｅａ　Ｅｘ　Ｍａｃｈｉｎａ～](http://suezou.dyndns.org/dl2006/ninetail/eve/0527_eve_trial_ver100.exe) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2008_akabeesoft | [ＷＬＯ-世界恋愛機構- web用体験版](http://suezou.dyndns.org/dl2008/akabeesoft/wlo/wlo_webtrial.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
@@ -227,6 +229,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2013_dualtail | [VenusBlood-GAIA- WEB専用ADV体験版](http://suezou.dyndns.org/dl2013/dualtail/vbg/VBG_WEB_AVGTrial.zip) | タイトル | d084599 (setLayerPos) でタイトル画面まで表示 |
 | b2013_hulotte | [妹のおかげでモテすぎてヤバい。 体験版](http://suezou.dyndns.org/dl2013/hulotte/moteyaba/moteyaba_trial.zip) | タイトル | 591d0a0 で注意画面からタイトルまで (XOR 暗号の xp3) |
 | b2013_madosoft | [ナマイキデレーション体験版 WEB Ver.](http://suezou.dyndns.org/dl2013/madosoft/namadere/namadere_trial_web.zip) | タイトル | 591d0a0 でタイトルまで |
+| b2014_hibiki_works | [ＰＲＥＴＴＹ×Ｃ∧ＴＩＯＮ](http://suezou.dyndns.org/dl2014/hibiki-works/pretty_cation/pc_web-trial1.01.zip) | タイトル | a29c215 でロゴと注意書き 2 枚をクリックで送るとタイトル画面まで表示 |
 | b2014_undermoon | [奪われた学園～罠に落ちた優等生～　体験版](http://suezou.dyndns.org/dl2014/undermoon/ubaware/ubaware_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2015_ammolite | [お兄ちゃん、教えて……～義妹とヒミツの保健実習～　体験版　Ver1.00](http://suezou.dyndns.org/dl2015/ammolite/oni/amml011_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2015_appetite | [愛娘は、マゾ性隷～娘だからって遠慮しないでね？～　体験版　Ver1.00](http://suezou.dyndns.org/dl2015/appetite/musume/apt054_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
@@ -277,6 +280,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2009_dualtail_haiironosora | [灰色の空に堕ちた翼　体験版 Ver.1.00](http://suezou.dyndns.org/dl2009/dualtail/haiironosora/TD06_TRIAL100.exe) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2011_parasol_delivara | [でりばらっ！-deliverance of strays- 体験版](http://suezou.dyndns.org/dl2011/parasol/delivara/delivara_taiken.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2012_ninetail_gears_of_dragoon | [Gears of Dragoon  -RPG体験版 ver.1.00-](http://suezou.dyndns.org/dl2012/ninetail/gears_of_dragoon/GoD_RPG_trial_100.zip) | タイトル | d084599 (setLayerPos) でタイトル画面まで表示 |
+| s2013_hibiki_works_lovely_cation2 | [ＬＯＶＥＬＹ×Ｃ∧ＴＩＯＮ２](http://suezou.dyndns.org/dl2013/hibiki-works/lovely_cation2/LxC2_trial_web.zip) | タイトル | a29c215 でロゴと注意書き 2 枚をクリックで送るとタイトル画面まで表示 |
 | s2014_cross_over_tori | [鳥籠の姫 ～絶対妊娠の姉妹悦辱～　体験版](http://suezou.dyndns.org/dl2014/cross-over/tori/torikago_trial1_2.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2015_appetite_inbo | [発情淫母～疼く熟体は、その欲情を抑えきれない～　体験版　Ver1.00](http://suezou.dyndns.org/dl2015/appetite/inbo/apt050_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2015_hulotte_yomeyaba | [嫁探しが捗りすぎてヤバい。 体験版](http://suezou.dyndns.org/dl2015/hulotte/yomeyaba/yomeyaba_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
@@ -286,7 +290,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2017_appetite_evil_monmusu | [ゆけゆけ悪のモンむす軍団！～怪人娘に搾り取られるえっちで過酷な世界性服大作戦～　体験版　Ver1.00](http://suezou.dyndns.org/dl2017/appetite/evil_monmusu/apt101_tr.zip) | タイトル | d51f3e8 系のページでタイトル画面まで表示 |
 | s2017_appetite_immorality_don | [背徳の母娘丼～淫欲に沈むママといもうと～　体験版　Ver1.00](http://suezou.dyndns.org/dl2017/appetite/immorality_don/apt090_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2017_atelier_gh_neneki | [粘液地獄　～巨大ヌルヌル生物に汚された女学生～ 体験版](http://suezou.dyndns.org/dl2017/atelier-gh/neneki/neneki_TR.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| s2017_nanawind_alice_gram | [春音アリス＊グラム　体験版](http://suezou.dyndns.org/dl2017/nanawind/alice_gram/harugra_trial.zip) | タイトル | 0c62865 でクリック 3 回の後タイトル画面まで表示 |
 | s2018_appetite_boku_mother | [欲求不満なボクのママのＳＥＸレッスン～パパには言えない家庭内情事～　Trial](http://suezou.dyndns.org/dl2018/appetite/boku_mother/apt106_tr.zip) | タイトル | d51f3e8 系のページでタイトル画面まで表示 |
 | s2018_appetite_shokushu_ouji | [触手王子の肉嫁探し～母と姉弟の終わらない絶頂地獄～　体験版](http://suezou.dyndns.org/dl2018/appetite/shokushu_ouji/apt116_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2018_pin_point_yakyurare | [彼女が野球部の性処理マネージャーに…～体育会系セックスで寝取られて～体験版](http://suezou.dyndns.org/dl2018/pin-point/yakyurare/yakyurare_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示。起動時に「フルスクリーンで表示しますか？」の確認ダイアログが出る |
@@ -311,10 +314,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2025_poison_extasy_paizuri_me | [最高に都合の良いパイズリ上手のマリーさん - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2025/poison-extasy/paizuri_me/paizuri_me_tr.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
 | s2026_poison_motion_sxs2_me | [姉妹X催眠２ - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2026/poison-motion/sxs2-me/sxs2me_trial.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
 | s2026_poison_motion_sxs_me | [姉妹X催眠 - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2026/poison-motion/sxs-me/sxsme_trial.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
-| b2014_hibiki_works | [ＰＲＥＴＴＹ×Ｃ∧ＴＩＯＮ](http://suezou.dyndns.org/dl2014/hibiki-works/pretty_cation/pc_web-trial1.01.zip) | 起動 | 0c62865 で AlphaMovie は通過し、ロゴと注意書き 2 枚まで (さらにクリックが必要) |
-| s2013_hibiki_works_lovely_cation2 | [ＬＯＶＥＬＹ×Ｃ∧ＴＩＯＮ２](http://suezou.dyndns.org/dl2013/hibiki-works/lovely_cation2/LxC2_trial_web.zip) | 起動 | 0c62865 でロゴと注意書き 2 枚まで (開発側では名前入力まで確認) |
 | r1_kag3 | [KAG3 紹介デモ](https://krkrz.github.io/download/kr2_232r2.zip) | 要再確認 | KAG3 のサンプル (xp3 にまとめていない data フォルダ)。開発スレッドでは確認済み |
-| b2010_grand_cru | [Reunion～３日間だけのプチ同棲～　体験版](http://suezou.dyndns.org/dl2010/grand-cru/reunion/Reunion_trial.lzh) | NG | 5d1348e で黒画面のまま |
 | b2011_nanawind | [ユユカナ 体験版](http://suezou.dyndns.org/dl2011/nanawind/yuyukana/yuyu_taiken01.zip) | NG | cxdec 系 (yuyukana.tpm) で未対応。「Invalid character '\x03'」 |
 | b2012_alcot | [中の人などいない！　体験版](http://suezou.dyndns.org/dl2012/alcot/naka/nakanohito_trial.exe) | NG | 「Member "Motion" does not exist」(motion.tjs(20)、E-mote) で未対応 |
 | b2012_kai | [リヴォルバーガール☆ハンマーレディ　体験版](http://suezou.dyndns.org/dl2012/kai/rghl/RGHLtrial-WEB.zip) | NG | 「Member "Motion" does not exist」(motion.tjs(20)、E-mote) で未対応 |
