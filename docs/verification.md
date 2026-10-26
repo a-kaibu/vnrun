@@ -46,7 +46,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Artemis (art3m1s-core) | 6 |  | 5 |  |  | 1 |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 2 | 17 | 9 | 3 | 2 |  |  |
-| 吉里吉里 (KiriKiri SDL2) | 135 | 4 | 108 |  | 1 | 12 |  | 10 |
+| 吉里吉里 (KiriKiri SDL2) | 135 | 4 | 109 |  | 1 | 12 |  | 9 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 30 | 5 | 1 |  | 1 | 22 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
@@ -279,6 +279,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_VJ01004598 | [女王社長の僕争奪戦 ～カラダもリードも譲らない！ で、どっちのが好きなのっ！？～](https://trial.dlsite.com/professional/VJ01005000/VJ01004598_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | dl_VJ01006612 | [背徳の母乳 ～そんなに出しちゃダメぇ～](https://trial.dlsite.com/professional/VJ01007000/VJ01006612_trial.zip) | タイトル | d51f3e8 系のページでタイトル画面まで表示 |
 | r1_krkr_apt306 | [先輩、好きです……押忍！ 体験版](https://www.appetite-game.com/apt306/image/apt306_tr.zip) | タイトル | e7d5b88 でタイトル画面まで表示 |
+| s2006_akabeesoft_conboku | [こんな娘がいたら僕はもう～web体験版第2弾～](http://suezou.dyndns.org/dl2006/akabeesoft/conboku/conboku_taiken_02.zip) | タイトル | bd7853c でインストーラ (Inno) 展開後に注意書き→タイトルメニューまで表示 |
 | s2008_dualtail_clarice | [奴隷将校クラリス　－　白濁のグローリエ　－　ＡＤＶパート体験版](http://suezou.dyndns.org/dl2008/dualtail/clarice/Clarice_ADVtrial.exe) | タイトル | e7d5b88 でタイトル画面まで表示 |
 | s2008_ninetail_amatu | [天ツ風　～傀儡陣風帖～](http://suezou.dyndns.org/dl2008/ninetail/amatu/amatu_trial_0901ver100.exe) | タイトル |  |
 | s2009_dualtail_haiironosora | [灰色の空に堕ちた翼　体験版 Ver.1.00](http://suezou.dyndns.org/dl2009/dualtail/haiironosora/TD06_TRIAL100.exe) | タイトル | 5d1348e でタイトル画面まで表示 |
@@ -339,7 +340,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2007_akabeesoft | [g_web_taiken.zip](http://suezou.dyndns.org/dl2007/akabeesoft/gsen/g_web_taiken.zip) | 未確認 |  |
 | b2008_mille_feuille | [魔法少女沙枝 Vol.2 体験版](http://suezou.dyndns.org/dl2008/mille-feuille/sae2/sae2_trial2.zip) | 未確認 |  |
 | b2017_sukerasparo | [ことのは・アムリラート](http://suezou.dyndns.org/dl2017/sukerasparo/kotonoha/kotonoha_trial.zip) | 未確認 |  |
-| s2006_akabeesoft_conboku | [こんな娘がいたら僕はもう～web体験版第2弾～](http://suezou.dyndns.org/dl2006/akabeesoft/conboku/conboku_taiken_02.zip) | 未確認 |  |
 | s2008_akabeesoft_gsen | [G線上の魔王](http://suezou.dyndns.org/dl2008/akabeesoft/gsen/g_trial2.zip) | 未確認 |  |
 | s2016_akabeesoft3_inosupe | [生命のスペア](http://suezou.dyndns.org/dl2016/akabeesoft3/inosupe/inosupe_webtrialver.zip) | 未確認 |  |
 | s2017_akabeesoft3_tonofuta | [少女と年の差、ふたまわり。](http://suezou.dyndns.org/dl2017/akabeesoft3/tonofuta/syoujyo_to_toshinosa_hutamawari_webtrial.zip) | 未確認 |  |
