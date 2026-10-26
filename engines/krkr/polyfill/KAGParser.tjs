@@ -1889,8 +1889,19 @@ class __internal_KAGParser
 					}
 
 					var valuestart = this.curPos;
+                    // Some KAGParserEx scripts leave a trailing condition unquoted.
+                    // Extend it only when the next token is an operator; ordinary
+                    // following attributes (cond=f.ready page=fore) remain separate.
+                    var restCondition = false;
+                    if(attribname === "cond" && vdelim === 0 && ldelim === "") {
+                        var look = this.curPos;
+                        while(look < this.curLineStr.length && !this.TVPIsWS(this.curLineStr[look])) look++;
+                        while(look < this.curLineStr.length && this.TVPIsWS(this.curLineStr[look])) look++;
+                        if(look < this.curLineStr.length)
+                            restCondition = "=!&|?<>".indexOf(this.curLineStr[look]) >= 0;
+                    }
 
-					while (this.curLineStr.length !== this.curPos && (vdelim !== 0 ? (this.curLineStr[this.curPos] !== vdelim) : (this.curLineStr[this.curPos] !== ldelim && !this.TVPIsWS(this.curLineStr[this.curPos]))))
+					while (this.curLineStr.length !== this.curPos && (vdelim !== 0 ? (this.curLineStr[this.curPos] !== vdelim) : (this.curLineStr[this.curPos] !== ldelim && (restCondition || !this.TVPIsWS(this.curLineStr[this.curPos])))))
 					{
 						if (this.curLineStr[this.curPos] === "`")
 						{

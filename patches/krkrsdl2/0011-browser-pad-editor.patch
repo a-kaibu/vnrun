@@ -1,0 +1,38 @@
+diff --git a/src/core/sdl2/SDLApplication.cpp b/src/core/sdl2/SDLApplication.cpp
+--- a/src/core/sdl2/SDLApplication.cpp
++++ b/src/core/sdl2/SDLApplication.cpp
+@@ -3093,6 +3093,34 @@
+ 	return TJSCreateNativeClassMethod(vnrun_confirm);
+ }
+ static tTVPAtInstallClass vnrun_install_confirm(TJS_W("vnrunConfirm"), vnrun_create_confirm, TJS_W(""));
++// Browser-backed Pad text editor. The JS host owns each editor's text and lifetime.
++EM_JS_DEPS(vnrun_pad_deps, "$stringToNewUTF8");
++EM_JS(char *, vnrun_pad_js, (int id, const char *action, const char *value, const char *title, const char *filename), {
++    return stringToNewUTF8(Module.vnrunPad(id, UTF8ToString(action), UTF8ToString(value),
++        UTF8ToString(title), UTF8ToString(filename)));
++});
++static tjs_error TJS_INTF_METHOD vnrun_pad(tTJSVariant *result, tjs_int numparams,
++    tTJSVariant **param, iTJSDispatch2 *objthis)
++{
++    if(numparams < 2) return TJS_E_BADPARAMCOUNT;
++    std::string values[4];
++    for(tjs_int i = 1; i < numparams && i <= 4; i++)
++        TVPUtf16ToUtf8(values[i - 1], ttstr(*param[i]).AsStdString());
++    char *answer = vnrun_pad_js((tjs_int)*param[0], values[0].c_str(), values[1].c_str(),
++        values[2].c_str(), values[3].c_str());
++    if(result) {
++        tjs_string text;
++        TVPUtf8ToUtf16(text, std::string(answer));
++        *result = ttstr(text);
++    }
++    free(answer);
++    return TJS_S_OK;
++}
++static iTJSDispatch2 *vnrun_create_pad(iTJSDispatch2 *)
++{
++    return TJSCreateNativeClassMethod(vnrun_pad);
++}
++static tTVPAtInstallClass vnrun_install_pad(TJS_W("vnrunPad"), vnrun_create_pad, TJS_W(""));
+ #endif
+ void krkrsdl2_run_main_loop(void)
+ {

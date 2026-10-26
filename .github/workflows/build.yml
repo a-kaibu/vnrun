@@ -17,7 +17,9 @@ jobs:
             third_party/siglus_rs/target
             third_party/ethornell-rs/target
           key: cargo-${{ hashFiles('Cargo.lock', 'third_party/*/Cargo.lock') }}
+      - run: bash engines/krkr/test.sh
       - run: cargo fmt --check
+      - run: cargo test --locked -p vnrun-prep -p vnrun-devserver
       - run: cargo clippy --release -- -D warnings
       - run: ./build.sh
       - run: cargo build --release -p vnrun-devserver

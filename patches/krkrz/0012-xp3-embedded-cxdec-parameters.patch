@@ -1,0 +1,74 @@
+--- a/base/XP3Archive.cpp
++++ b/base/XP3Archive.cpp
+@@ -595,6 +595,45 @@
+ // alone cannot identify trial/release variants of cxdec.
+ bool tTVPXP3Archive::DetectCxdec()
+ {
++ auto accept = [this](std::unique_ptr<vnrun::Cxdec> decoder) {
++  unsigned valid = 0;
++  for(tjs_uint i=0;i<ItemVector.size() && valid<2;++i)
++  {
++   const auto &item=ItemVector[i];
++   if(!item.Protected || item.OrgSize<16 || item.OrgSize>1024*1024) continue;
++   std::vector<tjs_uint8> bytes((size_t)item.OrgSize);
++   std::unique_ptr<tTJSBinaryStream> stream(CreateStreamByIndex(i));
++   stream->ReadBuffer(bytes.data(),(tjs_uint)bytes.size());
++   decoder->decrypt(item.FileHash,0,bytes.data(),bytes.size());
++   if(adler32(adler32(0L,Z_NULL,0),bytes.data(),bytes.size())!=item.FileHash) break;
++   ++valid;
++  }
++  if(valid==2)
++  {
++   Cxdec=std::move(decoder);
++   TVPAddLog(TJS_W("(vnrun) encrypted archive: cxdec (validated)"));
++   return true;
++  }
++  return false;
++ };
++ try {
++  // Native preparation writes only parameters and the control table. Each
++  // archive must still pass the complete-entry checksum validation above.
++  tjs_string project(TVPProjectDir.c_str());
++  auto archive = project.find(TJS_W('>'));
++  if(archive != tjs_string::npos) project.erase(archive);
++  ttstr path = TVPExtractStoragePath(ttstr(project)) + TJS_W("vnrun-cxdec.bin");
++  if(TVPIsExistentStorageNoSearch(path)) {
++   tTVPStreamHolder metadata(path);
++   if(metadata->GetSize()==8+22+4096) {
++    std::array<tjs_uint8,8+22+4096> bytes;
++    metadata->ReadBuffer(bytes.data(),bytes.size());
++    vnrun::CxScheme scheme{};
++    if(!memcmp(bytes.data(),"VNCXDEC1",8) && vnrun::CxFromParams(bytes.data()+8,scheme))
++     if(accept(std::unique_ptr<vnrun::Cxdec>(new vnrun::Cxdec(scheme,bytes.data()+30)))) return true;
++   }
++  }
++ } catch(...) { /* invalid/missing sidecar: retain normal detection */ }
+  const struct { const tjs_char *file; vnrun::CxScheme scheme; } candidates[] = {
+   {TJS_W("plugin/yuyukana.tpm"), vnrun::CxYuyukana},
+   {TJS_W("plugin/lavender.tpm"), vnrun::CxLavender},
+@@ -616,24 +652,7 @@
+     if(!memcmp(data.data()+at," Encryption control block",25)) break;
+    if(at + 4096 > data.size()) continue;
+    std::unique_ptr<vnrun::Cxdec> decoder(new vnrun::Cxdec(candidate.scheme,data.data()+at));
+-   unsigned valid = 0;
+-   for(tjs_uint i=0;i<ItemVector.size() && valid<2;++i)
+-   {
+-    const auto &item=ItemVector[i];
+-    if(!item.Protected || item.OrgSize<16 || item.OrgSize>1024*1024) continue;
+-    std::vector<tjs_uint8> bytes((size_t)item.OrgSize);
+-    std::unique_ptr<tTJSBinaryStream> stream(CreateStreamByIndex(i));
+-    stream->ReadBuffer(bytes.data(),(tjs_uint)bytes.size());
+-    decoder->decrypt(item.FileHash,0,bytes.data(),bytes.size());
+-    if(adler32(adler32(0L,Z_NULL,0),bytes.data(),bytes.size())!=item.FileHash) break;
+-    ++valid;
+-   }
+-   if(valid==2)
+-   {
+-    Cxdec=std::move(decoder);
+-    TVPAddLog(TJS_W("(vnrun) encrypted archive: cxdec (validated)"));
+-    return true;
+-   }
++   if(accept(std::move(decoder))) return true;
+   }
+   catch(...) { /* absent or unsupported plugin: try the normal detectors */ }
+  }

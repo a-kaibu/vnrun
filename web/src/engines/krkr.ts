@@ -7,6 +7,7 @@ import { engineUrl, importEngine, type EngineContext } from "../engine";
 import { mountGame, Saves, type EmFS } from "../emfs";
 import type { Manifest } from "../gamefs";
 import { Presenter } from "../present";
+import { Pads } from "./krkr-pad";
 
 interface KrkrModule {
   FS: EmFS & {
@@ -33,6 +34,7 @@ const POLYFILL_FILES = [
   "SelfRestart.tjs",
   "ModalDialog.tjs",
   "Compat.tjs",
+  "Pad.tjs",
   "compat/k2compat.tjs",
   ...[
     "Plugins",
@@ -63,16 +65,20 @@ const STARTUP_SCRIPT = `global.KirikiriPolyfillRoot = "${POLYFILL}/";
 Scripts.execStorage(global.KirikiriPolyfillRoot + "PolyfillInitialize.tjs");
 Scripts.execStorage(global.KirikiriPolyfillRoot + "plugins/Plugins.tjs");
 Scripts.execStorage(global.KirikiriPolyfillRoot + "Compat.tjs");
+Scripts.execStorage(global.KirikiriPolyfillRoot + "Pad.tjs");
 Scripts.execStorage(global.KirikiriPolyfillRoot + "SelfRestart.tjs");
 Scripts.execStorage(global.KirikiriPolyfillRoot + "ModalDialog.tjs");
 Scripts.execStorage("startup.tjs");
 `;
 
 // The project to start: data.xp3 (most releases), else a data folder, else the game folder.
-function project(manifest: Manifest): string {
+function project(fs: EngineContext["fs"], manifest: Manifest, exe: GameExe): string {
   const files = (manifest.files || []).map((f) => f.p);
   const xp3 = files.find((p) => p.toLowerCase() === "data.xp3");
   if (xp3) return `/game/${xp3}`;
+  const bin = files.find((p) => p.toLowerCase() === "data.bin");
+  if (bin && isXp3(fs.readRange(bin, 0, 11))) return `/game/${bin}`;
+  if (exe.archive) return `/game/${exe.archive}`;
   const data = files.find((p) => p.toLowerCase().startsWith("data/"));
   if (data) return `/game/${data.slice(0, data.indexOf("/"))}/`;
   return "/game/";
@@ -93,6 +99,7 @@ interface GameExe {
   krkr2Minor?: number;
   /** Options embedded in it ("-key=value"), which KiriKiri reads as defaults for its command line. */
   options: string[];
+  archive?: string;
 }
 
 // The game's KiriKiri exe: the first exe with embedded options or a KiriKiri 2 version. Other exes
@@ -109,9 +116,25 @@ async function gameExe(fs: EngineContext["fs"], manifest: Manifest): Promise<Gam
     const text = new TextDecoder("utf-16le").decode(bytes.subarray(0, bytes.length & ~1));
     const m = text.match(/FileVersion\0+2\.(\d+)\./);
     const options = embeddedOptions(bytes);
-    if (m || options.length) return { krkr2Minor: m ? Number(m[1]) : undefined, options };
+    const archive = hasEmbeddedXp3(bytes) ? exe : undefined;
+    if (m || options.length || archive) return { krkr2Minor: m ? Number(m[1]) : undefined, options, archive };
   }
   return { options: [] };
+}
+
+const XP3_MAGIC = [0x58, 0x50, 0x33, 0x0d, 0x0a, 0x20, 0x0a, 0x1a, 0x8b, 0x67, 0x01];
+function isXp3(bytes: Uint8Array, at = 0): boolean {
+  return XP3_MAGIC.every((b, i) => bytes[at + i] === b);
+}
+function hasEmbeddedXp3(bytes: Uint8Array): boolean {
+  // KiriKiri's embedded XP3 archives begin on a 16-byte boundary.
+  for (let at = 16; at + 19 <= bytes.length; at += 16)
+    if (bytes[at] === XP3_MAGIC[0] && isXp3(bytes, at)) {
+      const view = new DataView(bytes.buffer, bytes.byteOffset + at + 11, 8);
+      const index = Number(view.getBigUint64(0, true));
+      if (index >= 19 && index < bytes.length - at) return true;
+    }
+  return false;
 }
 
 // "XOPT_EMBED_AREA_", a 32-bit size, then lines of key="value" (values TJS-escaped, "\x7b"), as
@@ -141,11 +164,14 @@ function embeddedOptions(bytes: Uint8Array): string[] {
 export async function start({ fs, manifest, ui, fonts }: EngineContext): Promise<void> {
   const presenter = await Presenter.create(ui.canvas);
   const create = (await importEngine<{ default: CreateKrkr }>("krkr", "krkr.js")).default;
+  const pads = new Pads(fs, ui.canvas);
   const Module = await create({
     // SDL needs a canvas for its window, but frames go to the presenter instead.
     canvas: document.createElement("canvas"),
     print: (text: string) => console.info(`krkr: ${text}`),
     printErr: (text: string) => console.warn(`krkr: ${text}`),
+    vnrunPad: (id: number, action: string, value: string, title: string, filename: string) =>
+      pads.call(id, action, value, title, filename),
     vnrunPresent: (pixels: Uint8Array, pitch: number, width: number, height: number) =>
       presenter.show(pixels, width, height, "bgra8unorm", pitch),
   });
@@ -210,7 +236,7 @@ export async function start({ fs, manifest, ui, fonts }: EngineContext): Promise
   // Scripts without a BOM are Shift_JIS in KiriKiri 2/Z games; KiriKiri SDL2 reads them as UTF-8
   // unless told otherwise.
   Module.callMain([
-    project(manifest),
+    project(fs, manifest, exe),
     "-readencoding=Shift_JIS",
     // No debug console in the page (KiriKiri Z's k2compat builds Windows dialogs for it).
     "-debugwin=no",

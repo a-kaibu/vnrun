@@ -116,3 +116,14 @@ global.VideoOverlay.play = function() {
 	global.vnrunVideo.ended.add(this);
 	global.vnrunVideo.trigger.trigger();
 } incontextof null;
+
+// A few releases keep their author's build-machine drive paths as optional
+// search folders. They cannot exist in the browser; Windows simply found no files.
+var vnrunAddAutoPath = Storages.addAutoPath;
+Storages.addAutoPath = function(path) {
+    if(path.length >= 3 && path[1] == ":" && (path[2] == "/" || path[2] == "\\")) return;
+    return global.vnrunAddAutoPath(path);
+};
+
+// Some Windows engines expose Motion as a built-in rather than linking a DLL.
+Scripts.execStorage(global.KirikiriPolyfillRoot + "plugins/motionPlayer.tjs");

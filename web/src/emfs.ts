@@ -78,7 +78,7 @@ function lazyFile(FS: EmFS, path: string, size: number, read: ReadInto): void {
 export function mountGame(FS: EmFS, fs: GameFS, manifest: Manifest, lowercase = false): void {
   const read = blockReader(fs);
   for (const f of manifest.files || []) {
-    const size = f.s || 0;
+    const size = fs.size(f.p);
     const reader: ReadInto = (buffer, offset, length, position) =>
       read(f.p, size, position, buffer, offset, length);
     lazyFile(FS, `/game/${f.p}`, size, reader);

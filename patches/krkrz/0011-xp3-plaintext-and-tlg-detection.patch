@@ -1,0 +1,62 @@
+--- a/base/XP3Archive.cpp
++++ b/base/XP3Archive.cpp
+@@ -684,6 +684,17 @@
+ 			continue;
+ 		}
+ 		if(size < 16) continue;
++        if(magic < 0 && item.OrgSize <= 1024*1024)
++        {
++            std::vector<tjs_uint8> raw((size_t)item.OrgSize);
++            std::unique_ptr<tTJSBinaryStream> stream(CreateStreamByIndex(i));
++            stream->ReadBuffer(raw.data(),(tjs_uint)raw.size());
++            if(adler32(adler32(0L,Z_NULL,0),raw.data(),raw.size())==item.FileHash)
++            {
++                ++ntext;
++                continue;
++            }
++        }
+ 		tjs_uint32 hash = item.FileHash;
+ 		if(magic >= 0)
+ 		{
+@@ -707,19 +718,28 @@
+ 			}
+ 			// The first four key bytes contain the 31-bit state. Recover a seed only
+ 			// from a fully known prefix, then verify the rest of the format header.
+-			if(len >= 8 && mask[0] != '?' && mask[1] != '?' && mask[2] != '?' && mask[3] != '?')
+-			{
+-				tjs_uint32 state = 0;
+-				for(tjs_uint b = 0; b < 4; b++) state |= (tjs_uint32)(buf[b] ^ (tjs_uint8)m[b]) << (b * 8);
+-				tjs_uint32 seed = (state ^ hash) & 0x7fffffff;
+-				tjs_uint8 d[16];
+-				memcpy(d, buf, len);
+-				Decrypt(SchemeAkabei, seed, hash, 0, d, len);
+-				bool all = true;
+-				for(tjs_uint b = 0; b < len; b++)
+-					all = all && (mask[b] == '?' || d[b] == (tjs_uint8)m[b]);
+-				if(all) akabeiVotes[seed] += 4, any = true;
+-			}
++            if(len >= 8 && mask[0] != '?' && mask[1] != '?' && mask[2] != '?')
++            {
++                // TLG's fourth byte is its version (0, 5 or 6). Trying the three
++                // known versions also detects TLG-only archives without PNG/Ogg.
++                const char *versions = mask[3]=='?' ? "056" : "x";
++                for(const char *v=versions;*v;++v)
++                {
++                    tjs_uint32 state=0;
++                    for(tjs_uint b=0;b<4;++b)
++                    {
++                        tjs_uint8 plain=(b==3 && mask[3]=='?') ? (tjs_uint8)*v : (tjs_uint8)m[b];
++                        state|=(tjs_uint32)(buf[b]^plain)<<(b*8);
++                    }
++                    tjs_uint32 seed=(state^hash)&0x7fffffff;
++                    tjs_uint8 d[16];memcpy(d,buf,len);
++                    Decrypt(SchemeAkabei,seed,hash,0,d,len);
++                    bool all=true;
++                    for(tjs_uint b=0;b<len;++b)
++                        all=all && (mask[b]=='?' || d[b]==(tjs_uint8)m[b]);
++                    if(all) akabeiVotes[seed]+=4,any=true;
++                }
++            }
+ 			if(any) nmagic++;
+ 		}
+ 		else

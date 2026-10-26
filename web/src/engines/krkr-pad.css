@@ -1,0 +1,51 @@
+.krkr-pad {
+  box-sizing: border-box;
+  width: min(56rem, 95vw);
+  max-height: 90dvh;
+  padding: 1.25rem;
+  border: 1px solid #666;
+  border-radius: 0.5rem;
+  background: #171717;
+  color: #eee;
+}
+
+.krkr-pad::backdrop {
+  background: rgb(0 0 0 / 65%);
+}
+
+.krkr-pad h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.2rem;
+}
+
+.krkr-pad p {
+  overflow-wrap: anywhere;
+}
+
+.krkr-pad textarea {
+  box-sizing: border-box;
+  width: 100%;
+  height: min(26rem, 50dvh);
+  resize: vertical;
+  padding: 0.75rem;
+  border: 1px solid #777;
+  background: #111;
+  color: #eee;
+  font: 0.9rem/1.5 monospace;
+}
+
+.krkr-pad > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.krkr-pad button {
+  min-height: 2.5rem;
+  padding: 0.4rem 1rem;
+}
+
+.krkr-pad :focus-visible {
+  outline: 2px solid #8db8ff;
+  outline-offset: 3px;
+}

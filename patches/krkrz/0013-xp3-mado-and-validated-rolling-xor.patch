@@ -1,0 +1,76 @@
+--- a/base/XP3Archive.h
++++ b/base/XP3Archive.h
+@@ -118,7 +118,7 @@
+ public:
+ 	// vnrun: how the archive is encrypted, by the TPM plugin of its title; found by DetectScheme.
+ 	enum tScheme { SchemeNone, SchemeXor, SchemeXorHash, SchemeHashShr12, SchemeAlternate,
+-		SchemeRotate, SchemeAkabei, SchemeCount } Scheme = SchemeNone;
++		SchemeRotate, SchemeAkabei, SchemeMado, SchemeCount } Scheme = SchemeNone;
+ 	std::unique_ptr<vnrun::Cxdec> Cxdec;
+ 	bool IsProtected(tjs_uint idx) const { return ItemVector[idx].Protected; }
+ 	tjs_uint32 XorKey = 0;
+--- a/base/XP3Archive.cpp
++++ b/base/XP3Archive.cpp
+@@ -559,7 +559,7 @@
+ {
+-	if(scheme == SchemeAkabei)
++	if(scheme == SchemeAkabei || scheme == SchemeMado)
+ 	{
+-		vnrun::AkabeiDecrypt(key, hash, offset, p, n);
++		vnrun::AkabeiDecrypt(key, hash, offset, p, n, scheme==SchemeMado ? 31 : 32);
+ 		return;
+ 	}
+ 	for(tjs_uint i = 0; i < n; i++)
+@@ -568,7 +568,8 @@
+ 		switch(scheme)
+ 		{
+ 		case SchemeNone: return;
+-		case SchemeAkabei: return; // handled above
++		case SchemeMado:
++		case SchemeAkabei: return; // handled above
+ 		// every byte XOR a key
+ 		case SchemeXor: p[i] ^= key; break;
+ 		// XOR the low byte of the file hash and a key (xp3dec.tpm, moteyaba.tpm, ...)
+@@ -804,10 +805,31 @@
+ 		if(candidate.second > bestVotes)
+ 			scheme = SchemeAkabei, key = candidate.first, bestVotes = candidate.second;
+ 	if(bestVotes == 0 || (scheme == SchemeXor && key == 0)) return;
++	if(scheme == SchemeAkabei)
++	{
++		bool found = false;
++		for(unsigned period : {32u,31u})
++		{
++			unsigned valid=0;
++			for(tjs_uint i=0;i<ItemVector.size() && valid<2;++i)
++			{
++				const auto &item=ItemVector[i];
++				if(!item.Protected || item.OrgSize<16 || item.OrgSize>1024*1024) continue;
++				std::vector<tjs_uint8> bytes((size_t)item.OrgSize);
++				std::unique_ptr<tTJSBinaryStream> stream(CreateStreamByIndex(i));
++				stream->ReadBuffer(bytes.data(),(tjs_uint)bytes.size());
++				vnrun::AkabeiDecrypt(key,item.FileHash,0,bytes.data(),bytes.size(),period);
++				if(adler32(adler32(0L,Z_NULL,0),bytes.data(),bytes.size())!=item.FileHash) break;
++				++valid;
++			}
++			if(valid==2) { scheme=period==31 ? SchemeMado : SchemeAkabei; found=true; break; }
++		}
++		if(!found) return;
++	}
+ 	Scheme = (tScheme)scheme;
+ 	XorKey = key;
+ 	static const tjs_char *names[] = { TJS_W("none"), TJS_W("XOR key"), TJS_W("XOR file hash and key"),
+-		TJS_W("XOR hash >> 12"), TJS_W("XOR offset or hash"), TJS_W("rotate by bit count"), TJS_W("Akabei rolling XOR") };
++		TJS_W("XOR hash >> 12"), TJS_W("XOR offset or hash"), TJS_W("rotate by bit count"), TJS_W("Akabei rolling XOR"), TJS_W("Mado rolling XOR") };
+ 	TVPAddLog(TJS_W("(vnrun) encrypted archive: ") + ttstr(names[scheme]) + TJS_W(" 0x") +
+ 		ttstr(TJSInt32ToHex(key)));
+ }
+@@ -1294,7 +1316,8 @@
+ 				Owner->Cxdec->decrypt(Owner->GetFileHash(StorageIndex), CurPos,
+ 					(tjs_uint8*)buffer + write_size, one_size);
+ 		}
+-		else if(Owner->Scheme != tTVPXP3Archive::SchemeNone)
++		else if(Owner->Scheme != tTVPXP3Archive::SchemeNone &&
++			((Owner->Scheme != tTVPXP3Archive::SchemeAkabei && Owner->Scheme != tTVPXP3Archive::SchemeMado) || Owner->IsProtected(StorageIndex)))
+ 		{
+ 			tTVPXP3Archive::Decrypt(Owner->Scheme, Owner->XorKey, Owner->GetFileHash(StorageIndex),
+ 				CurPos, (tjs_uint8*)buffer + write_size, one_size);

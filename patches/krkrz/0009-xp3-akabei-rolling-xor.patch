@@ -1,0 +1,100 @@
+diff --git a/base/XP3Archive.cpp b/base/XP3Archive.cpp
+--- a/base/XP3Archive.cpp
++++ b/base/XP3Archive.cpp
+@@ -26,6 +26,8 @@
+ #include <zlib/zlib.h>
+ #endif
+ #include <algorithm>
++#include <map>
++#include "xp3_akabei.h"
+ 
+ bool TVPAllowExtractProtectedStorage = true;
+ 
+@@ -551,15 +553,21 @@
+ // vnrun: the simple encryptions of the TPM plugins that come with many titles. Plugins can't
+ // run here, so the archive tries each on files whose first bytes are known (images, sounds),
+ // or failing those on scripts, which read as text with the right one.
+-void tTVPXP3Archive::Decrypt(tScheme scheme, tjs_uint8 key, tjs_uint32 hash, tjs_uint64 offset,
++void tTVPXP3Archive::Decrypt(tScheme scheme, tjs_uint32 key, tjs_uint32 hash, tjs_uint64 offset,
+ 	tjs_uint8 *p, tjs_uint n)
+ {
++	if(scheme == SchemeAkabei)
++	{
++		vnrun::AkabeiDecrypt(key, hash, offset, p, n);
++		return;
++	}
+ 	for(tjs_uint i = 0; i < n; i++)
+ 	{
+ 		tjs_uint64 at = offset + i;
+ 		switch(scheme)
+ 		{
+ 		case SchemeNone: return;
++		case SchemeAkabei: return; // handled above
+ 		// every byte XOR a key
+ 		case SchemeXor: p[i] ^= key; break;
+ 		// XOR the low byte of the file hash and a key (xp3dec.tpm, moteyaba.tpm, ...)
+@@ -597,6 +605,7 @@
+ 	static const tScheme fixed[] = { SchemeHashShr12, SchemeAlternate, SchemeRotate };
+ 	static tjs_uint votes[SchemeCount][256];
+ 	memset(votes, 0, sizeof(votes));
++	std::map<tjs_uint32, tjs_uint> akabeiVotes;
+ 	tjs_uint nmagic = 0, ntext = 0;
+ 	for(tjs_uint i = 0; i < ItemVector.size() && (nmagic < 16 || ntext < 8); i++)
+ 	{
+@@ -644,6 +653,21 @@
+ 				for(tjs_uint b = 0; b < len; b++)
+ 					all = all && (mask[b] == '?' || d[b] == (tjs_uint8)m[b]);
+ 				if(all) votes[t.scheme][t.key] += 4, any = true;
++			}
++			// The first four key bytes contain the 31-bit state. Recover a seed only
++			// from a fully known prefix, then verify the rest of the format header.
++			if(len >= 8 && mask[0] != '?' && mask[1] != '?' && mask[2] != '?' && mask[3] != '?')
++			{
++				tjs_uint32 state = 0;
++				for(tjs_uint b = 0; b < 4; b++) state |= (tjs_uint32)(buf[b] ^ (tjs_uint8)m[b]) << (b * 8);
++				tjs_uint32 seed = (state ^ hash) & 0x7fffffff;
++				tjs_uint8 d[16];
++				memcpy(d, buf, len);
++				Decrypt(SchemeAkabei, seed, hash, 0, d, len);
++				bool all = true;
++				for(tjs_uint b = 0; b < len; b++)
++					all = all && (mask[b] == '?' || d[b] == (tjs_uint8)m[b]);
++				if(all) akabeiVotes[seed] += 4, any = true;
+ 			}
+ 			if(any) nmagic++;
+ 		}
+@@ -685,11 +709,15 @@
+ 	for(tjs_uint s = SchemeXor; s < SchemeCount; s++)
+ 		for(tjs_uint k = 0; k < 256; k++)
+ 			if(votes[s][k] > votes[scheme][key]) scheme = s, key = k;
+-	if(votes[scheme][key] == 0 || (scheme == SchemeXor && key == 0)) return;
++	tjs_uint bestVotes = votes[scheme][key];
++	for(const auto &candidate : akabeiVotes)
++		if(candidate.second > bestVotes)
++			scheme = SchemeAkabei, key = candidate.first, bestVotes = candidate.second;
++	if(bestVotes == 0 || (scheme == SchemeXor && key == 0)) return;
+ 	Scheme = (tScheme)scheme;
+-	XorKey = (tjs_uint8)key;
++	XorKey = key;
+ 	static const tjs_char *names[] = { TJS_W("none"), TJS_W("XOR key"), TJS_W("XOR file hash and key"),
+-		TJS_W("XOR hash >> 12"), TJS_W("XOR offset or hash"), TJS_W("rotate by bit count") };
++		TJS_W("XOR hash >> 12"), TJS_W("XOR offset or hash"), TJS_W("rotate by bit count"), TJS_W("Akabei rolling XOR") };
+ 	TVPAddLog(TJS_W("(vnrun) encrypted archive: ") + ttstr(names[scheme]) + TJS_W(" 0x") +
+ 		ttstr(TJSInt32ToHex(key)));
+ }
+diff --git a/base/XP3Archive.h b/base/XP3Archive.h
+--- a/base/XP3Archive.h
++++ b/base/XP3Archive.h
+@@ -114,9 +114,9 @@
+ public:
+ 	// vnrun: how the archive is encrypted, by the TPM plugin of its title; found by DetectScheme.
+ 	enum tScheme { SchemeNone, SchemeXor, SchemeXorHash, SchemeHashShr12, SchemeAlternate,
+-		SchemeRotate, SchemeCount } Scheme = SchemeNone;
+-	tjs_uint8 XorKey = 0;
+-	static void Decrypt(tScheme scheme, tjs_uint8 key, tjs_uint32 hash, tjs_uint64 offset,
++		SchemeRotate, SchemeAkabei, SchemeCount } Scheme = SchemeNone;
++	tjs_uint32 XorKey = 0;
++	static void Decrypt(tScheme scheme, tjs_uint32 key, tjs_uint32 hash, tjs_uint64 offset,
+ 		tjs_uint8 *p, tjs_uint n);
+ 	tTVPXP3Archive(const ttstr & name);
+ 	~tTVPXP3Archive();

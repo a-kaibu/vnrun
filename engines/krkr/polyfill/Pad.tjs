@@ -1,0 +1,20 @@
+// Browser-backed text editor for KAG's Config.tjs upgrade tool.
+if (typeof(global.Pad) === "undefined") {
+	global.vnrunNextPad = 0;
+	class VnrunPad {
+		var id = 0, title = "", fileName = "", color = 0;
+		function VnrunPad() { id = ++global.vnrunNextPad; }
+		function finalize() { global.vnrunPad(id, "close"); }
+		property text {
+			getter() { return global.vnrunPad(id, "get"); }
+			setter(value) { global.vnrunPad(id, "set", string(value)); }
+		}
+		property visible {
+			getter() { return global.vnrunPad(id, "visible") == "1"; }
+			setter(value) {
+				global.vnrunPad(id, value ? "show" : "hide", "", title, fileName);
+			}
+		}
+	}
+	global.Pad = VnrunPad;
+}
