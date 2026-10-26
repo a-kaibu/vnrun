@@ -1,0 +1,12 @@
+--- a/src/core/sdl2/SDLApplication.cpp
++++ b/src/core/sdl2/SDLApplication.cpp
+@@ -1785,6 +1785,9 @@
+ 			else if (this->window && this->surface)
+ 			{
+ #ifdef __EMSCRIPTEN__
++				// Hidden helper windows may have been created since this game window.
++				// Route page input back to the window whose surface the player sees.
++				vnrun_window_id = SDL_GetWindowID(this->window);
+ 				vnrun_present(this->surface->pixels, this->surface->pitch, this->surface->w, this->surface->h);
+ #else
+ 				SDL_UpdateWindowSurfaceRects(this->window, &rect, 1);

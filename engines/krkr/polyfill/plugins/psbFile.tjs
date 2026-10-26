@@ -12,3 +12,19 @@ class PSBFile
 		return true;
 	}
 }
+
+// KAGEX reuses a configured AffineSourcePSD by cloning it and calling initOptions.
+// The inherited bitmap initializer resets the transform but leaves the previous
+// owner's PSD visibility map. Restore the file defaults before applying new options.
+if (typeof(global.AffineSourcePSD) !== "undefined" && typeof(global.vnrunPimgCompat) === "undefined") {
+	global.vnrunPimgCompat = %[ initOptions: global.AffineSourcePSD.initOptions ];
+	global.AffineSourcePSD.initOptions = function() {
+		(global.vnrunPimgCompat.initOptions incontextof this)();
+		// An inherited TJS class method can also be called by bitmap sources.
+		if (this instanceof "AffineSourcePSD" && this._psdlayer !== void) {
+			(Dictionary.clear incontextof this._psdlayer.visibleInfo)();
+			(Dictionary.clear incontextof this._psdlayer.layvisible)();
+			this.calcUpdate();
+		}
+	} incontextof null;
+}

@@ -13,13 +13,13 @@ execFileSync('python3', [path.join(root, 'engines/krkr/tests/fixtures.py'), fixt
     '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required',
   ] });
   try {
-    for (const [index, name] of ['mado', 'akabei', 'tlg', 'plaintext'].entries()) {
+    for (const [index, name] of ['mado', 'akabei', 'tlg', 'plaintext', 'pointer'].entries()) {
       const port = 8260 + index;
       const server = spawn(path.join(root, 'target/debug/vnrun-devserver'), [
         '--game', path.join(fixtures, name), '--saves', path.join(fixtures, name, 'saves'),
         '--addr', `127.0.0.1:${port}`,
       ], { cwd: root, stdio: ['ignore', 'pipe', 'pipe'] });
-      const page = await browser.newPage();
+      const page = await browser.newPage({ viewport: { width: 640, height: 520 } });
       const log = [];
       let timer;
       try {
@@ -34,14 +34,18 @@ execFileSync('python3', [path.join(root, 'engines/krkr/tests/fixtures.py'), fixt
           timer = setTimeout(() => reject(Error(`${name}: smoke timeout`)), 120000);
           page.on('console', message => {
             const text = message.text(); log.push(text);
-            if (text === 'krkr: VNRUN_KRKR_SMOKE_OK') resolve();
+            if (text === 'krkr: VNRUN_KRKR_SMOKE_OK' || text === 'krkr: VNRUN_KRKR_POINTER_OK') resolve();
+            if (text === 'krkr: VNRUN_KRKR_POINTER_READY') {
+              page.waitForFunction(() => document.querySelector('canvas')?.width === 640)
+                .then(() => page.waitForTimeout(500)).then(() => page.mouse.click(80, 80)).catch(reject);
+            }
             if (text.includes('Script exception raised')) reject(Error(`${name}: script exception`));
           });
           page.on('pageerror', reject);
         });
         await page.goto(`http://127.0.0.1:${port}/`);
         await done;
-        console.log(`${name}: archive detection, decompression, script decoding and KAG conditions passed`);
+        console.log(`${name}: ${name === "pointer" ? "pointer reaches the visible window after creating a hidden helper" : "archive detection, decompression, script decoding and KAG conditions"} passed`);
       } finally {
         clearTimeout(timer);
         fs.writeFileSync(path.join(fixtures, `${name}.log`), log.join('\n'));

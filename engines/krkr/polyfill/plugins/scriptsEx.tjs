@@ -9,18 +9,19 @@
 		S.getObjectKeys = function(obj) {
 			var a = Scripts.vnrunPairs(obj), keys = [];
 			for (var i = 0; i < a.count; i += 2) keys.add(a[i]);
+			// scriptsEx returns sorted names; KAGEX uses them to create image layers.
+			keys.sort();
 			return keys;
 		} incontextof global;
 	if (typeof(S.getObjectCount) === "undefined")
 		S.getObjectCount = function(obj) { return Scripts.vnrunPairs(obj).count \ 2; } incontextof global;
 	if (typeof(S.foreach) === "undefined")
 		S.foreach = function(obj, func, *) {
-			// a true result stops the walk and is returned (KAGEX findAffineSource picks its
-			// image source class so)
+			// Any non-void result stops the walk, including false, zero, or null.
 			if (obj instanceof "Array") {
 				for (var i = 0; i < obj.count; i++) {
 					var r = func(i, obj[i], *);
-					if (r) return r;
+					if (r !== void) return r;
 				}
 				return;
 			}
@@ -29,18 +30,23 @@
 				// & passes a property object as it is, as the plugin does, instead of calling its
 				// getter (alice_gram's lazy globals read kag before it exists)
 				var r = func(a[i], &a[i + 1], *);
-				if (r) return r;
+				if (r !== void) return r;
 			}
 		} incontextof null; // a callback without a context runs on the caller's this, as in scriptsEx
 	if (typeof(S.equalStruct) === "undefined")
 		S.equalStruct = function(a, b) {
-			if (typeof(a) != "Object" || typeof(b) != "Object" || a === null || b === null) return a === b;
-			var x = [], y = [];
-			if (a instanceof "Array") { if (!(b instanceof "Array")) return false; x.assign(a); y.assign(b); }
-			else { x = Scripts.vnrunPairs(a); y = Scripts.vnrunPairs(b); }
+			if (a === b) return true;
+			if (typeof(a) != "Object" || typeof(b) != "Object" || a === null || b === null) return false;
+			if (a instanceof "Array") {
+				if (!(b instanceof "Array") || a.count != b.count) return false;
+				for (var i = 0; i < a.count; i++) if (!Scripts.equalStruct(a[i], b[i])) return false;
+				return true;
+			}
+			if (!(a instanceof "Dictionary") || !(b instanceof "Dictionary")) return false;
+			var x = Scripts.getObjectKeys(a), y = Scripts.getObjectKeys(b);
 			if (x.count != y.count) return false;
 			for (var i = 0; i < x.count; i++)
-				if (!Scripts.equalStruct(x[i], y[i])) return false;
+				if (x[i] != y[i] || !Scripts.equalStruct(a[x[i]], b[y[i]])) return false;
 			return true;
 		} incontextof global;
 	if (typeof(S.isNullContext) === "undefined" && typeof(global.vnrunIsNullContext) !== "undefined")
@@ -50,7 +56,17 @@
 	if (typeof(S.clone) === "undefined")
 		S.clone = function(obj) {
 			if (typeof(obj) != "Object" || obj === null) return obj;
-			if (obj instanceof "Array") { var a = []; a.assignStruct(obj); return a; }
-			var d = %[]; (Dictionary.assignStruct incontextof d)(obj); return d;
+			if (obj instanceof "Array") {
+				var a = [];
+				for (var i = 0; i < obj.count; i++) a.add(Scripts.clone(obj[i]));
+				return a;
+			}
+			if (obj instanceof "Dictionary") {
+				var d = %[], a = Scripts.vnrunPairs(obj);
+				for (var i = 0; i < a.count; i += 2) d[a[i]] = Scripts.clone(&a[i + 1]);
+				return d;
+			}
+			if (typeof(obj.clone) !== "undefined") return obj.clone();
+			return obj;
 		} incontextof global;
 }
