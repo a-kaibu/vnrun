@@ -164,6 +164,13 @@ Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softp
 5. Artemis (art3m1s-core に Web のつなぎを書く)。
 6. YU-RIS / NeXAS などは vnrun で Rust で書く (共通 crate の trait を先に作る)。
 
+## 2026-10-26 正午の一時停止時点 (吉里吉里)
+
+- 直近の push: 3a94fb7 (描画デバイスの drawer プロパティ = krkrsdl2 パッチ 0010、PassThroughDrawDevice 定数、startMouseHook の空実装。kai 2012 はタイトルまで確認)、bd7853c (KAG パーサーの属性名を小文字化。nanawind 2015 の選択肢の縁取りが復活)。
+- 検証スレッドの最新集計: data.xp3 のある 125 本中 109 本がタイトル以上。3a94fb7 の kai/alcot 2012・lass_pixy と bd7853c の回帰サンプル (12 本) は検証待ち。
+- 次の一手: exe 内蔵ストリーム暗号の xp3 (akabeesoft2/3・Hending の 5 本: atata、hakata zombies、roleplayer ×2、hassyakusama) の鍵解析。2026-10-26 にこたさんの了承済み (アーカイブ形式の解析のみ。PlayDRM・ソフト電池などの DRM と認証には触れない)。まだ手を付けていない。
+- そのほか残り: cxdec (yuyukana など)、r1_kag3、data.xp3 のない 10 本 (検証スレッドが調査中)。詳しい技術メモはプロジェクトメモリの vnrun-krkr-*.md。
+
 ## 未決のこと
 
 - Rust 側の共通 trait の具体的な形 (描画は WebGL2 か wgpu か、音声の取り回し)。最初の自作エンジンで決める。
