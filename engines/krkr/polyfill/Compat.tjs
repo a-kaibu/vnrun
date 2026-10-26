@@ -11,6 +11,16 @@ Scripts.execStorage(global.KirikiriPolyfillRoot + "plugins/fstat.tjs");
 if (typeof(global.DrawDeviceForSteam) === "undefined" && typeof(global.Window.BasicDrawDevice) !== "undefined")
 	global.DrawDeviceForSteam = global.Window.BasicDrawDevice;
 
+// KiriKiri 2's Windows draw device: menus show which drawer it uses (kai 2012's Override.tjs).
+// The page draws everything: the draw device's drawer is dtNone (patches/krkrsdl2 0010).
+if (typeof(global.Window.PassThroughDrawDevice) === "undefined")
+	global.Window.PassThroughDrawDevice = %[ dtNone: 0, dtDrawDib: 1, dtDBGDI: 2, dtDBDD: 3, dtDBD3D: 4 ];
+// A mouse hook from a Windows plugin (lass_pixy): the page sends every mouse event anyway.
+if (typeof(global.Window.startMouseHook) === "undefined") {
+	global.Window.startMouseHook = function() {} incontextof null;
+	global.Window.stopMouseHook = function() {} incontextof null;
+}
+
 // Mojimo (Morisawa) game fonts come out of a plugin; the player's font stands in for them.
 if (typeof(global.ExtractMojimoGameFont) === "undefined")
 	global.ExtractMojimoGameFont = function() { return false; };

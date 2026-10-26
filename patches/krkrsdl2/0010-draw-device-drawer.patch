@@ -1,0 +1,43 @@
+diff --git a/src/core/visual/sdl2/BasicDrawDevice.cpp b/src/core/visual/sdl2/BasicDrawDevice.cpp
+index e429d15..494921b 100644
+--- a/src/core/visual/sdl2/BasicDrawDevice.cpp
++++ b/src/core/visual/sdl2/BasicDrawDevice.cpp
+@@ -961,6 +961,38 @@ TJS_BEGIN_NATIVE_PROP_DECL(interface)
+ 	TJS_DENY_NATIVE_PROP_SETTER
+ }
+ TJS_END_NATIVE_PROP_DECL(interface)
++//----------------------------------------------------------------------
++// vnrun: KiriKiri 2's PassThroughDrawDevice reports its drawer, and games show it in menus
++// (kai 2012). The page draws everything, which reads as dtNone (0).
++TJS_BEGIN_NATIVE_PROP_DECL(drawer)
++{
++	TJS_BEGIN_NATIVE_PROP_GETTER
++	{
++		*result = (tjs_int)0;
++		return TJS_S_OK;
++	}
++	TJS_END_NATIVE_PROP_GETTER
++
++	TJS_DENY_NATIVE_PROP_SETTER
++}
++TJS_END_NATIVE_PROP_DECL(drawer)
++//----------------------------------------------------------------------
++TJS_BEGIN_NATIVE_PROP_DECL(preferredDrawer)
++{
++	TJS_BEGIN_NATIVE_PROP_GETTER
++	{
++		*result = (tjs_int)0;
++		return TJS_S_OK;
++	}
++	TJS_END_NATIVE_PROP_GETTER
++
++	TJS_BEGIN_NATIVE_PROP_SETTER
++	{
++		return TJS_S_OK;
++	}
++	TJS_END_NATIVE_PROP_SETTER
++}
++TJS_END_NATIVE_PROP_DECL(preferredDrawer)
+ //----------------------------------------------------------------------
+ 	TJS_END_NATIVE_MEMBERS
+ }
