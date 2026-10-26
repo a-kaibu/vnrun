@@ -22,6 +22,7 @@ global.vnrunPlugins = %[
 		"psbfile.dll" => "psbFile.tjs",
 		"textrender.dll" => "textRender.tjs",
 		"alphamovie.dll" => "alphaMovie.tjs",
+		"proxyfs.dll" => "proxyFs.tjs",
 	],
 ];
 global.Plugins.link = function(name) {

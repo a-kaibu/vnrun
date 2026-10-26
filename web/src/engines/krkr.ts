@@ -53,6 +53,7 @@ const POLYFILL_FILES = [
     "psbFile",
     "textRender",
     "alphaMovie",
+    "proxyFs",
   ].map((name) => `plugins/${name}.tjs`),
 ];
 const STARTUP = "/vnrun/startup.tjs";

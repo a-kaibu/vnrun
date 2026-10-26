@@ -72,5 +72,20 @@ if (typeof(global.Window.registerHotKey) === "undefined") {
 }
 
 // Scripts.loadDataPack (newer KiriKiri Z): the value in a "TJS/ns0" data pack, read natively.
+// proxyfs.dll's proxy:// storages (plugins/proxyFs.tjs) hold nothing here. Asking for one would
+// throw "Not supported media type", so it does not exist.
+global.vnrunIsExistentStorage = global.Storages.isExistentStorage;
+global.Storages.isExistentStorage = function(name) {
+	if (name.toLowerCase().indexOf("proxy://") == 0) return false;
+	return global.vnrunIsExistentStorage(name);
+} incontextof global;
+// A pack inside a PNG (kakenuke's mojimo-game.png, licensed fonts for the game's own use) is not
+// read: it gives nothing, and the text falls back to the page's font.
 if (typeof(global.Scripts.loadDataPack) === "undefined" && typeof(global.vnrunLoadDataPack) !== "undefined")
-	global.Scripts.loadDataPack = global.vnrunLoadDataPack;
+	global.Scripts.loadDataPack = function(storage, *) {
+		if (Storages.extractStorageExt(storage).toLowerCase() == ".png") {
+			Debug.message("(vnrun) loadDataPack: skipped " + storage);
+			return %[];
+		}
+		return global.vnrunLoadDataPack(storage, *);
+	} incontextof global;

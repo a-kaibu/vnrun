@@ -1,0 +1,5 @@
+// vnrun: proxyfs.dll serves the octets put in ProxyStorageMap as storages. Only the map is here
+// (kakenuke fills it from a font pack that loadDataPack skips), so nothing is served from it
+// (Compat.tjs: proxy:// storages do not exist).
+if (typeof(global.ProxyStorageMap) === "undefined")
+	global.ProxyStorageMap = %[];
