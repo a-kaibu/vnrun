@@ -163,7 +163,7 @@ b2022_at_sakura	タイトル	591d0a0 でタイトルまで (b2021_at_sakura と�
 b2024_at_sakura	タイトル	591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動)
 b2013_cross_over	タイトル	591d0a0 でタイトルまで
 b2013_madosoft	タイトル	591d0a0 でタイトルまで
-b2008_asa_project	起動	d40622e でロゴと注意書き 2 枚まで (さらにクリックが必要)
+b2008_asa_project	タイトル	b9e72ec でロゴと注意書き 2 枚をクリックで送るとタイトル画面まで表示
 b2008_akabeesoft	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
 b2010_akabeesoft	タイトル	d084599 (setLayerPos) でタイトル画面まで表示
 b2006_akabeesoft	タイトル	dc42573 でタイトル画面まで表示
@@ -232,7 +232,7 @@ b2009_dualtail	タイトル	dc42573 でタイトル画面まで表示 (クリッ
 b2022_hending	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」
 b2020_akabeesoft3	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」
 b2013_dualtail	タイトル	d084599 (setLayerPos) でタイトル画面まで表示
-b2015_mille_feuille	NG	e7d5b88 で「RuntimeError: memory access out of bounds」(wasm)
+b2015_mille_feuille	タイトル	b9e72ec でタイトル画面まで表示
 s2017_appetite_immorality_don	タイトル	5d1348e でタイトル画面まで表示
 s2019_appetite_dt_kyoiku	タイトル	5d1348e でタイトル画面まで表示
 dl_VJ01003347	タイトル	5d1348e でタイトル画面まで表示
@@ -317,13 +317,13 @@ dl_VJ01006612	タイトル	d51f3e8 系のページでタイトル画面まで表
 s2021_dualtail_vbhi	タイトル	d51f3e8 系のページでタイトル画面まで表示。クリック後に「RuntimeError: null function」で停止
 s2026_poison_motion_sxs_me	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
 s2025_poison_extasy_paizuri_me	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
-s2011_hulotte_with_ribbon	NG	d40622e で注意書きの後、クリックすると白画面のまま
+s2011_hulotte_with_ribbon	NG	b9e72ec でも注意書きの後クリックすると白画面のまま (エラーなし)
 s2014_cube_koikano	NG	d51f3e8 系のページで例外なしの白画面のまま
 s2021_nanawind_kanade_gram_ch1	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」
 s2010_akabeesoft_lavender	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」
 s2021_akabeesoft2_roleplayer	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」
 s2017_nanawind_alice_gram	タイトル	0c62865 でクリック 3 回の後タイトル画面まで表示
-s2022_mille_feuille_excelchiffon	NG	e0a3162 で初期化は通過し first.ks まで進むが、[BgSet storage="_black"] で「Layer bitmap: Buffer underrun/overrun」の後 [trans method=crossfade] で「memory access out of bounds」
+s2022_mille_feuille_excelchiffon	タイトル	b9e72ec でタイトル画面まで表示 (ウィンドウより大きいレイヤの修正)
 s2012_ninetail_gears_of_dragoon	タイトル	d084599 (setLayerPos) でタイトル画面まで表示
 b2013_ensemble	本編	14cde42 で START から本編テキストまで (START 後しばらく白画面)
 s2013_guilty_yobai	本編	71cd396 で START から「誰の所へ行きますか？」のマップ選択まで (背景も表示)
