@@ -1831,6 +1831,7 @@ class __internal_KAGParser
 				var attribnameend = this.curPos;
 
 				var attribname = this.curLineStr.substring(attribnamestart, attribnameend - attribnamestart);
+				attribname = attribname.toLowerCase(); // KAG attributes ignore case (edgeExtent=2)
 
 				// =
 				while (this.curLineStr.length !== this.curPos && this.TVPIsWS(this.curLineStr[this.curPos]))
