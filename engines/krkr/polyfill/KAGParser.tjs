@@ -234,6 +234,7 @@ class __internal_KAGParser
 		this.debugLevel = global.tkdlSimple; // debugging log level; not stored
 		this.interrupted = false;
 		this.ignoreCR = false; // CR is not interpreted as [r] tag when this is true; not stored
+		this.multiLineTagEnabled = false; // vnrun: KAGParserEx's @tag lines continued by a trailing \
 		this.recordingMacro = false; // recording a macro
 		this.recordingMacroStr = ""; // recording macro content; not stored
 		this.recordingMacroName = ""; // recording macro's name; not stored
@@ -668,6 +669,7 @@ class __internal_KAGParser
 				this.scenario = global.__internal_KAGParser_getScenario(name, false);
 			}
 			this.lines = this.scenario.getLines();
+			if (this.multiLineTagEnabled) this.lines = this.joinMultiLineTags(this.lines);
 			this.lineCount = this.scenario.getLineCount();
 			
 			this.rewind();
@@ -739,6 +741,31 @@ class __internal_KAGParser
 		this.ifLevelExecutedStack.clear();
 		this.ifLevel = 0;
 		this.popMacroArgsTo(this.macroArgStackBase); // clear macro argument down to current base stack position
+	}
+
+	// vnrun: KAGParserEx multiLineTagEnabled: an @tag line that ends with \ goes on in the next
+	// line (comment lines between are skipped). The joined lines become empty, so line numbers stay.
+	function joinMultiLineTags(lines)
+	{
+		var out = [];
+		out.assign(lines);
+		var cont = /\\\s*$/;
+		for (var i = 0; i < out.count; i++)
+		{
+			var line = out[i];
+			if (line.length === 0 || line[0] !== "@" || !cont.test(line)) continue;
+			var joined = line.replace(cont, "");
+			for (var j = i + 1; j < out.count; j++)
+			{
+				var next = out[j];
+				out[j] = "";
+				var more = cont.test(next);
+				if (next.length === 0 || next[0] !== ";") joined += " " + next.replace(cont, "");
+				if (!more) break;
+			}
+			out[i] = joined;
+		}
+		return out;
 	}
 
 	function TVPIsWS(ch)
@@ -2427,6 +2454,19 @@ class KAGParser
 	 * ただし、iscript 〜 endscript は常に処理されます。
 	 * @access r/w
 	 */
+	// vnrun: KAGParserEx
+	property multiLineTagEnabled
+	{
+		getter
+		{
+			return this.__internal_KAGParser_instance.multiLineTagEnabled;
+		}
+		setter(v)
+		{
+			this.__internal_KAGParser_instance.multiLineTagEnabled = v;
+		}
+	}
+
 	property processSpecialTags
 	{
 		getter
