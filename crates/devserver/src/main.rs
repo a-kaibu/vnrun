@@ -1,5 +1,6 @@
 //! Serves the built player (dist/) and one game folder over the protocol in docs/protocol.md,
 //! so a game can be played in a browser.
+//! Prepares SDRS shells and Siglus keys before detecting the engine and serving the game.
 //!
 //!     vnrun-devserver --game <ゲームのフォルダ> [--dist dist] [--saves <dir>] [--addr 127.0.0.1:8090]
 //!                     [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter|kirikiri|html] [--title T] [--nls sjis]
@@ -72,6 +73,11 @@ fn parse_args() -> Config {
         }
     }
     let game = game.unwrap_or_else(|| usage());
+    // Prepare before engine detection: SDRS may wrap the files that identify the engine.
+    vnrun_prep::prepare(&game).unwrap_or_else(|e| {
+        eprintln!("{}: {e}", game.display());
+        exit(1)
+    });
     let name = game
         .file_name()
         .map(|n| n.to_string_lossy().into_owned())
@@ -118,16 +124,40 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("nscript.dat")
         || has("0.txt")
         || has("00.txt")
-        || names.iter().any(|n| n.ends_with(".nsa") || n.ends_with(".sar"))
+        || names
+            .iter()
+            .any(|n| n.ends_with(".nsa") || n.ends_with(".sar"))
     {
         Some("nscripter".into())
     } else if has("package.json") || has("index.html") || has("www") || has("package.nw") {
         Some("html".into())
-    } else if names.iter().any(|n| n.ends_with(".xp3")) || has("startup.tjs") || has("data") {
+    } else if names.iter().any(|n| n.ends_with(".xp3"))
+        || has("startup.tjs")
+        || has("data")
+        || has_xp3_data(game)
+    {
         Some("kirikiri".into())
     } else {
         None
     }
+}
+
+// Some KiriKiri releases call the main XP3 archive data.bin.
+fn has_xp3_data(game: &Path) -> bool {
+    fs::read_dir(game).into_iter().flatten().flatten().any(|e| {
+        if !e
+            .file_name()
+            .to_string_lossy()
+            .eq_ignore_ascii_case("data.bin")
+        {
+            return false;
+        }
+        let mut magic = [0; 11];
+        File::open(e.path())
+            .and_then(|mut f| f.read_exact(&mut magic))
+            .is_ok()
+            && magic == *b"XP3\r\n \n\x1a\x8b\x67\x01"
+    })
 }
 
 /// Lists the files below dir as paths relative to it.
@@ -419,5 +449,22 @@ fn main() {
     eprintln!("{} ({}) → http://{}/", cfg.title, cfg.engine, cfg.addr);
     for req in server.incoming_requests() {
         handle(&cfg, req);
+    }
+}
+
+#[cfg(test)]
+mod detection_tests {
+    use super::*;
+
+    #[test]
+    fn data_bin_requires_xp3_signature_and_ignores_filename_case() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("DATA.BIN");
+        fs::write(&path, b"arbitrary binary data").unwrap();
+        assert_eq!(detect(dir.path()), None);
+        fs::write(&path, b"XP3\r\n \n\x1a\x8b\x67\x01").unwrap();
+        assert_eq!(detect(dir.path()).as_deref(), Some("kirikiri"));
+        fs::write(path, b"XP3").unwrap();
+        assert_eq!(detect(dir.path()), None);
     }
 }

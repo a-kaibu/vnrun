@@ -6,5 +6,11 @@ license.workspace = true
 description = "Prepares a game folder for the browser player ahead of time (work the browser cannot do, e.g. recovering the SiglusEngine EXE key)"
 
 [dependencies]
+flate2 = "1"
+sha3 = "0.10"
+sdrs-core = { path = "../../third_party/sdrs/sdrs-core" }
 siglus_key_recovery = { path = "../../third_party/siglus_rs/crates/siglus_key_recovery" }
 siglus_assets = { path = "../../third_party/siglus_rs/crates/siglus_assets" }
+
+[dev-dependencies]
+tempfile = "3"
