@@ -18,11 +18,13 @@ global.vnrunPlugins = %[
 		"gamepad.dll" => "gamepad.tjs",
 		"layerexalpha.dll" => "layerExAlpha.tjs",
 		"extrans.dll" => "extrans.tjs",
+		"extnagano.dll" => "extrans.tjs",
 		"savestruct.dll" => "saveStruct.tjs",
 		"psbfile.dll" => "psbFile.tjs",
 		"textrender.dll" => "textRender.tjs",
 		"alphamovie.dll" => "alphaMovie.tjs",
 		"proxyfs.dll" => "proxyFs.tjs",
+		"motionplayer.dll" => "motionPlayer.tjs",
 	],
 ];
 global.Plugins.link = function(name) {

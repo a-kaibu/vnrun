@@ -54,6 +54,7 @@ const POLYFILL_FILES = [
     "textRender",
     "alphaMovie",
     "proxyFs",
+    "motionPlayer",
   ].map((name) => `plugins/${name}.tjs`),
 ];
 const STARTUP = "/vnrun/startup.tjs";

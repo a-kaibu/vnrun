@@ -1,0 +1,41 @@
+// vnrun: motionplayer.dll (E-mote). Motions are not played: a player shows nothing and is never
+// playing, so scripts that set up E-mote support (KAGEX AnimKAGLayer, AffineLayer) go on.
+if (typeof(global.Motion) === "undefined") {
+	class vnrunMotionResourceManager {
+		function vnrunMotionResourceManager(window, cacheSize) {}
+		function finalize() {}
+		function load(path) {}
+		function unload(path) {}
+		function clearCache() {}
+	}
+	class vnrunMotionPlayer {
+		var chara = "", motion = "", stealthChara = "", stealthMotion = "";
+		var tickCount = 0, speed = 1, completionType = 0, onAction;
+		var playing = false, allplaying = false;
+		function vnrunMotionPlayer(resourceManager) {}
+		function finalize() {}
+		function play(motion, flags) { this.motion = motion; }
+		function stop() {}
+		function progress(time) {}
+		function skipToSync() {}
+		function update(*) {}
+		function draw(*) {}
+		function contains(x, y) { return false; }
+		function getLayerGetter(name) { return void; }
+		function isExistMotion(name) { return false; }
+		function setVariable(name, value) {}
+		function getVariable(name) { return 0; }
+	}
+	class vnrunMotionSeparateLayerAdaptor {
+		function vnrunMotionSeparateLayerAdaptor(layer) {}
+		function finalize() {}
+	}
+	global.Motion = %[
+		ResourceManager: vnrunMotionResourceManager,
+		Player: vnrunMotionPlayer,
+		SeparateLayerAdaptor: vnrunMotionSeparateLayerAdaptor,
+		PlayFlagForce: 1,
+		PlayFlagAsCan: 2,
+		PlayFlagStealth: 4,
+	];
+}
