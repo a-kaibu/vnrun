@@ -87,9 +87,16 @@ function configFile(manifest: Manifest): string | undefined {
   return cfs.find((p) => exes.has(p.slice(0, -3).toLowerCase())) ?? cfs[0];
 }
 
-// The KiriKiri 2 minor version of the game's exe (31 for FileVersion "2.31.2013.411"), if any.
-// Other exes beside it (engine settings, file checkers) have their own versions.
-async function krkr2Version(fs: EngineContext["fs"], manifest: Manifest): Promise<number | undefined> {
+interface GameExe {
+  /** The KiriKiri 2 minor version (31 for FileVersion "2.31.2013.411"). */
+  krkr2Minor?: number;
+  /** Options embedded in it ("-key=value"), which KiriKiri reads as defaults for its command line. */
+  options: string[];
+}
+
+// The game's KiriKiri exe: the first exe with embedded options or a KiriKiri 2 version. Other exes
+// beside it (engine settings, file checkers) have neither.
+async function gameExe(fs: EngineContext["fs"], manifest: Manifest): Promise<GameExe> {
   const exes = (manifest.files || [])
     .map((f) => f.p)
     .filter((p) => !p.includes("/") && p.toLowerCase().endsWith(".exe"));
@@ -100,9 +107,34 @@ async function krkr2Version(fs: EngineContext["fs"], manifest: Manifest): Promis
     // Version resources are UTF-16 and 32-bit aligned.
     const text = new TextDecoder("utf-16le").decode(bytes.subarray(0, bytes.length & ~1));
     const m = text.match(/FileVersion\0+2\.(\d+)\./);
-    if (m) return Number(m[1]);
+    const options = embeddedOptions(bytes);
+    if (m || options.length) return { krkr2Minor: m ? Number(m[1]) : undefined, options };
   }
-  return undefined;
+  return { options: [] };
+}
+
+// "XOPT_EMBED_AREA_", a 32-bit size, then lines of key="value" (values TJS-escaped, "\x7b"), as
+// KiriKiri's engine settings tool writes them into the exe.
+function embeddedOptions(bytes: Uint8Array): string[] {
+  const mark = new TextEncoder().encode("XOPT_EMBED_AREA_");
+  let at = -1;
+  for (let i = bytes.indexOf(mark[0]); i >= 0 && at < 0; i = bytes.indexOf(mark[0], i + 1))
+    if (mark.every((c, j) => bytes[i + j] === c)) at = i + mark.length;
+  if (at < 0) return [];
+  const size = new DataView(bytes.buffer, bytes.byteOffset + at, 4).getUint32(0, true);
+  const area = bytes.subarray(at + 4, at + 4 + size);
+  const end = area.indexOf(0);
+  const text = new TextDecoder("shift_jis").decode(end < 0 ? area : area.subarray(0, end));
+  const options = [];
+  for (const line of text.split(/\r?\n/)) {
+    const kv = line.match(/^([\w-]+)="(.*)"$/);
+    if (!kv) continue;
+    const value = kv[2].replace(/\\(x[0-9a-fA-F]{2}|.)/g, (_, e: string) =>
+      e[0] === "x" ? String.fromCharCode(parseInt(e.slice(1), 16)) : e,
+    );
+    options.push(`-${kv[1]}=${value}`);
+  }
+  return options;
 }
 
 export async function start({ fs, manifest, ui, fonts }: EngineContext): Promise<void> {
@@ -168,10 +200,10 @@ export async function start({ fs, manifest, ui, fonts }: EngineContext): Promise
   if (fonts[0]) Module.FS.writeFile(`${POLYFILL}/font.ttf`, fonts[0]);
   Module.FS.writeFile(STARTUP, new TextEncoder().encode(STARTUP_SCRIPT));
 
+  const exe = await gameExe(fs, manifest);
   // KiriKiri 2.26 (grand_cru 2010) let a class var keep a native property of the same name and
   // set it, where later TJS hides the property (patches/krkrz)
-  const version = await krkr2Version(fs, manifest);
-  const oldClassVars = version !== undefined && version < 28;
+  const oldClassVars = exe.krkr2Minor !== undefined && exe.krkr2Minor < 28;
   ui.hide();
   canvas.focus();
   // Scripts without a BOM are Shift_JIS in KiriKiri 2/Z games; KiriKiri SDL2 reads them as UTF-8
@@ -183,5 +215,7 @@ export async function start({ fs, manifest, ui, fonts }: EngineContext): Promise
     "-debugwin=no",
     `-startup=${STARTUP}`,
     ...(oldClassVars ? ["-vnrunk2classvars=yes"] : []),
+    // Earlier options win, so the exe's own come last.
+    ...exe.options,
   ]);
 }
