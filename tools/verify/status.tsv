@@ -169,7 +169,7 @@ b2010_akabeesoft	タイトル	d084599 (setLayerPos) でタイトル画面まで�
 b2006_akabeesoft	タイトル	dc42573 でタイトル画面まで表示
 b2012_akabeesoft3	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
 b2011_nanawind	NG	cxdec 系 (yuyukana.tpm) で未対応。「Invalid character '\x03'」
-b2020_lass_pixy	NG	2a0b68d (E-mote 代替) で Member "startMouseHook" does not exist
+b2020_lass_pixy	タイトル	bd7853c でタイトル表示 (Start/Continue 等のボタン描画まで)
 b2015_pachipachi_soft	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」
 b2010_grand_cru	本編	a29c215 で Start から本編テキストまで
 b2014_undermoon	タイトル	5d1348e でタイトル画面まで表示
@@ -182,8 +182,8 @@ b2021_kelp	タイトル	5d1348e でタイトル画面まで表示
 b2022_chaos_r	タイトル	5d1348e でタイトル画面まで表示
 b2019_tinkle_position	本編	1929e7a で「はじめる」からハグクリックの説明画面まで
 b2023_lump_of_sugar_all	タイトル	dc42573 でタイトル画面まで表示
-b2012_alcot	NG	2a0b68d (E-mote 代替) で Member "PassThroughDrawDevice" does not exist
-b2012_kai	NG	2a0b68d (E-mote 代替) でロゴのまま、Member "PassThroughDrawDevice" does not exist
+b2012_alcot	タイトル	bd7853c でタイトル表示 (GAME START 等のメニュー描画まで)
+b2012_kai	タイトル	bd7853c でタイトル表示 (START/LOAD 等の看板メニュー描画まで)
 b2010_giga	NG	64d6316 (2015 年版の表) で「System.bin: string is cut short」
 s2010_giga_bittersmile	NG	64d6316 (2015 年版の表) で「System.bin: string is cut short」
 s2007_giga_himesama	NG	64d6316 (2015 年版の表) で「System.bin: string is cut short」
