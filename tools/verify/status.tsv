@@ -132,7 +132,7 @@ dl_RJ01623688	起動	読み込み中の表示のまま (エラーなし)
 dl_RJ01650072	タイトル	
 dl_RJ01702800	タイトル	
 dl_RJ01720685	本編	クリックで最初の会話まで
-r1_kag3	要再確認	KAG3 のサンプル (xp3 にまとめていない data フォルダ)。開発スレッドでは確認済み
+r1_kag3	本編	2026-10-26: 公式 syoukai デモ。Pad で Config を編集・保存し、再起動後に読み込み、紹介本文まで確認
 b2006_ninetail	タイトル	5d1348e でタイトル画面まで表示
 b2016_cube	タイトル	0c62865 で白画面からクリック 2 回でタイトル画面まで表示
 b2013_hulotte	タイトル	591d0a0 で注意画面からタイトルまで (XOR 暗号の xp3)
@@ -168,9 +168,9 @@ b2008_akabeesoft	タイトル	d40622e で注意書き・ロゴをクリックで
 b2010_akabeesoft	タイトル	d084599 (setLayerPos) でタイトル画面まで表示
 b2006_akabeesoft	タイトル	dc42573 でタイトル画面まで表示
 b2012_akabeesoft3	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
-b2011_nanawind	NG	cxdec 系 (yuyukana.tpm) で未対応。「Invalid character '\x03'」
+b2011_nanawind	タイトル	2026-10-26: yuyukana.tpm の cxdec を自動検出。保護対象4,410ファイルの Adler-32 が一致
 b2020_lass_pixy	タイトル	bd7853c でタイトル表示 (Start/Continue 等のボタン描画まで)
-b2015_pachipachi_soft	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」
+b2015_pachipachi_soft	タイトル	2026-10-26: Mado の31バイト周期 XOR を自動検出。保護対象749ファイルの Adler-32 が一致
 b2010_grand_cru	本編	a29c215 で Start から本編テキストまで
 b2014_undermoon	タイトル	5d1348e でタイトル画面まで表示
 b2016_appetite	タイトル	5d1348e でタイトル画面まで表示
@@ -229,8 +229,8 @@ b2021_pin_point	タイトル	5d1348e でタイトル画面まで表示。起動�
 b2008_dualtail	タイトル	e7d5b88 でタイトル画面まで表示
 b2012_cross_over	タイトル	e7d5b88 でタイトル画面まで表示
 b2009_dualtail	タイトル	dc42573 でタイトル画面まで表示 (クリックで設定画面も開く)
-b2022_hending	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」
-b2020_akabeesoft3	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」
+b2022_hending	タイトル	0009: Akabei 方式の鍵を自動検出し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 2,372 ファイルの Adler-32 一致
+b2020_akabeesoft3	タイトル	0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 4,201 ファイルの Adler-32 一致
 b2013_dualtail	タイトル	d084599 (setLayerPos) でタイトル画面まで表示
 b2015_mille_feuille	タイトル	b9e72ec でタイトル画面まで表示
 s2017_appetite_immorality_don	タイトル	5d1348e でタイトル画面まで表示
@@ -255,11 +255,11 @@ dl_VJ01000639	タイトル	d40622e で注意書き・ロゴをクリックで送
 s2014_hibiki_works	NG	customhistorylayer.tjs(124) ScrollBarInit で例外、「Invalid TLG header or unsupported TLG version」
 s2013_hibiki_works_lovely_cation2	タイトル	a29c215 でロゴと注意書き 2 枚をクリックで送るとタイトル画面まで表示
 b2015_nanawind	タイトル	2a0b68d でタイトル画面まで表示。Start 後の選択肢ボタンの文字が出ない
-s2024_no_strike_yuribatake	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。initialize.tjs(303) KAGLoadScript で「Cannot convert given narrow string to wide string」
-s2026_no_strike_jyosou_yuriarashi	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。initialize.tjs(303) KAGLoadScript で「Cannot convert given narrow string to wide string」
-s2022_akabeesoft2_roleplayer_tororo	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」
+s2024_no_strike_yuribatake	タイトル	2026-10-27: 平文 UTF-8 の誤判定と、補助ウィンドウへの入力誤配送を修正。言語選択からタイトルメニューへの遷移を確認
+s2026_no_strike_jyosou_yuriarashi	タイトル	2026-10-27: 平文 UTF-8 の誤判定と、補助ウィンドウへの入力誤配送を修正。言語選択からタイトルメニューへの遷移を確認
+s2022_akabeesoft2_roleplayer_tororo	タイトル	0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 5,892 ファイルの Adler-32 一致
 s2008_dualtail_clarice	タイトル	e7d5b88 でタイトル画面まで表示
-s2021_no_strike_Trap_Genesis	NG	暗号化 (シナリオ、未対応)。213e9df で DrawDeviceForSteam は通過、kagparser.tjs(96) loadScenario で「narrow→wide」
+s2021_no_strike_Trap_Genesis	タイトル	2026-10-26: 平文スクリプトの誤判定を修正。タイトルメニューを確認
 s2025_akabeesoft2_roleplayer_ikura	タイトル	f99fe3f でタイトル画面まで表示 (起動から約 2 分)
 s2020_sagaplanets_kakenuke	タイトル	d2edfde でクリック後タイトル画面まで表示 (Mojimo フォントは使わずページのフォント)
 s2026_poison_motion_sxs2_me	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
@@ -279,7 +279,7 @@ s2020_at_sakura_lover_swapping	タイトル	5d1348e でタイトル画面まで�
 s2022_at_sakura_konya_aitu	タイトル	5d1348e でタイトル画面まで表示
 dl_VJ01003070	タイトル	5d1348e でタイトル画面まで表示
 s2014_cross_over_tori	タイトル	5d1348e でタイトル画面まで表示
-s2023_hending_hassyakusama	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」
+s2023_hending_hassyakusama	タイトル	0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 3,236 ファイルの Adler-32 一致
 b2014_ensemble_sweet	本編	71cd396 で START から本編テキストまで
 b2014_guilty	本編	14cde42 で START から本編テキストまで
 b2014_pulltop_latte	本編	b076f1f で START からキャラクター選択画面まで
@@ -319,9 +319,9 @@ s2026_poison_motion_sxs_me	タイトル	d40622e で注意書き・ロゴをク�
 s2025_poison_extasy_paizuri_me	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
 s2011_hulotte_with_ribbon	タイトル	d2edfde で注意書きの後クリックでタイトル画面まで表示 (OP ムービーは飛ばす)
 s2014_cube_koikano	タイトル	d2edfde でクリック 3〜4 回の後タイトル画面まで表示
-s2021_nanawind_kanade_gram_ch1	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」
-s2010_akabeesoft_lavender	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」
-s2021_akabeesoft2_roleplayer	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」
+s2021_nanawind_kanade_gram_ch1	タイトル	2026-10-27: EXE の bres リソースから cxdec を自動準備。data.xp3 の保護対象1,955ファイルが一致。PIMG の表示状態を初期化し、背景・キャラクター・メニュー・花びらを表示
+s2010_akabeesoft_lavender	タイトル	2026-10-26: 体験版の cxdec を自動検出。保護対象6,030ファイルの Adler-32 が一致
+s2021_akabeesoft2_roleplayer	タイトル	0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 6,195 ファイルの Adler-32 一致
 s2017_nanawind_alice_gram	本編	a29c215 で STORY から本編テキストまで
 s2022_mille_feuille_excelchiffon	タイトル	b9e72ec でタイトル画面まで表示 (ウィンドウより大きいレイヤの修正)
 s2012_ninetail_gears_of_dragoon	タイトル	d084599 (setLayerPos) でタイトル画面まで表示
@@ -334,3 +334,12 @@ dl_RJ01677912	本編	1929e7a で START から本編テキストまで (立ち絵
 b2016_alcot	タイトル	ae3efe1 でタイトル画面まで表示 (起動から約 2 分)
 b2014_hibiki_works	タイトル	a29c215 でロゴと注意書き 2 枚をクリックで送るとタイトル画面まで表示
 s2006_akabeesoft_conboku	タイトル	bd7853c でインストーラ (Inno) 展開後に注意書き→タイトルメニューまで表示
+b2008_mille_feuille	タイトル	2026-10-26: インストーラの data1.cab を展開し、タイトルを確認
+b2017_sukerasparo	タイトル	2026-10-26: EXE 内蔵 XP3 をプロジェクトとして選び、タイトルを確認
+b2006_mille_feuille	タイトル	2026-10-26: InstallShield の MSI/CAB を展開してファイル名を復元。タイトルを確認
+b2007_akabeesoft	タイトル	2026-10-26: G線上の魔王の最初の体験版。開発機のドライブパスを無視してタイトルを確認
+s2008_akabeesoft_gsen	タイトル	2026-10-26: 体験版2。開発機のドライブパスを無視してタイトルを確認
+s2021_at_sakura_tuma_10	タイトル	2026-10-26: XP3 が data.xp3 以外の配置でも起動し、タイトルを確認
+s2016_akabeesoft3_inosupe	タイトル	2026-10-26: data.bin と TLG のみのアーカイブを検出。タイトルメニューを確認
+s2017_akabeesoft3_tonofuta	タイトル	2026-10-26: data.bin の検出と引用符なしの末尾 cond 式に対応し、タイトルメニューを確認
+s2019_parasol_renran_p	対象外	2026-10-26: 配布 URL は体験版の差分パッチのみ。起動用 EXE/startup と本体が含まれない

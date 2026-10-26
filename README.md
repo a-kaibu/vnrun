@@ -13,12 +13,12 @@ Windows 向けノベルゲームを、Wine を使わずにブラウザの中で�
 | FVP | [rfvp](https://github.com/xmoezzz/rfvp) (`third_party/rfvp`) | 組み込み済み。さくら、もゆ。体験版で本編の文章とセーブまで確認 |
 | Artemis | [art3m1s-core](https://github.com/Alphaly2K/art3m1s-core) (`third_party/art3m1s-core`、MPL-2.0) | 組み込み中。描画はまだ WebGL2 経由、試した体験版は E-Mote の読み込みで止まる |
 | NScripter | [ONScripter-Yuri](https://github.com/YuriSizuku/OnscripterYuri) (`third_party/onscripter-yuri`、GPL-2.0) | 組み込み済み。自作のテストスクリプトで文章・選択肢・セーブまで確認 (実物の作品は未確認) |
-| 吉里吉里 (KAG) | [KiriKiri SDL2](https://github.com/krkrsdl2/krkrsdl2) (`third_party/krkrsdl2`、MIT ほか) | 組み込み済み。KAG3 のサンプルを改変したテストで文章・選択肢・セーブまで確認 (商用作品は暗号化 xp3 とプラグイン DLL があり未確認) |
+| 吉里吉里 (KAG) | [KiriKiri SDL2](https://github.com/krkrsdl2/krkrsdl2) (`third_party/krkrsdl2`、MIT ほか) | 組み込み済み。KAG3 のテストで文章・選択肢・セーブまで確認。Akabei / Mado と検証済み cxdec の XP3 を自動復号。Pad の設定編集と保存にも対応。体験版の結果は [docs/verification.md](docs/verification.md) |
 | TyranoScript、RPGツクール MV/MZ など (NW.js) | ゲーム自身 (iframe で開くだけ) | 組み込み済み。TyranoScript の公式サンプルでタイトル・本編・セーブ・ロードまで確認 (RPGツクールは未確認、package.nw に固めた作品は未対応) |
 
 今後の候補は [docs/handoff.md](docs/handoff.md) の対応表を参照。
 
-DRM (PlayDRM、ソフト電池など) の付いた製品版は扱わない。そうした作品は vnbox の Wine で、正規の認証を通して遊ぶ。
+SDRS で包まれた EXE とデータは、ゲームフォルダの指定時に自動検出して展開する。PlayDRM など、それ以外の DRM の付いた製品版は vnbox の Wine で、正規の認証を通して遊ぶ。
 
 ## 構成
 
@@ -29,9 +29,9 @@ web/                 プレイヤーのページ (Vite+ + TypeScript、エンジ
   src/present.ts     CPU で描いたフレームを WebGPU で画面に出す
   src/engines/<id>.ts  エンジンごとのつなぎ
 engines/<id>/build.sh  エンジンを wasm にして web/public/engines/<id>/ に置く
-third_party/         取り込んだエンジン (git submodule)
+third_party/         取り込んだエンジン・前処理ライブラリ (git submodule)
 crates/devserver     手元で試すためのサーバー
-crates/prep          ブラウザでできない下ごしらえ (Siglus の二次鍵の復元など)
+crates/prep          ブラウザでできない下ごしらえ (SDRS の展開、cxdec のパラメーター抽出、Siglus の二次鍵の復元)
 patches/<id>/        取り込んだエンジンへの修正
 tools/shot.js        ヘッドレス Chromium で起動・操作・スクショ
 docs/protocol.md     プレイヤーとサーバーの約束事
@@ -50,11 +50,26 @@ cargo run --release -p vnrun-devserver -- --game ~/games/シオンの血族_体�
 
 `--game` はエンジンのファイルがある場所 (Siglus なら `Scene.pck` と `Gameexe.dat` のあるフォルダ) を指す。エンジンは自動で判定し、外れたら `--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter` で指定する。別の端末から開くなら `--addr 0.0.0.0:8090`。
 
-SiglusEngine の作品には暗号の二次鍵が要るものがある (体験版でも)。ブラウザ版は鍵を探さないので、先に一度だけ `vnrun-prep` を流してゲームのフォルダに `key.toml` を作っておく。
+`vnrun-devserver --game` は、配信を始める前に SDRS の展開、EXE 内蔵 cxdec のパラメーター抽出、Siglus の二次鍵の前処理を自動で行う。前処理が失敗した場合はエラーで止まり、配信しない。
+
+SiglusEngine の作品には暗号の二次鍵が要るものがある (体験版でも)。必要ならゲームのフォルダに `key.toml` を作る。サーバーを起動せずに前処理だけを行う場合は `vnrun-prep` を使う。
 
 ```bash
 cargo run --release -p vnrun-prep -- ~/games/プリマドール/StartData/gamedata
 ```
+
+[sdrs-core](https://github.com/a-kaibu/sdrs/tree/main/sdrs-core) は `third_party/sdrs` に submodule として取り込んでいる。SDRS はフォルダ直下の EXE のヘッダーで判定し、検出したものだけを展開する。`vnrun-prep <ゲームフォルダ>` でも同じ自動検出を行う。EXE を個別に指定することもできる。
+
+```bash
+cargo run --release -p vnrun-prep -- --sdrs ~/games/作品/主プログラム.exe
+```
+
+展開した EXE と復号したデータは同じゲームフォルダに配置し、元ファイルはその中の `sdrs_backup_<番号>_<番号>/` に退避する。退避先は処理後に表示する。復号に失敗した場合は元ファイルを変更しない。展開後は同じフォルダの Siglus 向け前処理も続けて行う。この後続処理で失敗しても、展開結果とバックアップは残る。展開済みの EXE とバックアップ内の EXE は再展開しない。展開できても、ゲームを遊べるかは各エンジンの対応状況による。
+
+吉里吉里の EXE 内蔵 cxdec は、対応する bres リソースを見つけると `vnrun-cxdec.bin` にパラメーターと制御表を保存する。
+元の EXE と XP3 は変更せず、Windows の EXE や DLL も実行しない。
+ブラウザではアーカイブ内の2ファイルを復号し、Adler-32 が一致する場合だけ利用する。
+対応範囲、Pad、再現用テストは [docs/krkr-compatibility.md](docs/krkr-compatibility.md) に記録している。
 
 取り込んだエンジンへのブラウザ向けの修正は `patches/<エンジン>/*.patch` に置き、`engines/<id>/build.sh` がビルド前に当てる。
 
