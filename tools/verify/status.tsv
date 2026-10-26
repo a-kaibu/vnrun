@@ -317,7 +317,7 @@ dl_VJ01006612	タイトル	d51f3e8 系のページでタイトル画面まで表
 s2021_dualtail_vbhi	タイトル	d51f3e8 系のページでタイトル画面まで表示。クリック後に「RuntimeError: null function」で停止
 s2026_poison_motion_sxs_me	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
 s2025_poison_extasy_paizuri_me	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
-s2011_hulotte_with_ribbon	NG	b9e72ec でも注意書きの後クリックすると白画面のまま (エラーなし)
+s2011_hulotte_with_ribbon	タイトル	d2edfde で注意書きの後クリックでタイトル画面まで表示 (OP ムービーは飛ばす)
 s2014_cube_koikano	タイトル	d2edfde でクリック 3〜4 回の後タイトル画面まで表示
 s2021_nanawind_kanade_gram_ch1	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」
 s2010_akabeesoft_lavender	NG	スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」

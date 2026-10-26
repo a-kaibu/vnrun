@@ -46,7 +46,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Artemis (art3m1s-core) | 6 |  | 5 |  |  | 1 |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 2 | 17 | 9 | 3 | 2 |  |  |
-| 吉里吉里 (KiriKiri SDL2) | 135 | 4 | 104 |  | 1 | 16 |  | 10 |
+| 吉里吉里 (KiriKiri SDL2) | 135 | 4 | 105 |  | 1 | 15 |  | 10 |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 30 | 5 | 1 |  | 1 | 22 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
@@ -280,6 +280,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2008_ninetail_amatu | [天ツ風　～傀儡陣風帖～](http://suezou.dyndns.org/dl2008/ninetail/amatu/amatu_trial_0901ver100.exe) | タイトル |  |
 | s2009_dualtail_haiironosora | [灰色の空に堕ちた翼　体験版 Ver.1.00](http://suezou.dyndns.org/dl2009/dualtail/haiironosora/TD06_TRIAL100.exe) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2011_grand_cru_imostar | [しゅ～てぃんぐ妹スター☆ ～おにいちゃん、覚悟しててよね♪～　体験版](http://suezou.dyndns.org/dl2011/grand-cru/imostar/imosta_trial.zip) | タイトル | d2edfde でタイトル画面まで表示 |
+| s2011_hulotte_with_ribbon | [With Ribbon Hシーン体験版](http://suezou.dyndns.org/dl2011/hulotte/with-ribbon/with-ribbon_trial2.zip) | タイトル | d2edfde で注意書きの後クリックでタイトル画面まで表示 (OP ムービーは飛ばす) |
 | s2011_parasol_delivara | [でりばらっ！-deliverance of strays- 体験版](http://suezou.dyndns.org/dl2011/parasol/delivara/delivara_taiken.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2012_ninetail_gears_of_dragoon | [Gears of Dragoon  -RPG体験版 ver.1.00-](http://suezou.dyndns.org/dl2012/ninetail/gears_of_dragoon/GoD_RPG_trial_100.zip) | タイトル | d084599 (setLayerPos) でタイトル画面まで表示 |
 | s2013_hibiki_works_lovely_cation2 | [ＬＯＶＥＬＹ×Ｃ∧ＴＩＯＮ２](http://suezou.dyndns.org/dl2013/hibiki-works/lovely_cation2/LxC2_trial_web.zip) | タイトル | a29c215 でロゴと注意書き 2 枚をクリックで送るとタイトル画面まで表示 |
@@ -327,7 +328,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2020_lass_pixy | [リトルシックガール　～桃蜜は妹の香り～　体験版](http://suezou.dyndns.org/dl2020/lass-pixy/lsg03/LSG3_tr.zip) | NG | 2a0b68d (E-mote 代替) で Member "startMouseHook" does not exist |
 | b2022_hending | [リンパにATATA! ～メス牡蠣ミルクどぴゅらっしゅ♡～](http://suezou.dyndns.org/dl2022/hending/atata/atata_trial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(6) で「Cannot convert given narrow string to wide string」 |
 | s2010_akabeesoft_lavender | [光輪の町、ラベンダーの少女　体験版](http://suezou.dyndns.org/dl2010/akabeesoft/lavender/lavender_webTRIAL.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」 |
-| s2011_hulotte_with_ribbon | [With Ribbon Hシーン体験版](http://suezou.dyndns.org/dl2011/hulotte/with-ribbon/with-ribbon_trial2.zip) | NG | b9e72ec でも注意書きの後クリックすると白画面のまま (エラーなし) |
 | s2021_akabeesoft2_roleplayer | [ROLEPLAYER：小粥姉妹の粘膜ポトレ ぐりぐちゃLIVE！](http://suezou.dyndns.org/dl2021/akabeesoft2/roleplayer/ab2_roleplayer_okayushimai_webtrial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」 |
 | s2021_nanawind_kanade_gram_ch1 | [花鐘カナデ＊グラム Chapter1 -小桜結- 体験版](http://suezou.dyndns.org/dl2021/nanawind/kanade-gram_ch1/kanade-gram_ch1-trial.zip) | NG | スクリプトが exe 内蔵の暗号 (cxdec 系) で復号できず未対応。startup.tjs(7) で「Cannot convert given narrow string to wide string」 |
 | s2021_no_strike_Trap_Genesis | [Jyosou Souseiki Trial Ver.](http://suezou.dyndns.org/dl2021/no-strike/Trap_Genesis/Jyosou_Souseiki_Trial.zip) | NG | 暗号化 (シナリオ、未対応)。213e9df で DrawDeviceForSteam は通過、kagparser.tjs(96) loadScenario で「narrow→wide」 |
