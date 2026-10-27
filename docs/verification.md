@@ -47,11 +47,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Artemis (art3m1s-core) | 6 | 1 | 5 |  |  |  |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 2 | 17 | 9 | 3 | 2 |  |  |
-| 吉里吉里 (KiriKiri SDL2) | 135 | 4 | 128 |  |  | 2 | 1 |  |
+| 吉里吉里 (KiriKiri SDL2) | 135 | 4 | 127 |  |  | 3 | 1 |  |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 16 | 6 | 1 |  | 1 | 7 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
 | Tmr-Hiro (vnrun) | 22 | 13 |  |  | 1 | 8 |  |  |
+| LiveMaker (vnrun) | 4 | 1 |  |  |  |  |  | 3 |
 
 ### SiglusEngine (siglus_rs)
 
@@ -242,7 +243,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2015_ammolite | [お兄ちゃん、教えて……～義妹とヒミツの保健実習～　体験版　Ver1.00](http://suezou.dyndns.org/dl2015/ammolite/oni/amml011_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2015_appetite | [愛娘は、マゾ性隷～娘だからって遠慮しないでね？～　体験版　Ver1.00](http://suezou.dyndns.org/dl2015/appetite/musume/apt054_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2015_mille_feuille | [極煌戦姫ミストルティア 体験版](http://suezou.dyndns.org/dl2015/mille-feuille/mistletear/blazingangel_mistletear_trial.zip) | タイトル | b9e72ec でタイトル画面まで表示 |
-| b2015_nanawind | [ALIA’s CARNIVAL! Flowering Sky　体験版(WEB.ver)](http://suezou.dyndns.org/dl2015/nanawind/alias_fs/ALIAs_CARNIVAL_floweringsky_trial.zip) | タイトル | 2a0b68d でタイトル画面まで表示。Start 後の選択肢ボタンの文字が出ない |
 | b2015_pachipachi_soft | [おしおき生意気ギャル ～エロいオシオキをしたら自分からエッチを求めてきた～ 体験版](http://suezou.dyndns.org/dl2015/pachipachi-soft/oshioki/oshioki_trial.zip) | タイトル | 2026-10-26: Mado の31バイト周期 XOR を自動検出。保護対象749ファイルの Adler-32 が一致 |
 | b2016_alcot | [よめがみ My Sweet Goddess! リコＨシーン体験版](http://suezou.dyndns.org/dl2016/alcot/yomegami/yomegami_trial3.exe) | タイトル | ae3efe1 でタイトル画面まで表示 (起動から約 2 分) |
 | b2016_apadash | [満淫オーク電車～くっ！　任務じゃなければこんな場所…～　体験版　Ver1.00](http://suezou.dyndns.org/dl2016/apadash/oak_train/aptd005_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
@@ -344,6 +344,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2026_no_strike_jyosou_yuriarashi | [Jyosou Yuriarasi Trial](http://suezou.dyndns.org/dl2026/no-strike/jyosou_yuriarashi/jyosouyuriarashi_trial.zip) | タイトル | 2026-10-27: 平文 UTF-8 の誤判定と、補助ウィンドウへの入力誤配送を修正。言語選択からタイトルメニューへの遷移を確認 |
 | s2026_poison_motion_sxs2_me | [姉妹X催眠２ - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2026/poison-motion/sxs2-me/sxs2me_trial.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
 | s2026_poison_motion_sxs_me | [姉妹X催眠 - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2026/poison-motion/sxs-me/sxsme_trial.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
+| b2015_nanawind | [ALIA’s CARNIVAL! Flowering Sky　体験版(WEB.ver)](http://suezou.dyndns.org/dl2015/nanawind/alias_fs/ALIAs_CARNIVAL_floweringsky_trial.zip) | NG | e2e9bbf で「エンジンを読み込み中」のまま進まない (吉里吉里の出力なし、単独実行でも再現。alice_gram と同じ症状) |
 | s2012_ninetail_gears_of_dragoon | [Gears of Dragoon  -RPG体験版 ver.1.00-](http://suezou.dyndns.org/dl2012/ninetail/gears_of_dragoon/GoD_RPG_trial_100.zip) | NG | e2e9bbf で data.xp3 を開けず startup.tjs で Read error。d084599 ではタイトルまで |
 | s2017_nanawind_alice_gram | [春音アリス＊グラム　体験版](http://suezou.dyndns.org/dl2017/nanawind/alice_gram/harugra_trial.zip) | NG | e2e9bbf で「エンジンを読み込み中」のまま進まない (吉里吉里の出力なし、単独実行でも再現)。a29c215 では本編まで |
 | s2019_parasol_renran_p | [恋嵐スピリッチュ 体験版](https://trial.dlsite.com/professional/VJ013000/VJ012599_trial.zip http://suezou.dyndns.org/dl2019/parasol/renran-p/renran_trial_101.zip) | 対象外 | 2026-10-26: 配布 URL は体験版の差分パッチのみ。起動用 EXE/startup と本体が含まれない |
@@ -464,4 +465,13 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2006_lune_sakuya | [くのいち・咲夜－体験版－](http://suezou.dyndns.org/dl2006/lune/sakuya/kunoichi_trial.exe) | NG | srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応 |
 | s2007_marine_succubus | [とらぶるサッキュバス](http://suezou.dyndns.org/dl2007/marine/succubus/succubus_trial.exe) | NG | srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応 |
 | s2008_lune_inmu | [淫夢学園－体験版](http://suezou.dyndns.org/dl2008/lune/inmu/inmu_trial.exe) | NG | srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応 |
+
+### LiveMaker (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| dl_RJ129271 | [とししたハニー 体験版](https://trial.dlsite.com/doujin/RJ130000/RJ129271_trial.zip) | 本編 | タイトル→はじめから→名前入力→選択肢→本編の文章まで (livemaker-run とブラウザ) |
+| dl_RJ125204 | [保健室の女神 体験版](https://trial.dlsite.com/doujin/RJ126000/RJ125204_trial.zip) | 未確認 |  |
+| dl_RJ284038 | [彼女と俺と留学生 体験版](https://trial.dlsite.com/doujin/RJ285000/RJ284038_trial.zip) | 未確認 |  |
+| dl_RJ341209 | [スタイホリック 体験版](https://trial.dlsite.com/doujin/RJ342000/RJ341209_trial.zip) | 未確認 |  |
 <!-- /matrix -->
