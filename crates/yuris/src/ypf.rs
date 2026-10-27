@@ -118,7 +118,7 @@ impl Index {
             if (offset as usize) < data_start || tail == 22 && u32_at(head, p + 14).ok_or("short index")? != 0 {
                 return Err(format!("entry {} points into the index", index.entries.len()));
             }
-            let name = sjis::decode(&raw);
+            let name = sjis::decode_name(&raw);
             index.by_name.insert(fold(&name), index.entries.len());
             index.entries.push(Entry { name, compressed, size, packed_size, offset });
             at = p + tail;

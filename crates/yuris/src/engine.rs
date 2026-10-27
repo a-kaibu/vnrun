@@ -312,7 +312,13 @@ impl World {
                 to.img.px.chunks_exact_mut(4).for_each(|p| p[3] = (p[3] as u32 * a / 256) as u8);
                 to.a = 256;
             }
-            let (dx, dy) = (attrs.x - to.x, attrs.y - to.y);
+            // X, Y place it in the layer it goes into (ERIS drawing text a glyph at a time);
+            // otherwise both stay where they are on the screen
+            let (dx, dy) = if c.arg("X").is_some() || c.arg("Y").is_some() {
+                (x0, y0)
+            } else {
+                (attrs.x - to.x, attrs.y - to.y)
+            };
             let clip = to.img.rect();
             to.img.draw(&img, dx, dy, attrs.a, attrs.mode, clip);
             to.touch();

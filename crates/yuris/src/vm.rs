@@ -46,7 +46,6 @@ impl Program {
         let commands = ybn::commands(&need(read, "ysc.ybn")?).map_err(ctx("ysc.ybn"))?;
         let script_names = ybn::script_names(&need(read, "yst_list.ybn")?).map_err(ctx("yst_list.ybn"))?;
         let decls = ybn::variables(&need(read, "ysv.ybn")?).map_err(ctx("ysv.ybn"))?;
-        let config = ybn::config(&need(read, "yscfg.ybn")?).map_err(ctx("yscfg.ybn"))?;
         let files: Vec<_> = (0..script_names.len()).map(|i| read(&format!("yst{i:05}.ybn"))).collect();
         let key = files.iter().flatten().find_map(|b| ybn::script_key(b));
         let mut scripts = Vec::with_capacity(script_names.len());
@@ -56,15 +55,27 @@ impl Program {
                 None => Script::default(), // files that only declare (global.yst, macro.yst)
             });
         }
-        let mut labels = HashMap::new();
-        for l in ybn::labels(&need(read, "ysl.ybn")?).map_err(ctx("ysl.ybn"))? {
-            labels.insert(l.name.to_uppercase(), Pos { script: l.script as usize, ip: l.ip as usize });
-        }
         let mut op = HashMap::new();
         for name in OPS {
             if let Some(i) = commands.iter().position(|c| c.name == name) {
                 op.insert(name, i as u8);
             }
+        }
+        // the text decides how every string reads, the title included
+        if let Some(word) = commands.iter().position(|c| c.name == "WORD").map(|i| i as u8) {
+            let text: Vec<u8> = scripts
+                .iter()
+                .flat_map(|s: &Script| &s.code)
+                .filter(|i| i.op == word)
+                .filter_map(|i| i.args.first())
+                .flat_map(|a| a.value.iter().copied())
+                .collect();
+            sjis::set_big5(sjis::looks_big5(&text));
+        }
+        let config = ybn::config(&need(read, "yscfg.ybn")?).map_err(ctx("yscfg.ybn"))?;
+        let mut labels = HashMap::new();
+        for l in ybn::labels(&need(read, "ysl.ybn")?).map_err(ctx("ysl.ybn"))? {
+            labels.insert(l.name.to_uppercase(), Pos { script: l.script as usize, ip: l.ip as usize });
         }
         let mut p = Program { commands, scripts, script_names, labels, decls, config, partner: Vec::new(), op };
         p.partner = p.scripts.iter().map(|s| p.link(s)).collect();
@@ -959,6 +970,10 @@ impl Vm {
             }
         } else if let Some(k) = (1..=8).find(|k| on(&if *k == 1 { "DIMSIZE".into() } else { format!("DIMSIZE{k}") }).unwrap_or(false)) {
             var.and_then(|v| v.dims.get(k - 1)).map_or(0, |&d| d as i64)
+        } else if on("SJISCODE")? {
+            // the code of the first character: both bytes of a double-byte one
+            let b = expr::Vars::get(st, &set).bytes();
+            sjis::chars(&b).first().map_or(0, |c| c.iter().fold(0, |n, &x| n << 8 | x as i64))
         } else if on("STRTYPE")? {
             // 1 when every character is a digit
             let b = expr::Vars::get(st, &set).bytes();

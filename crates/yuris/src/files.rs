@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 
-use crate::ypf;
+use crate::{sjis, ypf};
 
 /// Where the engine reads the game and keeps saves; the browser and native builds each have one.
 pub trait Files {
@@ -72,8 +72,7 @@ impl Archives {
 
     /// A file of the game by its name in the scripts: from an archive, else loose.
     pub fn read(&self, files: &mut dyn Files, name: &str) -> Option<Vec<u8>> {
-        let key = ypf::fold(name);
-        if let Some(&(p, i)) = self.names.get(&key) {
+        if let Some(&(p, i)) = self.entry(name) {
             let (pack, index) = &self.packs[p];
             let e = &index.entries[i];
             let stored = files.read_range(pack, e.offset as u64, e.packed_size as usize)?;
@@ -83,7 +82,11 @@ impl Archives {
     }
 
     pub fn exists(&self, files: &mut dyn Files, name: &str) -> bool {
-        self.names.contains_key(&ypf::fold(name)) || files.size(&name.replace('\\', "/")).is_some()
+        self.entry(name).is_some() || files.size(&name.replace('\\', "/")).is_some()
+    }
+
+    fn entry(&self, name: &str) -> Option<&(usize, usize)> {
+        self.names.get(&ypf::fold(name)).or_else(|| self.names.get(&ypf::fold(&sjis::archive_name(name)?)))
     }
 
     /// The name of a file given without its extension: the first of `exts` that exists.
