@@ -17,7 +17,9 @@ use crate::grd;
 use crate::ini::{self, Ini};
 use crate::pac::Index;
 use crate::save::{SaveData, SavedChara};
-use crate::script::{Command, Script};
+use crate::script::{Command, OLD, Script};
+
+mod old;
 
 /// A sound to start or stop.
 pub struct Sound {
@@ -54,6 +56,8 @@ enum Wait {
 struct Button {
     rect: [i32; 4],
     label: String,
+    /// a map button: its column in mapselect_charactor and its row in mapselect_plate
+    icon: Option<[i32; 2]>,
 }
 
 struct Fade {
@@ -174,7 +178,10 @@ pub struct Engine {
     auto: bool,
     skip: bool,
     said_at: u64,
-    window_base: Option<Option<Rc<Image>>>,
+    /// the window's picture and where it goes from the window's place
+    window_base: Option<Option<(Rc<Image>, i32, i32)>>,
+    /// a picture over the characters (layer 11 of the older games: the calendar)
+    overlay: Vec<Pic>,
     pan: Option<Pan>,
     /// the sprite slots (picture layers 5 and up)
     chars: Vec<Option<Chara>>,
@@ -251,6 +258,7 @@ impl Engine {
             skip: false,
             said_at: 0,
             window_base: None,
+            overlay: Vec::new(),
             pan: None,
             chars: (0..10).map(|_| None).collect(),
             flash: None,
@@ -290,6 +298,23 @@ impl Engine {
             e.ini.int("GAMESYSTEM/DEF_WINDOW_HEIGHT", 600) as u32,
         );
         e.script = e.load("start")?;
+        if e.script.commands.first().is_some_and(|c| c.group == OLD) {
+            e.ini.add(old::SETTINGS.trim_start().as_bytes());
+            let exe = e
+                .files
+                .list()
+                .into_iter()
+                .find(|n| n.to_lowercase().ends_with(".exe"));
+            let names = exe
+                .and_then(|n| e.files.read(&n))
+                .and_then(|b| old::player_names(&b));
+            if let Some([given, kana, short]) = names {
+                let text = format!(
+                    "[GAMESYSTEM]\nPLAYER_NAME01={given}\nPLAYER_NAME02={kana}\nPLAYER_NAME03={short}\n"
+                );
+                e.ini.add(&nexas::sjis::encode(&text));
+            }
+        }
         Ok(e)
     }
 
@@ -681,6 +706,7 @@ impl Engine {
                 self.buttons.push(Button {
                     rect: [c.i16(0), c.i16(2), c.i16(4), c.i16(6)],
                     label: c.str(8),
+                    icon: None,
                 });
                 // the buttons wait once the last of them is set up
                 let next = self.script.commands.get(self.pc);
@@ -821,6 +847,7 @@ impl Engine {
             }
             (0x50, 0x28) => self.wait = Wait::Until(self.now + c.u32(0) as u64),
             (0x50, 0x15) => self.title = c.str(0),
+            (OLD, _) => self.run_old(c),
             _ => {
                 if self.log {
                     eprintln!("tmrhiro: skipped {:02x}.{:04x}", c.group, c.op);
@@ -1291,6 +1318,7 @@ impl Engine {
         self.bg_name.clear();
         self.pan = None;
         self.chars.iter_mut().for_each(|c| *c = None);
+        self.overlay.clear();
         self.fade = None;
         self.flash = None;
         self.window = false;
@@ -1344,6 +1372,11 @@ impl Engine {
             None
         };
         let text = parts.join(",");
+        self.say_line(name, &text, voice);
+    }
+
+    /// Shows a line in the window (playing its voice) and waits for a click.
+    fn say_line(&mut self, name: Option<&str>, text: &str, voice: Option<&str>) {
         if let Some(v) = voice {
             let v = v.trim().to_string();
             self.play(&["vic"], &v, None, true);
@@ -1354,7 +1387,7 @@ impl Engine {
         self.resume_pc = self.pc - 1;
         self.said_at = self.now;
         self.name = name.map(|n| self.names(n)).unwrap_or_default();
-        self.text = self.names(&text);
+        self.text = self.names(text);
         self.window = true;
         self.text_images.clear();
         self.wait = Wait::Click;
@@ -1372,7 +1405,10 @@ impl Engine {
             .get("GAMESYSTEM/PLAYER_NAME02")
             .unwrap_or("")
             .to_string();
-        s.replace("＄α", &first).replace("＄β", &given)
+        let short = self.ini.get("GAMESYSTEM/PLAYER_NAME03").unwrap_or("");
+        s.replace("＄α", &first)
+            .replace("＄β", &given)
+            .replace("＄γ", short)
     }
 
     /// Draws the pictures of the scene (no window), bottom first.
@@ -1419,6 +1455,9 @@ impl Engine {
                 ));
             }
         }
+        for pic in &self.overlay {
+            out.push(draw(&pic.image, pic.x, pic.y, 1.0, [0.0, 0.0, w, h]));
+        }
         if let Some(f) = &self.flash {
             let t = self.now.saturating_sub(f.start) as f32;
             let [a, b, c] = f.ms.map(|v| v as f32);
@@ -1462,14 +1501,20 @@ impl Engine {
                 out.push(draw(&p.image, p.x, p.y, 1.0, [0.0, 0.0, w, h]));
             }
             let (hx, hy) = self.hover;
-            let hit = self.buttons.iter().find(|b| {
-                hx >= b.rect[0]
-                    && hy >= b.rect[1]
-                    && hx < b.rect[0] + b.rect[2]
-                    && hy < b.rect[1] + b.rect[3]
-            });
-            if let Some(b) = hit {
-                let r = b.rect;
+            let hit = self
+                .buttons
+                .iter()
+                .find(|b| inside(b.rect, hx, hy))
+                .map(|b| (b.rect, b.icon.is_some()));
+            let icons: Vec<([i32; 4], [i32; 2])> = self
+                .buttons
+                .iter()
+                .filter_map(|b| Some((b.rect, b.icon?)))
+                .collect();
+            if !icons.is_empty() {
+                self.map_draws(&icons, hit.map(|h| h.0), &mut out);
+            }
+            if let Some((r, false)) = hit {
                 for p in self.pictures(&over, 0.0, 0.0) {
                     let clip = [
                         r[0] as f32,
@@ -1533,7 +1578,9 @@ impl Engine {
         let ms = i.int("MESSAGEWINDOW/CW_DRAW_TIME", 50).max(1) as u64;
         if cx >= 0
             && cw > 0
-            && let Some(g) = self.image("sys_click_wait")
+            && let Some(g) = self
+                .image("sys_click_wait")
+                .or_else(|| self.image("sys_clickwait"))
         {
             let k = ((self.now / ms) % pat) as i32;
             let src = [k * cw - g.x, -g.y, cw, ch];
@@ -1679,15 +1726,39 @@ impl Engine {
                     }
                     p[3] = (p[3] as u32 * c[0] as u32 / 255) as u8;
                 }
-                Rc::new(img)
+                (Rc::new(img), 0, 0)
+            });
+            // the older games' window is one picture placed on its canvas
+            let base = base.or_else(|| {
+                self.image("sys_textwindow")
+                    .map(|g| (g.image.clone(), g.x, g.y))
             });
             self.window_base = Some(base);
         }
-        let base = match self.window_base.clone().flatten() {
+        let (base, bx, by) = match self.window_base.clone().flatten() {
             Some(b) => b,
-            None => Rc::new(panel(ww.max(1) as u32, wh.max(1) as u32)),
+            None => (Rc::new(panel(ww.max(1) as u32, wh.max(1) as u32)), 0, 0),
         };
-        out.push(draw(&base, wx as f32, wy as f32, 1.0, [0.0, 0.0, w, h]));
+        out.push(draw(
+            &base,
+            (wx + bx) as f32,
+            (wy + by) as f32,
+            1.0,
+            [0.0, 0.0, w, h],
+        ));
+        // the name on its plate (the older games; NP_PLATE_POS is our own key)
+        let plate = self.ini.ints("MESSAGEWINDOW/NP_PLATE_POS");
+        let plate = match (
+            plate.len() >= 2 && !self.name.is_empty(),
+            self.image("sys_nameplate"),
+        ) {
+            (true, Some(g)) => {
+                let (px, py) = (wx + plate[0] + g.x, wy + plate[1] + g.y);
+                out.push(draw(&g.image, px as f32, py as f32, 1.0, [0.0, 0.0, w, h]));
+                Some([px, py, g.image.w as i32, g.image.h as i32])
+            }
+            _ => None,
+        };
         if self.text_images.is_empty() {
             let Some(font) = self.text_font(size) else {
                 return;
@@ -1724,7 +1795,14 @@ impl Engine {
             }
             if !self.name.is_empty() {
                 let img = font.render(&nexas::sjis::encode(&self.name), color, 2);
-                images.push((Rc::new(img), (wx + nx - 2) as f32, (wy + ny - 2) as f32));
+                let (x, y) = match plate {
+                    Some(r) => (
+                        r[0] + (r[2] - img.w as i32) / 2,
+                        r[1] + (r[3] - img.h as i32) / 2,
+                    ),
+                    None => (wx + nx - 2, wy + ny - 2),
+                };
+                images.push((Rc::new(img), x as f32, y as f32));
             }
             self.text_images = images;
         }
