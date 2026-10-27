@@ -132,4 +132,6 @@ scriptsEx は [公式実装](https://github.com/wamsoft/scriptsEx/blob/master/Ma
 - 動画、E-mote、本編全体、各作品のゲーム内セーブは今回の検証範囲外。
 - 正午の handoff にある「回帰サンプル12本」の ID 一覧はこの環境にないため、同じ12本を再実行したとは扱わない。
   最終 wasm では Akabei の5本、ユユカナ、ラベンダー、ことのはアムリラートの計8本を再起動し、タイトルを確認した。
+- 2026-10-27 にローカルで CI と同じ全ワークスペースの `cargo fmt --check` と `cargo clippy --release -- -D warnings` を確認したが、今回の変更前からある `luavm`、`nexas`、`yuris` などの書式・Clippy エラーで失敗する。
+  対象の `vnrun-prep` と `vnrun-devserver` の書式・Clippy とテストは通る。
 - push とホスト CI の実行はしていない。
