@@ -476,7 +476,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_RJ125204 | [保健室の女神 体験版](https://trial.dlsite.com/doujin/RJ126000/RJ125204_trial.zip) | 本編 | タイトル (バイナリ .lpm のメニュー)→初めから→本編の文章まで (livemaker-run) |
 | dl_RJ129271 | [とししたハニー 体験版](https://trial.dlsite.com/doujin/RJ130000/RJ129271_trial.zip) | 本編 | タイトル→はじめから→名前入力→選択肢→本編の文章まで (livemaker-run とブラウザ) |
 | dl_RJ284038 | [彼女と俺と留学生 体験版](https://trial.dlsite.com/doujin/RJ285000/RJ284038_trial.zip) | 本編 | タイトル (背景つき、文字だけのメニューは体験版本来のもの)→はじめから→本編の文章まで (livemaker-run) |
-| dl_RJ341209 | [スタイホリック 体験版](https://trial.dlsite.com/doujin/RJ342000/RJ341209_trial.zip) | 本編 | タイトル→Start→名前入力 (打ち替えも可)→本編の文章まで、セーブ画面も開く (livemaker-run)。.lcm の演出 (ロゴ・タイトル前のアニメ) は未対応 |
+| dl_RJ341209 | [スタイホリック 体験版](https://trial.dlsite.com/doujin/RJ342000/RJ341209_trial.zip) | 本編 | タイトル→Start→名前入力 (打ち替えも可)→本編の文章まで、セーブ画面も開く (livemaker-run)。.lcm の演出 (ロゴ・タイトル前のアニメ) も再生 |
 
 ### CatSystem2 (vnrun)
 
@@ -484,7 +484,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|
 | b2014_azarashi_soft | [アマカノ 体験版 甘えてくれる恋人とのエッチなひととき編](http://suezou.dyndns.org/dl2014/azarashi-soft/amakano/amakano_trialH.zip) | 本編 | 360b26c (CatSystem2) でタイトル→はじめから→本編の文章とマップ画面まで (Chromium) |
 | b2014_windmill_oasis | [春風センセーション！体験版](http://suezou.dyndns.org/dl2014/windmill-oasis/harukaze/harukaze_trial.exe) | 本編 | 360b26c (CatSystem2) で注意書き→タイトル→START→本編の文章・名前まで (Chromium) |
-| b2017_laplacian | [ニュートンと林檎の樹 体験版＋](http://suezou.dyndns.org/dl2017/laplacian/newrin/newrin-trial-plus.zip) | 本編 | タイトル→はじめから→選択肢 (体験版本編)→本編の文章・イベント CG まで (cs2-run とブラウザ) |
+| b2017_laplacian | [ニュートンと林檎の樹 体験版＋](http://suezou.dyndns.org/dl2017/laplacian/newrin/newrin-trial-plus.zip) | 本編 | 360b26c (CatSystem2) でタイトル→はじめから→体験版メニュー (体験版本編 / えっちしーん) まで (Chromium、完全なダウンロードで確認) |
 
 ### EntisGLS (vnrun)
 
