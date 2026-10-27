@@ -62,6 +62,11 @@ static B2010_BUILD: Build = Build {
         (0x54, 0x62, 6),
         (0x59, 0x67, 4),
         (0x115, 0x137, 9),
+        (0x116, 0x138, 6),
+        (0x120, 0x143, 2),
+        (0x121, 0x144, 6),
+        (0x125, 0x148, 6),
+        (0x127, 0x14a, 5),
         (0x136, 0x159, 6),
         (0x13e, 0x162, 5),
         (0x141, 0x165, 2),
@@ -154,7 +159,9 @@ mod tests {
         assert_eq!(build.canonical(0x39), 0x45);
         assert_eq!(build.canonical(0x3c), 0x48);
         assert_eq!(build.canonical(0x115), 0x137);
-        assert_eq!(build.canonical(0x116), 0xffff);
+        assert_eq!(build.canonical(0x116), 0x138);
+        assert_eq!(build.canonical(0x121), 0x144);
+        assert_eq!(build.canonical(0x122), 0xffff);
         script.legacy = false;
         assert_ne!(Build::detect(&script).name, B2010_BUILD.name);
     }

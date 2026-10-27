@@ -657,16 +657,17 @@ impl Engine {
         let Some(font) = self.font(MESSAGE_FONT) else {
             return;
         };
+        let text_y = TEXT.1 + self.screen.h as i32 - HEIGHT as i32;
         let name = message_lines(name, &self.names).concat();
         if !name.is_empty() {
             let img = font.render(&name, [255, 255, 255], PAD);
             self.message
-                .push((Rc::new(img), TEXT.0 - PAD, TEXT.1 - LINE - PAD));
+                .push((Rc::new(img), TEXT.0 - PAD, text_y - LINE - PAD));
         }
         for (k, line) in message_lines(text, &self.names).iter().enumerate() {
             let img = font.render(line, [255, 255, 255], PAD);
             self.message
-                .push((Rc::new(img), TEXT.0 - PAD, TEXT.1 + LINE * k as i32 - PAD));
+                .push((Rc::new(img), TEXT.0 - PAD, text_y + LINE * k as i32 - PAD));
         }
     }
 
@@ -806,7 +807,7 @@ impl Engine {
                     let Some(Some(img)) = images.get(part.image) else {
                         continue;
                     };
-                    let (x, y) = WINDOW;
+                    let (x, y) = (WINDOW.0, WINDOW.1 + self.screen.h as f32 - HEIGHT as f32);
                     let d = part.dst.map(|v| v as f32);
                     out.push(Draw {
                         image: img.clone(),
