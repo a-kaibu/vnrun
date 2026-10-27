@@ -322,9 +322,9 @@ s2014_cube_koikano	タイトル	d2edfde でクリック 3〜4 回の後タイト
 s2021_nanawind_kanade_gram_ch1	タイトル	2026-10-27: EXE の bres リソースから cxdec を自動準備。data.xp3 の保護対象1,955ファイルが一致。PIMG の表示状態を初期化し、背景・キャラクター・メニュー・花びらを表示
 s2010_akabeesoft_lavender	タイトル	2026-10-26: 体験版の cxdec を自動検出。保護対象6,030ファイルの Adler-32 が一致
 s2021_akabeesoft2_roleplayer	タイトル	0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 6,195 ファイルの Adler-32 一致
-s2017_nanawind_alice_gram	本編	a29c215 で STORY から本編テキストまで
+s2017_nanawind_alice_gram	NG	e2e9bbf で「エンジンを読み込み中」のまま進まない (吉里吉里の出力なし、単独実行でも再現)。a29c215 では本編まで
 s2022_mille_feuille_excelchiffon	タイトル	b9e72ec でタイトル画面まで表示 (ウィンドウより大きいレイヤの修正)
-s2012_ninetail_gears_of_dragoon	タイトル	d084599 (setLayerPos) でタイトル画面まで表示
+s2012_ninetail_gears_of_dragoon	NG	e2e9bbf で data.xp3 を開けず startup.tjs で Read error。d084599 ではタイトルまで
 b2013_ensemble	本編	14cde42 で START から本編テキストまで (START 後しばらく白画面)
 s2013_guilty_yobai	本編	71cd396 で START から「誰の所へ行きますか？」のマップ選択まで (背景も表示)
 dl_VJ01004836	本編	b076f1f で START から本編テキストまで
