@@ -171,7 +171,14 @@ fn decode_x(b: &[u8]) -> Result<Image, String> {
         })
         .map(|bgr| {
             bgr.chunks(3)
-                .flat_map(|c| [c[0], c.get(1).copied().unwrap_or(0), c.get(2).copied().unwrap_or(0), 0])
+                .flat_map(|c| {
+                    [
+                        c[0],
+                        c.get(1).copied().unwrap_or(0),
+                        c.get(2).copied().unwrap_or(0),
+                        0,
+                    ]
+                })
                 .collect()
         })
         .unwrap_or_default();
@@ -267,8 +274,7 @@ fn paint(
         img.into_raw()
     } else {
         let raw = if info.comp == Some(0) {
-            miniz_oxide::inflate::decompress_to_vec_zlib(px)
-                .map_err(|e| format!("gal: {e:?}"))?
+            miniz_oxide::inflate::decompress_to_vec_zlib(px).map_err(|e| format!("gal: {e:?}"))?
         } else {
             px.to_vec()
         };

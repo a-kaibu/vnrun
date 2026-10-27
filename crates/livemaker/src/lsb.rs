@@ -334,7 +334,11 @@ fn read_command(r: &mut Reader, v: u32, props: &[Vec<u8>]) -> Result<Command, St
     let _not_update = r.u8()?;
     let line = r.u32()?;
     let opt = |r: &mut Reader, present: bool| -> Result<Expr, String> {
-        if present { r.expr() } else { Ok(Expr::default()) }
+        if present {
+            r.expr()
+        } else {
+            Ok(Expr::default())
+        }
     };
     let cmd = match kind {
         0x00 => Cmd::If(r.expr()?),
@@ -609,7 +613,10 @@ impl fmt::Display for LabelRef {
 }
 
 fn list(v: &[Expr]) -> String {
-    v.iter().map(|e| e.to_string()).collect::<Vec<_>>().join(", ")
+    v.iter()
+        .map(|e| e.to_string())
+        .collect::<Vec<_>>()
+        .join(", ")
 }
 
 impl fmt::Display for Cmd {

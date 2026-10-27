@@ -3,9 +3,12 @@
 //! and the project settings (live.lpb).
 
 pub mod archive;
+pub mod compo;
+pub mod engine;
 pub mod gal;
 pub mod lsb;
 pub mod names;
-pub mod tpword;
+pub mod project;
 pub mod text;
+pub mod tpword;
 pub mod value;

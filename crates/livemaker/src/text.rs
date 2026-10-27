@@ -16,6 +16,12 @@ pub fn rgb(c: i64) -> [u8; 3] {
     [c as u8, (c >> 8) as u8, (c >> 16) as u8]
 }
 
+impl Default for Fonts {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Fonts {
     pub fn new() -> Fonts {
         Fonts {
@@ -56,6 +62,7 @@ impl Fonts {
     }
 
     /// Draws `c` with its cell's top left at (x, y).
+    #[allow(clippy::too_many_arguments)]
     pub fn draw(
         &mut self,
         out: &mut Image,
