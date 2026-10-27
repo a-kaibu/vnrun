@@ -99,6 +99,20 @@ impl Game {
                 &JsValue::from_f64(sound.volume as f64),
             )
             .unwrap();
+            Reflect::set(&event, &"bgm".into(), &JsValue::from_bool(sound.bgm)).unwrap();
+            Reflect::set(&event, &"stop".into(), &JsValue::from_bool(sound.stop)).unwrap();
+            Reflect::set(
+                &event,
+                &"fadeMs".into(),
+                &JsValue::from_f64(sound.fade_ms as f64),
+            )
+            .unwrap();
+            Reflect::set(
+                &event,
+                &"loopStart".into(),
+                &JsValue::from_f64(sound.loop_start as f64),
+            )
+            .unwrap();
             out.push(&event);
         }
         out

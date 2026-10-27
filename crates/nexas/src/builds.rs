@@ -64,6 +64,8 @@ static B2010_BUILD: Build = Build {
         (0x136, 0x159, 6),
         (0x13e, 0x162, 5),
         (0x141, 0x165, 2),
+        (0x175, 0xff01, 5),
+        (0x177, 0xff02, 2),
         (0x181, 0xff00, 5),
     ],
     old_ops: true,

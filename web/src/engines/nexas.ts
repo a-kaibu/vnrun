@@ -14,7 +14,16 @@ interface Game {
   click(x: number, y: number): void;
   draws(): Float32Array;
   texture(id: number): Uint8Array;
-  sounds(): { data: Uint8Array; volume: number }[];
+  sounds(): Sound[];
+}
+
+interface Sound {
+  data: Uint8Array;
+  volume: number;
+  bgm: boolean;
+  stop: boolean;
+  fadeMs: number;
+  loopStart: number;
 }
 
 interface NexasModule {
@@ -45,6 +54,41 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
   const game = new nexas.Game(fonts[0] ?? new Uint8Array());
   const compositor = new Compositor(presenter.device, game.width(), game.height());
   const audio = new AudioContext();
+  let bgm: { source: AudioBufferSourceNode; gain: GainNode; started: boolean } | undefined;
+  const stopBgm = (fadeMs: number) => {
+    const previous = bgm;
+    bgm = undefined;
+    if (!previous?.started) return;
+    const now = audio.currentTime;
+    previous.gain.gain.cancelScheduledValues(now);
+    previous.gain.gain.setValueAtTime(previous.gain.gain.value, now);
+    previous.gain.gain.linearRampToValueAtTime(0, now + fadeMs / 1000);
+    previous.source.stop(now + fadeMs / 1000);
+  };
+  const playSound = (sound: Sound) => {
+    if (sound.bgm) stopBgm(sound.stop ? sound.fadeMs : 0);
+    if (sound.stop) return;
+    const source = audio.createBufferSource();
+    const gain = audio.createGain();
+    const pending = { source, gain, started: false };
+    if (sound.bgm) bgm = pending;
+    void audio
+      .decodeAudioData(sound.data.slice().buffer)
+      .then((buffer) => {
+        if (sound.bgm && bgm !== pending) return;
+        source.buffer = buffer;
+        source.loop = sound.bgm;
+        if (sound.bgm && sound.loopStart / buffer.sampleRate < buffer.duration)
+          source.loopStart = sound.loopStart / buffer.sampleRate;
+        const now = audio.currentTime;
+        gain.gain.setValueAtTime(sound.fadeMs ? 0 : sound.volume, now);
+        if (sound.fadeMs) gain.gain.linearRampToValueAtTime(sound.volume, now + sound.fadeMs / 1000);
+        source.connect(gain).connect(audio.destination);
+        source.start();
+        pending.started = true;
+      })
+      .catch((error: unknown) => console.warn("NeXAS sound:", error));
+  };
   const resumeAudio = () => void audio.resume();
   window.addEventListener("pointerdown", resumeAudio, { once: true });
   window.addEventListener("keydown", resumeAudio, { once: true });
@@ -73,19 +117,7 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
       let ran = false;
       while (frames * step <= now) {
         game.frame();
-        for (const sound of game.sounds()) {
-          void audio
-            .decodeAudioData(sound.data.slice().buffer)
-            .then((buffer) => {
-              const source = audio.createBufferSource();
-              const gain = audio.createGain();
-              source.buffer = buffer;
-              gain.gain.value = sound.volume;
-              source.connect(gain).connect(audio.destination);
-              source.start();
-            })
-            .catch((error: unknown) => console.warn("NeXAS sound:", error));
-        }
+        for (const sound of game.sounds()) playSound(sound);
         frames += 1;
         ran = true;
       }

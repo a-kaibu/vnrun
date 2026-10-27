@@ -24,6 +24,10 @@ pub const HEIGHT: u32 = 720;
 pub struct Sound {
     pub data: Vec<u8>,
     pub volume: f32,
+    pub bgm: bool,
+    pub stop: bool,
+    pub fade_ms: u32,
+    pub loop_start: u32,
 }
 
 fn screen_size(rows: &[Vec<Cell>]) -> (u32, u32) {
@@ -250,6 +254,8 @@ pub struct Engine {
     stands: Vec<Vec<Cell>>,
     /// Event.dat: the story's scenes (row: type, title, ?, ?, file, bank, ...)
     events: Vec<Vec<Cell>>,
+    bgm: Vec<Vec<Cell>>,
+    current_bgm: Option<usize>,
     images: HashMap<String, Rc<Image>>,
     spms: HashMap<String, Rc<Spm>>,
     fonts: HashMap<String, Option<Rc<Font>>>,
@@ -321,6 +327,10 @@ impl Engine {
             .map(|b| dat::parse(&b))
             .transpose()?
             .unwrap_or_default();
+        let bgm = arcs
+            .read(files.as_mut(), "Config", "BGM.dat")
+            .and_then(|b| dat::parse(&b).ok())
+            .unwrap_or_default();
         let (width, height) = arcs
             .read(files.as_mut(), "Config", "System.dat")
             .and_then(|b| dat::parse(&b).ok())
@@ -346,6 +356,8 @@ impl Engine {
             visuals,
             stands,
             events,
+            bgm,
+            current_bgm: None,
             images: HashMap::new(),
             spms: HashMap::new(),
             fonts: HashMap::new(),
@@ -990,9 +1002,50 @@ impl Host for Engine {
                         self.sounds.push(Sound {
                             data,
                             volume: a(1).clamp(0, 100) as f32 / 100.0,
+                            bgm: false,
+                            stop: false,
+                            fade_ms: 0,
+                            loop_start: 0,
                         });
                     }
                 }
+            }
+            // 2010 build: BGM table row, fade time, ..., volume, ...
+            0xff01 => {
+                let track = usize::try_from(a(0)).ok();
+                if track.is_some() && self.current_bgm == track {
+                    return Ok((Value::Int(out), flow));
+                }
+                if let Some(row) = track.and_then(|n| self.bgm.get(n)) {
+                    let name = row.first().map_or("", Cell::str);
+                    let loop_start = row.get(2).map_or(0, Cell::int).max(0) as u32;
+                    let data = ["", ".ogg", ".wav"].iter().find_map(|ext| {
+                        self.arcs
+                            .read(self.files.as_mut(), "Bgm", &format!("{name}{ext}"))
+                    });
+                    if let Some(data) = data {
+                        self.current_bgm = track;
+                        self.sounds.push(Sound {
+                            data,
+                            volume: a(3).clamp(0, 100) as f32 / 100.0,
+                            bgm: true,
+                            stop: false,
+                            fade_ms: (a(1) as u32 & 0xffff) * 10,
+                            loop_start,
+                        });
+                    }
+                }
+            }
+            0xff02 => {
+                self.current_bgm = None;
+                self.sounds.push(Sound {
+                    data: Vec::new(),
+                    volume: 0.0,
+                    bgm: true,
+                    stop: true,
+                    fade_ms: (a(0) as u32 & 0xffff) * 10,
+                    loop_start: 0,
+                });
             }
             // random number below n
             0x4 => out = self.random(a(0)),
