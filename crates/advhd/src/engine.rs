@@ -382,9 +382,11 @@ impl Engine {
         }
         for (x, y, right) in std::mem::take(&mut self.clicks) {
             let paused = self.st.borrow().paused;
+            let mut hit = false;
             if x >= 0.0 {
                 self.st.borrow_mut().cursor = (x, y);
                 let a = self.mouse_args(x, y);
+                hit = !a[1].is_nil();
                 if self.trace {
                     eprintln!("click {x},{y}: {:?}", &a[..3]);
                 }
@@ -397,7 +399,7 @@ impl Engine {
                     self.call("onLButtonUp", a);
                 }
             }
-            if paused || right {
+            if paused || right || hit {
                 continue;
             }
             match self.wait {
