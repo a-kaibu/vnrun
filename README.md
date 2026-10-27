@@ -52,6 +52,14 @@ cargo run --release -p vnrun-devserver -- --game ~/games/シオンの血族_体�
 
 `vnrun-devserver --game` は、配信を始める前に SDRS の展開、EXE 内蔵 cxdec のパラメーター抽出、Siglus の二次鍵の前処理を自動で行う。前処理が失敗した場合はエラーで止まり、配信しない。
 
+複数の作品を一覧から開く場合は、作品ごとのフォルダをまとめたディレクトリを指定する。
+
+```sh
+cargo run --release -p vnrun-devserver -- --library ~/games
+```
+
+一覧の更新時に追加された作品を検出し、同じ前処理を行う。作品ごとのセーブは `saves/<フォルダ名>/` に分けて保存される。前処理やエンジンの検出に失敗した作品は一覧にエラーが表示される。
+
 SiglusEngine の作品には暗号の二次鍵が要るものがある (体験版でも)。必要ならゲームのフォルダに `key.toml` を作る。サーバーを起動せずに前処理だけを行う場合は `vnrun-prep` を使う。
 
 ```bash

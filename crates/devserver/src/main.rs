@@ -519,7 +519,10 @@ fn handle(cfg: &Config, req: Request) {
             };
         }
         if url == "/" {
-            return status(req, 200, "Library: GET /api/games");
+            let resp = Response::empty(StatusCode(303))
+                .with_header(Header::from_bytes("Location", "/library.html").unwrap());
+            let _ = req.respond(resp);
+            return;
         }
         if url == "/game" || url.starts_with("/game/") {
             return status(req, 404, "not found");
