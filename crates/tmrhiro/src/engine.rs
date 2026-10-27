@@ -19,6 +19,7 @@ use crate::pac::Index;
 use crate::save::{SaveData, SavedChara};
 use crate::script::{Command, OLD, Script};
 
+mod backlog;
 mod old;
 
 /// A sound to start or stop.
@@ -173,6 +174,8 @@ pub struct Engine {
     voice: String,
     resume_pc: usize,
     menu: Option<Menu>,
+    backlog: Vec<backlog::LogLine>,
+    log_view: Option<backlog::LogView>,
     /// the message window is put away (right click or its close button)
     hidden: bool,
     auto: bool,
@@ -186,6 +189,8 @@ pub struct Engine {
     /// the sprite slots (picture layers 5 and up)
     chars: Vec<Option<Chara>>,
     flash: Option<Flash>,
+    /// when the screen started shaking
+    shake: Option<u64>,
     fade: Option<Fade>,
     window: bool,
     name: String,
@@ -202,6 +207,7 @@ pub struct Engine {
 }
 
 const MS_PER_FRAME: u64 = 1000 / 60;
+const SHAKE_MS: u64 = 340;
 
 impl Engine {
     pub fn new(mut files: Box<dyn Files>) -> Result<Engine, String> {
@@ -253,6 +259,8 @@ impl Engine {
             voice: String::new(),
             resume_pc: 0,
             menu: None,
+            backlog: Vec::new(),
+            log_view: None,
             hidden: false,
             auto: false,
             skip: false,
@@ -262,6 +270,7 @@ impl Engine {
             pan: None,
             chars: (0..10).map(|_| None).collect(),
             flash: None,
+            shake: None,
             fade: None,
             window: false,
             name: String::new(),
@@ -444,6 +453,10 @@ impl Engine {
             self.menu_click(x, y);
             return;
         }
+        if self.log_open() {
+            self.log_click(x, y);
+            return;
+        }
         if self.fade.take().is_some() {
             return;
         }
@@ -492,7 +505,7 @@ impl Engine {
     /// A right click: closes the save or load screen, or puts the message window away (games
     /// without window buttons open the save screen instead).
     pub fn cancel(&mut self) {
-        if self.menu.take().is_some() {
+        if self.menu.take().is_some() || self.log_view.take().is_some() {
             return;
         }
         if !matches!(self.wait, Wait::Click | Wait::Choice(_)) {
@@ -534,7 +547,7 @@ impl Engine {
     /// Runs one frame: commands until one waits.
     pub fn frame(&mut self) -> Result<(), String> {
         self.now += MS_PER_FRAME;
-        if self.menu.is_some() {
+        if self.menu.is_some() || self.log_open() {
             return Ok(());
         }
         if let Wait::Click = self.wait {
@@ -777,6 +790,7 @@ impl Engine {
                 let at = at.unwrap_or_else(|| self.slot_pos(slot));
                 self.set_chara(slot, &c.str(3), at, at, 0, None);
             }
+            (0x20, 0x19a) => self.shake = Some(self.now),
             (0x20, 0x190) | (0x20, 0x191) => {
                 // [r g b 0][in][hold][out ms]
                 let mut img = Image::new(self.screen.0, self.screen.1);
@@ -1022,6 +1036,7 @@ impl Engine {
                     self.play(&["vic"], &v, None, true);
                 }
             }
+            "BACKLOG" => self.open_log(),
             "SAVE" => self.open_menu(true),
             "LOAD" => self.open_menu(false),
             "QSAVE" => {
@@ -1131,6 +1146,14 @@ impl Engine {
         ([w - w / 5 - 16, h - h / 12 - 8, w / 5, h / 12], None)
     }
 
+    /// The plain and lit pictures of the whole screen (the older games; our own ini key).
+    fn menu_images(&self) -> Option<(String, String)> {
+        let p = self.menu_section();
+        let v = self.ini.get(&format!("{p}/{p}_IMAGES"))?;
+        let (a, b) = v.split_once(',')?;
+        Some((a.trim().to_string(), b.trim().to_string()))
+    }
+
     fn menu_pages(&self) -> Vec<([i32; 4], [i32; 2])> {
         let p = self.menu_section();
         let v = self.ini.ints(&format!("{p}/{p}_PAGE_POS"));
@@ -1203,7 +1226,7 @@ impl Engine {
         let Some(save) = self.menu.as_ref().map(|m| m.save) else {
             return;
         };
-        if inside(self.menu_button("RETURN_POS").0, x, y) {
+        if self.menu_images().is_none() && inside(self.menu_button("RETURN_POS").0, x, y) {
             self.menu = None;
             return;
         }
@@ -1321,6 +1344,8 @@ impl Engine {
         self.overlay.clear();
         self.fade = None;
         self.flash = None;
+        self.shake = None;
+        self.log_view = None;
         self.window = false;
         self.hidden = false;
         self.auto = false;
@@ -1339,7 +1364,8 @@ impl Engine {
         self.jump_file("start");
     }
 
-    fn play(&mut self, kinds: &[&str], name: &str, channel: Option<i32>, voice: bool) {
+    /// Plays a sound; false if the game does not have it.
+    fn play(&mut self, kinds: &[&str], name: &str, channel: Option<i32>, voice: bool) -> bool {
         if let Some(data) = self.find(kinds, name) {
             let (data, _) = music(data);
             self.sounds.push(Sound {
@@ -1352,8 +1378,12 @@ impl Engine {
                 fade_ms: 0,
                 loop_start: 0,
             });
-        } else if self.log {
-            eprintln!("tmrhiro: no sound {name}");
+            true
+        } else {
+            if self.log {
+                eprintln!("tmrhiro: no sound {name}");
+            }
+            false
         }
     }
 
@@ -1377,17 +1407,19 @@ impl Engine {
 
     /// Shows a line in the window (playing its voice) and waits for a click.
     fn say_line(&mut self, name: Option<&str>, text: &str, voice: Option<&str>) {
+        self.voice.clear();
         if let Some(v) = voice {
             let v = v.trim().to_string();
-            self.play(&["vic"], &v, None, true);
-            self.voice = v;
-        } else {
-            self.voice.clear();
+            if self.play(&["vic"], &v, None, true) {
+                self.voice = v;
+            }
         }
         self.resume_pc = self.pc - 1;
         self.said_at = self.now;
         self.name = name.map(|n| self.names(n)).unwrap_or_default();
         self.text = self.names(text);
+        let (name, text, voice) = (self.name.clone(), self.text.clone(), self.voice.clone());
+        self.log_line(&name, &text, &voice);
         self.window = true;
         self.text_images.clear();
         self.wait = Wait::Click;
@@ -1458,6 +1490,23 @@ impl Engine {
         for pic in &self.overlay {
             out.push(draw(&pic.image, pic.x, pic.y, 1.0, [0.0, 0.0, w, h]));
         }
+        // a shake moves everything to and fro, less and less, for a third of a second
+        if let Some(start) = self.shake {
+            let t = self.now.saturating_sub(start);
+            if t < SHAKE_MS {
+                let k = (t / MS_PER_FRAME) as f32;
+                let fall = 1.0 - t as f32 / SHAKE_MS as f32;
+                let (dx, dy) = ((k * 2.1).sin() * 24.0 * fall, (k * 1.7).cos() * 20.0 * fall);
+                for d in &mut out {
+                    d.dst[0] += dx;
+                    d.dst[2] += dx;
+                    d.dst[1] += dy;
+                    d.dst[3] += dy;
+                    d.place.x += dx;
+                    d.place.y += dy;
+                }
+            }
+        }
         if let Some(f) = &self.flash {
             let t = self.now.saturating_sub(f.start) as f32;
             let [a, b, c] = f.ms.map(|v| v as f32);
@@ -1493,6 +1542,10 @@ impl Engine {
                 }
             }
             None => out.extend(self.scene_draws()),
+        }
+        if self.log_open() {
+            self.log_draws(&mut out);
+            return out;
         }
         if let Wait::Buttons = self.wait {
             let (normal, over) = self.button_images.clone();
@@ -1595,7 +1648,13 @@ impl Engine {
         };
         let (w, h) = (self.screen.0 as f32, self.screen.1 as f32);
         let kind = if save { "save" } else { "load" };
-        match self.image(&format!("sys_{kind}_base")) {
+        // the older games draw the whole screen twice, plain and lit
+        let images = self.menu_images();
+        let base_name = images
+            .as_ref()
+            .map_or(format!("sys_{kind}_base"), |i| i.0.clone());
+        let lit = images.and_then(|i| self.image(&i.1));
+        match self.image(&base_name) {
             Some(g) => out.push(draw(
                 &g.image,
                 g.x as f32,
@@ -1619,6 +1678,19 @@ impl Engine {
             } else {
                 0
             };
+            if let Some(g) = &lit {
+                if state > 0 {
+                    let mut d = draw(&g.image, g.x as f32, g.y as f32, 1.0, [0.0, 0.0, w, h]);
+                    d.place.clip = [
+                        r[0] as f32,
+                        r[1] as f32,
+                        (r[0] + r[2]) as f32,
+                        (r[1] + r[3]) as f32,
+                    ];
+                    out.push(d);
+                }
+                return;
+            }
             match (&buttons, src) {
                 (Some(g), Some(s)) => {
                     let src = [s[0] - g.x, s[1] + state * r[3] - g.y, r[2], r[3]];
@@ -1670,6 +1742,9 @@ impl Engine {
         }
         for (k, (r, src)) in self.menu_pages().into_iter().enumerate() {
             sheet(out, r, Some(src), k == page);
+        }
+        if self.menu_images().is_some() {
+            return;
         }
         let (r, src) = self.menu_button("RETURN_POS");
         sheet(out, r, src, false);

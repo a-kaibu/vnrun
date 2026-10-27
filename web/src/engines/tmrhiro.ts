@@ -13,6 +13,7 @@ interface Game {
   ended(): boolean;
   click(x: number, y: number): void;
   cancel(): void;
+  wheel(up: boolean): void;
   point(x: number, y: number): void;
   draws(): Float32Array;
   texture(id: number): Uint8Array;
@@ -136,10 +137,23 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
   });
   canvas.addEventListener("pointermove", (event) => game.point(...presenter.toFrame(event)));
   canvas.addEventListener("contextmenu", (event) => event.preventDefault());
+  canvas.addEventListener(
+    "wheel",
+    (event) => {
+      event.preventDefault();
+      if (event.deltaY !== 0) game.wheel(event.deltaY < 0);
+    },
+    { passive: false },
+  );
   canvas.addEventListener("keydown", (event) => {
     if (event.code === "Escape") {
       event.preventDefault();
       game.cancel();
+      return;
+    }
+    if (event.code === "ArrowUp" || event.code === "ArrowDown") {
+      event.preventDefault();
+      game.wheel(event.code === "ArrowUp");
       return;
     }
     if (event.code !== "Enter" && event.code !== "Space") return;

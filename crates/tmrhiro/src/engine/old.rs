@@ -41,6 +41,9 @@ const MAP_ICONS: [[i32; 5]; 15] = [
     [896, 0, 64, 64, 32],
 ];
 
+/// Where the slots of 0x46 put a character (from the middle).
+const OLD_SLOT_X: [f32; 5] = [0.0, 0.0, -200.0, 200.0, 0.0];
+
 /// Hex digits from `at`, `n` of them.
 fn hex(c: &Command, at: usize, n: usize) -> i32 {
     let b = c.args.get(at..at + n).unwrap_or(&[]);
@@ -71,6 +74,31 @@ SELECT_HEIGHT=40
 SELECT_POSY=180
 SELECT_NEXT_Y=24
 SELECT_TEXT_FONT_SIZE=22
+[SAVE]
+SAVE_BASE_POS=12,110,0,0,384,88,10,5,2,0,96,0,0,392,0
+SAVE_PAGE_POS=460,66,0,0,30,32,10,0,0,32,0,0,0
+SAVE_B_THUM_POS=16,8
+SAVE_B_TEXT_POS=118,12,18
+SAVE_IMAGES=sys_save01,sys_save02
+[LOAD]
+LOAD_BASE_POS=12,110,0,0,384,88,10,5,2,0,96,0,0,392,0
+LOAD_PAGE_POS=460,66,0,0,30,32,10,0,0,32,0,0,0
+LOAD_B_THUM_POS=16,8
+LOAD_B_TEXT_POS=118,12,18
+LOAD_IMAGES=sys_load01,sys_load02
+[SAVE]
+SAVE_THUM_SIZE=94,70
+[BACKLOG]
+BACKLOG_IMAGES=sys_backlog,sys_backlogbutton
+BACKLOG_MAX=5
+BACKLOG_FONT_SIZE=20
+BACKLOG_NEXT_LINE=26
+BACKLOG_POS_X=110
+BACKLOG_POS_Y=64
+BACKLOG_NEXT_Y=108
+BACKLOG_NAME_X=0
+BACKLOG_NAME_Y=-26
+BACKLOG_VOICE=400,-28,0,0,198,24
 ";
 
 /// The hero's default names (as ＄α, ＄β and ＄γ) from the game's program, where they sit just
@@ -338,6 +366,34 @@ impl Engine {
                     }
                 }
             }
+            // one character: [effect][slot 1-4] name ("null": none); slots 2 and 3 stand left and
+            // right
+            0x46 => {
+                self.old_fade(c.u8(0));
+                let slot = c.u8(1) as usize;
+                let name = c.str(2);
+                if slot < self.chars.len() {
+                    if name == "null" {
+                        self.chars[slot] = None;
+                    } else {
+                        let at = (OLD_SLOT_X[slot.min(4)], 0.0);
+                        self.set_chara(slot, &name, at, at, 0, None);
+                    }
+                }
+            }
+            // a picture coming in: [effect][slot][?][?] ms (hex 4) then x0 y0 x1 y1 (hex 3, plus
+            // 1000) and four more numbers, then the name; it slides and fades in
+            0x4c => {
+                self.old_fade(c.u8(0));
+                let slot = c.u8(1) as usize;
+                let ms = hex(c, 4, 4) as u64;
+                let p = |k: usize| (hex(c, 8 + k * 3, 3) - 1000) as f32;
+                let name = c.str(8 + 8 * 3);
+                if slot < self.chars.len() {
+                    self.set_chara(slot, &name, (p(0), p(1)), (p(2), p(3)), ms, Some(true));
+                }
+            }
+            0x5c => self.shake = Some(self.now),
             // a picture over the characters: "001"[1 hide / 2 show] name
             0x55 => {
                 if c.bytes(0).starts_with(b"001") {
@@ -417,7 +473,7 @@ impl Engine {
                 }
             }
             // a wait (hex ms; a click ends it)
-            0x96 => self.wait = Wait::Until(self.now + hex(c, 0, 8) as u64),
+            0x96..=0x98 => self.wait = Wait::Until(self.now + hex(c, 0, 8) as u64),
             0xa1 => self.title = s,
             0xa3 => self.wait = Wait::Ended,
             0xa4 => self.open_menu(true),

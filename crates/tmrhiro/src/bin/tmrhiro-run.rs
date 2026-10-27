@@ -3,7 +3,8 @@
 //!     tmrhiro-run <game folder> <frames> <out prefix> [frame[:x:y] ...]
 //!
 //! Each `frame` is saved as `<out prefix><frame>.png`; with `:x:y`, there is also a click there
-//! on that frame (`:x:y:r` a right click, `:x:y:m` only moves the pointer there). The last
+//! on that frame (`:x:y:r` a right click, `:x:y:m` only moves the pointer there, `:x:y:u` and `:x:y:d` turn
+//! the wheel up and down). The last
 //! frame is always saved. TMRHIRO_FONT names a TrueType font for text, TMRHIRO_TRACE=1 prints
 //! each command and TMRHIRO_START=<script> starts at that script.
 
@@ -59,6 +60,8 @@ fn main() -> Result<(), String> {
                 match kind {
                     'r' => e.cancel(),
                     'm' => {}
+                    'u' => e.wheel(true),
+                    'd' => e.wheel(false),
                     _ => e.click(*x, *y),
                 }
             }

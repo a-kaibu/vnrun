@@ -145,6 +145,11 @@ impl Game {
         self.e.cancel();
     }
 
+    /// The wheel: up opens the backlog and goes back, down goes forward.
+    pub fn wheel(&mut self, up: bool) {
+        self.e.wheel(up);
+    }
+
     /// The pictures to draw over black, bottom first, DRAW_FIELDS numbers each: picture,
     /// its width and height, the screen positions of its top left, top right, bottom left and
     /// bottom right corners (x y each), the part of the picture (x0 y0 x1 y1), opacity (0..1),
