@@ -37,7 +37,24 @@ fn screen_size(rows: &[Vec<Cell>]) -> (u32, u32) {
         return (WIDTH, HEIGHT);
     };
     let Some(marker) = row.iter().position(|cell| matches!(cell, Cell::Str(s) if s.len() == 20 && s.bytes().all(|b| b.is_ascii_digit()))) else {
-        return (WIDTH, HEIGHT);
+        // 2009: no marker; the first pair of integers that is a usual screen size
+        const SIZES: [(i32, i32); 6] = [
+            (640, 480),
+            (800, 600),
+            (1024, 600),
+            (1024, 768),
+            (1280, 720),
+            (1920, 1080),
+        ];
+        return row
+            .windows(2)
+            .find_map(|w| match w {
+                [Cell::Int(a), Cell::Int(b)] if SIZES.contains(&(*a, *b)) => {
+                    Some((*a as u32, *b as u32))
+                }
+                _ => None,
+            })
+            .unwrap_or((WIDTH, HEIGHT));
     };
     match (row.get(marker + 2), row.get(marker + 3)) {
         (Some(Cell::Int(w @ 320..=4096)), Some(Cell::Int(h @ 240..=2160))) => {

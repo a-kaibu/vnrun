@@ -79,6 +79,41 @@ static B2010_BUILD: Build = Build {
     old_ops: true,
 };
 
+// キュアフル！ (2009): the cases of the 2010 table matched by handler body (nxbest.py).
+static B2009_BUILD: Build = Build {
+    name: "2009 (キュアフル！)",
+    rows: &[
+        (0x00, 0x00, 1),
+        (0x0a, 0x02, 1),
+        (0x0f, 0x05, 2),
+        (0x44, 0x137, 9),
+        (0x45, 0x138, 6),
+        (0x4e, 0x143, 2),
+        (0x4f, 0x144, 6),
+        (0x53, 0x148, 6),
+        (0x55, 0x14a, 5),
+        (0x64, 0x159, 6),
+        (0x6c, 0x162, 5),
+        (0x6e, 0x165, 2),
+        (0xab, 0x62, 5),
+        (0xae, 0x78, 5),
+        (0xc0, 0x8a, 2),
+        (0x159, 0x67, 4),
+        (0x16a, 0x45, 10),
+        (0x16b, 0x46, 9),
+        (0x16c, 0x47, 9),
+        (0x16d, 0x48, 10),
+        (0x16e, 0x49, 9),
+        (0x16f, 0x4a, 0),
+        (0x174, 0xff00, 5),
+        (0x175, 0xff03, 6),
+        (0x177, 0xff04, 3),
+        (0x17e, 0xff01, 5),
+        (0x182, 0xff02, 2),
+    ],
+    old_ops: true,
+};
+
 impl Build {
     fn row(&self, id: u32) -> Option<&(u16, u16, u8)> {
         let i = self
@@ -121,6 +156,15 @@ impl Build {
                 .any(|i| i.op == 7 && i.arg == (10 << 16 | 0x39))
         {
             return &B2010_BUILD;
+        }
+        if script.legacy
+            && script
+                .main
+                .code
+                .iter()
+                .any(|i| i.op == 7 && i.arg == (10 << 16 | 0x16a))
+        {
+            return &B2009_BUILD;
         }
         let mut calls = Vec::new();
         let mut collect = |b: &Block| {
@@ -166,6 +210,20 @@ mod tests {
         assert_eq!(build.canonical(0x122), 0xffff);
         script.legacy = false;
         assert_ne!(Build::detect(&script).name, B2010_BUILD.name);
+    }
+
+    #[test]
+    fn identifies_the_2009_build_by_its_scene_call() {
+        let mut script = Script::default();
+        script.legacy = true;
+        script.main.code.push(Ins {
+            op: 7,
+            arg: (10 << 16) | 0x16a,
+        });
+        let build = Build::detect(&script);
+        assert_eq!(build.name, B2009_BUILD.name);
+        assert_eq!(build.canonical(0x44), 0x137);
+        assert_eq!(build.canonical(0x159), 0x67);
     }
 }
 
