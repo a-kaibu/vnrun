@@ -34,6 +34,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 - Softpal: 2017 年以降の作品はほぼタイトルまで出る。エレクトリップの一部は「script stack underflow」、2011〜2012 年の作品は最初の `sp_set_ex` で止まる。
 - NScripter: PONScripter (うみねこ咲) は台本の形式が違って読めない。ナルキッソス 2nd・トライアンソロジーはタイトルまで (後者は anm.dll などのレイヤ効果が未実装で背景が出ない)。
 - RealLive: `fonts/` が無いと文章の窓が空になる。
+- EntisGLS: 5 本中 4 本 (Cotopha の .csx を持つ 2007〜2010 年の作品) は本編の文章まで。狙われた優等生 (2024) は .csx が無く、システムが exe に組み込まれ台本が xscript (`.srcxml`) の新しい世代なので NG。
 
 ## 結果
 
@@ -52,8 +53,9 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | NeXAS (vnrun) | 16 | 6 | 1 |  | 1 | 7 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
 | Tmr-Hiro (vnrun) | 22 | 22 |  |  |  |  |  |  |
-| LiveMaker (vnrun) | 4 | 1 | 3 |  |  |  |  |  |
+| LiveMaker (vnrun) | 4 | 4 |  |  |  |  |  |  |
 | CatSystem2 (vnrun) | 3 | 3 |  |  |  |  |  |  |
+| EntisGLS (vnrun) | 5 | 4 |  |  |  | 1 |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -471,10 +473,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| dl_RJ125204 | [保健室の女神 体験版](https://trial.dlsite.com/doujin/RJ126000/RJ125204_trial.zip) | 本編 | タイトル (バイナリ .lpm のメニュー)→初めから→本編の文章まで (livemaker-run) |
 | dl_RJ129271 | [とししたハニー 体験版](https://trial.dlsite.com/doujin/RJ130000/RJ129271_trial.zip) | 本編 | タイトル→はじめから→名前入力→選択肢→本編の文章まで (livemaker-run とブラウザ) |
-| dl_RJ125204 | [保健室の女神 体験版](https://trial.dlsite.com/doujin/RJ126000/RJ125204_trial.zip) | タイトル | f1a4850 (LiveMaker) でタイトル画面まで表示 (Chromium)。START からの確認はこれから |
-| dl_RJ284038 | [彼女と俺と留学生 体験版](https://trial.dlsite.com/doujin/RJ285000/RJ284038_trial.zip) | タイトル | f1a4850 (LiveMaker) で「はじめから / 終了」の文字だけのメニューまで (Chromium)。体験版本来の画面か要確認 |
-| dl_RJ341209 | [スタイホリック 体験版](https://trial.dlsite.com/doujin/RJ342000/RJ341209_trial.zip) | タイトル | f1a4850 (LiveMaker) でタイトル画面まで表示 (Chromium)。START からの確認はこれから |
+| dl_RJ284038 | [彼女と俺と留学生 体験版](https://trial.dlsite.com/doujin/RJ285000/RJ284038_trial.zip) | 本編 | タイトル (背景つき、文字だけのメニューは体験版本来のもの)→はじめから→本編の文章まで (livemaker-run) |
+| dl_RJ341209 | [スタイホリック 体験版](https://trial.dlsite.com/doujin/RJ342000/RJ341209_trial.zip) | 本編 | タイトル→Start→名前入力 (打ち替えも可)→本編の文章まで、セーブ画面も開く (livemaker-run)。.lcm の演出 (ロゴ・タイトル前のアニメ) は未対応 |
 
 ### CatSystem2 (vnrun)
 
@@ -483,4 +485,14 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2014_azarashi_soft | [アマカノ 体験版 甘えてくれる恋人とのエッチなひととき編](http://suezou.dyndns.org/dl2014/azarashi-soft/amakano/amakano_trialH.zip) | 本編 | タイトル→はじめから (名前は既定のまま)→案内文→マップ→選んだヒロインのシーンの文章・CG まで (cs2-run とブラウザ) |
 | b2014_windmill_oasis | [春風センセーション！体験版](http://suezou.dyndns.org/dl2014/windmill-oasis/harukaze/harukaze_trial.exe) | 本編 | タイトル→START→本編の文章・立ち絵・イベント CG まで (cs2-run とブラウザ) |
 | b2017_laplacian | [ニュートンと林檎の樹 体験版＋](http://suezou.dyndns.org/dl2017/laplacian/newrin/newrin-trial-plus.zip) | 本編 | タイトル→はじめから→選択肢 (体験版本編)→本編の文章・イベント CG まで (cs2-run とブラウザ) |
+
+### EntisGLS (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2007_marmalade | [リリカル♪りりっく 体験版](http://suezou.dyndns.org/dl2007/marmalade/lyric/lyric_trial.zip) | 本編 | ロゴ→タイトル (3D の演出は描かない)→START→注意書き→本編の文章 (entis-run とブラウザ) |
+| b2009_cube | [夏ノ雨 体験版](http://suezou.dyndns.org/dl2009/cube/natsunoame/natsunoame_trial.zip) | 本編 | 注意書き→タイトル→初めから→本編の文章 (entis-run とブラウザ) |
+| b2009_marmalade | [キスと魔王と紅茶 体験版](http://suezou.dyndns.org/dl2009/marmalade/kissmao/kissmao_tr.zip) | 本編 | タイトル→はじめから→本編の文章 (entis-run とブラウザ) |
+| b2010_undermoon | [痴覚過敏 体験版](http://suezou.dyndns.org/dl2010/undermoon/tikaku/chikakukabin_trial.zip) | 本編 | ロゴ→タイトル→START→本編の文章 (entis-run とブラウザ) |
+| b2024_syrup_mm | [狙われた優等生 身代わりの代償 体験版](http://suezou.dyndns.org/dl2024/syrup-mm/yutosei/yutosei_taikenban.zip) | NG | .csx が無い新しい世代 (システムは exe 内、台本は xscript の .srcxml) |
 <!-- /matrix -->
