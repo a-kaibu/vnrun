@@ -25,6 +25,7 @@ pub struct Sound {
     pub data: Vec<u8>,
     pub volume: f32,
     pub bgm: bool,
+    pub voice: bool,
     pub stop: bool,
     pub fade_ms: u32,
     pub loop_start: u32,
@@ -48,6 +49,20 @@ fn screen_size(rows: &[Vec<Cell>]) -> (u32, u32) {
 #[cfg(test)]
 mod size_tests {
     use super::*;
+
+    #[test]
+    fn finds_complete_voice_ids_in_shift_jis_text() {
+        let text = sjis::encode("文字@v10200002「台詞」");
+        assert_eq!(message_voice(&text).as_deref(), Some("10200002"));
+        assert_eq!(message_voice(b"@v1020abc2"), None);
+        assert_eq!(message_voice(b"@v1020"), None);
+        assert_eq!(
+            message_voice(&[
+                0x81, 0x40, b'v', b'1', b'0', b'2', b'0', b'0', b'0', b'0', b'2'
+            ]),
+            None
+        );
+    }
 
     #[test]
     fn reads_size_after_system_serial_and_rejects_invalid_dimensions() {
@@ -918,6 +933,21 @@ fn char_at(s: &[u8], k: usize) -> usize {
     sjis::chars(s).iter().take(k).map(|c| c.len()).sum()
 }
 
+fn message_voice(s: &[u8]) -> Option<String> {
+    let chars = sjis::chars(s);
+    for window in chars.windows(10) {
+        if window[0] == b"@"
+            && window[1] == b"v"
+            && window[2..]
+                .iter()
+                .all(|c| c.len() == 1 && c[0].is_ascii_digit())
+        {
+            return Some(window[2..].iter().map(|c| c[0] as char).collect());
+        }
+    }
+    None
+}
+
 /// The lines of a message without its commands: `@n` new line, `@r` text `@` ruby `@` (the
 /// ruby is left out), `@g` and a character (kept), `@u` and two digits (the player's names),
 /// `@v` and eight digits (voice), `@s` and four digits, other `@` and a letter.
@@ -1003,6 +1033,7 @@ impl Host for Engine {
                             data,
                             volume: a(1).clamp(0, 100) as f32 / 100.0,
                             bgm: false,
+                            voice: false,
                             stop: false,
                             fade_ms: 0,
                             loop_start: 0,
@@ -1029,6 +1060,7 @@ impl Host for Engine {
                             data,
                             volume: a(3).clamp(0, 100) as f32 / 100.0,
                             bgm: true,
+                            voice: false,
                             stop: false,
                             fade_ms: (a(1) as u32 & 0xffff) * 10,
                             loop_start,
@@ -1042,6 +1074,7 @@ impl Host for Engine {
                     data: Vec::new(),
                     volume: 0.0,
                     bgm: true,
+                    voice: false,
                     stop: true,
                     fade_ms: (a(0) as u32 & 0xffff) * 10,
                     loop_start: 0,
@@ -1133,7 +1166,25 @@ impl Host for Engine {
                         text(args, 3)
                     );
                 }
-                self.show_message(&bytes(args, 2), &bytes(args, 3));
+                let message = bytes(args, 3);
+                let data = message_voice(&message).and_then(|id| {
+                    self.arcs
+                        .read(self.files.as_mut(), "Voice", &format!("{id}.ogg"))
+                        .or_else(|| {
+                            self.arcs
+                                .read(self.files.as_mut(), "Voice", &format!("{id}.wav"))
+                        })
+                });
+                self.sounds.push(Sound {
+                    stop: data.is_none(),
+                    data: data.unwrap_or_default(),
+                    volume: 1.0,
+                    bgm: false,
+                    voice: true,
+                    fade_ms: 0,
+                    loop_start: 0,
+                });
+                self.show_message(&bytes(args, 2), &message);
                 self.wait = Wait::Click;
                 flow = Flow::Yield;
             }

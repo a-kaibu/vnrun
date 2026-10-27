@@ -21,6 +21,7 @@ interface Sound {
   data: Uint8Array;
   volume: number;
   bgm: boolean;
+  voice: boolean;
   stop: boolean;
   fadeMs: number;
   loopStart: number;
@@ -55,6 +56,7 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
   const compositor = new Compositor(presenter.device, game.width(), game.height());
   const audio = new AudioContext();
   let bgm: { source: AudioBufferSourceNode; gain: GainNode; started: boolean } | undefined;
+  let voice: { source: AudioBufferSourceNode; gain: GainNode; started: boolean } | undefined;
   const stopBgm = (fadeMs: number) => {
     const previous = bgm;
     bgm = undefined;
@@ -67,15 +69,20 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
   };
   const playSound = (sound: Sound) => {
     if (sound.bgm) stopBgm(sound.stop ? sound.fadeMs : 0);
+    if (sound.voice) {
+      if (voice?.started) voice.source.stop();
+      voice = undefined;
+    }
     if (sound.stop) return;
     const source = audio.createBufferSource();
     const gain = audio.createGain();
     const pending = { source, gain, started: false };
     if (sound.bgm) bgm = pending;
+    if (sound.voice) voice = pending;
     void audio
       .decodeAudioData(sound.data.slice().buffer)
       .then((buffer) => {
-        if (sound.bgm && bgm !== pending) return;
+        if ((sound.bgm && bgm !== pending) || (sound.voice && voice !== pending)) return;
         source.buffer = buffer;
         source.loop = sound.bgm;
         if (sound.bgm && sound.loopStart / buffer.sampleRate < buffer.duration)
@@ -86,6 +93,9 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
         source.connect(gain).connect(audio.destination);
         source.start();
         pending.started = true;
+        source.onended = () => {
+          if (voice === pending) voice = undefined;
+        };
       })
       .catch((error: unknown) => console.warn("NeXAS sound:", error));
   };
