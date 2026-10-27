@@ -179,7 +179,14 @@ fn sysvar(ver: u32, id: u16) -> u16 {
             106..=540 => id - 28,
             _ => 10000 + id,
         },
-        // 550/551 (舞風のメルト, 竜翼のメロディア)
+        // 550 (舞風のメルト): 16 fewer below @_LC, one more gone above 60; the script variables
+        // after them move along
+        550 => match id {
+            0..=31 => id,
+            32..=60 => id + 16,
+            _ => id + 17,
+        },
+        // 551 (竜翼のメロディア)
         500..554 => match id {
             0..=75 | 526.. => id,
             89..=525 => id - 13,
@@ -199,7 +206,7 @@ fn remap_expr(ver: u32, e: &mut [u8]) {
     let mut i = 0;
     while i + 3 <= e.len() {
         let (op, n) = (e[i], u16::from_le_bytes([e[i + 1], e[i + 2]]) as usize);
-        if matches!(op, b'H' | b'V') && n == 3 && i + 6 <= e.len() && matches!(e[i + 3], b'@' | b'$') {
+        if matches!(op, b'H' | b'V' | b'v') && n == 3 && i + 6 <= e.len() && matches!(e[i + 3], b'@' | b'$') {
             let id = sysvar(ver, u16::from_le_bytes([e[i + 4], e[i + 5]]));
             e[i + 4..i + 6].copy_from_slice(&id.to_le_bytes());
         }
