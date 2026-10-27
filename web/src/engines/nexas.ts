@@ -14,6 +14,7 @@ interface Game {
   click(x: number, y: number): void;
   draws(): Float32Array;
   texture(id: number): Uint8Array;
+  sounds(): { data: Uint8Array; volume: number }[];
 }
 
 interface NexasModule {
@@ -43,6 +44,10 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
   await nexas.default();
   const game = new nexas.Game(fonts[0] ?? new Uint8Array());
   const compositor = new Compositor(presenter.device, game.width(), game.height());
+  const audio = new AudioContext();
+  const resumeAudio = () => void audio.resume();
+  window.addEventListener("pointerdown", resumeAudio, { once: true });
+  window.addEventListener("keydown", resumeAudio, { once: true });
   const { canvas } = ui;
   canvas.addEventListener("pointerdown", (event) => {
     canvas.focus();
@@ -68,6 +73,19 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
       let ran = false;
       while (frames * step <= now) {
         game.frame();
+        for (const sound of game.sounds()) {
+          void audio
+            .decodeAudioData(sound.data.slice().buffer)
+            .then((buffer) => {
+              const source = audio.createBufferSource();
+              const gain = audio.createGain();
+              source.buffer = buffer;
+              gain.gain.value = sound.volume;
+              source.connect(gain).connect(audio.destination);
+              source.start();
+            })
+            .catch((error: unknown) => console.warn("NeXAS sound:", error));
+        }
         frames += 1;
         ran = true;
       }

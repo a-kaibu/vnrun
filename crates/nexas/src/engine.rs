@@ -20,6 +20,12 @@ use crate::vm::{Flow, Globals, Host, Step, Thread, Value};
 pub const WIDTH: u32 = 1280;
 pub const HEIGHT: u32 = 720;
 
+/// Encoded sound data requested by the script. The host decodes and plays it.
+pub struct Sound {
+    pub data: Vec<u8>,
+    pub volume: f32,
+}
+
 fn screen_size(rows: &[Vec<Cell>]) -> (u32, u32) {
     let Some(row) = rows.first() else {
         return (WIDTH, HEIGHT);
@@ -268,6 +274,7 @@ pub struct Engine {
     pub names: Vec<Vec<u8>>,
     visual_images: HashMap<usize, Option<(Rc<Image>, i32, i32)>>,
     pub screen: Image,
+    sounds: Vec<Sound>,
     logged: HashSet<u32>,
     pub log: bool,
     /// print every builtin call
@@ -358,6 +365,7 @@ impl Engine {
             names: vec![Vec::new(), sjis::encode("主人公")],
             visual_images: HashMap::new(),
             screen: Image::new(width, height),
+            sounds: Vec::new(),
             logged: HashSet::new(),
             log: false,
             log_calls: false,
@@ -369,6 +377,10 @@ impl Engine {
         e.globals = g;
         e.thread = t;
         Ok(e)
+    }
+
+    pub fn take_sounds(&mut self) -> Vec<Sound> {
+        std::mem::take(&mut self.sounds)
     }
 
     /// The objects on screen, one per line, for debugging.
@@ -957,6 +969,31 @@ impl Host for Engine {
         let mut flow = Flow::Next;
         let mut out = 0;
         match id {
+            // 2010 build: one-shot sound effect (name, volume, ...).
+            0xff00 => {
+                let name = text(args, 0);
+                if !name.is_empty() {
+                    let mut data = None;
+                    for pack in ["System", "Se"] {
+                        for extension in ["", ".ogg", ".wav"] {
+                            let path = format!("{name}{extension}");
+                            if let Some(bytes) = self.arcs.read(self.files.as_mut(), pack, &path) {
+                                data = Some(bytes);
+                                break;
+                            }
+                        }
+                        if data.is_some() {
+                            break;
+                        }
+                    }
+                    if let Some(data) = data {
+                        self.sounds.push(Sound {
+                            data,
+                            volume: a(1).clamp(0, 100) as f32 / 100.0,
+                        });
+                    }
+                }
+            }
             // random number below n
             0x4 => out = self.random(a(0)),
             // wait (time)

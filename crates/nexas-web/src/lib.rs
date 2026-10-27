@@ -2,7 +2,7 @@
 //! draws its pictures with WebGPU; the game's files and saves come from the `nexas*` globals it
 //! sets (backed by the player's GameFS).
 
-use js_sys::{Float32Array, Uint8Array};
+use js_sys::{Array, Float32Array, Object, Reflect, Uint8Array};
 use nexas::engine::Engine;
 use nexas::files::Files;
 use nexas::gfx::Draw;
@@ -81,6 +81,27 @@ impl Game {
     /// Runs one frame (the scripts count on 60 a second).
     pub fn frame(&mut self) -> Result<(), JsError> {
         self.e.frame().map_err(|e| JsError::new(&e))
+    }
+
+    pub fn sounds(&mut self) -> Array {
+        let out = Array::new();
+        for sound in self.e.take_sounds() {
+            let event = Object::new();
+            Reflect::set(
+                &event,
+                &"data".into(),
+                &Uint8Array::from(sound.data.as_slice()),
+            )
+            .unwrap();
+            Reflect::set(
+                &event,
+                &"volume".into(),
+                &JsValue::from_f64(sound.volume as f64),
+            )
+            .unwrap();
+            out.push(&event);
+        }
+        out
     }
 
     pub fn ended(&self) -> bool {

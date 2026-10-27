@@ -50,6 +50,7 @@ fn main() -> Result<(), String> {
             }
         }
         e.frame()?;
+        e.take_sounds(); // This snapshot runner has no audio output.
         if f == frames || marks.iter().any(|m| m.0 == f) {
             let out = format!("{prefix}{f}.png");
             let frame = e.draw();
