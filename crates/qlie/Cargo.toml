@@ -9,3 +9,4 @@ description = "A QLIE engine for the browser: reads the .pack archives, .b/.dpng
 nexas = { path = "../nexas" }
 fontdue = "0.9"
 image = { version = "0.25", default-features = false, features = ["png", "bmp", "jpeg"] }
+regex = { version = "1", default-features = false, features = ["std", "unicode"] }

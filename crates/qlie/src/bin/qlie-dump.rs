@@ -3,6 +3,8 @@
 //!     qlie-dump <game folder> <GameData/dataN.pack>               lists an archive
 //!     qlie-dump <game folder> <GameData/dataN.pack> <name> <out>  saves an entry
 //!     qlie-dump <game folder> <GameData/dataN.pack> - <out dir>   saves every entry
+//!     qlie-dump <game folder> --scripts                           parses every script
+//!     qlie-dump <game folder> --abmp <name>                       shows a .b file's motions
 
 use nexas::files::Disk;
 use qlie::pack::Pack;
@@ -17,6 +19,9 @@ fn main() -> Result<(), String> {
         saves: dir.join("vnrun-saves"),
         root: dir,
     };
+    if args[2] == "--scripts" || args[2] == "--abmp" {
+        return look(disk, &args[2], args.get(3));
+    }
     let key = qlie::game::key_file(&mut disk);
     let pack = Pack::open(&mut disk, &args[2], key)?;
     eprintln!("version {:?}, {} entries", pack.version, pack.entries.len());
@@ -55,5 +60,98 @@ fn main() -> Result<(), String> {
             std::fs::write(&args[4], data).map_err(|e| e.to_string())?;
         }
     }
+    Ok(())
+}
+
+fn look(disk: Disk, what: &str, name: Option<&String>) -> Result<(), String> {
+    use qlie::script::{Kind, Unit};
+    let mut g = qlie::game::Game::open(Box::new(disk))?;
+    if what == "--abmp" {
+        let name = name.ok_or("--abmp <name>")?;
+        let b = g.read(name).ok_or("no such file")?;
+        if let Ok(out) = std::env::var("QLIE_RAW") {
+            // the unpacked animation data
+            let at = b
+                .windows(6)
+                .position(|w| w == b"abdata")
+                .ok_or("no abdata")?;
+            let n = u32::from_le_bytes(b[at + 16..at + 20].try_into().unwrap()) as usize;
+            let d = qlie::pack::decompress(&b[at + 20..at + 20 + n]).ok_or("bad 1PC")?;
+            std::fs::write(out, d).map_err(|e| e.to_string())?;
+        }
+        let a = qlie::abmp::Abmp::parse(&b)?;
+        println!("{} images, {} sounds", a.images.len(), a.sounds.len());
+        for (i, im) in a.images.iter().enumerate() {
+            let size = nexas::gfx::Image::decode(im).map(|m| (m.w, m.h));
+            println!("image {i}: {} bytes {:?}", im.len(), size.ok());
+        }
+        for m in &a.motions {
+            println!("motion {:?}", m.name);
+            for l in &m.layers {
+                println!("  layer {:?}", l.name);
+                for k in &l.keys {
+                    println!(
+                        "    {:>6} {:?} img {} at {},{} scale {},{} z {} rot {} add {:?} color {:?} a {:.2} ease {} anchor {} cmd {} {}",
+                        k.time,
+                        k.show,
+                        k.image,
+                        k.x,
+                        k.y,
+                        k.sx,
+                        k.sy,
+                        k.z,
+                        k.rot,
+                        k.add,
+                        k.color,
+                        k.alpha,
+                        k.ease,
+                        k.anchor,
+                        k.cmd,
+                        k.arg
+                    );
+                }
+            }
+        }
+        return Ok(());
+    }
+    let mut names: Vec<String> = g.names().filter(|n| n.ends_with(".s")).cloned().collect();
+    names.sort();
+    let mut counts: std::collections::BTreeMap<String, usize> = Default::default();
+    for n in names {
+        let text = qlie::script::decode(&g.read(&n).ok_or("unreadable")?);
+        let mut load = |from: &str, p: &str| {
+            let base = qlie::game::norm(from);
+            let base = base.rsplit_once('/').map_or("", |b| b.0).to_string();
+            let near = format!("{base}/{p}");
+            if let Some(b) = g.read(&near) {
+                return Some((near, qlie::script::decode(&b)));
+            }
+            g.read(p).map(|b| (p.to_string(), qlie::script::decode(&b)))
+        };
+        let u = Unit::load(&n, &text, &mut load);
+        for o in &u.ops {
+            if let Kind::Cmd(c, args) = &o.kind {
+                *counts.entry(c.clone()).or_default() += 1;
+                for a in args {
+                    if matches!(a.expr, qlie::expr::Expr::Text(_)) && name.is_some() {
+                        println!(
+                            "{}:{}: text arg {}",
+                            u.files[o.file as usize], o.line, a.raw
+                        );
+                    }
+                }
+            }
+        }
+        println!(
+            "{n}: {} ops, {} labels, {} files",
+            u.ops.len(),
+            u.labels.len(),
+            u.files.len()
+        );
+    }
+    for (c, n) in counts {
+        print!("{c}:{n} ");
+    }
+    println!();
     Ok(())
 }
