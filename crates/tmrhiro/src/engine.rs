@@ -632,12 +632,20 @@ impl Engine {
         self.jump_file(name);
     }
 
+    /// Goes to a script ("name" or "name,label": at that label).
     fn jump_file(&mut self, name: &str) {
+        let (name, label) = match name.split_once(',') {
+            Some((n, l)) => (n.trim(), Some(l.trim())),
+            None => (name, None),
+        };
         self.mark_seen(name);
         match self.load(name) {
             Ok(s) => {
                 self.script = s;
                 self.pc = 0;
+                if let Some(l) = label {
+                    self.jump_label(l);
+                }
             }
             Err(e) => {
                 eprintln!("{e}");
