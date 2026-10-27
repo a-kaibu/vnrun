@@ -22,3 +22,6 @@
 [submodule "third_party/sdrs"]
 	path = third_party/sdrs
 	url = https://github.com/a-kaibu/sdrs
+[submodule "third_party/xsystem4"]
+	path = third_party/xsystem4
+	url = https://github.com/nunuhara/xsystem4
