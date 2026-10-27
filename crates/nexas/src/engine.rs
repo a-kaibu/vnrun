@@ -20,6 +20,40 @@ use crate::vm::{Flow, Globals, Host, Step, Thread, Value};
 pub const WIDTH: u32 = 1280;
 pub const HEIGHT: u32 = 720;
 
+fn screen_size(rows: &[Vec<Cell>]) -> (u32, u32) {
+    let Some(row) = rows.first() else {
+        return (WIDTH, HEIGHT);
+    };
+    let Some(marker) = row.iter().position(|cell| matches!(cell, Cell::Str(s) if s.len() == 20 && s.bytes().all(|b| b.is_ascii_digit()))) else {
+        return (WIDTH, HEIGHT);
+    };
+    match (row.get(marker + 2), row.get(marker + 3)) {
+        (Some(Cell::Int(w @ 320..=4096)), Some(Cell::Int(h @ 240..=2160))) => {
+            (*w as u32, *h as u32)
+        }
+        _ => (WIDTH, HEIGHT),
+    }
+}
+
+#[cfg(test)]
+mod size_tests {
+    use super::*;
+
+    #[test]
+    fn reads_size_after_system_serial_and_rejects_invalid_dimensions() {
+        let mut row = vec![
+            Cell::Str("00000000000000000000".into()),
+            Cell::Int(1),
+            Cell::Int(1024),
+            Cell::Int(600),
+        ];
+        assert_eq!(screen_size(&[row.clone()]), (1024, 600));
+        row[2] = Cell::Int(i32::MAX);
+        assert_eq!(screen_size(&[row]), (WIDTH, HEIGHT));
+        assert_eq!(screen_size(&[]), (WIDTH, HEIGHT));
+    }
+}
+
 // The message window. Guessed from the pictures: the engine's own layout is not worked out yet.
 const WINDOW: (f32, f32) = (100.0, 473.0);
 const TEXT: (i32, i32) = (260, 560);
@@ -280,6 +314,10 @@ impl Engine {
             .map(|b| dat::parse(&b))
             .transpose()?
             .unwrap_or_default();
+        let (width, height) = arcs
+            .read(files.as_mut(), "Config", "System.dat")
+            .and_then(|b| dat::parse(&b).ok())
+            .map_or((WIDTH, HEIGHT), |rows| screen_size(&rows));
         let mut scripts = HashMap::new();
         let build = arcs
             .read(files.as_mut(), "Script", "System.bin")
@@ -319,7 +357,7 @@ impl Engine {
             message: Vec::new(),
             names: vec![Vec::new(), sjis::encode("主人公")],
             visual_images: HashMap::new(),
-            screen: Image::new(WIDTH, HEIGHT),
+            screen: Image::new(width, height),
             logged: HashSet::new(),
             log: false,
             log_calls: false,
@@ -765,7 +803,7 @@ impl Engine {
     }
 
     fn render(&mut self) {
-        let mut out = Image::new(WIDTH, HEIGHT);
+        let mut out = Image::new(self.screen.w, self.screen.h);
         out.fill([0, 0, 0, 255]);
         for d in self.draws() {
             gfx::draw(&mut out, &d.image, d.src, d.dst, &d.place);
@@ -1160,8 +1198,8 @@ impl Host for Engine {
                     let alpha = self.objs.get(&key).map(|o| o.alpha.value(now));
                     let mut o = Obj::new(
                         Look::Spm { spm, frame, images },
-                        WIDTH as i32 / 2 + x,
-                        HEIGHT as i32 + y,
+                        self.screen.w as i32 / 2 + x,
+                        self.screen.h as i32 + y,
                     );
                     match alpha {
                         Some(v) => o.alpha = Tween::at(v),

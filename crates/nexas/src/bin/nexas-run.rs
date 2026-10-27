@@ -7,7 +7,7 @@
 
 use std::path::Path;
 
-use nexas::engine::{Engine, HEIGHT, WIDTH};
+use nexas::engine::Engine;
 use nexas::files::Disk;
 
 fn main() -> Result<(), String> {
@@ -52,7 +52,8 @@ fn main() -> Result<(), String> {
         e.frame()?;
         if f == frames || marks.iter().any(|m| m.0 == f) {
             let out = format!("{prefix}{f}.png");
-            image::save_buffer(&out, &e.draw().px, WIDTH, HEIGHT, image::ColorType::Rgba8)
+            let frame = e.draw();
+            image::save_buffer(&out, &frame.px, frame.w, frame.h, image::ColorType::Rgba8)
                 .map_err(|err| format!("{out}: {err}"))?;
             if std::env::var_os("NEXAS_OBJS").is_some() {
                 eprint!("{}", e.describe());

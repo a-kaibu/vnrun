@@ -3,7 +3,7 @@
 //! sets (backed by the player's GameFS).
 
 use js_sys::{Float32Array, Uint8Array};
-use nexas::engine::{Engine, HEIGHT, WIDTH};
+use nexas::engine::Engine;
 use nexas::files::Files;
 use nexas::gfx::Draw;
 use wasm_bindgen::prelude::*;
@@ -71,11 +71,11 @@ impl Game {
     }
 
     pub fn width(&self) -> u32 {
-        WIDTH
+        self.e.screen.w
     }
 
     pub fn height(&self) -> u32 {
-        HEIGHT
+        self.e.screen.h
     }
 
     /// Runs one frame (the scripts count on 60 a second).
@@ -98,7 +98,7 @@ impl Game {
     pub fn draws(&mut self) -> Float32Array {
         self.draws = self.e.draws();
         let mut out = Vec::with_capacity(self.draws.len() * DRAW_FIELDS);
-        let (w, h) = (WIDTH as f32, HEIGHT as f32);
+        let (w, h) = (self.e.screen.w as f32, self.e.screen.h as f32);
         for d in &self.draws {
             out.extend([d.image.id as f32, d.image.w as f32, d.image.h as f32]);
             out.extend(d.corners().into_iter().flatten());
