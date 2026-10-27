@@ -37,10 +37,11 @@ struct Config {
 
 struct Library {
     root: PathBuf,
-    games: Mutex<HashMap<String, CachedGame>>,
+    games: Mutex<HashMap<String, GameSlot>>,
 }
 
 type CachedGame = (Option<SystemTime>, Arc<Config>);
+type GameSlot = Arc<Mutex<Option<CachedGame>>>;
 
 #[derive(Serialize)]
 struct LibraryEntry {
@@ -432,18 +433,29 @@ fn send_frame_page(req: Request, path: &Path) {
 impl Library {
     fn game(&self, cfg: &Config, id: &str) -> Result<Arc<Config>, String> {
         let path = self.root.join(id);
+        if !fs::symlink_metadata(&path)
+            .map_err(|e| e.to_string())?
+            .file_type()
+            .is_dir()
+        {
+            return Err("not a game directory".into());
+        }
+        // Preparation changes files in place. Serialize each game, but let other games stream.
+        let slot = {
+            let mut games = self.games.lock().map_err(|e| e.to_string())?;
+            Arc::clone(games.entry(id.to_string()).or_default())
+        };
+        let mut cached = slot.lock().map_err(|e| e.to_string())?;
         let meta = fs::symlink_metadata(&path).map_err(|e| e.to_string())?;
         if !meta.file_type().is_dir() {
             return Err("not a game directory".into());
         }
-        // Preparation changes files in place; serialize it and publish only on success.
-        let mut games = self.games.lock().map_err(|e| e.to_string())?;
-        if let Some((modified, game)) = games.get(id)
+        if let Some((modified, game)) = cached.as_ref()
             && *modified == meta.modified().ok()
         {
             return Ok(Arc::clone(game));
         }
-        games.remove(id);
+        *cached = None;
         vnrun_prep::prepare(&path).map_err(|e| e.to_string())?;
         let engine = detect(&path).ok_or("engine not detected")?;
         let game = Arc::new(Config {
@@ -458,7 +470,7 @@ impl Library {
             library: None,
         });
         let modified = fs::metadata(&game.game).and_then(|m| m.modified()).ok();
-        games.insert(id.to_string(), (modified, Arc::clone(&game)));
+        *cached = Some((modified, Arc::clone(&game)));
         Ok(game)
     }
 
@@ -690,6 +702,46 @@ fn main() {
 #[cfg(test)]
 mod detection_tests {
     use super::*;
+
+    #[test]
+    fn preparing_one_title_does_not_block_another() {
+        let dir = tempfile::tempdir().unwrap();
+        fs::create_dir(dir.path().join("playing")).unwrap();
+        fs::write(dir.path().join("playing/system.arc"), b"game").unwrap();
+        let library = Arc::new(Library {
+            root: dir.path().into(),
+            games: Mutex::new(HashMap::new()),
+        });
+        let slow = Arc::new(Mutex::new(None));
+        library
+            .games
+            .lock()
+            .unwrap()
+            .insert("preparing".into(), Arc::clone(&slow));
+        let _guard = slow.lock().unwrap();
+        let cfg = Config {
+            dist: PathBuf::new(),
+            game: PathBuf::new(),
+            saves: dir.path().join("saves"),
+            addr: String::new(),
+            engine: String::new(),
+            title: String::new(),
+            nls: None,
+            max_save_bytes: SAVE_LIMIT,
+            library: None,
+        };
+        let (tx, rx) = mpsc::channel();
+        thread::spawn(move || {
+            tx.send(library.game(&cfg, "playing").map(|g| g.engine.clone()))
+                .unwrap()
+        });
+        assert_eq!(
+            rx.recv_timeout(std::time::Duration::from_secs(2))
+                .unwrap()
+                .unwrap(),
+            "bgi"
+        );
+    }
 
     #[test]
     fn advhd_with_archives_is_detected_before_bgi() {
