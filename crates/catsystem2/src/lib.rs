@@ -10,6 +10,8 @@ pub mod fes;
 pub mod game;
 pub mod hg3;
 pub mod int;
+pub mod menu;
+pub mod save;
 pub mod text;
 
 pub fn sjis(b: &[u8]) -> String {

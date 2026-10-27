@@ -197,6 +197,11 @@ pub struct Engine {
     at: i64,
     /// the object (`@ setid 1`) while a handler runs
     at_obj: Option<usize>,
+    /// the variables a load sets once its skip reaches the saved page
+    pub(crate) pending_vars: Option<crate::adv::Vars>,
+    /// our save/load screen or backlog, over everything
+    pub(crate) menu: Option<crate::menu::Menu>,
+    wheel_up: bool,
 }
 
 fn num(s: &str) -> f32 {
@@ -363,6 +368,9 @@ impl Engine {
             colors: HashMap::new(),
             at: 0,
             at_obj: None,
+            pending_vars: None,
+            menu: None,
+            wheel_up: false,
         };
         e.exec_fes("flow")?;
         Ok(e)
@@ -392,7 +400,9 @@ impl Engine {
     }
 
     pub fn wheel(&mut self, up: bool) {
-        if !up {
+        if up {
+            self.wheel_up = true;
+        } else {
             self.clicked = true;
         }
     }
@@ -888,6 +898,13 @@ impl Engine {
                     eprintln!("{} exits {v}", self.runs[r].name);
                 }
             }
+            "execfes" if arg(1).eq_ignore_ascii_case("saveload") => {
+                // the game's save screen (SAVEPANEL objects): ours instead, answering the
+                // script with 1000 + slot, or -2 for back
+                self.end_children(r);
+                self.runs[r].exit_code = -1;
+                self.open_menu(crate::menu::Mode::Load, Some(r));
+            }
             "execfes" => {
                 self.end_children(r);
                 self.runs[r].exit_code = -1;
@@ -1295,6 +1312,10 @@ impl Engine {
         self.click_r = 0;
         let clicked = std::mem::take(&mut self.clicked);
         let rclicked = std::mem::take(&mut self.rclicked);
+        let wheel_up = std::mem::take(&mut self.wheel_up);
+        if self.menu_input(clicked, rclicked, wheel_up) {
+            return;
+        }
         // the story takes the clicks, unless it waits on a screen script
         if self.adv.as_ref().is_some_and(|a| !a.waits_fes()) {
             self.adv_input(clicked, rclicked);
@@ -1377,7 +1398,7 @@ impl Engine {
 
     // ---- drawing
 
-    fn color_image(&mut self, c: [u8; 3]) -> Rc<Image> {
+    pub(crate) fn color_image(&mut self, c: [u8; 3]) -> Rc<Image> {
         self.colors
             .entry(c)
             .or_insert_with(|| {
@@ -1546,6 +1567,7 @@ impl Engine {
             }
             None => self.draw_objs(None, &mut out),
         }
+        self.menu_draws(&mut out);
         out
     }
 

@@ -13,6 +13,7 @@ use nexas::gfx::{Draw, Image, Place};
 
 use crate::cst::{Kind as Line, Scene};
 use crate::engine::{Engine, Kind, Motion, Move, Obj, split_args, split_if};
+use crate::save::SaveData;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum Wait {
@@ -28,10 +29,19 @@ enum Wait {
     Fes(usize, i64),
 }
 
+/// The number and string variables.
+pub(crate) type Vars = (HashMap<i64, i64>, HashMap<i64, String>);
+
 pub struct Adv {
     pub owner: u32,
     /// the screen script that started the story (its `_EXITCODE_` says when the story ends)
-    parent: usize,
+    pub(crate) parent: usize,
+    /// the scene entered last (not by `call`) and the variables then: where a load starts
+    entry: Option<(String, Vars)>,
+    /// the page showing: scene and the line it starts at
+    mark: Option<(String, usize)>,
+    /// the pages read: speaker, text
+    pub(crate) backlog: Vec<(String, String)>,
     scene: Rc<Scene>,
     name: String,
     /// the scenes to go back to after a `call`ed one: scene, name, line
@@ -132,12 +142,39 @@ impl Adv {
     pub fn waits_fes(&self) -> bool {
         matches!(self.wait, Wait::Fes(..))
     }
+
+    /// A page or a choice is showing, waiting for the player.
+    pub fn reading(&self) -> bool {
+        matches!(self.wait, Wait::Click | Wait::Select)
+    }
 }
 
 impl Engine {
     /// `execkcs`: plays the story from the scene in string variable 200 (the games' sscript
     /// start file), or the first scene.
     pub fn start_story(&mut self, parent: usize) {
+        // the save screen's choice (the games put it in $512, our menu answers 1000 + slot)
+        let boot = self.flags.get(&512).copied().unwrap_or(0);
+        if boot >= 1000 {
+            self.flags.insert(512, -1);
+            let k = (boot - 1000) as usize;
+            match self
+                .g
+                .files
+                .read_save(&crate::save::slot_name(k))
+                .and_then(|b| SaveData::decode(&b))
+            {
+                Some(d) => {
+                    self.load_save(parent, d);
+                    return;
+                }
+                None => eprintln!("save slot {k}: nothing to load"),
+            }
+        }
+        self.begin_story(parent);
+    }
+
+    fn begin_story(&mut self, parent: usize) {
         let name = self
             .strs
             .get(&200)
@@ -153,6 +190,9 @@ impl Engine {
         self.adv = Some(Adv {
             owner,
             parent,
+            entry: None,
+            mark: None,
+            backlog: Vec::new(),
             scene: Rc::new(Scene { lines: Vec::new() }),
             name: String::new(),
             calls: Vec::new(),
@@ -213,7 +253,50 @@ impl Engine {
         a.name = name.to_string();
         a.pc = 0;
         a.wait = Wait::None;
+        if a.calls.is_empty() {
+            a.entry = Some((name.to_string(), (self.flags.clone(), self.strs.clone())));
+        }
         Ok(())
+    }
+
+    /// The story as a save slot holds it, when a page is showing.
+    pub(crate) fn save_data(&self) -> Option<SaveData> {
+        let a = self.adv.as_ref()?;
+        let (entry, (ef, es)) = a.entry.as_ref()?;
+        let (scene, line) = a.mark.as_ref()?;
+        Some(SaveData {
+            entry: entry.clone(),
+            entry_flags: crate::save::sorted_flags(ef),
+            entry_strs: crate::save::sorted_strs(es),
+            scene: scene.clone(),
+            line: *line as u32,
+            flags: crate::save::sorted_flags(&self.flags),
+            strs: crate::save::sorted_strs(&self.strs),
+            speaker: a.speaker.clone(),
+            text: a.text.clone(),
+        })
+    }
+
+    /// Plays the story from a save: its scene from the top with the variables it was entered
+    /// with, skipped through to the saved page (`run_story` then sets the saved variables).
+    pub(crate) fn load_save(&mut self, parent: usize, d: SaveData) {
+        if let Some(a) = self.adv.take() {
+            self.drop_owner(a.owner);
+        }
+        self.stop_sound("voice", 0);
+        for k in 0..8 {
+            self.stop_sound(&format!("bgm{k}"), 0);
+            self.stop_sound(&format!("se{k}"), 0);
+        }
+        self.flags = d.entry_flags.into_iter().collect();
+        self.strs = d.entry_strs.into_iter().collect();
+        self.strs.insert(200, d.entry.clone());
+        self.pending_vars = Some((d.flags.into_iter().collect(), d.strs.into_iter().collect()));
+        self.skip_to = Some((d.scene, d.line as usize));
+        if let Some(r) = self.runs.get_mut(parent) {
+            r.exit_code = -1;
+        }
+        self.begin_story(parent);
     }
 
     fn busy(&self) -> bool {
@@ -288,6 +371,9 @@ impl Engine {
         let skip = match &self.skip_to {
             Some((n, l)) if *n == a.name && a.pc >= *l => {
                 self.skip_to = None;
+                if let Some((f, t)) = self.pending_vars.take() {
+                    (self.flags, self.strs) = (f, t);
+                }
                 false
             }
             Some(_) => true,
@@ -336,6 +422,9 @@ impl Engine {
                 .is_some_and(|(n, l)| *n == a.name && a.pc >= *l)
             {
                 self.skip_to = None;
+                if let Some((f, t)) = self.pending_vars.take() {
+                    (self.flags, self.strs) = (f, t);
+                }
                 if self.log > 0 {
                     eprintln!("skipped to {} line {}", a.name, a.pc);
                 }
@@ -393,6 +482,14 @@ impl Engine {
         let a = self.adv.as_mut().unwrap();
         if a.fresh {
             a.fresh = false;
+            if !a.text.is_empty() {
+                let page = (std::mem::take(&mut a.speaker), a.text.clone());
+                a.backlog.push(page);
+                if a.backlog.len() > 200 {
+                    a.backlog.remove(0);
+                }
+            }
+            a.mark = Some((a.name.clone(), a.pc.saturating_sub(1)));
             a.text.clear();
             a.speaker.clear();
             a.shown = 0.0;

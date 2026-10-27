@@ -3,7 +3,7 @@
 //!     cs2-run <game folder> <frames> <out prefix> [frame[:x:y] ...]
 //!
 //! Each `frame` is saved as `<out prefix><frame>.png`; with `:x:y`, there is also a click there
-//! on that frame (`:x:y:r` a right click, `:x:y:m` only moves the pointer there). The last frame
+//! on that frame (`:x:y:r` a right click, `:x:y:u` the wheel up, `:x:y:m` only moves the pointer there). The last frame
 //! is always saved. CS2_FONT names a TrueType font for text, CS2_TRACE=1 prints the
 //! commands (2: also every command). CS2_SKIP_TO=scene:line runs the story without waits or clicks
 //! until that line of that scene.
@@ -12,7 +12,7 @@ use std::path::Path;
 
 use nexas::files::Disk;
 
-/// where and how the pointer acts: c click, r right click, m move
+/// where and how the pointer acts: c click, r right click, u wheel up, m move
 type Pointer = (i32, i32, char);
 
 fn main() -> Result<(), String> {
@@ -62,6 +62,7 @@ fn main() -> Result<(), String> {
                 e.point(*x, *y);
                 match kind {
                     'r' => e.cancel(),
+                    'u' => e.wheel(true),
                     'm' => {}
                     _ => e.click(*x, *y),
                 }
