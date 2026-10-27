@@ -182,6 +182,12 @@ export async function start({ fs, manifest, ui }: EngineContext): Promise<void> 
       };
       win.addEventListener("error", plugin, true);
       win.addEventListener("load", () => win.removeEventListener("error", plugin, true));
+      // RPG Maker fits the screen to the window only in NW.js (and on phones); a 1920x1080 MV
+      // game would overflow the frame. Its core is loaded by DOMContentLoaded and starts on load.
+      win.addEventListener("DOMContentLoaded", () => {
+        const graphics = (win as { Graphics?: { _defaultStretchMode?: () => boolean } }).Graphics;
+        if (graphics?._defaultStretchMode) graphics._defaultStretchMode = () => true;
+      });
     },
   });
 
