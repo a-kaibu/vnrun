@@ -503,6 +503,20 @@ impl Thread {
                 self.frame().ip = target;
             }
             0x21 => {}
+            // Early for loops, numbered by arg: 0x24 n condition, 0x27 n leaves the loop (to 0x26
+            // n) when A == 0, body, 0x3b n (0x39 before renumbering) and 0x28 n the step, 0x25 n
+            // back to the condition, 0x26 n the end.
+            0x24 | 0x26 | 0x28 | 0x3b => {}
+            0x25 | 0x27 if op == 0x25 || a == 0 => {
+                let to = if op == 0x25 { 0x24 } else { 0x26 };
+                let at = self
+                    .code_of(self.frames.last().unwrap())
+                    .iter()
+                    .position(|ins| ins.op == to && ins.arg == arg)
+                    .ok_or_else(|| format!("{}: no loop mark {to:#x} {arg}", self.name))?;
+                self.frame().ip = at;
+            }
+            0x27 => {}
             0x04 => self.stack.push(Value::Int(self.regs[reg])),
             0x05 => {
                 let v = if arg == 0 {
