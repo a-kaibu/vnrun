@@ -358,8 +358,8 @@ dl_RJ284038	本編	タイトル (背景つき、文字だけのメニューは�
 dl_RJ341209	本編	タイトル→Start→名前入力 (打ち替えも可)→本編の文章まで、セーブ画面も開く (livemaker-run)。.lcm の演出 (ロゴ・タイトル前のアニメ) も再生
 b2014_azarashi_soft	本編	360b26c (CatSystem2) でタイトル→はじめから→本編の文章とマップ画面まで (Chromium)
 b2017_laplacian	本編	360b26c (CatSystem2) でタイトル→はじめから→体験版メニュー (体験版本編 / えっちしーん) まで (Chromium、完全なダウンロードで確認)
-b2010_undermoon	本編	ロゴ→タイトル→START→本編の文章 (entis-run とブラウザ)
-b2007_marmalade	本編	ロゴ→タイトル (3D の演出は描かない)→START→注意書き→本編の文章 (entis-run とブラウザ)
-b2009_cube	本編	注意書き→タイトル→初めから→本編の文章 (entis-run とブラウザ)
-b2009_marmalade	本編	タイトル→はじめから→本編の文章 (entis-run とブラウザ)
+b2010_undermoon	本編	ロゴ→タイトル→START→本編の文章 (entis-run とブラウザ)。検証スレッドでは cbb2054 の Chromium でタイトルまで確認
+b2007_marmalade	本編	ロゴ→タイトル (3D の演出は描かない)→START→注意書き→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認
+b2009_cube	本編	注意書き→タイトル→初めから→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認
+b2009_marmalade	本編	タイトル→はじめから→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認
 b2024_syrup_mm	NG	.csx が無い新しい世代 (システムは exe 内、台本は xscript の .srcxml)

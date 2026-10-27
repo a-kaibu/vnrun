@@ -490,9 +490,9 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2007_marmalade | [リリカル♪りりっく 体験版](http://suezou.dyndns.org/dl2007/marmalade/lyric/lyric_trial.zip) | 本編 | ロゴ→タイトル (3D の演出は描かない)→START→注意書き→本編の文章 (entis-run とブラウザ) |
-| b2009_cube | [夏ノ雨 体験版](http://suezou.dyndns.org/dl2009/cube/natsunoame/natsunoame_trial.zip) | 本編 | 注意書き→タイトル→初めから→本編の文章 (entis-run とブラウザ) |
-| b2009_marmalade | [キスと魔王と紅茶 体験版](http://suezou.dyndns.org/dl2009/marmalade/kissmao/kissmao_tr.zip) | 本編 | タイトル→はじめから→本編の文章 (entis-run とブラウザ) |
-| b2010_undermoon | [痴覚過敏 体験版](http://suezou.dyndns.org/dl2010/undermoon/tikaku/chikakukabin_trial.zip) | 本編 | ロゴ→タイトル→START→本編の文章 (entis-run とブラウザ) |
+| b2007_marmalade | [リリカル♪りりっく 体験版](http://suezou.dyndns.org/dl2007/marmalade/lyric/lyric_trial.zip) | 本編 | ロゴ→タイトル (3D の演出は描かない)→START→注意書き→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認 |
+| b2009_cube | [夏ノ雨 体験版](http://suezou.dyndns.org/dl2009/cube/natsunoame/natsunoame_trial.zip) | 本編 | 注意書き→タイトル→初めから→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認 |
+| b2009_marmalade | [キスと魔王と紅茶 体験版](http://suezou.dyndns.org/dl2009/marmalade/kissmao/kissmao_tr.zip) | 本編 | タイトル→はじめから→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認 |
+| b2010_undermoon | [痴覚過敏 体験版](http://suezou.dyndns.org/dl2010/undermoon/tikaku/chikakukabin_trial.zip) | 本編 | ロゴ→タイトル→START→本編の文章 (entis-run とブラウザ)。検証スレッドでは cbb2054 の Chromium でタイトルまで確認 |
 | b2024_syrup_mm | [狙われた優等生 身代わりの代償 体験版](http://suezou.dyndns.org/dl2024/syrup-mm/yutosei/yutosei_taikenban.zip) | NG | .csx が無い新しい世代 (システムは exe 内、台本は xscript の .srcxml) |
 <!-- /matrix -->
