@@ -1,4 +1,5 @@
 //! Compiled scripts (Script.pac/*.bin) of NeXAS releases from about 2010 on.
+//! Earlier scripts omit `init` and `str_names` from every block.
 //!
 //! ```text
 //! block    = init:code main:code strings:strs int_names:strs str_names:strs n:u32 n x [u8; 0x44]
@@ -90,13 +91,13 @@ impl Reader<'_> {
         }
         Ok(out)
     }
-    fn block(&mut self) -> Result<Block, String> {
-        let init = self.code()?;
+    fn block(&mut self, old: bool) -> Result<Block, String> {
+        let init = if old { Vec::new() } else { self.code()? };
         let code = self.code()?;
         let strings = self.strs()?;
         let names = |v: Vec<Vec<u8>>| v.iter().map(|s| sjis::decode(s)).collect();
         let int_names = names(self.strs()?);
-        let str_names = names(self.strs()?);
+        let str_names = if old { Vec::new() } else { names(self.strs()?) };
         let n = self.u32()? as usize;
         if n.checked_mul(0x44)
             .is_none_or(|k| self.at + k > self.b.len())
@@ -127,12 +128,39 @@ impl Reader<'_> {
 }
 
 pub fn parse(b: &[u8]) -> Result<Script, String> {
+    parse_format(b, false).or_else(|_| parse_format(b, true))
+}
+
+fn parse_format(b: &[u8], old: bool) -> Result<Script, String> {
     let mut r = Reader { b, at: 0 };
-    let main = r.block()?;
+    let main = r.block(old)?;
     let mut funcs = HashMap::new();
     while r.at < b.len() {
         let id = r.u32()?;
-        funcs.insert(id, r.block()?);
+        funcs.insert(id, r.block(old)?);
     }
     Ok(Script { main, funcs })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parses_old_blocks_without_init_or_string_variable_names() {
+        let mut bytes = Vec::new();
+        for value in [1u32, 0, 42, 1] {
+            bytes.extend_from_slice(&value.to_le_bytes());
+        }
+        bytes.extend_from_slice(b"hello\0");
+        bytes.extend_from_slice(&1u32.to_le_bytes());
+        bytes.extend_from_slice(b"ret\0");
+        bytes.extend_from_slice(&0u32.to_le_bytes());
+        let script = parse(&bytes).unwrap();
+        assert!(script.main.init.is_empty());
+        assert_eq!(script.main.code, [Ins { op: 0, arg: 42 }]);
+        assert_eq!(script.main.strings, [b"hello".to_vec()]);
+        assert_eq!(script.main.int_names, ["ret"]);
+        assert!(script.main.str_names.is_empty());
+    }
 }
