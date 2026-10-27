@@ -25,6 +25,15 @@ const ENGINES: Record<string, () => Promise<EngineModule>> = {
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const overlay = $("overlay");
+const params = new URLSearchParams(location.search);
+const navigateBack = async (): Promise<void> => {
+  const back = params.get("back");
+  if (back) location.href = back;
+  else if (history.length > 1) history.back();
+  else show("終了しました。このタブは閉じて構いません。");
+};
+let exit = navigateBack;
+$("error-exit").addEventListener("click", () => void exit());
 
 function show(message: string): void {
   $("message").textContent = message;
@@ -36,6 +45,9 @@ function fail(error: unknown): void {
   overlay.classList.add("failed");
   const text = error instanceof Error && error.stack ? error.stack : String(error);
   show(`起動できませんでした。\n\n${text}`);
+  const button = $<HTMLButtonElement>("error-exit");
+  button.hidden = false;
+  button.focus();
 }
 
 // Loads every font listed in fonts/fonts.json next to the page (none when it is missing).
@@ -56,7 +68,6 @@ async function fonts(): Promise<Uint8Array[]> {
 }
 
 async function main(): Promise<void> {
-  const params = new URLSearchParams(location.search);
   const base = params.get("game");
   if (!base) throw new Error("URL に ?game=<ゲームの URL> がありません");
   show("ゲームの情報を読み込み中…");
@@ -77,20 +88,20 @@ async function main(): Promise<void> {
       overlay.hidden = true;
     },
     exit: async () => {
+      const previousMessage = $("message").textContent ?? "";
       show("セーブを送信中…");
       try {
         await fs.flush();
       } catch (error) {
-        overlay.hidden = true;
+        if (overlay.classList.contains("failed")) show(previousMessage);
+        else overlay.hidden = true;
         window.alert(`${String(error)}\n接続を確認してから、もう一度終了してください。`);
         return;
       }
-      const back = params.get("back");
-      if (back) location.href = back;
-      else if (history.length > 1) history.back();
-      else show("終了しました。このタブは閉じて構いません。");
+      await navigateBack();
     },
   };
+  exit = () => ui.exit();
   $("exit").addEventListener("click", () => void ui.exit());
   window.addEventListener("vnrun-save-error", (e) => {
     const { path } = (e as CustomEvent<SaveErrorDetail>).detail;

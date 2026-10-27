@@ -78,6 +78,9 @@ button.active {
   text-align: left;
   font-size: 14px;
 }
+#error-exit {
+  margin-top: 16px;
+}
 .spinner {
   width: 32px;
   height: 32px;
