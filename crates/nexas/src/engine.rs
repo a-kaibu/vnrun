@@ -697,17 +697,37 @@ impl Engine {
         let Some(font) = self.font(MESSAGE_FONT) else {
             return;
         };
-        let text_y = TEXT.1 + self.screen.h as i32 - HEIGHT as i32;
+        let (wx, wy) = self.window_at();
+        let text_x = wx as i32 + TEXT.0 - WINDOW.0 as i32;
+        let text_y = wy as i32 + TEXT.1 - WINDOW.1 as i32;
         let name = message_lines(name, &self.names).concat();
         if !name.is_empty() {
             let img = font.render(&name, [255, 255, 255], PAD);
             self.message
-                .push((Rc::new(img), TEXT.0 - PAD, text_y - LINE - PAD));
+                .push((Rc::new(img), text_x - PAD, text_y - LINE - PAD));
         }
         for (k, line) in message_lines(text, &self.names).iter().enumerate() {
             let img = font.render(line, [255, 255, 255], PAD);
             self.message
-                .push((Rc::new(img), TEXT.0 - PAD, text_y + LINE * k as i32 - PAD));
+                .push((Rc::new(img), text_x - PAD, text_y + LINE * k as i32 - PAD));
+        }
+    }
+
+    /// Where the message window goes: [`WINDOW`] on a 1280-wide screen; on others (800x600)
+    /// in the middle at the bottom, by the size of the window picture.
+    fn window_at(&mut self) -> (f32, f32) {
+        let (sw, sh) = (self.screen.w as f32, self.screen.h as f32);
+        let part = self.spm("Interface.spm").and_then(|s| {
+            s.frames
+                .first()
+                .and_then(|f| f.parts.first().map(|p| p.dst))
+        });
+        match part {
+            Some(d) if self.screen.w != WIDTH => {
+                let (w, h) = ((d[2] - d[0]) as f32, (d[3] - d[1]) as f32);
+                ((sw - w) / 2.0 - d[0] as f32, sh - h - 8.0 - d[1] as f32)
+            }
+            _ => (WINDOW.0, WINDOW.1 + sh - HEIGHT as f32),
         }
     }
 
@@ -724,15 +744,18 @@ impl Engine {
     fn compose_visual(&mut self, n: usize) -> Option<(Rc<Image>, i32, i32)> {
         let row = self.visuals.get(n)?.clone();
         let cell = |k: usize| row.get(k).map_or(0, |c| c.int());
-        let base = self.image(row.get(8)?.str())?;
-        let over = match row.get(9).map(|c| c.str()) {
+        // the file, the picture laid over it and where: from column 8 (7 in 2007's table,
+        // which has one number fewer before them)
+        let at = row.iter().position(|c| matches!(c, Cell::Str(_)))?;
+        let base = self.image(row[at].str())?;
+        let over = match row.get(at + 1).map(|c| c.str()) {
             Some(name) if !name.is_empty() => self.image(name),
             _ => None,
         };
         let img = match over {
             Some(over) => {
                 let mut img = (*base).clone();
-                let (x, y, w, h) = (cell(10), cell(11), over.w as i32, over.h as i32);
+                let (x, y, w, h) = (cell(at + 2), cell(at + 3), over.w as i32, over.h as i32);
                 let p = place(0.0, 0.0, 1.0, 1.0, 0.0, 1.0, false);
                 gfx::draw(
                     &mut img,
@@ -847,7 +870,7 @@ impl Engine {
                     let Some(Some(img)) = images.get(part.image) else {
                         continue;
                     };
-                    let (x, y) = (WINDOW.0, WINDOW.1 + self.screen.h as f32 - HEIGHT as f32);
+                    let (x, y) = self.window_at();
                     let d = part.dst.map(|v| v as f32);
                     out.push(Draw {
                         image: img.clone(),
@@ -1049,6 +1072,36 @@ impl Host for Engine {
                 describe_args(args)
             );
         }
+        // 2007's character pictures: show (Stand.dat row, slot, place 0 middle / 1 left /
+        // 2 right, time, no wait) and take away (slot, ?, time, wait), as the later calls
+        let reordered: Vec<Value>;
+        let (id, args) = match id {
+            0xff07 => {
+                let x = match arg(args, 2) {
+                    1 => -(self.screen.w as i32) / 4,
+                    2 => self.screen.w as i32 / 4,
+                    _ => 0,
+                };
+                let v = [
+                    arg(args, 1),
+                    arg(args, 0),
+                    x,
+                    0,
+                    100,
+                    0,
+                    arg(args, 3),
+                    arg(args, 4),
+                ];
+                reordered = v.into_iter().map(Value::Int).collect();
+                (0xf7, &reordered[..])
+            }
+            0xff08 => {
+                let v = [arg(args, 0), arg(args, 2), 0, arg(args, 3)];
+                reordered = v.into_iter().map(Value::Int).collect();
+                (0xf8, &reordered[..])
+            }
+            _ => (id, args),
+        };
         let a = |k| arg(args, k);
         let now = self.now;
         let mut flow = Flow::Next;
@@ -1397,9 +1450,14 @@ impl Host for Engine {
                 let Some(r) = self.stands.get(row as usize).cloned() else {
                     return Err(format!("no stand {row}"));
                 };
-                if let Some(spm) = self.spm(r.get(5).map_or("", |c| c.str())) {
+                // the sprite map and its frame: columns 5, 6 (3, 4 in 2007's table)
+                let at = r
+                    .iter()
+                    .position(|c| c.str().to_lowercase().ends_with(".spm"))
+                    .unwrap_or(5);
+                if let Some(spm) = self.spm(r.get(at).map_or("", |c| c.str())) {
                     let images = spm.images.clone().iter().map(|n| self.image(n)).collect();
-                    let frame = r.get(6).map_or(0, |c| c.int()).max(0) as usize;
+                    let frame = r.get(at + 1).map_or(0, |c| c.int()).max(0) as usize;
                     let key = (STANDS, slot);
                     let alpha = self.objs.get(&key).map(|o| o.alpha.value(now));
                     let mut o = Obj::new(
