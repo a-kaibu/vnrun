@@ -21,6 +21,7 @@ use crate::script::{Command, OLD, Script};
 
 mod backlog;
 mod config;
+mod gallery;
 mod old;
 
 /// A sound to start or stop.
@@ -52,6 +53,8 @@ enum Wait {
     Until(u64),
     Choice(Vec<(String, String)>),
     Buttons,
+    /// a gallery page
+    Gallery,
     Ended,
 }
 
@@ -179,6 +182,11 @@ pub struct Engine {
     log_view: Option<backlog::LogView>,
     config: Option<config::ConfigView>,
     settings: config::Settings,
+    gallery: Option<gallery::Gallery>,
+    seen: gallery::Seen,
+    thumbs: HashMap<String, Rc<Image>>,
+    /// where a right click on the buttons goes (10.0034)
+    cancel_label: String,
     /// the message window is put away (right click or its close button)
     hidden: bool,
     auto: bool,
@@ -266,6 +274,10 @@ impl Engine {
             log_view: None,
             config: None,
             settings: config::Settings::default(),
+            gallery: None,
+            seen: gallery::Seen::default(),
+            thumbs: HashMap::new(),
+            cancel_label: String::new(),
             hidden: false,
             auto: false,
             skip: false,
@@ -330,6 +342,7 @@ impl Engine {
             }
         }
         e.load_settings();
+        e.load_seen();
         Ok(e)
     }
 
@@ -498,6 +511,7 @@ impl Engine {
                     self.jump_label(&label);
                 }
             }
+            Wait::Gallery => self.gallery_click(x, y),
             Wait::Buttons => {
                 let hit = self.buttons.iter().find(|b| {
                     x >= b.rect[0]
@@ -525,6 +539,19 @@ impl Engine {
         {
             return;
         }
+        if let Wait::Gallery = self.wait {
+            self.gallery_cancel();
+            return;
+        }
+        if let Wait::Buttons = self.wait
+            && !self.cancel_label.is_empty()
+        {
+            let label = std::mem::take(&mut self.cancel_label);
+            self.buttons.clear();
+            self.wait = Wait::None;
+            self.jump_label(&label);
+            return;
+        }
         if !matches!(self.wait, Wait::Click | Wait::Choice(_)) {
             return;
         }
@@ -549,6 +576,7 @@ impl Engine {
     }
 
     fn jump_file(&mut self, name: &str) {
+        self.mark_seen(name);
         match self.load(name) {
             Ok(s) => {
                 self.script = s;
@@ -564,6 +592,7 @@ impl Engine {
     /// Runs one frame: commands until one waits.
     pub fn frame(&mut self) -> Result<(), String> {
         self.now += MS_PER_FRAME;
+        self.save_seen();
         if self.menu.is_some() || self.log_open() || self.config_open() {
             return Ok(());
         }
@@ -871,6 +900,9 @@ impl Engine {
             (0x40, 0x00) => self.wait = Wait::Ended,
             (0x40, 0x15) => self.open_menu(false),
             (0x40, 0x16) => self.open_config(),
+            (0x40, 0x3c) => self.gallery_begin(c),
+            (0x40, 0x46) => self.gallery_place(c),
+            (0x10, 0x34) => self.cancel_label = c.str(2),
             (0x50, 0x01) => {
                 self.vars.insert((c.u8(1), c.u16(2)), c.u16(4) as i32);
             }
@@ -923,6 +955,7 @@ impl Engine {
                 None => return,
             }
         } else {
+            self.mark_seen(name);
             let canvas = self
                 .macros
                 .get(&name.to_lowercase())
@@ -945,6 +978,7 @@ impl Engine {
     }
 
     fn set_bg(&mut self, name: &str) {
+        self.mark_seen(name);
         self.bg = self.pictures(name, 0.0, 0.0);
         self.bg_name = name.to_string();
         if name == "-" || name.is_empty() {
@@ -1570,6 +1604,10 @@ impl Engine {
         }
         if self.config_open() {
             self.config_draws(&mut out);
+            return out;
+        }
+        if let Wait::Gallery = self.wait {
+            self.gallery_draws(&mut out);
             return out;
         }
         if let Wait::Buttons = self.wait {

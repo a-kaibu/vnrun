@@ -497,6 +497,7 @@ impl Engine {
             0xa4 => self.open_menu(true),
             0xa5 => self.open_menu(false),
             0xa6 => self.open_config(),
+            0xc8 => self.gallery_old(c),
             _ => {
                 if self.log {
                     eprintln!("tmrhiro: skipped old {:02x}", c.op);
