@@ -81,11 +81,14 @@ impl Fs {
     fn mount(&mut self, noa: Noa, keys: &[(String, String)]) {
         let ai = self.archives.len();
         let mut nested = Vec::new();
+        // "title.noa/system.inf" names a file of system/title.noa
+        let arc = Fs::key(noa.file.rsplit('/').next().unwrap_or(&noa.file));
         for (ei, e) in noa.entries.iter().enumerate() {
             let lower = e.name.to_lowercase();
             if lower.ends_with(".noa") && e.enc == 0 {
                 nested.push(e.clone());
             }
+            self.names.insert(format!("{arc}/{lower}"), (ai, ei));
             self.names.entry(lower).or_insert((ai, ei));
         }
         let file = noa.file.clone();

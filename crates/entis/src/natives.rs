@@ -859,7 +859,16 @@ impl Engine {
     pub fn system(&mut self, t: &mut Thread, name: &str, args: &[Var]) -> Result<Done, String> {
         let _ = t;
         match name {
-            "GetCurrentTime" => int(self.now as i64 as i32),
+            "GetCurrentTime" => {
+                // a script that waits by reading the clock in a loop goes on next frame
+                self.time_polls += 1;
+                let now = Value::Int(self.now as i64 as i32);
+                Ok(if self.time_polls > 100 {
+                    Done::Yield(now)
+                } else {
+                    Done::Val(now)
+                })
+            }
             "GetLocalTime" => Ok(Done::Val(structure(
                 "Time",
                 &[
@@ -880,7 +889,7 @@ impl Engine {
                 }
             }
             "GetSystemPerformance" => int(0),
-            "SetSystemPerformance" | "AddModule" | "OpenToAddArchiveFile" => ok(),
+            "SetSystemPerformance" | "AddModule" | "OpenToAddArchiveFile" | "UpdateWindow" => ok(),
             "Exit" => {
                 self.ended = true;
                 Ok(Done::Block)
@@ -1223,6 +1232,21 @@ impl Engine {
                             ("nChannelCount", Value::Int(2)),
                             ("nBitsPerSample", Value::Int(16)),
                             ("nRewoundPosition", Value::Int(-1)),
+                            ("nResourceBytes", Value::Int(0)),
+                        ],
+                    )))
+                } else if SPRITES.contains(&n.class.as_str()) {
+                    // an empty sprite: an image of no size
+                    Ok(Done::Val(structure(
+                        "ImageInfo",
+                        &[
+                            ("nFormatType", Value::Int(0)),
+                            ("nImageWidth", Value::Int(0)),
+                            ("nImageHeight", Value::Int(0)),
+                            ("nBitsPerPixel", Value::Int(0)),
+                            ("nFrameCount", Value::Int(0)),
+                            ("xHotSpot", Value::Int(0)),
+                            ("yHotSpot", Value::Int(0)),
                             ("nResourceBytes", Value::Int(0)),
                         ],
                     )))
@@ -2412,10 +2436,17 @@ fn detach(c: &Obj) {
 }
 
 fn size_of(n: &Native) -> (i32, i32) {
-    if let Some(it) = &n.item
-        && it.w > 0
-    {
-        return (it.w, it.h);
+    if let Some(it) = &n.item {
+        if it.w > 0 {
+            return (it.w, it.h);
+        }
+        // a button of size 0 takes the size of its normal picture
+        if let Some((p, r)) = &it.states[0] {
+            return match r {
+                Some(r) => (r[2], r[3]),
+                None => (p.img.w as i32, p.img.h as i32),
+            };
+        }
     }
     if let Some((w, h, _)) = n.buffer {
         return (w as i32, h as i32);

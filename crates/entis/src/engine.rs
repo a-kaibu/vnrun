@@ -59,17 +59,21 @@ pub struct Engine {
     pub next_channel: u32,
     /// sprites with a running BeginActivation
     pub active: Vec<std::rc::Weak<std::cell::RefCell<crate::natives::Native>>>,
+    /// GetCurrentTime calls this frame
+    pub time_polls: u32,
 }
 
 impl Engine {
     pub fn open(mut host: Box<dyn Files>, paths: Option<Vec<String>>) -> Result<Engine, String> {
         let paths = paths.unwrap_or_else(|| host.list());
         let mut fs = Fs::open(host, &paths)?;
-        // script.csx, or else the one named after the exe (lyrical.exe → lyrical.csx)
+        // script.csx, or else the one named after the exe (lyrical.exe → lyrical.csx), in an
+        // archive or a loose file (system/Platonic.csx)
         let mut names: Vec<String> = fs
             .entries()
             .into_iter()
             .map(|(_, e)| e.name)
+            .chain(paths.iter().cloned())
             .filter(|n| n.to_lowercase().ends_with(".csx"))
             .collect();
         let exe_stems: Vec<String> = paths
@@ -78,7 +82,8 @@ impl Engine {
             .map(|p| p.rsplit('/').next().unwrap_or(&p).to_string())
             .collect();
         names.sort_by_key(|n| {
-            let l = n.to_lowercase();
+            let lower = n.to_lowercase();
+            let l = lower.rsplit('/').next().unwrap_or(&lower);
             let stem = l.trim_end_matches(".csx").to_string();
             (l != "script.csx", !exe_stems.contains(&stem))
         });
@@ -129,6 +134,7 @@ impl Engine {
             rand: 0x2545_f491_4f6c_dd1d,
             next_channel: 0,
             active: Vec::new(),
+            time_polls: 0,
         })
     }
 
@@ -265,6 +271,7 @@ impl Engine {
             return Ok(());
         }
         self.now += FRAME_MS;
+        self.time_polls = 0;
         self.animate();
         let n = self.threads.len();
         for i in 0..n {
