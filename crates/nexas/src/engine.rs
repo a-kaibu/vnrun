@@ -1399,7 +1399,10 @@ impl Host for Engine {
                                     o.blend = true;
                                 }
                                 o.add = a(2) == 4;
-                                o.alpha.go(a(3) as f32 / 100.0, t, now);
+                                // mode 2 gives how see-through it is (さかあがりハリケーン's
+                                // title: made at 100, then faded to 0 as it moves in)
+                                let v = if a(2) == 2 { 100 - a(3) } else { a(3) };
+                                o.alpha.go(v as f32 / 100.0, t, now);
                             }
                         }
                     }
