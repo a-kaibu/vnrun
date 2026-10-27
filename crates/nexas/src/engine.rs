@@ -273,6 +273,10 @@ enum Wait {
 pub struct Engine {
     /// the exe build whose builtin numbering the scripts use
     pub build: &'static Build,
+    /// 2007: the label of the file to run when the running label ends (set by 0xff06)
+    after_start: Option<u32>,
+    /// the button picked at the last selection (0x62)
+    selected: i32,
     /// the threads that called a bank (0x48/0x49), each stopped at its call
     calls: Vec<Thread>,
     files: Box<dyn Files>,
@@ -377,7 +381,10 @@ impl Engine {
         let mut thread = Thread::new("System.bin", system);
         // System.bin label 0 starts the game (System.dat's entry table)
         thread.goto_label(0);
+        thread.label_ends = build.early;
         let mut e = Engine {
+            after_start: None,
+            selected: -1,
             build,
             calls: Vec::new(),
             files,
@@ -491,8 +498,9 @@ impl Engine {
             }
             Wait::Select => match click.and_then(|(x, y)| self.button_at(x, y)) {
                 Some(id) => {
-                    // 0x62's result
+                    // 0x62's result (2007 reads it again with 0xff05)
                     self.thread.regs[0] = id;
+                    self.selected = id;
                     Wait::None
                 }
                 None => Wait::Select,
@@ -527,7 +535,14 @@ impl Engine {
             match step? {
                 Step::Next => {}
                 Step::Yield => break,
-                Step::End => break,
+                Step::End => {
+                    if let Some(label) = self.after_start.take()
+                        && self.thread.goto_label(label)
+                    {
+                        continue;
+                    }
+                    break;
+                }
                 Step::Jump { file, label } => {
                     let params = std::mem::take(&mut self.pending_params);
                     let s = load_script(
@@ -540,6 +555,7 @@ impl Engine {
                     let trace = self.thread.trace;
                     let mut t = Thread::new(&file, s);
                     t.trace = trace;
+                    t.label_ends = self.build.early;
                     let mut g = std::mem::take(&mut self.globals);
                     let init = t.run_init(&mut g, self);
                     self.globals = g;
@@ -1515,6 +1531,9 @@ impl Host for Engine {
             }
             0x1d2 => out = sjis::chars(&bytes(args, 0)).len() as i32,
             // object plane: set / get
+            // 2007: the result of the last selection; the label to go on at when this one ends
+            0xff05 => out = self.selected,
+            0xff06 => self.after_start = u32::try_from(a(0)).ok(),
             0x19b => self.plane = a(0),
             0x1a1 => out = self.plane,
             _ => {

@@ -15,6 +15,8 @@ pub struct Build {
     /// Before 2015 (2011, 2012) the VM has no 0x2F (unsigned shift) and no 0x39/0x3A, so the ops from 0x2F
     /// on are one lower and those from 0x3D on two lower.
     old_ops: bool,
+    /// 2007: the VM lacks two of the bitwise ops, so its ops from 0x13 on are two lower than 2010's.
+    pub early: bool,
 }
 
 pub const BUILDS: &[Build] = &[
@@ -22,26 +24,31 @@ pub const BUILDS: &[Build] = &[
         name: "2015 (恋愛フェイズ)",
         rows: B2015,
         old_ops: false,
+        early: false,
     },
     Build {
         name: "2012 (キスベル)",
         rows: B2012,
         old_ops: true,
+        early: false,
     },
     Build {
         name: "2013 (キスアト)",
         rows: B2013,
         old_ops: true,
+        early: false,
     },
     Build {
         name: "2011 (ホチキス)",
         rows: B2011,
         old_ops: true,
+        early: false,
     },
     Build {
         name: "2019 (アイキス)",
         rows: B2019,
         old_ops: false,
+        early: false,
     },
 ];
 
@@ -77,6 +84,40 @@ static B2010_BUILD: Build = Build {
         (0x184, 0xff04, 3),
     ],
     old_ops: true,
+    early: false,
+};
+
+// 姫さまっ、お手やわらかに！ (2007): matched to the 2009 table by handler body and by what the
+// calls of System.bin pass. 0xd9 reads the result of the selection 0x7f waits for; 0xe6 names the
+// label that runs when the running one ends (op 0x1C before the next label).
+static B2007_BUILD: Build = Build {
+    name: "2007 (姫さまっ、お手やわらかに！)",
+    rows: &[
+        (0x00, 0x00, 1),
+        (0x0a, 0x02, 1),
+        (0x0e, 0x05, 2),
+        (0x3b, 0x137, 5),
+        (0x3c, 0x138, 6),
+        (0x40, 0x143, 2),
+        (0x41, 0x144, 6),
+        (0x44, 0x148, 6),
+        (0x4c, 0x159, 6),
+        (0x4d, 0x14a, 5),
+        (0x52, 0x162, 5),
+        (0x54, 0x165, 2),
+        (0x7f, 0x62, 2),
+        (0x82, 0x78, 5),
+        (0xd3, 0x67, 4),
+        (0xd9, 0xff05, 1),
+        (0xe4, 0x45, 2),
+        (0xe6, 0xff06, 1),
+        (0xe7, 0x48, 10),
+        (0xe8, 0x49, 9),
+        (0xe9, 0x4a, 0),
+        (0xf7, 0x8a, 2),
+    ],
+    old_ops: true,
+    early: true,
 };
 
 // キュアフル！ (2009): the cases of the 2010 table matched by handler body (nxbest.py).
@@ -112,6 +153,7 @@ static B2009_BUILD: Build = Build {
         (0x182, 0xff02, 2),
     ],
     old_ops: true,
+    early: false,
 };
 
 impl Build {
@@ -133,8 +175,12 @@ impl Build {
         if !self.old_ops {
             return;
         }
+        let early = self.early;
         let fix = |b: &mut Block| {
             for ins in b.init.iter_mut().chain(&mut b.code) {
+                if early && ins.op >= 0x13 {
+                    ins.op += 2;
+                }
                 ins.op = match ins.op {
                     0x2f..=0x38 => ins.op + 1,
                     0x3d.. => ins.op + 2,
@@ -165,6 +211,15 @@ impl Build {
                 .any(|i| i.op == 7 && i.arg == (10 << 16 | 0x16a))
         {
             return &B2009_BUILD;
+        }
+        if script.legacy
+            && script
+                .main
+                .code
+                .iter()
+                .any(|i| i.op == 7 && i.arg == (9 << 16 | 0xe8))
+        {
+            return &B2007_BUILD;
         }
         let mut calls = Vec::new();
         let mut collect = |b: &Block| {

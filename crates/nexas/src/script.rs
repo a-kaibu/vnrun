@@ -1,5 +1,6 @@
 //! Compiled scripts (Script.pac/*.bin) of NeXAS releases from about 2010 on.
-//! Earlier scripts omit `init` and `str_names` from every block.
+//! Earlier scripts omit `init` and `str_names` from every block; before 2009 a file is only the
+//! main code and its strings.
 //!
 //! ```text
 //! block    = init:code main:code strings:strs int_names:strs str_names:strs n:u32 n x [u8; 0x44]
@@ -96,6 +97,15 @@ impl Reader<'_> {
         let init = if old { Vec::new() } else { self.code()? };
         let code = self.code()?;
         let strings = self.strs()?;
+        // 2006-2008: the file ends after the strings (no names, no banks)
+        if old && self.at == self.b.len() {
+            return Ok(Block {
+                init,
+                code,
+                strings,
+                ..Block::default()
+            });
+        }
         let names = |v: Vec<Vec<u8>>| v.iter().map(|s| sjis::decode(s)).collect();
         let int_names = names(self.strs()?);
         let str_names = if old { Vec::new() } else { names(self.strs()?) };

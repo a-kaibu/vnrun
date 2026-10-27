@@ -241,6 +241,8 @@ pub struct Thread {
     next_temp: usize,
     pub done: bool,
     pub trace: bool,
+    /// 2007: op 0x1C right before a label ends the thread (the end of a label's block)
+    pub label_ends: bool,
 }
 
 pub enum Step {
@@ -269,6 +271,7 @@ impl Thread {
             next_temp: 0,
             done: false,
             trace: false,
+            label_ends: false,
         }
     }
 
@@ -646,6 +649,18 @@ impl Thread {
                 set_a(self, v);
             }
             0x1b | 0x1d | 0x2c => {}
+            // (the label comes as "A = n; label n")
+            0x1c if self.label_ends
+                && self
+                    .code_of(self.frames.last().unwrap())
+                    .iter()
+                    .skip(self.frames.last().unwrap().ip + 1)
+                    .take(2)
+                    .any(|i| i.op == 0x1b) =>
+            {
+                self.done = true;
+                return Ok(Step::End);
+            }
             0x1c => out = Step::Yield,
             0x22 | 0x23 => {
                 let dest = if arg == u32::MAX { a as u32 } else { arg };
