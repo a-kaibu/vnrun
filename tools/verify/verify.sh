@@ -65,12 +65,12 @@ game_root() {
     tmrhiro) m=(-iname srp.pac -o -iname mg_data.mbl) ;;
     livemaker) m=(-iname live.dll -o -iname game.ext) ;;
     catsystem2) m=(-iname scene.int) ;;
-    entis) m=(-iname '*.noa') ;;
+    entis) m=(-iname '*.csx' -o -iname '*.noa') ;;
     nscripter) m=(-iname nscript.dat -o -iname 0.txt -o -iname 00.txt -o -iname '*.nsa' -o -iname '*.sar') ;;
     html) m=(-iname package.json -o -iname index.html -o -iname package.nw -o -iname nw.pak) ;;
   esac
   # Older YU-RIS releases keep everything in pac/*.ypf; the game root is the folder above pac/.
-  # Entis GLS keeps its archives in Data/ beside the exe.
+  # Entis GLS keeps its archives in Data/ beside the exe and the .csx script.
   local up='/pac$'
   [[ $2 == entis ]] && up='/data$'
   find "$1" -type f \( "${m[@]}" \) -printf '%d %h\n' 2> /dev/null | sort -n | head -1 | cut -d' ' -f2- | sed "s#$up##I"

@@ -198,8 +198,12 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("cs2.exe") || names.iter().any(|n| n == "scene.int") {
         // CatSystem2: cs2.exe beside the .int archives
         Some("catsystem2".into())
-    } else if names.iter().any(|n| n.ends_with(".noa")) || noa_in_data(game) {
-        // Entis GLS: NOA archives at the top or in Data/
+    } else if names
+        .iter()
+        .any(|n| n.ends_with(".noa") || n.ends_with(".csx"))
+        || noa_in_data(game)
+    {
+        // Entis GLS: the .csx script or NOA archives at the top, or NOA archives in Data/
         Some("entis".into())
     } else if has("script.pac") {
         Some("nexas".into())
