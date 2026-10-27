@@ -343,14 +343,14 @@ s2021_at_sakura_tuma_10	タイトル	2026-10-26: XP3 が data.xp3 以外の配�
 s2016_akabeesoft3_inosupe	タイトル	2026-10-26: data.bin と TLG のみのアーカイブを検出。タイトルメニューを確認
 s2017_akabeesoft3_tonofuta	タイトル	2026-10-26: data.bin の検出と引用符なしの末尾 cond 式に対応し、タイトルメニューを確認
 s2019_parasol_renran_p	対象外	2026-10-26: 配布 URL は体験版の差分パッチのみ。起動用 EXE/startup と本体が含まれない
-b2006_lune	タイトル	961c800 (Marble) でタイトル画面まで表示 (Chromium)。START からの確認はこれから
-b2006_marine	タイトル	961c800 (Marble) でタイトル画面まで表示 (Chromium)。START からの確認はこれから
-s2006_lune_sakuya	タイトル	961c800 (Marble) でタイトル画面まで表示 (Chromium)。START からの確認はこれから
-b2007_marine	タイトル	961c800 (Marble) でタイトル画面まで表示 (Chromium)。START からの確認はこれから
-b2007_lune	タイトル	961c800 (Marble) でタイトル画面まで表示 (Chromium)。START からの確認はこれから
-s2007_marine_succubus	タイトル	961c800 (Marble) でタイトル画面まで表示 (Chromium)。START からの確認はこれから
-b2008_marine	タイトル	961c800 (Marble) でタイトル画面まで表示 (Chromium)。START からの確認はこれから
-s2008_lune_inmu	タイトル	961c800 (Marble) でタイトル画面まで表示 (Chromium)。START からの確認はこれから
+b2006_lune	本編	961c800 (Marble) で START から本編の文章・立ち絵まで (Chromium)
+b2006_marine	本編	961c800 (Marble) で START から本編の文章・立ち絵まで (Chromium)
+s2006_lune_sakuya	本編	961c800 (Marble) で START から本編の文章・立ち絵まで (Chromium)
+b2007_marine	本編	961c800 (Marble) で START から本編の文章・立ち絵まで (Chromium)
+b2007_lune	本編	961c800 (Marble) で START から本編の文章・立ち絵まで (Chromium)
+s2007_marine_succubus	本編	961c800 (Marble) で START から本編の文章・立ち絵まで (Chromium)
+b2008_marine	本編	961c800 (Marble) で START から本編の文章・立ち絵まで (Chromium)
+s2008_lune_inmu	本編	961c800 (Marble) で START から本編の文章・立ち絵まで (Chromium)
 dl_RJ129271	本編	タイトル→はじめから→名前入力→選択肢→本編の文章まで (livemaker-run とブラウザ)
 b2014_windmill_oasis	本編	タイトル→START→本編の文章・立ち絵・イベント CG まで (cs2-run とブラウザ)
 dl_RJ125204	タイトル	f1a4850 (LiveMaker) でタイトル画面まで表示 (Chromium)。START からの確認はこれから
