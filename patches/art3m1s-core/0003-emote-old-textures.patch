@@ -1,0 +1,109 @@
+diff --git a/crates/art3m1s-emote/src/atlas.rs b/crates/art3m1s-emote/src/atlas.rs
+index 2e5227c..3968df1 100644
+--- a/crates/art3m1s-emote/src/atlas.rs
++++ b/crates/art3m1s-emote/src/atlas.rs
+@@ -108,7 +108,7 @@ impl EmoteAtlas {
+         match texture.format {
+             TextureFormat::Dxt5 => decode_dxt5(bytes, texture.width, texture.height),
+             TextureFormat::Other(ref format) => {
+-                Err(EmoteError::Unsupported(format!("texture format {format}")))
++                decode_plain(format, bytes, texture.width, texture.height)
+             }
+         }
+     }
+@@ -120,7 +120,7 @@ impl EmoteAtlas {
+         match texture.format {
+             TextureFormat::Dxt5 => decode_dxt5(bytes, texture.width, texture.height),
+             TextureFormat::Other(ref format) => {
+-                Err(EmoteError::Unsupported(format!("texture format {format}")))
++                decode_plain(format, bytes, texture.width, texture.height)
+             }
+         }
+     }
+@@ -132,8 +132,11 @@ fn parse_texture(id: &str, value: &PsbValue) -> Result<EmoteTexture> {
+         id: id.to_owned(),
+         width: required_u32(value, "width")?,
+         height: required_u32(value, "height")?,
+-        truncated_width: required_u32(value, "truncated_width")?,
+-        truncated_height: required_u32(value, "truncated_height")?,
++        // Older E-Mote files have no truncated size; the whole texture is used then.
++        truncated_width: required_u32(value, "truncated_width")
++            .or_else(|_| required_u32(value, "width"))?,
++        truncated_height: required_u32(value, "truncated_height")
++            .or_else(|_| required_u32(value, "height"))?,
+         format: if format.eq_ignore_ascii_case("DXT5") {
+             TextureFormat::Dxt5
+         } else {
+@@ -168,6 +171,72 @@ fn parse_icon(texture_id: &str, id: &str, value: &PsbValue) -> Result<AtlasIcon>
+     })
+ }
+ 
++/// Uncompressed E-Mote texture formats (FreeMote's PixelFormat names), and "RL", a run-length
++/// packing of RGBA8. Pixels are stored B, G, R, A.
++fn decode_plain(format: &str, bytes: &[u8], width: u32, height: u32) -> Result<Vec<u8>> {
++    let n = width as usize * height as usize;
++    let unpacked;
++    let (bytes, kind) = if format.eq_ignore_ascii_case("RL") {
++        unpacked = unpack_rl(bytes, n * 4);
++        (&unpacked[..], "RGBA8")
++    } else {
++        (bytes, format)
++    };
++    let per = match kind.to_ascii_uppercase().as_str() {
++        "RGBA8" => 4,
++        "RGBA4444" | "A8L8" => 2,
++        "L8" | "A8" => 1,
++        _ => return Err(EmoteError::Unsupported(format!("texture format {format}"))),
++    };
++    if bytes.len() < n * per {
++        return Err(EmoteError::InvalidFormat(format!(
++            "{format} texture has {} bytes, expected {}",
++            bytes.len(),
++            n * per
++        )));
++    }
++    let mut out = Vec::with_capacity(n * 4);
++    for px in bytes[..n * per].chunks_exact(per) {
++        let rgba = match (kind.to_ascii_uppercase().as_str(), px) {
++            ("RGBA8", [b, g, r, a]) => [*r, *g, *b, *a],
++            ("RGBA4444", [lo, hi]) => {
++                let x = |v: u8| (v & 15) * 17;
++                [x(*hi), x(lo >> 4), x(*lo), x(hi >> 4)]
++            }
++            ("A8L8", [l, a]) => [*l, *l, *l, *a],
++            ("L8", [l]) => [*l, *l, *l, 255],
++            (_, [a]) => [255, 255, 255, *a],
++            _ => unreachable!(),
++        };
++        out.extend_from_slice(&rgba);
++    }
++    Ok(out)
++}
++
++/// RL: a control byte c; with the top bit set, the next 4-byte pixel repeats (c & 0x7f) + 3
++/// times, otherwise c + 1 pixels follow as they are.
++fn unpack_rl(bytes: &[u8], size: usize) -> Vec<u8> {
++    let mut out = Vec::with_capacity(size);
++    let mut i = 0;
++    while i < bytes.len() && out.len() < size {
++        let c = bytes[i] as usize;
++        i += 1;
++        if c & 0x80 != 0 {
++            let Some(px) = bytes.get(i..i + 4) else { break };
++            for _ in 0..(c & 0x7f) + 3 {
++                out.extend_from_slice(px);
++            }
++            i += 4;
++        } else {
++            let end = (i + (c + 1) * 4).min(bytes.len());
++            out.extend_from_slice(&bytes[i..end]);
++            i = end;
++        }
++    }
++    out.resize(size, 0);
++    out
++}
++
+ fn validate_texture_resource(document: &PsbDocument, texture: &EmoteTexture) -> Result<()> {
+     let bytes = document.resource(texture.resource)?;
+     if texture.format == TextureFormat::Dxt5 {

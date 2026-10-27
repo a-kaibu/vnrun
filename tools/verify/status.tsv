@@ -49,7 +49,7 @@ s2019_lump_of_sugar_wakabairono_quartet	タイトル	3b42c00 で解消
 r1_artemis	タイトル	
 s2023_j_studio_reaero_dt	タイトル	
 s2020_wonder_fool_maokatsu	タイトル	
-s2021_giga_fuyukiss	NG	E-Mote の読み込みで止まる (image/fg/tok_0.psb: missing integer field truncated_width)
+s2021_giga_fuyukiss	本編	E-Mote 旧形式 (truncated_width なし, RGBA8 など) に対応してタイトルから本編まで
 s2024_madosoft_selectoblige	タイトル	f508d03 (欠けた include を飛ばす) でタイトルまで
 s2025_j_studio_galsfiction	タイトル	blur_k のシェーダーのコンパイルに失敗 (表示には出ていない)
 r1_naru2	タイトル	
