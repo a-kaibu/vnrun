@@ -81,6 +81,7 @@ pub fn prepare(dir: &Path) -> Result<(), String> {
             }
         }
     }
+    nwjs::apply_patches(dir)?;
     for path in &executables {
         let bytes = read(path)?;
         // Read the PE overlay signature before loading the SDRS config. This distinguishes
