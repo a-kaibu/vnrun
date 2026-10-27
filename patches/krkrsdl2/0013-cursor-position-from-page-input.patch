@@ -1,0 +1,14 @@
+--- a/src/core/sdl2/SDLApplication.cpp
++++ b/src/core/sdl2/SDLApplication.cpp
+@@ -1140,6 +1140,11 @@
+ {
+ 	x = this->lastMouseX;
+ 	y = this->lastMouseY;
++#ifdef __EMSCRIPTEN__
++	// The page sends pointer input as events (vnrun_mouse), which SDL's own mouse state never
++	// sees: the last event's position is where the pointer is.
++	return;
++#endif
+ 	if (this->window != SDL_GetMouseFocus())
+ 	{
+ 		return;
