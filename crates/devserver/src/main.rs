@@ -175,6 +175,9 @@ fn detect(game: &Path) -> Option<String> {
         Some("yuris".into())
     } else if has("srp.pac") || has("mg_data.mbl") {
         Some("tmrhiro".into())
+    } else if has("live.dll") || has("game.ext") {
+        // LiveMaker: the archive is appended to the exe (live.dll beside it) or in game.dat/.ext
+        Some("livemaker".into())
     } else if has("script.pac") {
         Some("nexas".into())
     } else if has("data.pac") {

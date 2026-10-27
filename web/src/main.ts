@@ -21,6 +21,7 @@ const ENGINES: Record<string, () => Promise<EngineModule>> = {
   nexas: () => import("./engines/nexas"),
   advhd: () => import("./engines/advhd"),
   tmrhiro: () => import("./engines/tmrhiro"),
+  livemaker: () => import("./engines/livemaker"),
   html: () => import("./engines/html"),
 };
 

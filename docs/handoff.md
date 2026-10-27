@@ -136,7 +136,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 | NeXAS | 26 | 自作 (`crates/nexas`) | Rust | あり (WebGPU) | 2015 年の版 (恋愛フェイズ) と 2012 年の版 (キスベル) で本編まで。ほかの版は命令表を足す |
 | AdvHD | 18 | 自作 (`crates/advhd`, `crates/advhd-web`) | Rust | あり (WebGPU) | 2018 年の版 (Lua 5.3、僕と彼女のご奉仕同棲) でタイトルから本編の文章まで。選択肢・音・セーブ・マスク遷移はまだ。2015 年版は Lua の io、2026 年版は setCallback が足りない |
 | Tmr-Hiro ADV System | 13 | 自作 (`crates/tmrhiro`, `crates/tmrhiro-web`) | Rust | あり (WebGPU) | ルネ・マリン・つるみく系 (srp.pac / Agrd・Bgrd・Cgrd.pac)。vnbox では NeXAS に分類されていた。2010 年 (ぱいずりチアリーダー) と 2023 年 (非道狩) の体験版でタイトルから本編の文章・選択肢まで。立ち絵の位置と移動 (exe の処理から)、フラッシュ、ゲームの画像を使ったセーブ・ロード画面、ウィンドウのボタン (Qセーブ/Qロード/オート/スキップ/非表示/ボイス)、右クリックで非表示。2006〜2008 年の旧 srp 形式 (1 行 1 命令、`engine/old.rs`) も対応し、まいみこ体験版でタイトル・本編・選択肢・マップ選択・立ち絵まで。コンフィグ・バックログ・新形式のマップ選択・旧形式の目パチ演出 (0x46)・旧形式のセーブ画面の絵はまだ |
-| LiveMaker / WillPlus | 各 9 | なし | | | |
+| LiveMaker | 4 | 自作 (`crates/livemaker`, `crates/livemaker-web`) | Rust | あり (WebGPU) | vf アーカイブ (exe 末尾 / game.dat+ext)、.lsb チャート、TpWord 文章、.gal 画像。メッセージ窓やメニューはゲーム同梱のノベルシステムのチャートが組むので、エンジンはスレッド・コンポーネント (Img/Box/Mes/Caption/Menu/PrevMenu(.lpm XML)/Button/Edit/Sound/Timer)・表裏画面と Flip・キャビネットを持つ。とししたハニー体験版でタイトル→名前入力→選択肢→本編まで。vnbox で LiveMaker とされた 9 本は誤判定 (Tyrano/Electron/独自形式など)。セーブ・ロード、バックログ、.lcm アニメ、バイナリ形式の .lpm、文字入力はまだ |
 | CatSystem2 / Escude / EntisGLS | 各 8 | なし | | | |
 
 Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softpal 31、FVP 6、Artemis 5)。

@@ -436,6 +436,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "livemaker-web"
+version = "0.1.0"
+dependencies = [
+ "js-sys",
+ "livemaker",
+ "nexas",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "log"
 version = "0.4.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"

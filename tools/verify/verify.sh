@@ -62,6 +62,7 @@ game_root() {
     yuris) m=(-iname ysbin.ypf -o -iname yscfg.dat -o -ipath '*/pac/*.ypf') ;;
     nexas) m=(-iname script.pac) ;;
     advhd) m=(-iname rio.arc) ;;
+    livemaker) m=(-iname live.dll -o -iname game.ext) ;;
     nscripter) m=(-iname nscript.dat -o -iname 0.txt -o -iname 00.txt -o -iname '*.nsa' -o -iname '*.sar') ;;
     html) m=(-iname package.json -o -iname index.html -o -iname package.nw) ;;
   esac
