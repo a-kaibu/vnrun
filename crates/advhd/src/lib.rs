@@ -11,6 +11,7 @@ pub mod host;
 mod io;
 pub mod layers;
 pub mod pna;
+pub mod snapshot;
 pub mod state;
 pub mod text;
 pub mod ws2;

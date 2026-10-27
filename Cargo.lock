@@ -17,6 +17,8 @@ dependencies = [
  "image 0.25.10",
  "luavm",
  "nexas",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

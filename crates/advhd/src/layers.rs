@@ -20,7 +20,7 @@ pub const COLOR: i32 = 6;
 pub const RECT: i32 = 7;
 pub const SIZE: i32 = 8;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize)]
 pub struct Params {
     pub pos: [f32; 3],
     /// degrees
@@ -102,7 +102,7 @@ impl Params {
 }
 
 /// A change of a parameter by `delta` over `time` ms, started by name.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Effect {
     pub name: String,
     pub kind: i32,
