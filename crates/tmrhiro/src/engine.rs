@@ -778,10 +778,16 @@ impl Engine {
             (0x10, 0x00) => {}
             (0x10, 0x01) | (0x10, 0x02) => {
                 let name = c.str(2);
+                let file = c.u8(1) == 2;
+                // a call of a script the trial does not have goes on (as the exe does)
+                if file && self.load(name.split(',').next().unwrap_or("")).is_err() {
+                    eprintln!("tmrhiro: no script {name}, going on");
+                    return Ok(());
+                }
                 if c.op == 0x02 {
                     self.stack.push((self.script.clone(), self.pc));
                 }
-                if c.u8(1) == 2 {
+                if file {
                     self.jump_file(&name);
                 } else {
                     self.jump_label(&name);
