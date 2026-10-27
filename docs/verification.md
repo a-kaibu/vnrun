@@ -52,7 +52,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | NeXAS (vnrun) | 16 | 6 | 1 |  | 1 | 7 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
 | Tmr-Hiro (vnrun) | 22 | 14 | 8 |  |  |  |  |  |
-| LiveMaker (vnrun) | 4 | 1 |  |  |  |  |  | 3 |
+| LiveMaker (vnrun) | 4 | 1 | 3 |  |  |  |  |  |
+| CatSystem2 (vnrun) | 1 | 1 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -471,7 +472,13 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | dl_RJ129271 | [とししたハニー 体験版](https://trial.dlsite.com/doujin/RJ130000/RJ129271_trial.zip) | 本編 | タイトル→はじめから→名前入力→選択肢→本編の文章まで (livemaker-run とブラウザ) |
-| dl_RJ125204 | [保健室の女神 体験版](https://trial.dlsite.com/doujin/RJ126000/RJ125204_trial.zip) | 未確認 |  |
-| dl_RJ284038 | [彼女と俺と留学生 体験版](https://trial.dlsite.com/doujin/RJ285000/RJ284038_trial.zip) | 未確認 |  |
-| dl_RJ341209 | [スタイホリック 体験版](https://trial.dlsite.com/doujin/RJ342000/RJ341209_trial.zip) | 未確認 |  |
+| dl_RJ125204 | [保健室の女神 体験版](https://trial.dlsite.com/doujin/RJ126000/RJ125204_trial.zip) | タイトル | f1a4850 (LiveMaker) でタイトル画面まで表示 (Chromium)。START からの確認はこれから |
+| dl_RJ284038 | [彼女と俺と留学生 体験版](https://trial.dlsite.com/doujin/RJ285000/RJ284038_trial.zip) | タイトル | f1a4850 (LiveMaker) で「はじめから / 終了」の文字だけのメニューまで (Chromium)。体験版本来の画面か要確認 |
+| dl_RJ341209 | [スタイホリック 体験版](https://trial.dlsite.com/doujin/RJ342000/RJ341209_trial.zip) | タイトル | f1a4850 (LiveMaker) でタイトル画面まで表示 (Chromium)。START からの確認はこれから |
+
+### CatSystem2 (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2014_windmill_oasis | [春風センセーション！体験版](http://suezou.dyndns.org/dl2014/windmill-oasis/harukaze/harukaze_trial.exe) | 本編 | タイトル→START→本編の文章・立ち絵・イベント CG まで (cs2-run とブラウザ) |
 <!-- /matrix -->
