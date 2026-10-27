@@ -273,6 +273,9 @@ enum Wait {
     Click,
 }
 
+/// The objects on screen by (plane, number).
+type Objs = BTreeMap<(i32, i32), Obj>;
+
 pub struct Engine {
     /// the exe build whose builtin numbering the scripts use
     pub build: &'static Build,
@@ -305,7 +308,7 @@ pub struct Engine {
     background: Option<usize>,
     transition: Option<(Rc<Image>, u64, u64)>,
     /// the scene as it was drawn last frame, for transitions: objects, background
-    before: Option<(BTreeMap<(i32, i32), Obj>, Option<usize>)>,
+    before: Option<(Objs, Option<usize>)>,
     wait: Wait,
     now: u64,
     flags: HashMap<i32, i32>,
@@ -824,7 +827,7 @@ impl Engine {
                         out.push(Draw {
                             image: img.clone(),
                             src: part.src,
-                            dst: dst,
+                            dst,
                             place: p,
                         });
                     }
@@ -1469,8 +1472,8 @@ impl Host for Engine {
                         Tween::at(1e9),
                         Tween::at(1e9),
                     ]);
-                    for k in 0..4 {
-                        c[k].go(a(2 + k) as f32, t, now);
+                    for (k, ck) in c.iter_mut().enumerate() {
+                        ck.go(a(2 + k) as f32, t, now);
                     }
                 }
                 if a(8) != 0 {

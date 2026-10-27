@@ -144,6 +144,9 @@ struct Choice {
     starts: Vec<usize>,
 }
 
+/// A `*mark`: script, line, and the calls (script, line) under it.
+type Mark = (String, usize, Vec<(String, usize)>);
+
 pub struct Engine {
     files: Box<dyn Files>,
     /// (kind, name) → (archive file, entry); kind is the archive's name without "mg_" and digits
@@ -168,7 +171,7 @@ pub struct Engine {
     /// the music playing (0: none)
     bgm: i32,
     /// the last `*mark`: script, line, and the calls under it
-    mark: Option<(String, usize, Vec<(String, usize)>)>,
+    mark: Option<Mark>,
     /// the chapter (`*title`) and the first text of the page, shown with saves
     chapter: String,
     said: String,
