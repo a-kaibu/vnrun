@@ -42,7 +42,7 @@ if (!url || !out) {
   const t0 = Date.now();
   const at = () => `${((Date.now() - t0) / 1000).toFixed(0)}s`;
   page.on("console", (m) => log.push(`[${m.type()}] ${m.text()}`));
-  page.on("pageerror", (e) => log.push(`[pageerror] ${e.message}`));
+  page.on("pageerror", (e) => log.push(`[pageerror] ${e.stack || e.message}`));
   page.on("response", (r) => r.status() >= 400 && log.push(`[http ${r.status()}] ${r.url()}`));
   // alert/confirm from the game (KiriKiri's System.inform, yes/no dialogs): logged, answered no.
   // prompt (AdvHD name entry): accepted with its default, or a placeholder name when it has none.

@@ -170,6 +170,18 @@ export async function start({ fs, manifest, ui }: EngineContext): Promise<void> 
       // RPG Maker MZ refuses to start without IndexedDB and keeps its saves there (localforage,
       // keys named after the game id), so it stays the browser's own.
       Object.assign(win, { studio_api: studio, require, process: nodeProcess() });
+      // An RPG Maker plugin that throws while it loads (Last12's JSON.parse of an empty
+      // parameter) makes main.js show the error instead of the game, which the release runs past.
+      // Until the page has loaded, errors from plugin scripts only go to the console.
+      const plugin = (e: ErrorEvent) => {
+        // The stack tells where it came from (filename can name the page).
+        if (!/\/js\/plugins\//.test(`${e.filename} ${(e.error as Error | undefined)?.stack}`)) return;
+        console.warn("plugin error while loading:", e.error ?? e.message);
+        e.stopImmediatePropagation();
+        e.preventDefault();
+      };
+      win.addEventListener("error", plugin, true);
+      win.addEventListener("load", () => win.removeEventListener("error", plugin, true));
     },
   });
 
