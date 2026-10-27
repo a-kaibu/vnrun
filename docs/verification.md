@@ -51,7 +51,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 16 | 6 | 1 |  | 1 | 7 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
-| Tmr-Hiro (vnrun) | 22 | 13 |  |  | 1 | 8 |  |  |
+| Tmr-Hiro (vnrun) | 22 | 14 | 8 |  |  |  |  |  |
 | LiveMaker (vnrun) | 4 | 1 |  |  |  |  |  | 3 |
 
 ### SiglusEngine (siglus_rs)
@@ -448,6 +448,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2023_turumiku_another | [非道狩～ヒトカリ～ 体験版](http://suezou.dyndns.org/dl2023/turumiku-another/hitokari/hitokari-trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
 | s2006_lune_maimiko | [妹巫女・萌](http://suezou.dyndns.org/dl2006/lune/maimiko/maimiko_trial.exe) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
 | s2011_marine_marching | [おっぱい学園マーチングバンド部！　体験版](http://suezou.dyndns.org/dl2011/marine/marching/marching_trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
+| s2012_marine_deka_ane | [デカくてエッチな俺の姉　体験版](http://suezou.dyndns.org/dl2012/marine/deka_ane/dekaane_trial.zip) | 本編 | 961c800 でタイトル→本編の文章・名前・立ち絵まで (Chromium) |
 | s2013_lune_kazokusaimin | [巨乳家族催眠　体験版](http://suezou.dyndns.org/dl2013/lune/kazokusaimin/kazokusaimin_trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
 | s2014_lune_revenge_room | [リベンジルーム　体験版](http://suezou.dyndns.org/dl2014/lune/revenge_room/revenge_room_trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
 | s2015_lune_kunoichi_suzaku | [巨乳くのいち朱雀　体験版](http://suezou.dyndns.org/dl2015/lune/kunoichi_suzaku/kunoichisuzaku_trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
@@ -456,15 +457,14 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2016_marine_cospure_harem | [お嬢様学園こすぷれハーレム部！「今日はどの服でエッチしよっか」](http://suezou.dyndns.org/dl2016/marine/cospure_harem/cospure_harem_trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
 | s2018_lune_elf_saimin | [巨乳エルフ母娘催眠体験版](http://suezou.dyndns.org/dl2018/lune/elf_saimin/elfsaimin_trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
 | s2019_lune_dogeza_saimin | [巨乳女戦士・土下座催眠「ちくしょうっ……アタシはお前の思い通りになんか、ならないからな……！」](http://suezou.dyndns.org/dl2019/lune/dogeza_saimin/dogeza_saimin_trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
-| s2012_marine_deka_ane | [デカくてエッチな俺の姉　体験版](http://suezou.dyndns.org/dl2012/marine/deka_ane/dekaane_trial.zip) | 要再確認 | dcf3bf8 で画面が真っ白のまま (音声のデコード失敗のみ記録)。再確認中 |
-| b2006_lune | [ソウルイーター　体験版　Game Edition](http://suezou.dyndns.org/dl2006/lune/souleater/souleater_trial_g.exe) | NG | srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応 |
-| b2006_marine | [人妻搾乳飯店－体験版－](http://suezou.dyndns.org/dl2006/marine/hanten/hanten_trial.exe) | NG | srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応 |
-| b2007_lune | [風輪奸山　体験版](http://suezou.dyndns.org/dl2007/lune/kanzan/kanzan_trial.exe) | NG | srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応 |
-| b2007_marine | [しおふきマーメイド体験版](http://suezou.dyndns.org/dl2007/marine/siofuki/siofuki_trial.exe) | NG | srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応 |
-| b2008_marine | [びんかんアスリート](http://suezou.dyndns.org/dl2008/marine/binkan/binkan_trial.exe) | NG | srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応 |
-| s2006_lune_sakuya | [くのいち・咲夜－体験版－](http://suezou.dyndns.org/dl2006/lune/sakuya/kunoichi_trial.exe) | NG | srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応 |
-| s2007_marine_succubus | [とらぶるサッキュバス](http://suezou.dyndns.org/dl2007/marine/succubus/succubus_trial.exe) | NG | srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応 |
-| s2008_lune_inmu | [淫夢学園－体験版](http://suezou.dyndns.org/dl2008/lune/inmu/inmu_trial.exe) | NG | srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応 |
+| b2006_lune | [ソウルイーター　体験版　Game Edition](http://suezou.dyndns.org/dl2006/lune/souleater/souleater_trial_g.exe) | タイトル | 961c800 (Marble) でタイトル画面まで表示 (Chromium)。START からの確認はこれから |
+| b2006_marine | [人妻搾乳飯店－体験版－](http://suezou.dyndns.org/dl2006/marine/hanten/hanten_trial.exe) | タイトル | 961c800 (Marble) でタイトル画面まで表示 (Chromium)。START からの確認はこれから |
+| b2007_lune | [風輪奸山　体験版](http://suezou.dyndns.org/dl2007/lune/kanzan/kanzan_trial.exe) | タイトル | 961c800 (Marble) でタイトル画面まで表示 (Chromium)。START からの確認はこれから |
+| b2007_marine | [しおふきマーメイド体験版](http://suezou.dyndns.org/dl2007/marine/siofuki/siofuki_trial.exe) | タイトル | 961c800 (Marble) でタイトル画面まで表示 (Chromium)。START からの確認はこれから |
+| b2008_marine | [びんかんアスリート](http://suezou.dyndns.org/dl2008/marine/binkan/binkan_trial.exe) | タイトル | 961c800 (Marble) でタイトル画面まで表示 (Chromium)。START からの確認はこれから |
+| s2006_lune_sakuya | [くのいち・咲夜－体験版－](http://suezou.dyndns.org/dl2006/lune/sakuya/kunoichi_trial.exe) | タイトル | 961c800 (Marble) でタイトル画面まで表示 (Chromium)。START からの確認はこれから |
+| s2007_marine_succubus | [とらぶるサッキュバス](http://suezou.dyndns.org/dl2007/marine/succubus/succubus_trial.exe) | タイトル | 961c800 (Marble) でタイトル画面まで表示 (Chromium)。START からの確認はこれから |
+| s2008_lune_inmu | [淫夢学園－体験版](http://suezou.dyndns.org/dl2008/lune/inmu/inmu_trial.exe) | タイトル | 961c800 (Marble) でタイトル画面まで表示 (Chromium)。START からの確認はこれから |
 
 ### LiveMaker (vnrun)
 
