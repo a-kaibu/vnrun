@@ -600,7 +600,16 @@ impl Engine {
         if let (Some(skin), Key::Name(id)) = (skin, key) {
             let mut r = Native::new("Resource");
             if let Some(f) = skin.image_file(id) {
-                r.pic = self.pic(&f);
+                let lower = f.to_lowercase();
+                if lower.ends_with(".mio") || lower.ends_with(".wav") || lower.ends_with(".ogg") {
+                    // a sound of the skin (the menu sounds)
+                    let b = self.fs.read(&f);
+                    r.sound_ms = b.as_deref().map_or(0.0, crate::mio::duration_ms);
+                    r.sound = b.map(Rc::new);
+                    r.sound_name = f;
+                } else {
+                    r.pic = self.pic(&f);
+                }
             }
             return Ok(var(Value::Obj(Rc::new(RefCell::new(r)))));
         }
