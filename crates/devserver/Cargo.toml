@@ -11,7 +11,7 @@ tiny_http = "0.12"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 percent-encoding = "2"
+tempfile = "3"
 
 [dev-dependencies]
 sdrs-core = { path = "../../third_party/sdrs/sdrs-core" }
-tempfile = "3"

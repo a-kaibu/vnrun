@@ -6,14 +6,19 @@
 //!                     [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter|kirikiri|html] [--title T] [--nls sjis]
 
 use std::fs::{self, File};
-use std::io::{Read, Seek, SeekFrom};
+use std::io::{self, Read, Seek, SeekFrom};
 use std::path::{Component, Path, PathBuf};
 use std::process::exit;
+use std::sync::{Arc, Mutex, mpsc};
+use std::thread;
 use std::time::UNIX_EPOCH;
 
 use percent_encoding::percent_decode_str;
 use serde::Serialize;
 use tiny_http::{Header, Method, Request, Response, Server, StatusCode};
+
+const SAVE_LIMIT: u64 = 64 * 1024 * 1024;
+const WORKERS: usize = 8;
 
 struct Config {
     dist: PathBuf,
@@ -23,6 +28,7 @@ struct Config {
     engine: String,
     title: String,
     nls: Option<String>,
+    max_save_bytes: u64,
 }
 
 #[derive(Serialize)]
@@ -45,7 +51,7 @@ struct Manifest<'a> {
 fn usage() -> ! {
     eprintln!(
         "usage: vnrun-devserver --game <dir> [--dist dist] [--saves <dir>] [--addr 127.0.0.1:8090] \
-         [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter|kirikiri|html] [--title T] [--nls sjis]"
+         [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter|kirikiri|html] [--title T] [--nls sjis] [--max-save-bytes N]"
     );
     exit(2)
 }
@@ -59,6 +65,7 @@ fn parse_args() -> Config {
         "127.0.0.1:8090".to_string(),
     );
     let (mut engine, mut title, mut nls) = (None, None, None);
+    let mut max_save_bytes = SAVE_LIMIT;
     while let Some(a) = args.next() {
         let mut value = || args.next().unwrap_or_else(|| usage());
         match a.as_str() {
@@ -69,6 +76,7 @@ fn parse_args() -> Config {
             "--engine" => engine = Some(value()),
             "--title" => title = Some(value()),
             "--nls" => nls = Some(value()),
+            "--max-save-bytes" => max_save_bytes = value().parse().unwrap_or_else(|_| usage()),
             _ => usage(),
         }
     }
@@ -94,6 +102,7 @@ fn parse_args() -> Config {
         engine,
         title: title.unwrap_or(name),
         nls,
+        max_save_bytes,
     }
 }
 
@@ -413,19 +422,21 @@ fn handle(cfg: &Config, mut req: Request) {
         let path = cfg.saves.join(rel);
         return match method {
             Method::Get => send_file(req, &path),
-            Method::Put => {
-                let mut body = Vec::new();
-                if req.as_reader().read_to_end(&mut body).is_err() {
-                    return status(req, 400, "read failed");
-                }
-                let ok = path.parent().is_none_or(|d| fs::create_dir_all(d).is_ok())
-                    && fs::write(&path, body).is_ok();
-                if ok {
-                    status(req, 204, "")
-                } else {
+            Method::Put => match write_save(
+                &cfg.saves,
+                &path,
+                req.body_length(),
+                cfg.max_save_bytes,
+                req.as_reader(),
+            ) {
+                Ok(()) => status(req, 204, ""),
+                Err(SaveError::TooLarge) => status(req, 413, "save too large"),
+                Err(SaveError::Incomplete) => status(req, 400, "incomplete upload"),
+                Err(SaveError::Io(error)) => {
+                    eprintln!("save {}: {error}", path.display());
                     status(req, 500, "write failed")
                 }
-            }
+            },
             Method::Delete => match fs::remove_file(&path) {
                 Ok(()) => status(req, 204, ""),
                 Err(_) => status(req, 404, "not found"),
@@ -440,21 +451,115 @@ fn handle(cfg: &Config, mut req: Request) {
     }
 }
 
+enum SaveError {
+    TooLarge,
+    Incomplete,
+    Io(io::Error),
+}
+
+impl From<io::Error> for SaveError {
+    fn from(error: io::Error) -> Self {
+        Self::Io(error)
+    }
+}
+
+// Stream into a sibling directory on the same filesystem, then replace the save in one rename.
+// A reader sees either the old complete save or the new complete save, never a partial upload.
+fn write_save(
+    root: &Path,
+    path: &Path,
+    expected: Option<usize>,
+    limit: u64,
+    input: &mut dyn Read,
+) -> Result<(), SaveError> {
+    if expected.is_some_and(|n| n as u64 > limit) {
+        return Err(SaveError::TooLarge);
+    }
+    fs::create_dir_all(root)?;
+    let root = root.canonicalize()?;
+    let staging = root
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."))
+        .join(".vnrun-staging");
+    fs::create_dir_all(&staging)?;
+    let mut tmp = tempfile::NamedTempFile::new_in(staging)?;
+    let bytes = io::copy(&mut input.take(limit.saturating_add(1)), &mut tmp)?;
+    if bytes > limit {
+        return Err(SaveError::TooLarge);
+    }
+    if expected.is_some_and(|n| n as u64 != bytes) {
+        return Err(SaveError::Incomplete);
+    }
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    tmp.persist(path).map_err(|e| SaveError::Io(e.error))?;
+    Ok(())
+}
+
 fn main() {
-    let cfg = parse_args();
+    let cfg = Arc::new(parse_args());
     let server = Server::http(&cfg.addr).unwrap_or_else(|e| {
         eprintln!("listen {}: {e}", cfg.addr);
         exit(1)
     });
     eprintln!("{} ({}) → http://{}/", cfg.title, cfg.engine, cfg.addr);
+    // A large response can block on a slow client. Keep a bounded worker pool so another
+    // game's range request, save, or manifest is not blocked behind it.
+    let (tx, rx) = mpsc::sync_channel::<Request>(WORKERS * 2);
+    let rx = Arc::new(Mutex::new(rx));
+    for _ in 0..WORKERS {
+        let (cfg, rx) = (Arc::clone(&cfg), Arc::clone(&rx));
+        thread::spawn(move || {
+            loop {
+                let request = match rx.lock() {
+                    Ok(rx) => rx.recv(),
+                    Err(_) => return,
+                };
+                match request {
+                    Ok(req) => handle(&cfg, req),
+                    Err(_) => return,
+                }
+            }
+        });
+    }
     for req in server.incoming_requests() {
-        handle(&cfg, req);
+        if tx.send(req).is_err() {
+            break;
+        }
     }
 }
 
 #[cfg(test)]
 mod detection_tests {
     use super::*;
+
+    #[test]
+    fn save_replacement_rejects_incomplete_and_oversized_uploads() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().join("saves");
+        fs::create_dir(&root).unwrap();
+        let path = root.join("slot.dat");
+        fs::write(&path, b"old").unwrap();
+        assert!(matches!(
+            write_save(&root, &path, Some(4), 8, &mut &b"new"[..]),
+            Err(SaveError::Incomplete)
+        ));
+        assert!(matches!(
+            write_save(&root, &path, None, 2, &mut &b"new"[..]),
+            Err(SaveError::TooLarge)
+        ));
+        assert_eq!(fs::read(&path).unwrap(), b"old");
+        assert!(write_save(&root, &path, Some(3), 8, &mut &b"new"[..]).is_ok());
+        assert_eq!(fs::read(&path).unwrap(), b"new");
+        assert_eq!(
+            fs::read_dir(dir.path().join(".vnrun-staging"))
+                .unwrap()
+                .count(),
+            0
+        );
+    }
 
     #[test]
     fn data_bin_requires_xp3_signature_and_ignores_filename_case() {
