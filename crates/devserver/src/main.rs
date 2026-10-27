@@ -701,6 +701,21 @@ fn main() {
     } else {
         eprintln!("{} ({}) → http://{}/", cfg.title, cfg.engine, cfg.addr);
     }
+    // tiny_http 0.12 gives each connection a thread from its own pool for as long as the client
+    // keeps it alive. When the browser opens several connections at once (a page fetching all
+    // its saves), the pool can queue one of them while it believes an idle thread will take it,
+    // and that thread takes another: the queued connection is then only read once some other
+    // connection closes, and the browser keeps its connections open, so the page waits forever
+    // (nanawind titles, whose seven saves are fetched together, stayed on the loading screen).
+    // A connection that closes at once lets a pool thread finish a task and take the queued one.
+    if let Some(addr) = server.server_addr().to_ip() {
+        thread::spawn(move || {
+            loop {
+                thread::sleep(std::time::Duration::from_millis(200));
+                let _ = std::net::TcpStream::connect(addr);
+            }
+        });
+    }
     // A large response can block on a slow client. Keep a bounded worker pool so another
     // game's range request, save, or manifest is not blocked behind it.
     let (tx, rx) = mpsc::sync_channel::<Request>(WORKERS * 2);
