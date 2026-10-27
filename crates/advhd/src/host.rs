@@ -774,7 +774,12 @@ const CFUNC: &[(&str, HostFn)] = &[
     ("LegacyGame__lua_SetSaveComment", |_, _| vec![]),
     ("LegacyGame__lua_GetTipsFlag", |_, _| ok(false)),
     ("LegacyGame__lua_GetChapter", |_, _| vec![Value::str("")]),
-    ("CSaveDataManager__lua_IsData", |_, _| ok(false)),
+    ("CSaveDataManager__lua_IsData", |s, a| {
+        let exists = crate::snapshot::slot_name(a.i(1))
+            .and_then(|name| s.files.read_save(&name))
+            .is_some();
+        ok(exists)
+    }),
     ("CSaveDataManager__lua_GetEnabled", |_, _| ok(true)),
     ("CSaveDataManager__lua_FindNewData", |_, _| {
         vec![Value::Int(-1)]

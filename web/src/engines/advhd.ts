@@ -39,6 +39,7 @@ function bind(fs: GameFS): void {
       fs.exists(path) ? fs.readRange(path, offset, length) : undefined,
     advhdList: () => fs.list(""),
     advhdReadSave: (name: string) => (fs.exists(save(name)) ? fs.read(save(name)) : undefined),
+    advhdListSaves: () => fs.list(SAVES),
     advhdWriteSave: (name: string, bytes: Uint8Array) => fs.write(save(name), bytes.slice()),
   });
 }

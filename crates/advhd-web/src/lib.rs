@@ -21,6 +21,8 @@ extern "C" {
     fn list() -> Vec<String>;
     #[wasm_bindgen(js_name = advhdReadSave)]
     fn read_save(name: &str) -> Option<Vec<u8>>;
+    #[wasm_bindgen(js_name = advhdListSaves)]
+    fn list_saves() -> Vec<String>;
     #[wasm_bindgen(js_name = advhdWriteSave)]
     fn write_save(name: &str, bytes: &[u8]);
 }
@@ -40,6 +42,9 @@ impl Files for Host {
     }
     fn read_save(&mut self, name: &str) -> Option<Vec<u8>> {
         read_save(name)
+    }
+    fn list_saves(&mut self) -> Vec<String> {
+        list_saves()
     }
     fn write_save(&mut self, name: &str, bytes: &[u8]) {
         write_save(name, bytes)

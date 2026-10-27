@@ -2,9 +2,25 @@
 //! Loading must recreate those separately before exposing save slots to the player.
 
 use crate::layers::{Content, Effect, Layer, Params};
-use crate::state::{FLAGS, State, VARS};
+use crate::state::{FLAGS, LoopSound, State, VARS};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+/// Normal save slots use a fixed, path-safe name separate from the game's files.
+pub fn slot_name(slot: i64) -> Option<String> {
+    (1..=9999)
+        .contains(&slot)
+        .then(|| format!("slot-{slot:04}.json"))
+}
+
+pub fn slot_number(name: &str) -> Option<i64> {
+    let digits = name.strip_prefix("slot-")?.strip_suffix(".json")?;
+    if digits.len() != 4 || !digits.bytes().all(|b| b.is_ascii_digit()) {
+        return None;
+    }
+    let slot = digits.parse().ok()?;
+    slot_name(slot).map(|_| slot)
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct ScenarioState {
@@ -12,6 +28,8 @@ pub struct ScenarioState {
     flags: Vec<bool>,
     vars: Vec<f32>,
     strings: HashMap<String, String>,
+    #[serde(default)]
+    loops: HashMap<String, LoopSound>,
     layers: Vec<LayerState>,
 }
 
@@ -80,6 +98,7 @@ impl ScenarioState {
             flags: state.flags.clone(),
             vars: state.vars.clone(),
             strings: state.strings.clone(),
+            loops: state.active_loops.clone(),
             layers,
         })
     }
@@ -125,6 +144,10 @@ impl ScenarioState {
         state.flags = self.flags;
         state.vars = self.vars;
         state.strings = self.strings;
+        state.stop("*", 0.0);
+        for (channel, sound) in self.loops {
+            state.play(&channel, &sound.file, true, sound.volume, 0.0);
+        }
         Ok(())
     }
 }
@@ -149,6 +172,15 @@ mod tests {
             None
         }
         fn write_save(&mut self, _: &str, _: &[u8]) {}
+    }
+
+    #[test]
+    fn slot_names_are_bounded_and_canonical() {
+        assert_eq!(slot_name(1).as_deref(), Some("slot-0001.json"));
+        assert_eq!(slot_number("slot-9999.json"), Some(9999));
+        assert_eq!(slot_number("slot-0000.json"), None);
+        assert_eq!(slot_number("../slot-0001.json"), None);
+        assert_eq!(slot_name(10000), None);
     }
 
     #[test]

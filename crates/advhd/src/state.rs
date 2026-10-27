@@ -39,10 +39,17 @@ pub enum Sound {
     },
 }
 
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+pub struct LoopSound {
+    pub file: String,
+    pub volume: f32,
+}
+
 pub struct State {
     pub files: Box<dyn Files>,
     /// sounds for the player since it last took them
     pub sounds: Vec<Sound>,
+    pub active_loops: HashMap<String, LoopSound>,
     pub arcs: Archives,
     pub screen: Screen,
     /// ms since the start
@@ -75,6 +82,10 @@ pub struct State {
 impl State {
     pub fn new(mut files: Box<dyn Files>, w: u32, h: u32) -> State {
         let arcs = Archives::open(files.as_mut());
+        let has_save = files
+            .list_saves()
+            .iter()
+            .any(|name| crate::snapshot::slot_number(name).is_some());
         State {
             files,
             arcs,
@@ -83,7 +94,7 @@ impl State {
             flags: vec![false; FLAGS],
             vars: vec![0.0; VARS],
             strings: HashMap::new(),
-            game_state: HashMap::new(),
+            game_state: HashMap::from([(11, has_save)]),
             paused: false,
             requests: Vec::new(),
             registry: HashMap::new(),
@@ -95,6 +106,7 @@ impl State {
             input: None,
             unknown: Default::default(),
             sounds: Vec::new(),
+            active_loops: HashMap::new(),
         }
     }
 
@@ -109,6 +121,16 @@ impl State {
             return;
         };
         let volume = volume.clamp(0.0, 1.0);
+        self.active_loops.remove(ch);
+        if looped {
+            self.active_loops.insert(
+                ch.to_string(),
+                LoopSound {
+                    file: file.to_string(),
+                    volume,
+                },
+            );
+        }
         self.sounds.push(Sound::Play {
             ch: ch.to_string(),
             data,
@@ -120,6 +142,11 @@ impl State {
 
     /// Stops a channel ("*": all of them).
     pub fn stop(&mut self, ch: &str, fade_ms: f64) {
+        if ch == "*" {
+            self.active_loops.clear();
+        } else {
+            self.active_loops.remove(ch);
+        }
         self.sounds.push(Sound::Stop {
             ch: ch.to_string(),
             fade_ms,

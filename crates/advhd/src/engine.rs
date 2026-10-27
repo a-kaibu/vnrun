@@ -418,7 +418,7 @@ impl Engine {
         self.call("isSystemEffect", vec![]);
         self.call("isMessageWindowEffect", vec![]);
         self.input();
-        self.requests();
+        self.requests()?;
         let mut n = 0;
         while !self.ended && self.ready(now) {
             self.step()?;
@@ -510,7 +510,7 @@ impl Engine {
     }
 
     /// Acts on what the interface asked for.
-    fn requests(&mut self) {
+    fn requests(&mut self) -> Result<(), String> {
         let reqs = std::mem::take(&mut self.st.borrow_mut().requests);
         for (k, v) in reqs {
             match k {
@@ -524,6 +524,41 @@ impl Engine {
                     }
                 }
                 2 => self.ended = true,
+                7 => {
+                    let result = crate::snapshot::slot_name(v)
+                        .ok_or_else(|| "invalid save slot".to_string())
+                        .and_then(|name| self.checkpoint().map(|bytes| (name, bytes)));
+                    match result {
+                        Ok((name, bytes)) => {
+                            let mut state = self.st.borrow_mut();
+                            state.files.write_save(&name, &bytes);
+                            state.game_state.insert(11, true);
+                        }
+                        Err(error) => return Err(format!("save failed: {error}")),
+                    }
+                }
+                8 => {
+                    let data = crate::snapshot::slot_name(v)
+                        .and_then(|name| self.st.borrow_mut().files.read_save(&name));
+                    match data {
+                        Some(data) => {
+                            if let Err(error) = self.restore_checkpoint(&data) {
+                                return Err(format!("load failed: {error}"));
+                            } else {
+                                self.call("closeConfig", vec![]);
+                                {
+                                    let mut state = self.st.borrow_mut();
+                                    state.paused = false;
+                                    state.game_state.insert(4, true);
+                                }
+                                self.call("openMessageWindow", vec![Value::Bool(true)]);
+                                self.call("nameWindowVisible", vec![Value::Bool(true)]);
+                                self.window_open = true;
+                            }
+                        }
+                        None => return Err(format!("save slot {v} is empty")),
+                    }
+                }
                 -1 => self.chosen = Some(v),
                 _ => self
                     .st
@@ -531,6 +566,7 @@ impl Engine {
                     .unknown(&format!("NeedProcess {k} {v}")),
             }
         }
+        Ok(())
     }
 
     fn show_all(&mut self) {
@@ -844,6 +880,18 @@ impl Engine {
             0x1a => {
                 self.call(a(0).text(), vec![]);
             }
+            0x1b => {
+                let before = self.set_names();
+                self.call("openConfig", vec![Value::Int(a(0).int())]);
+                let new: Vec<String> = self
+                    .set_names()
+                    .into_iter()
+                    .filter(|n| !before.contains(n))
+                    .collect();
+                if !new.is_empty() {
+                    self.wait = Wait::Menu(new);
+                }
+            }
             0x1c => {
                 let args = vec![
                     Value::str(a(1).text()),
@@ -1021,8 +1069,8 @@ impl Engine {
                     .strings
                     .insert(a(0).text().to_string(), file);
             }
-            0x2e | 0x13 | 0x17 | 0x18 | 0x1b | 0x32 | 0x38 | 0x53 | 0x66 | 0x68 | 0x6f | 0x71
-            | 0xfb | 0xfc | 0xfd => {}
+            0x2e | 0x13 | 0x17 | 0x18 | 0x32 | 0x38 | 0x53 | 0x66 | 0x68 | 0x6f | 0x71 | 0xfb
+            | 0xfc | 0xfd => {}
             op => self.st.borrow_mut().unknown(&format!("command {op:#04x}")),
         }
         Ok(())

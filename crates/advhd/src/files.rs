@@ -15,6 +15,9 @@ pub trait Files {
     /// The names at the top of the game folder.
     fn list(&mut self) -> Vec<String>;
     fn read_save(&mut self, name: &str) -> Option<Vec<u8>>;
+    fn list_saves(&mut self) -> Vec<String> {
+        Vec::new()
+    }
     fn write_save(&mut self, name: &str, bytes: &[u8]);
 
     fn read(&mut self, path: &str) -> Option<Vec<u8>> {
@@ -159,6 +162,14 @@ impl Files for Disk {
     }
     fn read_save(&mut self, name: &str) -> Option<Vec<u8>> {
         std::fs::read(self.saves.join(name)).ok()
+    }
+    fn list_saves(&mut self) -> Vec<String> {
+        std::fs::read_dir(&self.saves)
+            .into_iter()
+            .flatten()
+            .flatten()
+            .filter_map(|entry| entry.file_name().into_string().ok())
+            .collect()
     }
     fn write_save(&mut self, name: &str, bytes: &[u8]) {
         let _ = std::fs::create_dir_all(&self.saves);
