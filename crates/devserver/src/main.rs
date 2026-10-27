@@ -5,15 +5,16 @@
 //!     vnrun-devserver --game <ゲームのフォルダ> [--dist dist] [--saves <dir>] [--addr 127.0.0.1:8090]
 //!                     [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter|kirikiri|html] [--title T] [--nls sjis]
 
+use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::{self, Read, Seek, SeekFrom};
 use std::path::{Component, Path, PathBuf};
 use std::process::exit;
 use std::sync::{Arc, Mutex, mpsc};
 use std::thread;
-use std::time::UNIX_EPOCH;
+use std::time::{SystemTime, UNIX_EPOCH};
 
-use percent_encoding::percent_decode_str;
+use percent_encoding::{NON_ALPHANUMERIC, percent_decode_str, utf8_percent_encode};
 use serde::Serialize;
 use tiny_http::{Header, Method, Request, Response, Server, StatusCode};
 
@@ -21,6 +22,7 @@ const SAVE_LIMIT: u64 = 64 * 1024 * 1024;
 const WORKERS: usize = 8;
 const SAVE_STAGING: &str = ".vnrun-staging";
 
+#[derive(Clone)]
 struct Config {
     dist: PathBuf,
     game: PathBuf,
@@ -30,6 +32,25 @@ struct Config {
     title: String,
     nls: Option<String>,
     max_save_bytes: u64,
+    library: Option<Arc<Library>>,
+}
+
+struct Library {
+    root: PathBuf,
+    games: Mutex<HashMap<String, CachedGame>>,
+}
+
+type CachedGame = (Option<SystemTime>, Arc<Config>);
+
+#[derive(Serialize)]
+struct LibraryEntry {
+    id: String,
+    title: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    engine: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    error: Option<String>,
+    url: String,
 }
 
 #[derive(Serialize)]
@@ -51,7 +72,7 @@ struct Manifest<'a> {
 
 fn usage() -> ! {
     eprintln!(
-        "usage: vnrun-devserver --game <dir> [--dist dist] [--saves <dir>] [--addr 127.0.0.1:8090] \
+        "usage: vnrun-devserver (--game <dir> | --library <dir>) [--dist dist] [--saves <dir>] [--addr 127.0.0.1:8090] \
          [--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter|kirikiri|html] [--title T] [--nls sjis] [--max-save-bytes N]"
     );
     exit(2)
@@ -66,12 +87,14 @@ fn parse_args() -> Config {
         "127.0.0.1:8090".to_string(),
     );
     let (mut engine, mut title, mut nls) = (None, None, None);
+    let mut library = None;
     let mut max_save_bytes = SAVE_LIMIT;
     while let Some(a) = args.next() {
         let mut value = || args.next().unwrap_or_else(|| usage());
         match a.as_str() {
             "--dist" => dist = value().into(),
             "--game" => game = Some(PathBuf::from(value())),
+            "--library" => library = Some(PathBuf::from(value())),
             "--saves" => saves = Some(PathBuf::from(value())),
             "--addr" => addr = value(),
             "--engine" => engine = Some(value()),
@@ -80,6 +103,29 @@ fn parse_args() -> Config {
             "--max-save-bytes" => max_save_bytes = value().parse().unwrap_or_else(|_| usage()),
             _ => usage(),
         }
+    }
+    if let Some(root) = library {
+        if game.is_some() || engine.is_some() || title.is_some() || nls.is_some() {
+            usage();
+        }
+        fs::read_dir(&root).unwrap_or_else(|e| {
+            eprintln!("{}: {e}", root.display());
+            exit(1)
+        });
+        return Config {
+            dist,
+            game: PathBuf::new(),
+            saves: saves.unwrap_or_else(|| PathBuf::from("saves")),
+            addr,
+            engine: String::new(),
+            title: String::new(),
+            nls: None,
+            max_save_bytes,
+            library: Some(Arc::new(Library {
+                root,
+                games: Mutex::new(HashMap::new()),
+            })),
+        };
     }
     let game = game.unwrap_or_else(|| usage());
     // Prepare before engine detection: SDRS may wrap the files that identify the engine.
@@ -104,6 +150,7 @@ fn parse_args() -> Config {
         title: title.unwrap_or(name),
         nls,
         max_save_bytes,
+        library: None,
     }
 }
 
@@ -380,8 +427,108 @@ fn send_frame_page(req: Request, path: &Path) {
     );
 }
 
-fn handle(cfg: &Config, mut req: Request) {
+impl Library {
+    fn game(&self, cfg: &Config, id: &str) -> Result<Arc<Config>, String> {
+        let path = self.root.join(id);
+        let meta = fs::symlink_metadata(&path).map_err(|e| e.to_string())?;
+        if !meta.file_type().is_dir() {
+            return Err("not a game directory".into());
+        }
+        // Preparation changes files in place; serialize it and publish only on success.
+        let mut games = self.games.lock().map_err(|e| e.to_string())?;
+        if let Some((modified, game)) = games.get(id)
+            && *modified == meta.modified().ok()
+        {
+            return Ok(Arc::clone(game));
+        }
+        games.remove(id);
+        vnrun_prep::prepare(&path).map_err(|e| e.to_string())?;
+        let engine = detect(&path).ok_or("engine not detected")?;
+        let game = Arc::new(Config {
+            dist: cfg.dist.clone(),
+            game: path,
+            saves: cfg.saves.join(id),
+            addr: cfg.addr.clone(),
+            engine,
+            title: id.to_string(),
+            nls: None,
+            max_save_bytes: cfg.max_save_bytes,
+            library: None,
+        });
+        let modified = fs::metadata(&game.game).and_then(|m| m.modified()).ok();
+        games.insert(id.to_string(), (modified, Arc::clone(&game)));
+        Ok(game)
+    }
+
+    fn entries(&self, cfg: &Config) -> io::Result<Vec<LibraryEntry>> {
+        let mut entries = Vec::new();
+        for item in fs::read_dir(&self.root)? {
+            let item = item?;
+            if !item.file_type()?.is_dir() {
+                continue;
+            }
+            let Ok(id) = item.file_name().into_string() else {
+                continue;
+            };
+            let url = format!("/games/{}", utf8_percent_encode(&id, NON_ALPHANUMERIC));
+            let (engine, error) = match self.game(cfg, &id) {
+                Ok(game) => (Some(game.engine.clone()), None),
+                Err(error) => (None, Some(error)),
+            };
+            entries.push(LibraryEntry {
+                title: id.clone(),
+                id,
+                engine,
+                error,
+                url,
+            });
+        }
+        entries.sort_by(|a, b| a.title.cmp(&b.title));
+        Ok(entries)
+    }
+}
+
+fn handle(cfg: &Config, req: Request) {
     let url = req.url().split('?').next().unwrap_or("").to_string();
+    if let Some(library) = &cfg.library {
+        if url == "/api/games" {
+            return match library.entries(cfg) {
+                Ok(entries) => json(req, &entries),
+                Err(error) => {
+                    eprintln!("library: {error}");
+                    status(req, 500, "library unavailable")
+                }
+            };
+        }
+        if let Some(rest) = url.strip_prefix("/games/") {
+            let Some((encoded_id, path)) = rest.split_once('/') else {
+                return status(req, 404, "not found");
+            };
+            let Some(id) = safe_rel(encoded_id).filter(|p| p.components().count() == 1) else {
+                return status(req, 400, "bad game id");
+            };
+            let Some(id) = id.to_str() else {
+                return status(req, 400, "bad game id");
+            };
+            return match library.game(cfg, id) {
+                Ok(game) => handle_game(&game, req, &format!("/game/{path}")),
+                Err(error) => {
+                    eprintln!("game {id}: {error}");
+                    status(req, 404, "game unavailable")
+                }
+            };
+        }
+        if url == "/" {
+            return status(req, 200, "Library: GET /api/games");
+        }
+        if url == "/game" || url.starts_with("/game/") {
+            return status(req, 404, "not found");
+        }
+    }
+    handle_game(cfg, req, &url)
+}
+
+fn handle_game(cfg: &Config, mut req: Request, url: &str) {
     let method = req.method().clone();
     if url == "/" {
         let resp = Response::empty(StatusCode(303))
@@ -504,7 +651,11 @@ fn main() {
         eprintln!("listen {}: {e}", cfg.addr);
         exit(1)
     });
-    eprintln!("{} ({}) → http://{}/", cfg.title, cfg.engine, cfg.addr);
+    if let Some(library) = &cfg.library {
+        eprintln!("{} → http://{}/", library.root.display(), cfg.addr);
+    } else {
+        eprintln!("{} ({}) → http://{}/", cfg.title, cfg.engine, cfg.addr);
+    }
     // A large response can block on a slow client. Keep a bounded worker pool so another
     // game's range request, save, or manifest is not blocked behind it.
     let (tx, rx) = mpsc::sync_channel::<Request>(WORKERS * 2);
