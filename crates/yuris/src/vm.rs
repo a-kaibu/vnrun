@@ -47,10 +47,12 @@ impl Program {
         let script_names = ybn::script_names(&need(read, "yst_list.ybn")?).map_err(ctx("yst_list.ybn"))?;
         let decls = ybn::variables(&need(read, "ysv.ybn")?).map_err(ctx("ysv.ybn"))?;
         let config = ybn::config(&need(read, "yscfg.ybn")?).map_err(ctx("yscfg.ybn"))?;
+        let files: Vec<_> = (0..script_names.len()).map(|i| read(&format!("yst{i:05}.ybn"))).collect();
+        let key = files.iter().flatten().find_map(|b| ybn::script_key(b));
         let mut scripts = Vec::with_capacity(script_names.len());
-        for i in 0..script_names.len() {
-            scripts.push(match read(&format!("yst{i:05}.ybn")) {
-                Some(b) => ybn::script(&b).map_err(|e| format!("yst{i:05}.ybn: {e}"))?,
+        for (i, f) in files.into_iter().enumerate() {
+            scripts.push(match f {
+                Some(b) => ybn::script(&b, key).map_err(|e| format!("yst{i:05}.ybn: {e}"))?,
                 None => Script::default(), // files that only declare (global.yst, macro.yst)
             });
         }

@@ -11,7 +11,7 @@ fn main() {
     let idx = yuris::ypf::Index::parse(&a).unwrap();
     let e = idx.entries.iter().find(|e| e.name.to_lowercase().ends_with(&want)).expect("no such script");
     let b = e.unpack(&a[e.offset as usize..e.offset as usize + e.packed_size as usize]).unwrap();
-    for (i, ins) in yuris::ybn::script(&b).unwrap().code.iter().enumerate().skip(from).take(to.saturating_sub(from)) {
+    for (i, ins) in yuris::ybn::script(&b, None).unwrap().code.iter().enumerate().skip(from).take(to.saturating_sub(from)) {
         let args: Vec<String> = ins
             .args
             .iter()

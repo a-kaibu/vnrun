@@ -168,7 +168,7 @@ fn version(b: &[u8]) -> u32 {
 
 /// Later versions put new system variables among the old ones; this gives them the 466 numbers
 /// the VM knows (and moves the new ones out of the way). The numbers were matched by the types
-/// in ysv.ybn: 482 games, and a 554 one (鯨神のティアスティラ).
+/// in ysv.ybn: 482 games, a 554 one (鯨神のティアスティラ) and a 555 one.
 fn sysvar(ver: u32, id: u16) -> u16 {
     match ver {
         ..482 => id,
@@ -192,10 +192,19 @@ fn sysvar(ver: u32, id: u16) -> u16 {
             89..=525 => id - 13,
             _ => 10000 + id,
         },
-        _ => match id {
+        554 => match id {
             0..=58 | 538.. => id,
             96..=97 => id - 24,
             103..=537 => id - 25,
+            _ => 10000 + id,
+        },
+        // 555 (けもの道☆ガーリッシュスクエア): new PINT.. and RINT.. sets and 22 more strings
+        _ => match id {
+            0..=49 | 548.. => id,
+            53..=56 => id - 3,
+            60..=66 => id - 6,
+            105..=106 => id - 33,
+            113..=547 => id - 35,
             _ => 10000 + id,
         },
     }
@@ -284,7 +293,15 @@ pub struct Script {
 // gives it away: the offset of the first argument's value is 0.
 const DEFAULT_KEY: [u8; 4] = [0xd3, 0x6f, 0xac, 0x96];
 
-pub fn script(b: &[u8]) -> Result<Script, String> {
+/// The key of a script's sections, when it has an argument to give it away.
+pub fn script_key(b: &[u8]) -> Option<[u8; 4]> {
+    let h = |i: usize| b.get(8 + i * 4..12 + i * 4).map(|v| u32::from_le_bytes(v.try_into().unwrap()) as usize);
+    let at = 32 + h(1)?;
+    (h(2)? >= 12).then(|| b.get(at + 8..at + 12)?.try_into().ok())?
+}
+
+/// A script; `key` is the project's key for scripts without arguments (which do not show it).
+pub fn script(b: &[u8], key: Option<[u8; 4]>) -> Result<Script, String> {
     magic(b, b"YSTB")?;
     let ver = version(b);
     let mut r = Reader::new(b, 8);
@@ -298,7 +315,7 @@ pub fn script(b: &[u8]) -> Result<Script, String> {
     let args = r.bytes(arg_size)?;
     let res = r.bytes(res_size)?;
     let lines = r.bytes(line_size)?;
-    let key: [u8; 4] = if args.len() >= 12 { args[8..12].try_into().unwrap() } else { DEFAULT_KEY };
+    let key: [u8; 4] = if args.len() >= 12 { args[8..12].try_into().unwrap() } else { key.unwrap_or(DEFAULT_KEY) };
     let dec = |s: &[u8]| -> Vec<u8> { s.iter().enumerate().map(|(i, c)| c ^ key[i & 3]).collect() };
     let (code, args, res, lines) = (dec(code), dec(args), dec(res), dec(lines));
     let mut out = Vec::with_capacity(count);
