@@ -67,7 +67,7 @@ game_root() {
     catsystem2) m=(-iname scene.int) ;;
     entis) m=(-iname '*.noa') ;;
     nscripter) m=(-iname nscript.dat -o -iname 0.txt -o -iname 00.txt -o -iname '*.nsa' -o -iname '*.sar') ;;
-    html) m=(-iname package.json -o -iname index.html -o -iname package.nw) ;;
+    html) m=(-iname package.json -o -iname index.html -o -iname package.nw -o -iname nw.pak) ;;
   esac
   # Older YU-RIS releases keep everything in pac/*.ypf; the game root is the folder above pac/.
   # Entis GLS keeps its archives in Data/ beside the exe.

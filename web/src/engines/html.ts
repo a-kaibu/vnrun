@@ -101,7 +101,9 @@ function nodeRequire(fs: GameFS) {
     existsSync: (p: string) => fs.exists(file(p)) || fs.list(file(p)).length > 0,
     readFileSync(p: string, opt?: unknown) {
       const data = fs.read(file(p));
-      return encoding(opt) ? new TextDecoder().decode(data) : data;
+      const text = () => new TextDecoder().decode(data);
+      // A Buffer turns into its text, as with unescape(fs.readFileSync(p)).
+      return encoding(opt) ? text() : Object.assign(data, { toString: text });
     },
     writeFileSync: (p: string, data: unknown) => fs.write(file(p), bytes(data)),
     unlinkSync: (p: string) => fs.saves.has(fs.resolve(file(p))) && fs.remove(file(p)),
@@ -127,7 +129,8 @@ function nodeRequire(fs: GameFS) {
     },
     extname: (p: string) => /\.[^./]*$/.exec(join(p).split("/").pop() || "")?.[0] ?? "",
   };
-  const modules: Record<string, unknown> = { fs: nodeFs, path: nodePath };
+  // fs-extra: TyranoScript checks for an update patch with it at startup.
+  const modules: Record<string, unknown> = { fs: nodeFs, "fs-extra": nodeFs, path: nodePath };
   return (name: string) => {
     if (name in modules) return modules[name];
     throw new Error(`Cannot find module '${name}'`);
@@ -135,11 +138,14 @@ function nodeRequire(fs: GameFS) {
 }
 
 // Plugins that see `require` take NW.js for granted and read process.mainModule.filename for
-// the game folder (Text2Frame). This `process` is a function, so the cores' NW.js check
-// (typeof process === "object") still fails and they keep their web storage.
+// the game folder (Text2Frame). This `process` is a function, so the RPG Maker cores' NW.js
+// check (typeof process === "object") still fails and they keep their web storage.
 function nodeProcess() {
   return Object.assign(function process() {}, {
     mainModule: { filename: "index.html" },
+    // TyranoScript keeps configSave=file saves in the exe's folder; with no folder in this
+    // path, they land in the game root (as saves).
+    execPath: "game.exe",
     platform: "win32",
     env: {},
     argv: [],

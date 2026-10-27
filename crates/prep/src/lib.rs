@@ -2,6 +2,7 @@
 //! SDRS shells are extracted before embedded cxdec and Siglus key preparation.
 
 mod krkr;
+mod nwjs;
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -72,6 +73,14 @@ pub fn prepare(dir: &Path) -> Result<(), String> {
         }
     }
     executables.sort();
+    if find(dir, "package.json").is_none() {
+        for path in &executables {
+            if nwjs::unpack(path, dir)? {
+                println!("nwjs: unpacked the app in {}", path.display());
+                break;
+            }
+        }
+    }
     for path in &executables {
         let bytes = read(path)?;
         // Read the PE overlay signature before loading the SDRS config. This distinguishes
