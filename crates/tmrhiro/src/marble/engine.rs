@@ -109,6 +109,8 @@ impl Script {
 #[derive(Clone, Default)]
 struct Scene {
     bg: Option<Rc<Image>>,
+    /// how far a background taller than the screen is moved up
+    bg_y: f32,
     sprites: Vec<(Rc<Image>, f32, f32)>,
     ovr: Option<Rc<Image>>,
 }
@@ -156,6 +158,8 @@ pub struct Engine {
     wipe: Option<String>,
     shake: Option<(i32, i32, u64, u64)>,
     voice_end: u64,
+    /// a background moving: from, to, start, ms
+    pan: Option<(f32, f32, u64, u64)>,
     window: bool,
     novel: bool,
     speaker: String,
@@ -233,6 +237,7 @@ impl Engine {
             wipe: None,
             shake: None,
             voice_end: 0,
+            pan: None,
             window: false,
             novel: false,
             speaker: String::new(),
@@ -505,6 +510,14 @@ impl Engine {
         {
             self.shake = None;
         }
+        if let Some((from, to, start, ms)) = self.pan {
+            let p = ((self.now - start) as f32 / ms.max(1) as f32).min(1.0);
+            self.shown.bg_y = from + (to - from) * p;
+            self.next.bg_y = self.shown.bg_y;
+            if p >= 1.0 {
+                self.pan = None;
+            }
+        }
         let mut budget = 2000;
         while self.wait == Wait::None && !self.ended && budget > 0 {
             budget -= 1;
@@ -576,6 +589,13 @@ impl Engine {
     }
 
     fn text(&mut self, line: &str) {
+        // a line of tags: [wait N] waits N tenths of a second
+        if let Some(tag) = line.strip_prefix('[').and_then(|l| l.strip_suffix(']')) {
+            if let Some(n) = tag.strip_prefix("wait") {
+                self.wait = Wait::Until(self.now + num(n).max(0) as u64 * 100);
+            }
+            return;
+        }
         let mut s = String::new();
         let mut ruby = false;
         let mut page_end = false;
@@ -634,6 +654,7 @@ impl Engine {
                         self.screen = (self.screen.0.max(800), self.screen.1.max(600));
                     }
                     self.next.bg = Some(img);
+                    self.next.bg_y = 0.0;
                     self.next.sprites.clear();
                 } else if self.log {
                     eprintln!("marble: no picture {pic}");
@@ -670,6 +691,26 @@ impl Engine {
                 self.show(mode(1));
             }
             "wipeset" => self.wipe = Some(a[0].to_uppercase()),
+            "scroll" | "sroll" => {
+                // NAME,place,speed,mode: place 0 top, 1 middle, 2 bottom; mode 2 moves there
+                let Some(img) = self.image(a[0]) else {
+                    return;
+                };
+                let to =
+                    (img.h as f32 - self.screen.1 as f32).max(0.0) * n(1).clamp(0, 2) as f32 / 2.0;
+                let same = self.shown.bg.as_ref().is_some_and(|b| Rc::ptr_eq(b, &img));
+                if n(3) == 2 && same {
+                    let from = self.shown.bg_y;
+                    let ms = ((to - from).abs() / n(2).max(1) as f32 * 30.0) as u64;
+                    self.pan = Some((from, to, self.now, ms));
+                    self.wait = Wait::Until(self.now + ms);
+                } else {
+                    self.next.bg = Some(img);
+                    self.next.bg_y = to;
+                    self.next.sprites.clear();
+                    self.show(mode(3));
+                }
+            }
             "music" => self.music(n(0)),
             "se" | "seloop" => {
                 let looped = name == "seloop";
@@ -796,7 +837,7 @@ impl Engine {
             }
             "exitgame" | "exit" => self.ended = true,
             "mark" | "break" | "title" | "mode" | "setname" | "load" | "save" | "fix"
-            | "special" | "rec" | "vend" | "backto" | "string" => {}
+            | "special" | "rec" | "vend" | "backto" | "string" | "setname2" => {}
             _ => {
                 if self.log {
                     eprintln!("marble: unknown command {cmd}");
@@ -939,7 +980,7 @@ impl Engine {
             None => (0.0, 0.0),
         };
         if let Some(bg) = &s.bg {
-            out.push(draw(bg, dx, dy, 1.0));
+            out.push(draw(bg, dx, dy - s.bg_y, 1.0));
         }
         for (img, x, y) in &s.sprites {
             out.push(draw(img, x + dx, y + dy, 1.0));
@@ -978,7 +1019,7 @@ impl Engine {
                 None => out.push(draw(&t.old, 0.0, 0.0, 1.0 - p)),
             }
         }
-        if self.window && self.trans.is_none() && self.wait != Wait::Map {
+        if self.window && self.wait != Wait::Map {
             self.window_draws(&mut out);
         }
         if let Some(c) = &self.choice {
@@ -1009,9 +1050,25 @@ impl Engine {
             )
         } else {
             let (wx, wy) = (self.cfg("TXW_OFS_X", 76), self.cfg("TXW_OFS_Y", 407));
-            if let Some(tw) = self.image("SYS_TW") {
-                out.push(draw(&tw, wx as f32, wy as f32, 1.0));
-            }
+            let tw = match self.image("SYS_TW") {
+                Some(tw) => tw,
+                None => {
+                    // no window picture: a box of TXW_COLOR, kept with the pictures
+                    let (w, h) = (self.cfg("TXW_SIZE_X", 800), self.cfg("TXW_SIZE_Y", 200));
+                    let mut img = Image::new(w.max(1) as u32, h.max(1) as u32);
+                    let c = |k: &str| self.cfg(k, 0).clamp(0, 255) as u8;
+                    img.fill([
+                        c("TXW_COLOR_R"),
+                        c("TXW_COLOR_G"),
+                        c("TXW_COLOR_B"),
+                        self.cfg("TXW_ALPHA", 120).clamp(0, 255) as u8,
+                    ]);
+                    let img = Rc::new(img);
+                    self.images.insert("SYS_TW".into(), img.clone());
+                    img
+                }
+            };
+            out.push(draw(&tw, wx as f32, wy as f32, 1.0));
             (
                 wx + self.cfg("TX_OFS_X", 10),
                 wy + self.cfg("TX_OFS_Y", 20),
