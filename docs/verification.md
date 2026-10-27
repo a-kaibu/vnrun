@@ -482,8 +482,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2014_azarashi_soft | [アマカノ 体験版 甘えてくれる恋人とのエッチなひととき編](http://suezou.dyndns.org/dl2014/azarashi-soft/amakano/amakano_trialH.zip) | 本編 | タイトル→はじめから (名前は既定のまま)→案内文→マップ→選んだヒロインのシーンの文章・CG まで (cs2-run とブラウザ) |
-| b2014_windmill_oasis | [春風センセーション！体験版](http://suezou.dyndns.org/dl2014/windmill-oasis/harukaze/harukaze_trial.exe) | 本編 | タイトル→START→本編の文章・立ち絵・イベント CG まで (cs2-run とブラウザ) |
+| b2014_azarashi_soft | [アマカノ 体験版 甘えてくれる恋人とのエッチなひととき編](http://suezou.dyndns.org/dl2014/azarashi-soft/amakano/amakano_trialH.zip) | 本編 | 360b26c (CatSystem2) でタイトル→はじめから→本編の文章とマップ画面まで (Chromium) |
+| b2014_windmill_oasis | [春風センセーション！体験版](http://suezou.dyndns.org/dl2014/windmill-oasis/harukaze/harukaze_trial.exe) | 本編 | 360b26c (CatSystem2) で注意書き→タイトル→START→本編の文章・名前まで (Chromium) |
 | b2017_laplacian | [ニュートンと林檎の樹 体験版＋](http://suezou.dyndns.org/dl2017/laplacian/newrin/newrin-trial-plus.zip) | 本編 | タイトル→はじめから→選択肢 (体験版本編)→本編の文章・イベント CG まで (cs2-run とブラウザ) |
 
 ### EntisGLS (vnrun)
