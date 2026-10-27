@@ -746,6 +746,13 @@ impl Engine {
             }
             self.set_prop(&name, *p, v);
         }
+        // Places worked out from the object's own size see it once it is set.
+        for (p, e) in props {
+            if (*p == LEFT || *p == TOP) && e.0.len() > 1 {
+                let v = self.eval(th, e);
+                self.set_prop(&name, *p, v);
+            }
+        }
         let Some(i) = self.find(&name) else { return };
         match kind {
             lsb::SOUND | lsb::MOVIE if !self.objs[i].flag(PAUSED) => self.play(i),

@@ -322,8 +322,13 @@ fn paint(
     let mut rgba = rgba;
     if layer.alpha_on {
         let astride = (w + 3) & !3;
-        let raw = miniz_oxide::inflate::decompress_to_vec_zlib(alpha)
-            .map_err(|e| format!("gal alpha: {e:?}"))?;
+        // CompType 1 stores the planes as they are.
+        let raw = if info.comp == Some(1) {
+            alpha.to_vec()
+        } else {
+            miniz_oxide::inflate::decompress_to_vec_zlib(alpha)
+                .map_err(|e| format!("gal alpha: {e:?}"))?
+        };
         let a = unblock(&raw, info, astride, 8)?;
         for y in 0..h {
             for x in 0..w {

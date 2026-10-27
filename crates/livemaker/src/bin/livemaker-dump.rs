@@ -48,7 +48,7 @@ fn main() -> Result<(), String> {
         .read(&mut disk, name)
         .ok_or(format!("{name}: not found"))?;
     if let Some(out) = args.get(3) {
-        if livemaker::gal::is_gal(&data) {
+        if livemaker::gal::is_gal(&data) && !out.ends_with(".bin") {
             let img = livemaker::gal::decode(&data)?;
             image::save_buffer(out, &img.px, img.w, img.h, image::ColorType::Rgba8)
                 .map_err(|e| e.to_string())?;
