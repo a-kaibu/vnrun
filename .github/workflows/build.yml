@@ -21,6 +21,10 @@ jobs:
       - run: cargo fmt --check
       - run: cargo test --locked -p vnrun-prep -p vnrun-devserver
       - run: cargo clippy --release -- -D warnings
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node --test web/tests/*.test.mjs
       - run: ./build.sh
       - run: cargo build --release -p vnrun-devserver
       - uses: actions/upload-artifact@v4
