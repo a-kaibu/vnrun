@@ -15,9 +15,11 @@ interface Game {
   click(x: number, y: number): void;
   cancel(): void;
   wheel(up: boolean): void;
-  key(code: number): void;
-  type_text(text: string): void;
-  set_clock(secs: number): void;
+  // Missing from an engine built before these were added (web/public/engines is a build output,
+  // so a checkout can pair this adapter with an older livemaker.wasm).
+  key?(code: number): void;
+  type_text?(text: string): void;
+  set_clock?(secs: number): void;
   point(x: number, y: number): void;
   draws(): Float32Array;
   texture(id: number): Uint8Array;
@@ -58,6 +60,9 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
   const livemaker = await importEngine<LivemakerModule>("livemaker", "livemaker_web.js");
   await livemaker.default();
   const game = new livemaker.Game(fonts[0] ?? new Uint8Array());
+  if (typeof game.key !== "function" || typeof game.set_clock !== "function") {
+    console.warn("LiveMaker: engines/livemaker is older than this player; run engines/livemaker/build.sh");
+  }
   const compositor = new Compositor(presenter.device, game.width(), game.height());
   const audio = new AudioContext();
   const channels = new Map<string, { source: AudioBufferSourceNode; gain: GainNode; started: boolean }>();
@@ -119,7 +124,7 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
   document.body.append(field);
   const focus = () => field.focus({ preventScroll: true });
   const typed = () => {
-    if (field.value) game.type_text(field.value);
+    if (field.value) game.type_text?.(field.value);
     field.value = "";
   };
   field.addEventListener("input", (event) => {
@@ -153,20 +158,30 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
     ArrowRight: 39,
     ArrowDown: 40,
   };
-  field.addEventListener("keydown", (event) => {
+  const onKey = (event: KeyboardEvent) => {
     if (event.isComposing) return;
     if (event.code === "Backspace") {
       event.preventDefault();
-      game.key(8);
+      game.key?.(8);
       return;
     }
     const code = keyCodes[event.code];
     if (code === undefined) return;
     event.preventDefault();
-    game.key(code);
+    game.key?.(code);
     if (code === 13) game.click(-1, -1);
     // Escape also does what a right click does (closes the game's menus)
     if (code === 27) game.cancel();
+  };
+  field.addEventListener("keydown", onKey);
+  // Keys pressed after the field lost focus (a click outside the canvas) still reach the game.
+  window.addEventListener("keydown", (event) => {
+    const target = event.target;
+    if (target === field || target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+      return;
+    }
+    focus();
+    onKey(event);
   });
   ui.hide();
   focus();
@@ -181,7 +196,7 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
       if (now - frames * step > 250) frames = Math.floor(now / step);
       let ran = false;
       const date = new Date();
-      game.set_clock(date.getTime() / 1000 - date.getTimezoneOffset() * 60);
+      game.set_clock?.(date.getTime() / 1000 - date.getTimezoneOffset() * 60);
       while (frames * step <= now) {
         game.frame();
         for (const sound of game.sounds()) playSound(sound);
