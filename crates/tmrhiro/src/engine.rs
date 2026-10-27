@@ -20,6 +20,7 @@ use crate::save::{SaveData, SavedChara};
 use crate::script::{Command, OLD, Script};
 
 mod backlog;
+mod cardgame;
 mod config;
 mod gallery;
 mod map;
@@ -56,6 +57,8 @@ enum Wait {
     Buttons,
     /// a gallery page
     Gallery,
+    /// the card game
+    Game,
     Ended,
 }
 
@@ -190,6 +193,7 @@ pub struct Engine {
     config: Option<config::ConfigView>,
     settings: config::Settings,
     gallery: Option<gallery::Gallery>,
+    game: Option<cardgame::CardGame>,
     seen: gallery::Seen,
     thumbs: HashMap<String, Rc<Image>>,
     /// where a right click on the buttons goes (10.0034)
@@ -285,6 +289,7 @@ impl Engine {
             config: None,
             settings: config::Settings::default(),
             gallery: None,
+            game: None,
             seen: gallery::Seen::default(),
             thumbs: HashMap::new(),
             cancel_label: String::new(),
@@ -544,6 +549,10 @@ impl Engine {
         if self.fade.take().is_some() {
             return;
         }
+        if let Wait::Game = self.wait {
+            self.game_click(x, y);
+            return;
+        }
         if self.hidden {
             self.hidden = false;
             return;
@@ -691,6 +700,9 @@ impl Engine {
             .is_some_and(|f| self.now >= f.start + f.ms.iter().sum::<u64>())
         {
             self.flash = None;
+        }
+        if let Wait::Game = self.wait {
+            self.game_frame();
         }
         if matches!(self.wait, Wait::Until(t) if self.now >= t) {
             self.wait = Wait::None;
@@ -993,6 +1005,7 @@ impl Engine {
             (0x40, 0x29) => self.auto = false,
             // not needed here: whether the menu can open, the scene number, the map's menu bar
             (0x40, 0x2b) | (0x50, 0x14) | (0x50, 0x32) => {}
+            (0x50, 0x64) => self.game_start(&c.str(0)),
             (0x50, 0x28) => self.wait = Wait::Until(self.now + c.u32(0) as u64),
             (0x50, 0x15) => self.title = c.str(0),
             (OLD, _) => self.run_old(c),
@@ -1690,6 +1703,10 @@ impl Engine {
         }
         if let Wait::Gallery = self.wait {
             self.gallery_draws(&mut out);
+            return out;
+        }
+        if let Wait::Game = self.wait {
+            self.game_draws(&mut out);
             return out;
         }
         if let Wait::Buttons = self.wait {
