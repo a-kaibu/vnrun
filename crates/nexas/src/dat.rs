@@ -41,18 +41,21 @@ pub fn parse(b: &[u8]) -> Result<Vec<Vec<Cell>>, String> {
         .collect::<Result<_, _>>()?;
     let mut at = 4 + 4 * n;
     let mut rows = Vec::new();
-    while at < b.len() {
+    // A cut short last row is left out (さかあがりハリケーン's Event.dat).
+    'rows: while at < b.len() {
         let mut row = Vec::with_capacity(n);
         for &t in &types {
             if t == 1 {
-                let len = b[at..]
-                    .iter()
-                    .position(|&c| c == 0)
-                    .ok_or("string is cut short")?;
+                let Some(len) = b[at.min(b.len())..].iter().position(|&c| c == 0) else {
+                    break 'rows;
+                };
                 row.push(Cell::Str(sjis::decode(&b[at..at + len])));
                 at += len + 1;
             } else {
-                row.push(Cell::Int(u32_at(at)? as i32));
+                let Ok(v) = u32_at(at) else {
+                    break 'rows;
+                };
+                row.push(Cell::Int(v as i32));
                 at += 4;
             }
         }

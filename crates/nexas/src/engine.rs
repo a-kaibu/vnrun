@@ -1007,6 +1007,8 @@ fn message_lines(s: &[u8], names: &[Vec<u8>]) -> Vec<Vec<u8>> {
             Some(b"s") => _ = digits(&mut chars, 4),
             // a speed or size change (2011): two digits
             Some(b"m") => _ = digits(&mut chars, 2),
+            // a font size (2008): two digits
+            Some(b"f") => _ = digits(&mut chars, 2),
             Some(b"r") => {
                 for c in chars.by_ref().take_while(|&c| c != b"@") {
                     line.extend_from_slice(c);

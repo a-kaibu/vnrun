@@ -120,6 +120,38 @@ static B2007_BUILD: Build = Build {
     early: true,
 };
 
+// さかあがりハリケーン (2008): the 2009 table's cases matched by handler body; most ids are 4
+// lower (5 for the scene calls).
+static B2008_BUILD: Build = Build {
+    name: "2008 (さかあがりハリケーン)",
+    rows: &[
+        (0x00, 0x00, 1),
+        (0x0a, 0x02, 1),
+        (0x0f, 0x05, 2),
+        (0x41, 0x137, 9),
+        (0x42, 0x138, 6),
+        (0x4a, 0x143, 2),
+        (0x4b, 0x144, 6),
+        (0x4f, 0x148, 6),
+        (0x51, 0x14a, 5),
+        (0x60, 0x159, 6),
+        (0x68, 0x162, 5),
+        (0x6a, 0x165, 2),
+        (0xa6, 0x62, 4),
+        (0xa9, 0x78, 5),
+        (0xbb, 0x8a, 2),
+        (0x154, 0x67, 4),
+        (0x165, 0x45, 10),
+        (0x166, 0x46, 9),
+        (0x167, 0x47, 9),
+        (0x168, 0x48, 10),
+        (0x169, 0x49, 9),
+        (0x16a, 0x4a, 0),
+    ],
+    old_ops: true,
+    early: false,
+};
+
 // キュアフル！ (2009): the cases of the 2010 table matched by handler body (nxbest.py).
 static B2009_BUILD: Build = Build {
     name: "2009 (キュアフル！)",
@@ -211,6 +243,15 @@ impl Build {
                 .any(|i| i.op == 7 && i.arg == (10 << 16 | 0x16a))
         {
             return &B2009_BUILD;
+        }
+        if script.legacy
+            && script
+                .main
+                .code
+                .iter()
+                .any(|i| i.op == 7 && i.arg == (10 << 16 | 0x165))
+        {
+            return &B2008_BUILD;
         }
         if script.legacy
             && script
