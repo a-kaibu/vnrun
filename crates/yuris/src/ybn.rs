@@ -168,10 +168,10 @@ fn version(b: &[u8]) -> u32 {
 
 /// Later versions put new system variables among the old ones; this gives them the 466 numbers
 /// the VM knows (and moves the new ones out of the way). The numbers were matched by the types
-/// in ysv.ybn: 482 games, 553 and 554 ones (GIB, 鯨神のティアスティラ) and a 555 one.
+/// in ysv.ybn: 474, 482, 550-555 games.
 fn sysvar(ver: u32, id: u16) -> u16 {
     match ver {
-        ..482 => id,
+        ..474 => id,
         482..500 => match id {
             0..=49 | 541.. => id,
             53..=61 => id - 3,
@@ -186,8 +186,8 @@ fn sysvar(ver: u32, id: u16) -> u16 {
             32..=60 => id + 16,
             _ => id + 17,
         },
-        // 551 (竜翼のメロディア)
-        500..553 => match id {
+        // 474 (女装神社) and 551 (竜翼のメロディア)
+        474..482 | 500..553 => match id {
             0..=75 | 526.. => id,
             89..=525 => id - 13,
             _ => 10000 + id,
