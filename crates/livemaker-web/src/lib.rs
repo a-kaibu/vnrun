@@ -132,6 +132,11 @@ impl Game {
         self.e.key(code as i64);
     }
 
+    /// The wall clock: local time in seconds since 1970.
+    pub fn set_clock(&mut self, secs: f64) {
+        self.e.set_clock(secs as i64);
+    }
+
     /// Typed text, for the text box in front.
     pub fn type_text(&mut self, text: &str) {
         self.e.type_text(text);

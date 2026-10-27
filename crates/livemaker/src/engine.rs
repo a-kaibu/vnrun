@@ -128,6 +128,8 @@ pub struct Engine {
     motions: Vec<Motion>,
     ended: bool,
     log: u8,
+    /// the wall clock in local seconds since 1970 (0: unknown, a fixed date)
+    clock: i64,
     rand: u64,
 }
 
@@ -370,6 +372,7 @@ impl Engine {
             motions: Vec::new(),
             ended: false,
             log: 0,
+            clock: 0,
             rand: 0x2545_f491_4f6c_dd1d,
         };
         for (name, ty, v) in project.vars {
@@ -400,6 +403,31 @@ impl Engine {
     }
 
     /// 0: quiet, 1: commands (not the per-frame idle handlers), 2: everything
+    /// Sets the wall clock (local time, seconds since 1970) for the date the game shows,
+    /// in save captions say.
+    pub fn set_clock(&mut self, secs: i64) {
+        self.clock = secs;
+    }
+
+    /// (year, month, day, hour, minute, second) of the clock.
+    fn date(&self) -> [i64; 6] {
+        if self.clock <= 0 {
+            return [2026, 1, 1, 0, 0, 0];
+        }
+        let (days, s) = (self.clock.div_euclid(86400), self.clock.rem_euclid(86400));
+        // civil date from days (Howard Hinnant's algorithm)
+        let z = days + 719468;
+        let era = z.div_euclid(146097);
+        let doe = z - era * 146097;
+        let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
+        let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+        let mp = (5 * doy + 2) / 153;
+        let d = doy - (153 * mp + 2) / 5 + 1;
+        let m = if mp < 10 { mp + 3 } else { mp - 9 };
+        let y = yoe + era * 400 + i64::from(m <= 2);
+        [y, m, d, s / 3600, s / 60 % 60, s % 60]
+    }
+
     pub fn set_log(&mut self, level: u8) {
         self.log = level;
     }
@@ -2487,9 +2515,12 @@ impl Engine {
             "@KeyClick" | "@KeyPush" => Value::Flag(false),
             "@WheelUp" => Value::Flag(self.keys_now.contains(&257)),
             "@WheelDown" => Value::Flag(self.keys_now.contains(&256)),
-            "@Year" => Value::Int(2026),
-            "@Month" | "@Day" => Value::Int(1),
-            "@Hour" | "@Min" | "@Sec" => Value::Int(0),
+            "@Year" => Value::Int(self.date()[0]),
+            "@Month" => Value::Int(self.date()[1]),
+            "@Day" => Value::Int(self.date()[2]),
+            "@Hour" => Value::Int(self.date()[3]),
+            "@Min" => Value::Int(self.date()[4]),
+            "@Sec" => Value::Int(self.date()[5]),
             _ => self.sys.get(name).cloned().unwrap_or(Value::Int(0)),
         }
     }

@@ -17,6 +17,7 @@ interface Game {
   wheel(up: boolean): void;
   key(code: number): void;
   type_text(text: string): void;
+  set_clock(secs: number): void;
   point(x: number, y: number): void;
   draws(): Float32Array;
   texture(id: number): Uint8Array;
@@ -97,8 +98,37 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
   window.addEventListener("pointerdown", resumeAudio, { once: true });
   window.addEventListener("keydown", resumeAudio, { once: true });
   const { canvas } = ui;
+  // Keys go to a hidden text field rather than the canvas, so that typed text (and what an
+  // input method commits) arrives as input events for the game's text boxes.
+  const field = document.createElement("textarea");
+  field.setAttribute("aria-label", "keyboard");
+  field.autocomplete = "off";
+  field.spellcheck = false;
+  Object.assign(field.style, {
+    position: "fixed",
+    left: "0",
+    top: "0",
+    width: "1px",
+    height: "1px",
+    opacity: "0",
+    border: "0",
+    padding: "0",
+    resize: "none",
+    pointerEvents: "none",
+  });
+  document.body.append(field);
+  const focus = () => field.focus({ preventScroll: true });
+  const typed = () => {
+    if (field.value) game.type_text(field.value);
+    field.value = "";
+  };
+  field.addEventListener("input", (event) => {
+    if (!(event as InputEvent).isComposing) typed();
+  });
+  field.addEventListener("compositionend", typed);
   canvas.addEventListener("pointerdown", (event) => {
-    canvas.focus();
+    event.preventDefault();
+    focus();
     if (event.button === 0) game.click(...presenter.toFrame(event));
     else if (event.button === 2) game.cancel();
   });
@@ -123,15 +153,11 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
     ArrowRight: 39,
     ArrowDown: 40,
   };
-  canvas.addEventListener("keydown", (event) => {
+  field.addEventListener("keydown", (event) => {
+    if (event.isComposing) return;
     if (event.code === "Backspace") {
       event.preventDefault();
       game.key(8);
-      return;
-    }
-    // a character for a text box (a name entry, say)
-    if (event.key.length === 1 && event.code !== "Space" && !event.ctrlKey && !event.metaKey) {
-      game.type_text(event.key);
       return;
     }
     const code = keyCodes[event.code];
@@ -139,9 +165,11 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
     event.preventDefault();
     game.key(code);
     if (code === 13) game.click(-1, -1);
+    // Escape also does what a right click does (closes the game's menus)
+    if (code === 27) game.cancel();
   });
   ui.hide();
-  canvas.focus();
+  focus();
 
   const step = 1000 / 60;
   const begin = performance.now();
@@ -152,6 +180,8 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
       // Catch up after a slow frame, but not after the tab slept.
       if (now - frames * step > 250) frames = Math.floor(now / step);
       let ran = false;
+      const date = new Date();
+      game.set_clock(date.getTime() / 1000 - date.getTimezoneOffset() * 60);
       while (frames * step <= now) {
         game.frame();
         for (const sound of game.sounds()) playSound(sound);

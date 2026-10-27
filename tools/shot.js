@@ -8,6 +8,8 @@
 //   shot:<name>           screenshot to <out prefix>_<name>.png
 //   at:<x>;<y>            click at page pixels (the page is 1280x800)
 //   key:<Key>             press a key (Playwright names: Enter, Space, ArrowDown, ...)
+//   wheel:<x>;<y>;<dy>    turn the mouse wheel over page pixels (dy < 0 is up)
+//   type:<text>           type text into the focused element
 //   files:<sel>=<path>    put a file or folder into an <input type=file> (upstream launcher pages)
 //   eval:<js>             log the JSON of a page expression (no commas)
 // The console log (page and workers) goes to <out prefix>.log.
@@ -72,6 +74,12 @@ if (!url || !out) {
       await page.mouse.up();
     } else if (cmd === "key") {
       await page.keyboard.press(arg);
+    } else if (cmd === "wheel") {
+      const [x, y, dy] = arg.split(";").map(Number);
+      await page.mouse.move(x, y);
+      await page.mouse.wheel(0, dy);
+    } else if (cmd === "type") {
+      await page.keyboard.type(arg);
     } else if (cmd === "files") {
       const [sel, path] = arg.split("=");
       await page.setInputFiles(sel, path);
