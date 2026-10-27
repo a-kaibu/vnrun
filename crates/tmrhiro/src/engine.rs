@@ -20,6 +20,7 @@ use crate::save::{SaveData, SavedChara};
 use crate::script::{Command, OLD, Script};
 
 mod backlog;
+mod config;
 mod old;
 
 /// A sound to start or stop.
@@ -176,6 +177,8 @@ pub struct Engine {
     menu: Option<Menu>,
     backlog: Vec<backlog::LogLine>,
     log_view: Option<backlog::LogView>,
+    config: Option<config::ConfigView>,
+    settings: config::Settings,
     /// the message window is put away (right click or its close button)
     hidden: bool,
     auto: bool,
@@ -261,6 +264,8 @@ impl Engine {
             menu: None,
             backlog: Vec::new(),
             log_view: None,
+            config: None,
+            settings: config::Settings::default(),
             hidden: false,
             auto: false,
             skip: false,
@@ -324,6 +329,7 @@ impl Engine {
                 e.ini.add(&nexas::sjis::encode(&text));
             }
         }
+        e.load_settings();
         Ok(e)
     }
 
@@ -439,7 +445,11 @@ impl Engine {
     }
 
     pub fn take_sounds(&mut self) -> Vec<Sound> {
-        std::mem::take(&mut self.sounds)
+        let mut sounds = std::mem::take(&mut self.sounds);
+        for s in &mut sounds {
+            s.volume *= self.volume(s.bgm, s.voice);
+        }
+        sounds
     }
 
     /// The pointer moved (buttons light up under it).
@@ -455,6 +465,10 @@ impl Engine {
         }
         if self.log_open() {
             self.log_click(x, y);
+            return;
+        }
+        if self.config_open() {
+            self.config_click(x, y);
             return;
         }
         if self.fade.take().is_some() {
@@ -505,7 +519,10 @@ impl Engine {
     /// A right click: closes the save or load screen, or puts the message window away (games
     /// without window buttons open the save screen instead).
     pub fn cancel(&mut self) {
-        if self.menu.take().is_some() || self.log_view.take().is_some() {
+        if self.menu.take().is_some()
+            || self.log_view.take().is_some()
+            || self.config.take().is_some()
+        {
             return;
         }
         if !matches!(self.wait, Wait::Click | Wait::Choice(_)) {
@@ -547,12 +564,13 @@ impl Engine {
     /// Runs one frame: commands until one waits.
     pub fn frame(&mut self) -> Result<(), String> {
         self.now += MS_PER_FRAME;
-        if self.menu.is_some() || self.log_open() {
+        if self.menu.is_some() || self.log_open() || self.config_open() {
             return Ok(());
         }
         if let Wait::Click = self.wait {
             let chars = self.text.chars().count() as u64;
-            if self.skip || (self.auto && self.now >= self.said_at + 1000 + 60 * chars) {
+            let delay = ((1000 + 60 * chars) as f32 * self.auto_factor()) as u64;
+            if self.skip || (self.auto && self.now >= self.said_at + delay) {
                 self.wait = Wait::None;
             }
         }
@@ -852,6 +870,7 @@ impl Engine {
             }
             (0x40, 0x00) => self.wait = Wait::Ended,
             (0x40, 0x15) => self.open_menu(false),
+            (0x40, 0x16) => self.open_config(),
             (0x50, 0x01) => {
                 self.vars.insert((c.u8(1), c.u16(2)), c.u16(4) as i32);
             }
@@ -1037,6 +1056,7 @@ impl Engine {
                 }
             }
             "BACKLOG" => self.open_log(),
+            "SYSTEM" | "SYSTEM2" => self.open_config(),
             "SAVE" => self.open_menu(true),
             "LOAD" => self.open_menu(false),
             "QSAVE" => {
@@ -1346,6 +1366,7 @@ impl Engine {
         self.flash = None;
         self.shake = None;
         self.log_view = None;
+        self.config = None;
         self.window = false;
         self.hidden = false;
         self.auto = false;
@@ -1545,6 +1566,10 @@ impl Engine {
         }
         if self.log_open() {
             self.log_draws(&mut out);
+            return out;
+        }
+        if self.config_open() {
+            self.config_draws(&mut out);
             return out;
         }
         if let Wait::Buttons = self.wait {
@@ -1788,10 +1813,11 @@ impl Engine {
         // the window's picture (white, coloured by SYS_DEF_WINDOW_STAT, AARRGGBB), or a dark
         // panel for games without one
         if self.window_base.is_none() {
-            let stat = self
-                .ini
-                .get("SYSTEM/SYS_DEF_WINDOW_STAT")
-                .and_then(|v| u32::from_str_radix(v.trim(), 16).ok());
+            let stat = self.window_stat().or_else(|| {
+                self.ini
+                    .get("SYSTEM/SYS_DEF_WINDOW_STAT")
+                    .and_then(|v| u32::from_str_radix(v.trim(), 16).ok())
+            });
             let base = self.image("sys_window_base").map(|g| {
                 let c = stat.unwrap_or(0x8000_0000).to_be_bytes();
                 let mut img = (*g.image).clone();
