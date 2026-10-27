@@ -101,6 +101,14 @@ impl Game {
             .unwrap();
             Reflect::set(&event, &"bgm".into(), &JsValue::from_bool(sound.bgm)).unwrap();
             Reflect::set(&event, &"voice".into(), &JsValue::from_bool(sound.voice)).unwrap();
+            Reflect::set(
+                &event,
+                &"effectChannel".into(),
+                &sound
+                    .effect_channel
+                    .map_or(JsValue::NULL, |n| JsValue::from_f64(n as f64)),
+            )
+            .unwrap();
             Reflect::set(&event, &"stop".into(), &JsValue::from_bool(sound.stop)).unwrap();
             Reflect::set(
                 &event,

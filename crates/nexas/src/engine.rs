@@ -26,6 +26,7 @@ pub struct Sound {
     pub volume: f32,
     pub bgm: bool,
     pub voice: bool,
+    pub effect_channel: Option<i32>,
     pub stop: bool,
     pub fade_ms: u32,
     pub loop_start: u32,
@@ -1013,8 +1014,9 @@ impl Host for Engine {
         let mut out = 0;
         match id {
             // 2010 build: one-shot sound effect (name, volume, ...).
-            0xff00 => {
-                let name = text(args, 0);
+            0xff00 | 0xff03 => {
+                let channel = (id == 0xff03).then(|| a(0));
+                let name = text(args, if channel.is_some() { 1 } else { 0 });
                 if !name.is_empty() {
                     let mut data = None;
                     for pack in ["System", "Se"] {
@@ -1032,16 +1034,32 @@ impl Host for Engine {
                     if let Some(data) = data {
                         self.sounds.push(Sound {
                             data,
-                            volume: a(1).clamp(0, 100) as f32 / 100.0,
+                            volume: a(if channel.is_some() { 4 } else { 1 }).clamp(0, 100) as f32
+                                / 100.0,
                             bgm: false,
                             voice: false,
+                            effect_channel: channel,
                             stop: false,
-                            fade_ms: 0,
+                            fade_ms: if channel.is_some() {
+                                (a(2) as u32 & 0xffff) * 10
+                            } else {
+                                0
+                            },
                             loop_start: 0,
                         });
                     }
                 }
             }
+            0xff04 => self.sounds.push(Sound {
+                data: Vec::new(),
+                volume: 0.0,
+                bgm: false,
+                voice: false,
+                effect_channel: Some(a(0)),
+                stop: true,
+                fade_ms: (a(1) as u32 & 0xffff) * 10,
+                loop_start: 0,
+            }),
             // 2010 build: BGM table row, fade time, ..., volume, ...
             0xff01 => {
                 let track = usize::try_from(a(0)).ok();
@@ -1062,6 +1080,7 @@ impl Host for Engine {
                             volume: a(3).clamp(0, 100) as f32 / 100.0,
                             bgm: true,
                             voice: false,
+                            effect_channel: None,
                             stop: false,
                             fade_ms: (a(1) as u32 & 0xffff) * 10,
                             loop_start,
@@ -1076,6 +1095,7 @@ impl Host for Engine {
                     volume: 0.0,
                     bgm: true,
                     voice: false,
+                    effect_channel: None,
                     stop: true,
                     fade_ms: (a(0) as u32 & 0xffff) * 10,
                     loop_start: 0,
@@ -1182,6 +1202,7 @@ impl Host for Engine {
                     volume: 1.0,
                     bgm: false,
                     voice: true,
+                    effect_channel: None,
                     fade_ms: 0,
                     loop_start: 0,
                 });

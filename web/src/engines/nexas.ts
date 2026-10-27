@@ -22,6 +22,7 @@ interface Sound {
   volume: number;
   bgm: boolean;
   voice: boolean;
+  effectChannel: number | null;
   stop: boolean;
   fadeMs: number;
   loopStart: number;
@@ -57,6 +58,17 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
   const audio = new AudioContext();
   let bgm: { source: AudioBufferSourceNode; gain: GainNode; started: boolean } | undefined;
   let voice: { source: AudioBufferSourceNode; gain: GainNode; started: boolean } | undefined;
+  const effects = new Map<number, { source: AudioBufferSourceNode; gain: GainNode; started: boolean }>();
+  const stopEffect = (channel: number, fadeMs: number) => {
+    const previous = effects.get(channel);
+    effects.delete(channel);
+    if (!previous?.started) return;
+    const now = audio.currentTime;
+    previous.gain.gain.cancelScheduledValues(now);
+    previous.gain.gain.setValueAtTime(previous.gain.gain.value, now);
+    previous.gain.gain.linearRampToValueAtTime(0, now + fadeMs / 1000);
+    previous.source.stop(now + fadeMs / 1000);
+  };
   const stopBgm = (fadeMs: number) => {
     const previous = bgm;
     bgm = undefined;
@@ -73,16 +85,26 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
       if (voice?.started) voice.source.stop();
       voice = undefined;
     }
+    if (sound.effectChannel !== null) {
+      const channels = sound.effectChannel < 0 ? [...effects.keys()] : [sound.effectChannel];
+      for (const channel of channels) stopEffect(channel, sound.stop ? sound.fadeMs : 0);
+    }
     if (sound.stop) return;
     const source = audio.createBufferSource();
     const gain = audio.createGain();
     const pending = { source, gain, started: false };
     if (sound.bgm) bgm = pending;
     if (sound.voice) voice = pending;
+    if (sound.effectChannel !== null && sound.effectChannel >= 0) effects.set(sound.effectChannel, pending);
     void audio
       .decodeAudioData(sound.data.slice().buffer)
       .then((buffer) => {
-        if ((sound.bgm && bgm !== pending) || (sound.voice && voice !== pending)) return;
+        if (
+          (sound.bgm && bgm !== pending) ||
+          (sound.voice && voice !== pending) ||
+          (sound.effectChannel !== null && effects.get(sound.effectChannel) !== pending)
+        )
+          return;
         source.buffer = buffer;
         source.loop = sound.bgm;
         if (sound.bgm && sound.loopStart / buffer.sampleRate < buffer.duration)
@@ -95,6 +117,8 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
         pending.started = true;
         source.onended = () => {
           if (voice === pending) voice = undefined;
+          if (sound.effectChannel !== null && effects.get(sound.effectChannel) === pending)
+            effects.delete(sound.effectChannel);
         };
       })
       .catch((error: unknown) => console.warn("NeXAS sound:", error));
