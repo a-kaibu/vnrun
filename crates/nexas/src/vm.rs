@@ -104,6 +104,40 @@ mod tests {
         thread.step(&mut globals, &mut host).unwrap();
         assert_eq!(thread.regs[0], 50);
     }
+
+    #[test]
+    fn early_loop_exit_skips_nested_loop_and_repeat_returns_to_condition() {
+        let code = vec![
+            Ins { op: 0x1e, arg: 0 },
+            Ins { op: 0, arg: 0 },
+            Ins { op: 0x21, arg: 0 },
+            Ins { op: 0x1e, arg: 0 },
+            Ins { op: 0x1f, arg: 0 },
+            Ins { op: 0x20, arg: 0 },
+            Ins { op: 0x1f, arg: 0 },
+            Ins { op: 0x20, arg: 0 },
+            Ins { op: 0, arg: 42 },
+        ];
+        let script = Rc::new(Script {
+            main: Block {
+                code,
+                ..Block::default()
+            },
+            ..Script::default()
+        });
+        let mut thread = Thread::new("test", script);
+        let mut globals = Globals::default();
+        let mut host = NoCalls;
+        for _ in 0..3 {
+            thread.step(&mut globals, &mut host).unwrap();
+        }
+        assert_eq!(thread.frames[0].ip, 8);
+        thread.step(&mut globals, &mut host).unwrap();
+        assert_eq!(thread.regs[0], 42);
+        thread.frames[0].ip = 6;
+        thread.step(&mut globals, &mut host).unwrap();
+        assert_eq!(thread.frames[0].ip, 1);
+    }
 }
 
 impl Value {
@@ -431,6 +465,44 @@ impl Thread {
                 self.frame().ip = at;
             }
             0x02 | 0x03 => {}
+            // Older scripts surround while loops with 0x1e/0x20. 0x21 exits the
+            // current loop when its condition is false, and 0x1f repeats it.
+            0x1e | 0x20 => {}
+            0x1f | 0x21 if op == 0x1f || a == 0 => {
+                let frame = self.frames.last().unwrap();
+                let code = self.code_of(frame);
+                let mut depth = 0usize;
+                let target = if op == 0x1f {
+                    (0..frame.ip).rev().find(|&i| match code[i].op {
+                        0x20 => {
+                            depth += 1;
+                            false
+                        }
+                        0x1e if depth == 0 => true,
+                        0x1e => {
+                            depth -= 1;
+                            false
+                        }
+                        _ => false,
+                    })
+                } else {
+                    (frame.ip + 1..code.len()).find(|&i| match code[i].op {
+                        0x1e => {
+                            depth += 1;
+                            false
+                        }
+                        0x20 if depth == 0 => true,
+                        0x20 => {
+                            depth -= 1;
+                            false
+                        }
+                        _ => false,
+                    })
+                }
+                .ok_or_else(|| format!("{}: missing loop boundary", self.name))?;
+                self.frame().ip = target;
+            }
+            0x21 => {}
             0x04 => self.stack.push(Value::Int(self.regs[reg])),
             0x05 => {
                 let v = if arg == 0 {

@@ -49,7 +49,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 2 | 17 | 9 | 3 | 2 |  |  |
 | 吉里吉里 (KiriKiri SDL2) | 135 | 5 | 129 |  |  |  | 1 |  |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
-| NeXAS (vnrun) | 30 | 5 | 1 |  | 1 | 22 | 1 |  |
+| NeXAS (vnrun) | 30 | 5 | 2 |  | 1 | 21 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
@@ -390,10 +390,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2013_giga | [キスアト体験版](http://suezou.dyndns.org/dl2013/giga/kissato/kissato_trial.zip) | 本編 | 6875c68 でタイトルから new game で本編テキストまで (冒頭は白背景+メッセージウィンドウ) |
 | b2016_giga | [リプキス　体験版](http://suezou.dyndns.org/dl2016/giga/repkiss/repkiss_trial.zip) | 本編 | 6875c68 でタイトルから New Game で本編テキストまで |
 | b2019_giga | [アイキス 豪華体験版](http://suezou.dyndns.org/dl2019/giga/aikiss/aikiss_premium_trial.zip) | 本編 | 6875c68 でタイトルから本編テキストまで。メッセージウィンドウ画像は未表示 (既知) |
+| b2010_giga | [JINKI EXTEND Re:VISION -SECOND IMPACT-](http://suezou.dyndns.org/dl2010/giga/jinkirv/jinki_webtrial.zip) | タイトル | ネイティブでタイトル表示と START 後の本編スクリプトへの遷移を確認。画面サイズ、命令、音声、セーブとブラウザは未確認・未対応 |
 | s2015_giga_renaiphase | [恋愛フェイズ 体験版](http://suezou.dyndns.org/dl2015/giga/renaiphase/RP_trial.zip) | タイトル | b425e77 でもタイトルまで |
 | s2006_giga_cheerfull | [チアフル！ ～cheerfull!～ 【 体験版 】](http://suezou.dyndns.org/dl2006/giga/cheerfull/cheerfull_trial.exe) | 要再確認 | 自己展開 exe のダウンロード/展開に失敗 |
 | b2009_crossover | [美乳淫妹 遥「私にイヤらしいコスプレさせるなんて……この変態！」](http://suezou.dyndns.org/dl2009/crossover/haruka/bnharuka_trial.zip) | NG | 64d6316 (2015 年版の表) で「no Script.pac」(DATA/ フォルダの形) |
-| b2010_giga | [JINKI EXTEND Re:VISION -SECOND IMPACT-](http://suezou.dyndns.org/dl2010/giga/jinkirv/jinki_webtrial.zip) | NG | 旧形式のスクリプトと分岐を読み取れるが、2010 年版の組み込み命令番号表が未対応でタイトルに遷移しない |
 | b2010_marine | [paicheer_trial.exe](http://suezou.dyndns.org/dl2010/marine/paicheer/paicheer_trial.exe) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
 | b2011_marine | [kyonyutry_trial.exe](http://suezou.dyndns.org/dl2011/marine/kyonyutry/kyonyutry_trial.exe) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
 | b2023_turumiku_another | [非道狩～ヒトカリ～ 体験版](http://suezou.dyndns.org/dl2023/turumiku-another/hitokari/hitokari-trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |

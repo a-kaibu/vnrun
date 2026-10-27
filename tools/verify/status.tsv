@@ -184,7 +184,7 @@ b2019_tinkle_position	本編	1929e7a で「はじめる」からハグクリッ�
 b2023_lump_of_sugar_all	タイトル	dc42573 でタイトル画面まで表示
 b2012_alcot	タイトル	bd7853c でタイトル表示 (GAME START 等のメニュー描画まで)
 b2012_kai	タイトル	bd7853c でタイトル表示 (START/LOAD 等の看板メニュー描画まで)
-b2010_giga	NG	旧形式のスクリプトと分岐を読み取れるが、2010 年版の組み込み命令番号表が未対応でタイトルに遷移しない
+b2010_giga	タイトル	ネイティブでタイトル表示と START 後の本編スクリプトへの遷移を確認。画面サイズ、命令、音声、セーブとブラウザは未確認・未対応
 s2010_giga_bittersmile	NG	64d6316 (2015 年版の表) で「System.bin: string is cut short」
 s2007_giga_himesama	NG	64d6316 (2015 年版の表) で「System.bin: string is cut short」
 s2009_giga_curefull	NG	64d6316 (2015 年版の表) で「System.bin: string is cut short」

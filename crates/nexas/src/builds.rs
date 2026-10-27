@@ -45,6 +45,29 @@ pub const BUILDS: &[Build] = &[
     },
 ];
 
+// Confirmed against the dispatcher and its scene/call handlers in JINKI TRIAL2.
+// Other 2010 builtins are intentionally left unmapped until their handlers are identified.
+static B2010_BUILD: Build = Build {
+    name: "2010 (JINKI EXTEND Re:VISION)",
+    rows: &[
+        (0x00, 0x00, 1),
+        (0x02, 0x02, 1),
+        (0x05, 0x05, 2),
+        (0x39, 0x45, 10),
+        (0x3a, 0x46, 9),
+        (0x3b, 0x47, 9),
+        (0x3c, 0x48, 10),
+        (0x3d, 0x49, 9),
+        (0x3e, 0x4a, 0),
+        (0x54, 0x62, 6),
+        (0x115, 0x137, 9),
+        (0x136, 0x159, 6),
+        (0x13e, 0x162, 5),
+        (0x141, 0x165, 2),
+    ],
+    old_ops: true,
+};
+
 impl Build {
     fn row(&self, id: u32) -> Option<&(u16, u16, u8)> {
         let i = self
@@ -79,6 +102,15 @@ impl Build {
 
     /// The build whose argument counts fit the calls of `script` best.
     pub fn detect(script: &Script) -> &'static Build {
+        if script.legacy
+            && script
+                .main
+                .code
+                .iter()
+                .any(|i| i.op == 7 && i.arg == (10 << 16 | 0x39))
+        {
+            return &B2010_BUILD;
+        }
         let mut calls = Vec::new();
         let mut collect = |b: &Block| {
             for ins in b.init.iter().chain(&b.code) {
@@ -98,6 +130,29 @@ impl Build {
                     .count()
             })
             .unwrap_or(&BUILDS[0])
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::script::Ins;
+
+    #[test]
+    fn identifies_early_scene_calls_only_in_legacy_scripts() {
+        let mut script = Script::default();
+        script.legacy = true;
+        script.main.code.push(Ins {
+            op: 7,
+            arg: (10 << 16) | 0x39,
+        });
+        let build = Build::detect(&script);
+        assert_eq!(build.canonical(0x39), 0x45);
+        assert_eq!(build.canonical(0x3c), 0x48);
+        assert_eq!(build.canonical(0x115), 0x137);
+        assert_eq!(build.canonical(0x116), 0xffff);
+        script.legacy = false;
+        assert_ne!(Build::detect(&script).name, B2010_BUILD.name);
     }
 }
 

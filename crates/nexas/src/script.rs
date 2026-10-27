@@ -45,6 +45,7 @@ pub struct Block {
 pub struct Script {
     pub main: Block,
     pub funcs: HashMap<u32, Block>,
+    pub legacy: bool,
 }
 
 struct Reader<'a> {
@@ -139,7 +140,11 @@ fn parse_format(b: &[u8], old: bool) -> Result<Script, String> {
         let id = r.u32()?;
         funcs.insert(id, r.block(old)?);
     }
-    Ok(Script { main, funcs })
+    Ok(Script {
+        main,
+        funcs,
+        legacy: old,
+    })
 }
 
 #[cfg(test)]
@@ -157,6 +162,7 @@ mod tests {
         bytes.extend_from_slice(b"ret\0");
         bytes.extend_from_slice(&0u32.to_le_bytes());
         let script = parse(&bytes).unwrap();
+        assert!(script.legacy);
         assert!(script.main.init.is_empty());
         assert_eq!(script.main.code, [Ins { op: 0, arg: 42 }]);
         assert_eq!(script.main.strings, [b"hello".to_vec()]);
