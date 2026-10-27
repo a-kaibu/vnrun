@@ -11,7 +11,7 @@ use nexas::files::Disk;
 
 fn main() -> Result<(), String> {
     let args: Vec<String> = std::env::args().collect();
-    let usage = "usage: entis-dump keys <exe> | dis <csx> | list <game> | get <game> <name> <out>";
+    let usage = "usage: entis-dump keys <exe> | dis <csx> | list <game> | get <game> <name> <out> | wav <mio> <out>";
     match args.get(1).map(String::as_str) {
         Some("keys") => {
             let exe = std::fs::read(args.get(2).ok_or(usage)?).map_err(|e| e.to_string())?;
@@ -27,6 +27,13 @@ fn main() -> Result<(), String> {
                 image::save_buffer(format!("{f}.png"), &e.px, e.w, e.h, image::ColorType::Rgba8)
                     .map_err(|e| e.to_string())?;
             }
+        }
+        Some("wav") => {
+            let b = std::fs::read(args.get(2).ok_or(usage)?).map_err(|e| e.to_string())?;
+            let t = std::time::Instant::now();
+            let w = entis::mio::to_wav(&b).ok_or("not a MIO sound")?;
+            eprintln!("{} bytes in {:?}", w.len(), t.elapsed());
+            std::fs::write(args.get(3).ok_or(usage)?, w).map_err(|e| e.to_string())?;
         }
         Some("dis") => {
             let b = std::fs::read(args.get(2).ok_or(usage)?).map_err(|e| e.to_string())?;

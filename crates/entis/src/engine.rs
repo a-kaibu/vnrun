@@ -61,6 +61,10 @@ pub struct Engine {
     pub active: Vec<std::rc::Weak<std::cell::RefCell<crate::natives::Native>>>,
     /// GetCurrentTime calls this frame
     pub time_polls: u32,
+    /// a loaded save, put in place after the running thread stops
+    pub pending_load: Option<crate::save::Context>,
+    /// the local time from the host, in ms since 1970 (save dates)
+    pub clock: Option<f64>,
 }
 
 impl Engine {
@@ -135,6 +139,8 @@ impl Engine {
             next_channel: 0,
             active: Vec::new(),
             time_polls: 0,
+            pending_load: None,
+            clock: None,
         })
     }
 
@@ -223,6 +229,28 @@ impl Engine {
             }
         }
         if found.is_none() {
+            // a save file: its thumbnail
+            let f = name.rsplit(['\\', '/']).next().unwrap_or(name);
+            if let Some(st) = self
+                .fs
+                .host
+                .read_save(f)
+                .and_then(|b| crate::save::FileState::unpack(f, &b))
+                && let Some(t) = st.find("thumb")
+                && t.len() >= 8
+            {
+                let w = u32::from_le_bytes(t[0..4].try_into().unwrap());
+                let h = u32::from_le_bytes(t[4..8].try_into().unwrap());
+                if t.len() >= 8 + (w * h * 4) as usize {
+                    let mut img = Image::new(w, h);
+                    img.px = t[8..8 + (w * h * 4) as usize].to_vec();
+                    // not kept: the file changes when the game saves again
+                    return Some(Rc::new(Pic {
+                        img: Rc::new(img),
+                        hot: (0, 0),
+                    }));
+                }
+            }
             self.warn(format!("{name}: no such picture"));
         }
         self.pics.insert(key, found.clone());
@@ -289,6 +317,10 @@ impl Engine {
             self.current = usize::MAX;
             let main_done = i == 0 && t.done;
             self.threads[i] = Some(t);
+            if let Some(c) = self.pending_load.take() {
+                self.apply_context(c);
+                break;
+            }
             if let Err(e) = r {
                 if i == 0 {
                     self.ended = true;

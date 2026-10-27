@@ -69,21 +69,21 @@ pub enum Ret {
 }
 
 pub struct Block {
-    height: usize,
+    pub(crate) height: usize,
     /// a Try block: where its Catch starts
-    catch: Option<usize>,
+    pub(crate) catch: Option<usize>,
 }
 
 pub struct Frame {
     pub ret_pc: usize,
-    base: usize,
+    pub(crate) base: usize,
     pub this: Option<Var>,
     /// "Class" of a "Class::Function"
     pub class: Option<Str>,
     pub func: Str,
-    blocks: Vec<Block>,
-    ret: Ret,
-    entered: bool,
+    pub(crate) blocks: Vec<Block>,
+    pub(crate) ret: Ret,
+    pub(crate) entered: bool,
 }
 
 #[derive(Default)]
@@ -119,6 +119,10 @@ pub enum Done {
     Yield(Value),
     /// call a script function: (function, this, arguments)
     Script(usize, Option<Var>, Vec<Var>),
+    /// File::SaveContext: snapshot the program (this thread just after the call) into the file
+    SaveContext(crate::natives::Obj),
+    /// File::LoadContext: the saved program to resume
+    LoadContext(Vec<u8>),
 }
 
 impl Thread {
@@ -800,6 +804,26 @@ impl Engine {
             Done::Script(f, this, a) => {
                 self.deadline = None;
                 self.call_script(t, f, this, a, Ret::Push);
+            }
+            Done::SaveContext(file) => {
+                self.deadline = None;
+                t.push(var(Value::Int(0)));
+                let b = self.save_context(t);
+                self.file_record(&file, "context", b);
+            }
+            Done::LoadContext(b) => {
+                self.deadline = None;
+                match self.read_context(&b) {
+                    Ok(c) => {
+                        self.pending_load = Some(c);
+                        t.push(var(Value::Int(0)));
+                        return Ok(false);
+                    }
+                    Err(e) => {
+                        self.warn(format!("LoadContext: {e}"));
+                        t.push(var(Value::Int(1)));
+                    }
+                }
             }
         }
         Ok(true)

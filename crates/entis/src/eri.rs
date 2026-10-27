@@ -134,7 +134,7 @@ struct Node {
 }
 
 #[derive(Clone)]
-struct Tree {
+pub(crate) struct Tree {
     n: Vec<Node>,
     lookup: [i32; 0x100],
     escape: i32,
@@ -312,12 +312,12 @@ impl Tree {
 }
 
 /// The bit-level decoders of lossless ERI.
-struct Ctx<'a> {
-    bits: Bits<'a>,
-    zero: i32,
-    length: u32,
-    trees: Vec<Tree>,
-    last_tree: usize,
+pub(crate) struct Ctx<'a> {
+    pub bits: Bits<'a>,
+    pub zero: i32,
+    pub length: u32,
+    pub trees: Vec<Tree>,
+    pub last_tree: usize,
 }
 
 impl<'a> Ctx<'a> {
@@ -325,12 +325,12 @@ impl<'a> Ctx<'a> {
         gamma(&mut self.bits)
     }
 
-    fn init_gamma(&mut self) {
+    pub fn init_gamma(&mut self) {
         self.zero = self.bits.bit();
         self.length = 0;
     }
 
-    fn gamma_bytes(&mut self, dst: &mut [i8]) -> usize {
+    pub fn gamma_bytes(&mut self, dst: &mut [i8]) -> usize {
         let mut count = dst.len() as u32;
         let mut d = 0usize;
         let mut decoded = 0usize;
@@ -378,13 +378,13 @@ impl<'a> Ctx<'a> {
         }
     }
 
-    fn prepare_erina(&mut self) {
+    pub fn prepare_erina(&mut self) {
         self.trees = vec![Tree::new(); 0x101];
         self.length = 0;
         self.last_tree = 0;
     }
 
-    fn erina_bytes(&mut self, dst: &mut [i8]) -> usize {
+    pub fn erina_bytes(&mut self, dst: &mut [i8]) -> usize {
         let n = dst.len();
         let mut t = self.last_tree;
         let mut i = 0;

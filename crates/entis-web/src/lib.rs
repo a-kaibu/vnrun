@@ -85,6 +85,8 @@ impl Game {
 
     /// Runs one frame (60 a second).
     pub fn frame(&mut self) -> Result<(), JsError> {
+        let d = js_sys::Date::new_0();
+        self.e.clock = Some(d.get_time() - d.get_timezone_offset() * 60_000.0);
         self.e.frame().map_err(|e| JsError::new(&e))
     }
 

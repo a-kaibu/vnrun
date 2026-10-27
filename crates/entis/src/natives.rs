@@ -38,13 +38,13 @@ pub struct Item {
 
 /// A running BeginActivation.
 pub struct Act {
-    t0: f64,
-    dur: f64,
-    kind: i32,
-    trans: Option<Vec<f64>>,
-    curve: Option<Vec<(f64, f64)>>,
-    rev: Option<Vec<f64>>,
-    mag: Option<Vec<(f64, f64)>>,
+    pub(crate) t0: f64,
+    pub(crate) dur: f64,
+    pub(crate) kind: i32,
+    pub(crate) trans: Option<Vec<f64>>,
+    pub(crate) curve: Option<Vec<(f64, f64)>>,
+    pub(crate) rev: Option<Vec<f64>>,
+    pub(crate) mag: Option<Vec<(f64, f64)>>,
 }
 
 /// Text written into a MessageSprite: the characters with the time each shows.
@@ -108,6 +108,8 @@ pub struct Native {
     pub tone: Option<[i32; 4]>,
     /// the elements of an object without a skin (the joints of a ModelJoint, ...), by key
     pub elems: Vec<(String, Var)>,
+    // File
+    pub file: Option<crate::save::FileState>,
 }
 
 impl Native {
@@ -882,18 +884,26 @@ impl Engine {
                     Done::Val(now)
                 })
             }
-            "GetLocalTime" => Ok(Done::Val(structure(
-                "Time",
-                &[
-                    ("nYear", Value::Int(2010)),
-                    ("nMonth", Value::Int(1)),
-                    ("nDay", Value::Int(1)),
-                    ("nWeek", Value::Int(5)),
-                    ("nHour", Value::Int(12)),
-                    ("nMinute", Value::Int((self.now / 60000.0) as i32 % 60)),
-                    ("nSecond", Value::Int((self.now / 1000.0) as i32 % 60)),
-                ],
-            ))),
+            "GetLocalTime" => {
+                // the host's local time (ms since 1970), else a fixed day
+                let ms = self.clock.unwrap_or(1_262_347_200_000.0 + self.now);
+                let secs = (ms / 1000.0).floor() as i64;
+                let days = secs.div_euclid(86400);
+                let tod = secs.rem_euclid(86400);
+                let (y, m, d) = civil_from_days(days);
+                Ok(Done::Val(structure(
+                    "Time",
+                    &[
+                        ("nYear", Value::Int(y as i32)),
+                        ("nMonth", Value::Int(m as i32)),
+                        ("nDay", Value::Int(d as i32)),
+                        ("nWeek", Value::Int((days + 4).rem_euclid(7) as i32)),
+                        ("nHour", Value::Int((tod / 3600) as i32)),
+                        ("nMinute", Value::Int((tod / 60 % 60) as i32)),
+                        ("nSecond", Value::Int((tod % 60) as i32)),
+                    ],
+                )))
+            }
             "Sleep" => {
                 if self.waited(ai(args, 0, 0) as f64) {
                     Ok(Done::Yield(Value::Int(0)))
@@ -1102,8 +1112,26 @@ impl Engine {
         })
     }
 
+    /// Adds a record to an open file and writes the file to the save store.
+    /// The title and thumbnail of a context wait for it, so that a save is one write.
+    pub(crate) fn file_record(&mut self, o: &Obj, tag: &str, b: Vec<u8>) {
+        let packed = {
+            let mut n = o.borrow_mut();
+            let Some(f) = n.file.as_mut().filter(|f| f.write) else {
+                return;
+            };
+            f.records.push((tag.to_string(), b));
+            if tag == "title" || tag == "thumb" {
+                return;
+            }
+            (f.name.clone(), f.pack())
+        };
+        self.fs.host.write_save(&packed.0, &packed.1);
+        // its thumbnail is looked up again
+        self.pics.remove(&packed.0.to_lowercase());
+    }
+
     fn file_method(&mut self, o: &Obj, name: &str, args: &[Var]) -> Option<Result<Done, String>> {
-        let _ = o;
         Some(match name {
             "IsExisting" => {
                 let n = astr(args, 0);
@@ -1113,13 +1141,116 @@ impl Engine {
                     0
                 })
             }
-            "Open" => int(1),
-            "Close" => ok(),
-            // saving is not supported yet: every read fails
-            "LoadObject" | "LoadContextTitle" | "ReadText" | "Read" => int(1),
-            "SaveObject" | "SaveThumbnailImage" | "WriteText" | "Write" | "Rename" | "Delete" => {
+            "Open" => {
+                let f = save_name(&astr(args, 0));
+                let mode = ai(args, 1, 0);
+                if mode & 4 != 0 {
+                    o.borrow_mut().file = Some(crate::save::FileState {
+                        name: f,
+                        write: true,
+                        ..Default::default()
+                    });
+                    ok()
+                } else {
+                    let st = self
+                        .fs
+                        .host
+                        .read_save(&f)
+                        .and_then(|b| crate::save::FileState::unpack(&f, &b));
+                    let found = st.is_some();
+                    o.borrow_mut().file = st;
+                    int(if found { 0 } else { 1 })
+                }
+            }
+            "Close" => {
+                o.borrow_mut().file = None;
                 ok()
             }
+            "SaveContext" => {
+                if let Some(t) = args.first() {
+                    let b = self.save_value(&deref(t));
+                    self.file_record(o, "title", b);
+                }
+                Ok(Done::SaveContext(o.clone()))
+            }
+            "LoadContext" => {
+                let b = o
+                    .borrow()
+                    .file
+                    .as_ref()
+                    .and_then(|f| f.find("context").map(|b| b.to_vec()));
+                match b {
+                    Some(b) => Ok(Done::LoadContext(b)),
+                    None => int(1),
+                }
+            }
+            "LoadContextTitle" => {
+                let b = o
+                    .borrow()
+                    .file
+                    .as_ref()
+                    .and_then(|f| f.find("title").map(|b| b.to_vec()));
+                match (b.and_then(|b| self.load_value(&b)), args.first()) {
+                    (Some(v), Some(t)) => {
+                        *deref(t).borrow_mut() = v;
+                        ok()
+                    }
+                    _ => int(1),
+                }
+            }
+            "SaveObject" => {
+                if let Some(t) = args.first() {
+                    let b = self.save_value(&deref(t));
+                    self.file_record(o, "object", b);
+                }
+                ok()
+            }
+            "LoadObject" => {
+                let b = o.borrow_mut().file.as_mut().and_then(|f| f.next("object"));
+                match (b.and_then(|b| self.load_value(&b)), args.first()) {
+                    (Some(v), Some(t)) => {
+                        *deref(t).borrow_mut() = v;
+                        ok()
+                    }
+                    _ => int(1),
+                }
+            }
+            "ReadText" | "Read" => int(1),
+            "SaveThumbnailImage" => {
+                let src = args
+                    .first()
+                    .and_then(obj_of)
+                    .and_then(|s| s.borrow().pic.clone());
+                if let Some(p) = src {
+                    let (w, h) = (
+                        ai(args, 1, 128).clamp(1, 1024),
+                        ai(args, 2, 96).clamp(1, 1024),
+                    );
+                    let mut img = Image::new(w as u32, h as u32);
+                    let place = nexas::gfx::Place {
+                        x: 0.0,
+                        y: 0.0,
+                        sx: 1.0,
+                        sy: 1.0,
+                        cx: 0.0,
+                        cy: 0.0,
+                        rot: 0.0,
+                        alpha: 1.0,
+                        add: false,
+                        flip: (false, false),
+                        clip: [0.0, 0.0, w as f32, h as f32],
+                    };
+                    let sr = [0, 0, p.img.w as i32, p.img.h as i32];
+                    nexas::gfx::draw(&mut img, &p.img, sr, [0.0, 0.0, w as f32, h as f32], &place);
+                    let mut b = Vec::with_capacity(img.px.len() + 8);
+                    b.extend_from_slice(&(w as u32).to_le_bytes());
+                    b.extend_from_slice(&(h as u32).to_le_bytes());
+                    b.extend_from_slice(&img.px);
+                    self.file_record(o, "thumb", b);
+                }
+                ok()
+            }
+            "WriteText" | "Write" | "Rename" | "Delete" => ok(),
             _ => return None,
         })
     }
@@ -1196,6 +1327,7 @@ impl Engine {
                 n.pic = None;
                 n.clip = None;
                 n.sound = None;
+                n.sound_name.clear();
                 n.buffer = None;
                 n.msg = None;
                 n.text_pic = None;
@@ -1352,22 +1484,42 @@ impl Engine {
         })
     }
 
-    fn play_sound(&mut self, o: &Obj, repeat: bool) {
+    pub(crate) fn play_sound(&mut self, o: &Obj, repeat: bool) {
         let (data, ms, vol) = {
             let n = o.borrow();
             (n.sound.clone(), n.sound_ms, n.volume)
         };
-        let Some(data) = data else { return };
+        let data = match data {
+            Some(d) => d,
+            None => {
+                let name = o.borrow().sound_name.clone();
+                match (!name.is_empty()).then(|| self.fs.read(&name)).flatten() {
+                    Some(b) => {
+                        let b = Rc::new(b);
+                        o.borrow_mut().sound = Some(b.clone());
+                        b
+                    }
+                    None => return,
+                }
+            }
+        };
         if o.borrow().channel.is_empty() {
             self.next_channel += 1;
             o.borrow_mut().channel = format!("r{}", self.next_channel);
         }
         let end = if repeat { f64::MAX } else { self.now + ms };
         o.borrow_mut().play_end = Some(end);
-        // MIO is not decoded yet: the sound only takes its time
-        if data.starts_with(b"Entis") {
-            return;
-        }
+        let data = if data.starts_with(b"Entis") {
+            // decoded once, on the first play
+            let Some(w) = crate::mio::to_wav(&data) else {
+                return;
+            };
+            let w = Rc::new(w);
+            o.borrow_mut().sound = Some(w.clone());
+            w
+        } else {
+            data
+        };
         self.sounds.push(crate::engine::SoundEvent {
             channel: o.borrow().channel.clone(),
             data: Some(data),
@@ -1399,27 +1551,12 @@ impl Engine {
         Some(match name {
             "LoadResource" => {
                 let f = astr(args, 0);
-                let lower = f.to_lowercase();
-                let (prefix, inf) = if lower.ends_with(".noa") {
-                    (format!("{lower}/"), format!("{lower}/system.inf"))
-                } else {
-                    (String::new(), f.to_string())
-                };
-                match self.fs.read(&inf) {
-                    Some(b) => match crate::skin::parse_xml(&crate::skin::decode_text(&b)) {
-                        Ok(root) => {
-                            o.borrow_mut().skin = Some(Rc::new(Skin::parse(&prefix, &root)));
-                            ok()
-                        }
-                        Err(e) => {
-                            self.warn(format!("{inf}: {e}"));
-                            int(1)
-                        }
-                    },
-                    None => {
-                        self.warn(format!("{inf}: not found"));
-                        int(1)
+                match self.load_skin(&f) {
+                    Some(skin) => {
+                        o.borrow_mut().skin = Some(skin);
+                        ok()
                     }
+                    None => int(1),
                 }
             }
             "DeleteContents" => {
@@ -1446,6 +1583,33 @@ impl Engine {
             }
             _ => return None,
         })
+    }
+
+    /// A skin resource: "title.noa" (its system.inf) or an .inf file.
+    pub fn load_skin(&mut self, f: &str) -> Option<Rc<Skin>> {
+        let lower = f.to_lowercase();
+        let (prefix, inf) = if lower.ends_with(".noa") {
+            (format!("{lower}/"), format!("{lower}/system.inf"))
+        } else {
+            (String::new(), f.to_string())
+        };
+        match self.fs.read(&inf) {
+            Some(b) => match crate::skin::parse_xml(&crate::skin::decode_text(&b)) {
+                Ok(root) => {
+                    let mut skin = Skin::parse(&prefix, &root);
+                    skin.src = f.to_string();
+                    Some(Rc::new(skin))
+                }
+                Err(e) => {
+                    self.warn(format!("{inf}: {e}"));
+                    None
+                }
+            },
+            None => {
+                self.warn(format!("{inf}: not found"));
+                None
+            }
+        }
     }
 
     /// Builds a skin page on a sprite: its background and an item sprite for each item.
@@ -1939,7 +2103,32 @@ impl Engine {
                 finish_act(&mut o.borrow_mut(), false);
                 ok()
             }
-            "DrawImage" | "FillRect" | "DrawText" => ok(),
+            "DrawImage" => {
+                // a screenshot: the source sprite (the screen) drawn into this image
+                if let Some(src) = args.first().and_then(obj_of)
+                    && !Rc::ptr_eq(&src, o)
+                {
+                    let (w, h) = o
+                        .borrow()
+                        .buffer
+                        .map_or((self.width, self.height), |b| (b.0.max(1), b.1.max(1)));
+                    let mut draws = Vec::new();
+                    self.draw_sprite(&src, Aff::ID, 1.0, &mut draws);
+                    let mut img = Image::new(w, h);
+                    img.fill([0, 0, 0, 255]);
+                    for d in draws {
+                        nexas::gfx::draw(&mut img, &d.image, d.src, d.dst, &d.place);
+                    }
+                    let p = Rc::new(Pic {
+                        img: Rc::new(img),
+                        hot: (0, 0),
+                    });
+                    self.pics.insert("\u{1}shot".into(), Some(p.clone()));
+                    o.borrow_mut().pic = Some(p);
+                }
+                ok()
+            }
+            "FillRect" | "DrawText" => ok(),
             _ => return None,
         })
     }
@@ -2374,7 +2563,69 @@ impl Engine {
                     let src = r.map_or([0, 0, p.img.w as i32, p.img.h as i32], |r| {
                         [r[0], r[1], r[0] + r[2], r[1] + r[3]]
                     });
-                    return Some((p.img.clone(), src));
+                    if n.text.is_empty() {
+                        return Some((p.img.clone(), src));
+                    }
+                    // a button with a caption (the save list entries): its picture with the
+                    // text of the state's style
+                    let key = format!("{st}\u{0}{}", n.text);
+                    if let Some((k, img)) = &n.text_pic
+                        && *k == key
+                    {
+                        return Some((img.clone(), [0, 0, img.w as i32, img.h as i32]));
+                    }
+                    let (w, h) = (src[2] - src[0], src[3] - src[1]);
+                    let mut img = Image::new(w.max(1) as u32, h.max(1) as u32);
+                    for y in 0..h.max(0) {
+                        for x in 0..w.max(0) {
+                            let (sx, sy) = (src[0] + x, src[1] + y);
+                            if sx < 0 || sy < 0 || sx >= p.img.w as i32 || sy >= p.img.h as i32 {
+                                continue;
+                            }
+                            let si = ((sy as u32 * p.img.w + sx as u32) * 4) as usize;
+                            let di = ((y as u32 * img.w + x as u32) * 4) as usize;
+                            img.px[di..di + 4].copy_from_slice(&p.img.px[si..si + 4]);
+                        }
+                    }
+                    let tags = ["normal", "focus", "pushed", "pushed_focus", "disabled"];
+                    let style = it.style.as_ref().and_then(|s| {
+                        s.kid(tags[st])
+                            .filter(|k| k.kid("font").is_some())
+                            .or(s.kid("normal"))
+                    });
+                    let mut m = Msg {
+                        w,
+                        h,
+                        view: [0, 0, w, h],
+                        size: 16,
+                        line_h: 18,
+                        color: [255, 255, 255],
+                        ..Msg::default()
+                    };
+                    if let Some(st) = style {
+                        apply_style(&mut m, st);
+                        if let Some(a) = st.kid("arrange") {
+                            let (l, t) = (a.int("left", 0), a.int("top", 0));
+                            m.view = [l, t, l + a.int("width", w - l), t + a.int("height", h - t)];
+                        }
+                    }
+                    let text = n.text.clone();
+                    layout_message(&mut self.fonts, &mut m, &text, f64::MIN);
+                    for &(c, _, at, color) in &m.chars {
+                        if c == '\n' || (at >> 16) + m.size > m.view[3] + 2 {
+                            continue;
+                        }
+                        let (x, y) = (at & 0xffff, at >> 16);
+                        if let Some(sh) = m.shadow {
+                            self.fonts
+                                .draw(&mut img, x + 1, y + 1, c, m.size as u32, sh, None);
+                        }
+                        self.fonts
+                            .draw(&mut img, x, y, c, m.size as u32, color, None);
+                    }
+                    let img = Rc::new(img);
+                    n.text_pic = Some((key, img.clone()));
+                    return Some((img.clone(), [0, 0, img.w as i32, img.h as i32]));
                 }
                 return None;
             }
@@ -2657,6 +2908,19 @@ fn render_message(fonts: &mut crate::text::Fonts, m: &Msg, now: f64) -> Image {
         fonts.draw(&mut img, x, y, c, m.size as u32, color, None);
     }
     img
+}
+
+/// (year, month, day) of a day count from 1970-01-01.
+fn civil_from_days(z: i64) -> (i64, i64, i64) {
+    let z = z + 719_468;
+    let era = z.div_euclid(146_097);
+    let doe = z - era * 146_097;
+    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let d = doy - (153 * mp + 2) / 5 + 1;
+    let m = if mp < 10 { mp + 3 } else { mp - 9 };
+    (yoe + era * 400 + (m <= 2) as i64, m, d)
 }
 
 fn save_name(n: &str) -> String {

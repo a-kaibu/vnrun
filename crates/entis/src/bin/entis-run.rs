@@ -61,6 +61,10 @@ fn main() -> Result<(), String> {
                 }
             }
         }
+        e.clock = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .ok()
+            .map(|d| d.as_millis() as f64);
         e.frame()?;
         e.take_sounds();
         if f == frames || marks.iter().any(|m| m.0 == f) {

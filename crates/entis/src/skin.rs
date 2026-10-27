@@ -75,6 +75,8 @@ pub fn decode_text(b: &[u8]) -> String {
 }
 
 pub struct Skin {
+    /// the file it was loaded from
+    pub src: String,
     /// where its pictures are: "tk_title.noa/"
     pub prefix: String,
     /// picture id → file
@@ -87,6 +89,7 @@ pub struct Skin {
 impl Skin {
     pub fn parse(prefix: &str, root: &Node) -> Skin {
         let mut s = Skin {
+            src: String::new(),
             prefix: prefix.to_string(),
             images: HashMap::new(),
             styles: HashMap::new(),
