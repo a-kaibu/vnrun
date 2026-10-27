@@ -197,20 +197,20 @@ b2009_crossover	NG	64d6316 (2015 年版の表) で「no Script.pac」(DATA/ フ�
 b2012_giga	本編	b425e77 (2012 年版の表) で New Game から本編の文章まで
 b2013_giga	本編	6875c68 でタイトルから new game で本編テキストまで (冒頭は白背景+メッセージウィンドウ)
 b2011_giga	本編	6875c68 でタイトルから はじめから で本編テキストまで
-b2023_turumiku_another	NG	Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応
-b2010_marine	NG	Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応
-b2011_marine	NG	Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応
-s2018_lune_elf_saimin	NG	Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応
-s2006_lune_maimiko	NG	Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応
-s2015_lune_kunoichi_suzaku	NG	Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応
-s2014_lune_revenge_room	NG	Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応
-s2013_lune_kazokusaimin	NG	Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応
-s2016_lune_meikoku	NG	Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応
-s2016_lune_dai_kazoku	NG	Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応
-s2012_marine_deka_ane	NG	Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応
-s2019_lune_dogeza_saimin	NG	Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応
-s2016_marine_cospure_harem	NG	Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応
-s2011_marine_marching	NG	Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応
+b2023_turumiku_another	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
+b2010_marine	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
+b2011_marine	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
+s2018_lune_elf_saimin	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
+s2006_lune_maimiko	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
+s2015_lune_kunoichi_suzaku	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
+s2014_lune_revenge_room	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
+s2013_lune_kazokusaimin	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
+s2016_lune_meikoku	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
+s2016_lune_dai_kazoku	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
+s2012_marine_deka_ane	要再確認	dcf3bf8 で画面が真っ白のまま (音声のデコード失敗のみ記録)。再確認中
+s2019_lune_dogeza_saimin	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
+s2016_marine_cospure_harem	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
+s2011_marine_marching	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
 s2025_milimili_hanako	対象外	中身は Unity 製 (vnbox の NeXAS 判定が誤り)
 s2015_giga_renaiphase	タイトル	b425e77 でもタイトルまで
 s2006_giga_cheerfull	要再確認	自己展開 exe のダウンロード/展開に失敗
@@ -343,3 +343,11 @@ s2021_at_sakura_tuma_10	タイトル	2026-10-26: XP3 が data.xp3 以外の配�
 s2016_akabeesoft3_inosupe	タイトル	2026-10-26: data.bin と TLG のみのアーカイブを検出。タイトルメニューを確認
 s2017_akabeesoft3_tonofuta	タイトル	2026-10-26: data.bin の検出と引用符なしの末尾 cond 式に対応し、タイトルメニューを確認
 s2019_parasol_renran_p	対象外	2026-10-26: 配布 URL は体験版の差分パッチのみ。起動用 EXE/startup と本体が含まれない
+b2006_lune	NG	srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応
+b2006_marine	NG	srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応
+s2006_lune_sakuya	NG	srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応
+b2007_marine	NG	srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応
+b2007_lune	NG	srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応
+s2007_marine_succubus	NG	srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応
+b2008_marine	NG	srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応
+s2008_lune_inmu	NG	srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応
