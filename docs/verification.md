@@ -49,8 +49,9 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 2 | 17 | 9 | 3 | 2 |  |  |
 | 吉里吉里 (KiriKiri SDL2) | 135 | 5 | 129 |  |  |  | 1 |  |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
-| NeXAS (vnrun) | 30 | 6 | 1 |  | 1 | 21 | 1 |  |
+| NeXAS (vnrun) | 16 | 6 | 1 |  | 1 | 7 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
+| Tmr-Hiro (vnrun) | 22 |  |  |  |  | 14 |  | 8 |
 
 ### SiglusEngine (siglus_rs)
 
@@ -394,26 +395,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2015_giga_renaiphase | [恋愛フェイズ 体験版](http://suezou.dyndns.org/dl2015/giga/renaiphase/RP_trial.zip) | タイトル | b425e77 でもタイトルまで |
 | s2006_giga_cheerfull | [チアフル！ ～cheerfull!～ 【 体験版 】](http://suezou.dyndns.org/dl2006/giga/cheerfull/cheerfull_trial.exe) | 要再確認 | 自己展開 exe のダウンロード/展開に失敗 |
 | b2009_crossover | [美乳淫妹 遥「私にイヤらしいコスプレさせるなんて……この変態！」](http://suezou.dyndns.org/dl2009/crossover/haruka/bnharuka_trial.zip) | NG | 64d6316 (2015 年版の表) で「no Script.pac」(DATA/ フォルダの形) |
-| b2010_marine | [paicheer_trial.exe](http://suezou.dyndns.org/dl2010/marine/paicheer/paicheer_trial.exe) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
-| b2011_marine | [kyonyutry_trial.exe](http://suezou.dyndns.org/dl2011/marine/kyonyutry/kyonyutry_trial.exe) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
-| b2023_turumiku_another | [非道狩～ヒトカリ～ 体験版](http://suezou.dyndns.org/dl2023/turumiku-another/hitokari/hitokari-trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
 | s2006_giga_ab | [angel breath - エンジェルブレス体験版](http://suezou.dyndns.org/dl2006/giga/ab/ab_trial.zip) | NG | 64d6316 (2015 年版の表) で「table is cut short」 |
-| s2006_lune_maimiko | [妹巫女・萌](http://suezou.dyndns.org/dl2006/lune/maimiko/maimiko_trial.exe) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
 | s2007_giga_himesama | [姫さまっ、お手やわらかに！ -体験版-](http://suezou.dyndns.org/dl2007/giga/himesama/hime_trialc.zip) | NG | 64d6316 (2015 年版の表) で「System.bin: string is cut short」 |
 | s2008_giga_sakahari | [さかあがりハリケーン 体験版 Ver.2](http://suezou.dyndns.org/dl2008/giga/sakahari/sakahari_trial2.zip) | NG | 64d6316 (2015 年版の表) で「table is cut short」 |
 | s2009_giga_curefull | [キュアフル！ 体験版](http://suezou.dyndns.org/dl2009/giga/curefull/curefull_trial.zip) | NG | 64d6316 (2015 年版の表) で「System.bin: string is cut short」 |
 | s2010_giga_bittersmile | [bitter smile. ～ビタースマイル～ 体験版２](http://suezou.dyndns.org/dl2010/giga/bittersmile/bittersmile_trial2.zip) | NG | 64d6316 (2015 年版の表) で「System.bin: string is cut short」 |
 | s2011_giga_hinataterrace | [ひなたテラス -We don't abandon you.- web体験版２](http://suezou.dyndns.org/dl2011/giga/hinataterrace/hinata_webtrial02c.zip) | NG | 64d6316 (2015 年版の表) で「System.bin: unknown op 0x29 at 66」 |
-| s2011_marine_marching | [おっぱい学園マーチングバンド部！　体験版](http://suezou.dyndns.org/dl2011/marine/marching/marching_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
-| s2012_marine_deka_ane | [デカくてエッチな俺の姉　体験版](http://suezou.dyndns.org/dl2012/marine/deka_ane/dekaane_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
-| s2013_lune_kazokusaimin | [巨乳家族催眠　体験版](http://suezou.dyndns.org/dl2013/lune/kazokusaimin/kazokusaimin_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
-| s2014_lune_revenge_room | [リベンジルーム　体験版](http://suezou.dyndns.org/dl2014/lune/revenge_room/revenge_room_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
-| s2015_lune_kunoichi_suzaku | [巨乳くのいち朱雀　体験版](http://suezou.dyndns.org/dl2015/lune/kunoichi_suzaku/kunoichisuzaku_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
-| s2016_lune_dai_kazoku | [巨乳大家族催眠「家族みんなでイキまくるセックスがやめられないのぉ」](http://suezou.dyndns.org/dl2016/lune/dai_kazoku/dai_kazoku_saimin_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
-| s2016_lune_meikoku | [冥刻学園受胎偏・体験版](http://suezou.dyndns.org/dl2016/lune/meikoku/meikoku_jutai_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
-| s2016_marine_cospure_harem | [お嬢様学園こすぷれハーレム部！「今日はどの服でエッチしよっか」](http://suezou.dyndns.org/dl2016/marine/cospure_harem/cospure_harem_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
-| s2018_lune_elf_saimin | [巨乳エルフ母娘催眠体験版](http://suezou.dyndns.org/dl2018/lune/elf_saimin/elfsaimin_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
-| s2019_lune_dogeza_saimin | [巨乳女戦士・土下座催眠「ちくしょうっ……アタシはお前の思い通りになんか、ならないからな……！」](http://suezou.dyndns.org/dl2019/lune/dogeza_saimin/dogeza_saimin_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
 | s2025_milimili_hanako | [ちょっとナマイキなトイレの花子さん ～えっちぃ学園のおばけとエロエロ搾精性活～ 【体験版】](http://suezou.dyndns.org/dl2025/milimili/hanako/hanako_try2.zip) | 対象外 | 中身は Unity 製 (vnbox の NeXAS 判定が誤り) |
 
 ### AdvHD (vnrun)
@@ -450,4 +437,31 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2019_guilty_harame | [孕女～精子を欲しがる淫らな教え子～ 体験版](http://suezou.dyndns.org/dl2019/guilty/harame/harame_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
 | s2022_ensemble_sweet_otoshita | [乙女とふれあう、ひとつ屋根の下 TRIAL EDITION](http://suezou.dyndns.org/dl2022/ensemble-sweet/otoshita/otoshita_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
 | s2026_ensemble_sweet_ribichu | [リビドーアバンちゅ～る TRIAL EDITION](http://suezou.dyndns.org/dl2026/ensemble-sweet/ribichu/ribichu_trial.exe) | 本編 | b076f1f で START から本編テキストまで |
+
+### Tmr-Hiro (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2010_marine | [paicheer_trial.exe](http://suezou.dyndns.org/dl2010/marine/paicheer/paicheer_trial.exe) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
+| b2011_marine | [kyonyutry_trial.exe](http://suezou.dyndns.org/dl2011/marine/kyonyutry/kyonyutry_trial.exe) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
+| b2023_turumiku_another | [非道狩～ヒトカリ～ 体験版](http://suezou.dyndns.org/dl2023/turumiku-another/hitokari/hitokari-trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
+| s2006_lune_maimiko | [妹巫女・萌](http://suezou.dyndns.org/dl2006/lune/maimiko/maimiko_trial.exe) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
+| s2011_marine_marching | [おっぱい学園マーチングバンド部！　体験版](http://suezou.dyndns.org/dl2011/marine/marching/marching_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
+| s2012_marine_deka_ane | [デカくてエッチな俺の姉　体験版](http://suezou.dyndns.org/dl2012/marine/deka_ane/dekaane_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
+| s2013_lune_kazokusaimin | [巨乳家族催眠　体験版](http://suezou.dyndns.org/dl2013/lune/kazokusaimin/kazokusaimin_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
+| s2014_lune_revenge_room | [リベンジルーム　体験版](http://suezou.dyndns.org/dl2014/lune/revenge_room/revenge_room_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
+| s2015_lune_kunoichi_suzaku | [巨乳くのいち朱雀　体験版](http://suezou.dyndns.org/dl2015/lune/kunoichi_suzaku/kunoichisuzaku_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
+| s2016_lune_dai_kazoku | [巨乳大家族催眠「家族みんなでイキまくるセックスがやめられないのぉ」](http://suezou.dyndns.org/dl2016/lune/dai_kazoku/dai_kazoku_saimin_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
+| s2016_lune_meikoku | [冥刻学園受胎偏・体験版](http://suezou.dyndns.org/dl2016/lune/meikoku/meikoku_jutai_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
+| s2016_marine_cospure_harem | [お嬢様学園こすぷれハーレム部！「今日はどの服でエッチしよっか」](http://suezou.dyndns.org/dl2016/marine/cospure_harem/cospure_harem_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
+| s2018_lune_elf_saimin | [巨乳エルフ母娘催眠体験版](http://suezou.dyndns.org/dl2018/lune/elf_saimin/elfsaimin_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
+| s2019_lune_dogeza_saimin | [巨乳女戦士・土下座催眠「ちくしょうっ……アタシはお前の思い通りになんか、ならないからな……！」](http://suezou.dyndns.org/dl2019/lune/dogeza_saimin/dogeza_saimin_trial.zip) | NG | Script.pac が無く srp.pac / grd.pac 形式 (ルネ・マリン系の別系統)。未対応 |
+| b2006_lune | [ソウルイーター　体験版　Game Edition](http://suezou.dyndns.org/dl2006/lune/souleater/souleater_trial_g.exe) | 未確認 |  |
+| b2006_marine | [人妻搾乳飯店－体験版－](http://suezou.dyndns.org/dl2006/marine/hanten/hanten_trial.exe) | 未確認 |  |
+| b2007_lune | [風輪奸山　体験版](http://suezou.dyndns.org/dl2007/lune/kanzan/kanzan_trial.exe) | 未確認 |  |
+| b2007_marine | [しおふきマーメイド体験版](http://suezou.dyndns.org/dl2007/marine/siofuki/siofuki_trial.exe) | 未確認 |  |
+| b2008_marine | [びんかんアスリート](http://suezou.dyndns.org/dl2008/marine/binkan/binkan_trial.exe) | 未確認 |  |
+| s2006_lune_sakuya | [くのいち・咲夜－体験版－](http://suezou.dyndns.org/dl2006/lune/sakuya/kunoichi_trial.exe) | 未確認 |  |
+| s2007_marine_succubus | [とらぶるサッキュバス](http://suezou.dyndns.org/dl2007/marine/succubus/succubus_trial.exe) | 未確認 |  |
+| s2008_lune_inmu | [淫夢学園－体験版](http://suezou.dyndns.org/dl2008/lune/inmu/inmu_trial.exe) | 未確認 |  |
 <!-- /matrix -->

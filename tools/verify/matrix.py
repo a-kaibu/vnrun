@@ -20,6 +20,7 @@ ENGINES = {
     "yuris": "YU-RIS (vnrun)",
     "nexas": "NeXAS (vnrun)",
     "advhd": "AdvHD (vnrun)",
+    "tmrhiro": "Tmr-Hiro (vnrun)",
 }
 RESULTS = ["本編", "タイトル", "起動", "要再確認", "NG", "対象外", "未確認"]
 
