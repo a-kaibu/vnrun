@@ -12,6 +12,7 @@ interface Game {
   frame(): void;
   ended(): boolean;
   click(x: number, y: number): void;
+  cancel(): void;
   point(x: number, y: number): void;
   draws(): Float32Array;
   texture(id: number): Uint8Array;
@@ -131,10 +132,16 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
   canvas.addEventListener("pointerdown", (event) => {
     canvas.focus();
     if (event.button === 0) game.click(...presenter.toFrame(event));
+    else if (event.button === 2) game.cancel();
   });
   canvas.addEventListener("pointermove", (event) => game.point(...presenter.toFrame(event)));
   canvas.addEventListener("contextmenu", (event) => event.preventDefault());
   canvas.addEventListener("keydown", (event) => {
+    if (event.code === "Escape") {
+      event.preventDefault();
+      game.cancel();
+      return;
+    }
     if (event.code !== "Enter" && event.code !== "Space") return;
     event.preventDefault();
     game.click(-1, -1);

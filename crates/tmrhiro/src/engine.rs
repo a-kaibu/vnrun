@@ -16,6 +16,7 @@ use nexas::gfx::{Draw, Image, Place};
 use crate::grd;
 use crate::ini::{self, Ini};
 use crate::pac::Index;
+use crate::save::{SaveData, SavedChara};
 use crate::script::{Command, Script};
 
 /// A sound to start or stop.
@@ -63,6 +64,7 @@ struct Fade {
 
 /// A character in one of the sprite slots, moving from `from` to `to` over `ms`.
 struct Chara {
+    name: String,
     pics: Vec<Pic>,
     from: (f32, f32),
     to: (f32, f32),
@@ -89,6 +91,56 @@ struct Flash {
     ms: [u64; 3],
 }
 
+/// The save or load screen.
+struct Menu {
+    save: bool,
+    page: usize,
+    /// the screen when it opened (saved with the slot), small
+    thumb: (u32, u32, Vec<u8>),
+    /// the slots of the page: the picture and the lines of text of each saved one
+    slots: Vec<Option<SlotView>>,
+}
+
+struct MenuLayout {
+    at: [i32; 2],
+    src: Option<[i32; 2]>,
+    size: [i32; 2],
+    count: usize,
+    rows: usize,
+    step: [i32; 2],
+    column: [i32; 2],
+}
+
+struct SlotView {
+    thumb: Rc<Image>,
+    lines: Vec<Rc<Image>>,
+}
+
+/// A button of the message window (MESSAGEWINDOW TWB_*): what it does, where it is and where its
+/// picture is in sys_window_button (normal, then lit one row below).
+struct WindowButton {
+    key: &'static str,
+    rect: [i32; 4],
+    src: [i32; 2],
+}
+
+const WINDOW_BUTTONS: [&str; 14] = [
+    "CLOSE",
+    "AUTO",
+    "SKIP",
+    "BACKLOG",
+    "SYSTEM",
+    "SYSTEM2",
+    "VOICE",
+    "SAVE",
+    "LOAD",
+    "QSAVE",
+    "QLOAD",
+    "TITLE",
+    "EXIT",
+    "SCENE_BACK",
+];
+
 struct Pan {
     from: (f32, f32),
     to: (f32, f32),
@@ -110,6 +162,19 @@ pub struct Engine {
     now: u64,
     wait: Wait,
     bg: Vec<Pic>,
+    bg_name: String,
+    bgm: String,
+    /// the scene's title (50.0015), the last voice and the command to run again for a save
+    title: String,
+    voice: String,
+    resume_pc: usize,
+    menu: Option<Menu>,
+    /// the message window is put away (right click or its close button)
+    hidden: bool,
+    auto: bool,
+    skip: bool,
+    said_at: u64,
+    window_base: Option<Option<Rc<Image>>>,
     pan: Option<Pan>,
     /// the sprite slots (picture layers 5 and up)
     chars: Vec<Option<Chara>>,
@@ -175,6 +240,17 @@ impl Engine {
             now: 0,
             wait: Wait::None,
             bg: Vec::new(),
+            bg_name: String::new(),
+            bgm: String::new(),
+            title: String::new(),
+            voice: String::new(),
+            resume_pc: 0,
+            menu: None,
+            hidden: false,
+            auto: false,
+            skip: false,
+            said_at: 0,
+            window_base: None,
             pan: None,
             chars: (0..10).map(|_| None).collect(),
             flash: None,
@@ -339,7 +415,24 @@ impl Engine {
 
     /// A click at (x, y), or (-1, -1) for the keyboard.
     pub fn click(&mut self, x: i32, y: i32) {
+        if self.menu.is_some() {
+            self.menu_click(x, y);
+            return;
+        }
         if self.fade.take().is_some() {
+            return;
+        }
+        if self.hidden {
+            self.hidden = false;
+            return;
+        }
+        if self.auto || self.skip {
+            self.auto = false;
+            self.skip = false;
+            return;
+        }
+        if let Some(key) = self.window_button_at(x, y) {
+            self.window_button(key);
             return;
         }
         match &self.wait {
@@ -368,6 +461,22 @@ impl Engine {
                 }
             }
             _ => {}
+        }
+    }
+
+    /// A right click: closes the save or load screen, or puts the message window away (games
+    /// without window buttons open the save screen instead).
+    pub fn cancel(&mut self) {
+        if self.menu.take().is_some() {
+            return;
+        }
+        if !matches!(self.wait, Wait::Click | Wait::Choice(_)) {
+            return;
+        }
+        if self.window_buttons().is_empty() {
+            self.open_menu(true);
+        } else {
+            self.hidden = !self.hidden;
         }
     }
 
@@ -400,6 +509,18 @@ impl Engine {
     /// Runs one frame: commands until one waits.
     pub fn frame(&mut self) -> Result<(), String> {
         self.now += MS_PER_FRAME;
+        if self.menu.is_some() {
+            return Ok(());
+        }
+        if let Wait::Click = self.wait {
+            let chars = self.text.chars().count() as u64;
+            if self.skip || (self.auto && self.now >= self.said_at + 1000 + 60 * chars) {
+                self.wait = Wait::None;
+            }
+        }
+        if self.skip {
+            self.fade = None;
+        }
         if self
             .fade
             .as_ref()
@@ -543,6 +664,7 @@ impl Engine {
                     .collect();
                 if !options.is_empty() {
                     self.window = false;
+                    self.resume_pc = self.pc - 1;
                     self.wait = Wait::Choice(options);
                 }
             }
@@ -570,17 +692,14 @@ impl Engine {
                 self.begin_fade(c.u16(0));
                 self.pan = None;
                 let name = c.str(2);
-                self.bg = self.pictures(&name, 0.0, 0.0);
-                if name == "-" || name.is_empty() {
-                    self.bg.clear();
-                }
+                self.set_bg(&name);
             }
             (0x20, 0x08) => {
                 // a picture that moves from (x0, y0) to (x1, y1) over a time
                 self.begin_fade(c.u16(0));
                 let (x0, y0, x1, y1) = (c.i16(2), c.i16(4), c.i16(6), c.i16(8));
                 let name = c.str(12);
-                self.bg = self.pictures(&name, 0.0, 0.0);
+                self.set_bg(&name);
                 self.pan = Some(Pan {
                     from: (x0 as f32, y0 as f32),
                     to: (x1 as f32, y1 as f32),
@@ -644,32 +763,20 @@ impl Engine {
                     ms,
                 });
             }
-            (0x30, 0x00) => {
-                let name = c.str(4);
-                if let Some(data) = self.find(&["mus"], &name) {
-                    let (data, loop_start) = music(data);
-                    self.sounds.push(Sound {
-                        data,
-                        volume: 1.0,
-                        bgm: true,
-                        voice: false,
-                        effect_channel: None,
-                        stop: false,
-                        fade_ms: 0,
-                        loop_start,
-                    });
-                }
+            (0x30, 0x00) => self.play_bgm(&c.str(4)),
+            (0x30, 0x01) | (0x30, 0x02) => {
+                self.bgm.clear();
+                self.sounds.push(Sound {
+                    data: Vec::new(),
+                    volume: 0.0,
+                    bgm: true,
+                    voice: false,
+                    effect_channel: None,
+                    stop: true,
+                    fade_ms: if c.op == 2 { c.u16(0) as u32 } else { 0 },
+                    loop_start: 0,
+                });
             }
-            (0x30, 0x01) | (0x30, 0x02) => self.sounds.push(Sound {
-                data: Vec::new(),
-                volume: 0.0,
-                bgm: true,
-                voice: false,
-                effect_channel: None,
-                stop: true,
-                fade_ms: if c.op == 2 { c.u16(0) as u32 } else { 0 },
-                loop_start: 0,
-            }),
             (0x30, 0x64) => {
                 let name = c.str(0);
                 self.play(&["vic", "se"], &name, Some(9), false);
@@ -704,6 +811,7 @@ impl Engine {
                 });
             }
             (0x40, 0x00) => self.wait = Wait::Ended,
+            (0x40, 0x15) => self.open_menu(false),
             (0x50, 0x01) => {
                 self.vars.insert((c.u8(1), c.u16(2)), c.u16(4) as i32);
             }
@@ -712,6 +820,7 @@ impl Engine {
                 self.vars.insert((2, 0), v);
             }
             (0x50, 0x28) => self.wait = Wait::Until(self.now + c.u32(0) as u64),
+            (0x50, 0x15) => self.title = c.str(0),
             _ => {
                 if self.log {
                     eprintln!("tmrhiro: skipped {:02x}.{:04x}", c.group, c.op);
@@ -748,9 +857,9 @@ impl Engine {
         if slot >= self.chars.len() {
             return;
         }
-        let pics = if name.is_empty() || name == "-" {
+        let (name, pics) = if name.is_empty() || name == "-" {
             match self.chars[slot].take() {
-                Some(c) => c.pics,
+                Some(c) => (c.name, c.pics),
                 None => return,
             }
         } else {
@@ -762,9 +871,10 @@ impl Engine {
             let w = self.screen.0 as f32;
             let cw = self.image(&canvas).map_or(w, |g| g.canvas.0 as f32);
             let y = self.ini.int("GAMESYSTEM/CHARA_SPR_PLUS_Y", 0) as f32;
-            self.pictures(name, (w - cw) / 2.0, y)
+            (name.to_string(), self.pictures(name, (w - cw) / 2.0, y))
         };
         self.chars[slot] = Some(Chara {
+            name,
             pics,
             from,
             to,
@@ -772,6 +882,433 @@ impl Engine {
             ms,
             fade,
         });
+    }
+
+    fn set_bg(&mut self, name: &str) {
+        self.bg = self.pictures(name, 0.0, 0.0);
+        self.bg_name = name.to_string();
+        if name == "-" || name.is_empty() {
+            self.bg.clear();
+            self.bg_name.clear();
+        }
+    }
+
+    fn play_bgm(&mut self, name: &str) {
+        if let Some(data) = self.find(&["mus"], name) {
+            let (data, loop_start) = music(data);
+            self.bgm = name.to_string();
+            self.sounds.push(Sound {
+                data,
+                volume: 1.0,
+                bgm: true,
+                voice: false,
+                effect_channel: None,
+                stop: false,
+                fade_ms: 0,
+                loop_start,
+            });
+        }
+    }
+
+    /// Stops the music and every sound.
+    fn stop_sounds(&mut self) {
+        self.bgm.clear();
+        for (bgm, voice, channel) in [
+            (true, false, None),
+            (false, true, None),
+            (false, false, Some(-1)),
+        ] {
+            self.sounds.push(Sound {
+                data: Vec::new(),
+                volume: 0.0,
+                bgm,
+                voice,
+                effect_channel: channel,
+                stop: true,
+                fade_ms: 0,
+                loop_start: 0,
+            });
+        }
+    }
+
+    /// The message window's buttons that this game has.
+    fn window_buttons(&self) -> Vec<WindowButton> {
+        let i = &self.ini;
+        let (wx, wy) = (
+            i.int("MESSAGEWINDOW/MW_DRAW_POS_X", 0),
+            i.int("MESSAGEWINDOW/MW_DRAW_POS_Y", 400),
+        );
+        let mut out = Vec::new();
+        for key in WINDOW_BUTTONS {
+            let v = i.ints(&format!("MESSAGEWINDOW/TWB_{key}"));
+            if v.len() < 8 || v[0] == 0 {
+                continue;
+            }
+            // kind 0 sits on the window, kind 1 on the bar at the top of the screen
+            let (x, y) = if v[1] == 0 {
+                (wx + v[2], wy + v[3])
+            } else {
+                (v[2], v[3])
+            };
+            out.push(WindowButton {
+                key,
+                rect: [x, y, v[6], v[7]],
+                src: [v[4], v[5]],
+            });
+        }
+        out
+    }
+
+    /// Whether the window and its buttons are up (a line or a choice waits).
+    fn window_up(&self) -> bool {
+        !self.hidden && self.window && !self.text.is_empty() && matches!(self.wait, Wait::Click)
+    }
+
+    /// Whether the bar at the top is out (the pointer is on it).
+    fn top_bar_out(&self) -> bool {
+        self.window_up()
+            && self.hover.1 >= 0
+            && self.hover.1 < self.ini.int("MESSAGEWINDOW/TWM_HEIGHT_01", 48)
+    }
+
+    fn window_button_at(&self, x: i32, y: i32) -> Option<&'static str> {
+        if !self.window_up() {
+            return None;
+        }
+        let top = self.top_bar_out();
+        let wy = self.ini.int("MESSAGEWINDOW/MW_DRAW_POS_Y", 400);
+        self.window_buttons()
+            .into_iter()
+            .filter(|b| if b.rect[1] < wy { top } else { true })
+            .find(|b| inside(b.rect, x, y))
+            .map(|b| b.key)
+    }
+
+    fn window_button(&mut self, key: &str) {
+        match key {
+            "CLOSE" => self.hidden = true,
+            "AUTO" => self.auto = true,
+            "SKIP" => self.skip = true,
+            "VOICE" => {
+                let v = self.voice.clone();
+                if !v.is_empty() {
+                    self.play(&["vic"], &v, None, true);
+                }
+            }
+            "SAVE" => self.open_menu(true),
+            "LOAD" => self.open_menu(false),
+            "QSAVE" => {
+                let thumb = self.thumbnail();
+                self.save_slot("qsave", thumb);
+            }
+            "QLOAD" => self.load_slot("qsave"),
+            "TITLE" => self.restart(),
+            "EXIT" => self.wait = Wait::Ended,
+            _ => {}
+        }
+    }
+
+    /// The screen as it is now, at the size of a save slot's picture.
+    fn thumbnail(&mut self) -> (u32, u32, Vec<u8>) {
+        let size = self.ini.ints("SAVE/SAVE_THUM_SIZE");
+        let (tw, th) = match size[..] {
+            [w, h, ..] if w > 0 && h > 0 => (w as u32, h as u32),
+            _ => (self.screen.0 / 10, self.screen.1 / 10),
+        };
+        // the scene and the window, without the buttons under the pointer
+        let hover = std::mem::replace(&mut self.hover, (-1, -1));
+        let full = self.render();
+        self.hover = hover;
+        let mut px = Vec::with_capacity((tw * th * 4) as usize);
+        for y in 0..th {
+            for x in 0..tw {
+                let sx = (x * full.w / tw) as usize;
+                let sy = (y * full.h / th) as usize;
+                let at = (sy * full.w as usize + sx) * 4;
+                px.extend_from_slice(&full.px[at..at + 4]);
+            }
+        }
+        (tw, th, px)
+    }
+
+    fn open_menu(&mut self, save: bool) {
+        let thumb = if save {
+            self.thumbnail()
+        } else {
+            (0, 0, Vec::new())
+        };
+        self.menu = Some(Menu {
+            save,
+            page: 0,
+            thumb,
+            slots: Vec::new(),
+        });
+        self.load_page();
+    }
+
+    /// The ini section of the screen (SAVE or LOAD).
+    fn menu_section(&self) -> &'static str {
+        match &self.menu {
+            Some(m) if !m.save => "LOAD",
+            _ => "SAVE",
+        }
+    }
+
+    /// The slots of the screen: first slot's place and picture, size, count, per column, columns,
+    /// steps down a column and across columns.
+    fn menu_layout(&self) -> MenuLayout {
+        let p = self.menu_section();
+        let v = self.ini.ints(&format!("{p}/{p}_BASE_POS"));
+        if v.len() >= 14 {
+            return MenuLayout {
+                at: [v[0], v[1]],
+                src: Some([v[2], v[3]]),
+                size: [v[4], v[5]],
+                count: v[6].max(1) as usize,
+                rows: v[7].max(1) as usize,
+                step: [v[9], v[10]],
+                column: [v[13], v.get(14).copied().unwrap_or(0)],
+            };
+        }
+        let (w, h) = (self.screen.0 as i32, self.screen.1 as i32);
+        MenuLayout {
+            at: [w / 16, h / 10],
+            src: None,
+            size: [w * 13 / 32, h * 7 / 50],
+            count: 10,
+            rows: 5,
+            step: [0, h * 8 / 50],
+            column: [w * 15 / 32, 0],
+        }
+    }
+
+    fn slot_rect(&self, l: &MenuLayout, k: usize) -> [i32; 4] {
+        let (col, row) = ((k / l.rows) as i32, (k % l.rows) as i32);
+        [
+            l.at[0] + col * l.column[0] + row * l.step[0],
+            l.at[1] + col * l.column[1] + row * l.step[1],
+            l.size[0],
+            l.size[1],
+        ]
+    }
+
+    /// A button of the screen from the ini ([x, y, src x, src y, w, h]), or one at the bottom
+    /// right for games without it.
+    fn menu_button(&self, key: &str) -> ([i32; 4], Option<[i32; 2]>) {
+        let p = self.menu_section();
+        let v = self.ini.ints(&format!("{p}/{p}_{key}"));
+        if v.len() >= 6 {
+            return ([v[0], v[1], v[4], v[5]], Some([v[2], v[3]]));
+        }
+        let (w, h) = (self.screen.0 as i32, self.screen.1 as i32);
+        ([w - w / 5 - 16, h - h / 12 - 8, w / 5, h / 12], None)
+    }
+
+    fn menu_pages(&self) -> Vec<([i32; 4], [i32; 2])> {
+        let p = self.menu_section();
+        let v = self.ini.ints(&format!("{p}/{p}_PAGE_POS"));
+        if v.len() < 13 {
+            return Vec::new();
+        }
+        (0..v[6].max(0))
+            .map(|k| {
+                (
+                    [v[0] + k * v[9], v[1] + k * v[10], v[4], v[5]],
+                    [v[2] + k * v[11], v[3] + k * v[12]],
+                )
+            })
+            .collect()
+    }
+
+    fn slot_name(&self, k: usize) -> String {
+        let page = self.menu.as_ref().map_or(0, |m| m.page);
+        format!("save{:03}", page * self.menu_layout().count + k)
+    }
+
+    /// Reads the saved slots of the page and makes their pictures and lines.
+    fn load_page(&mut self) {
+        let l = self.menu_layout();
+        let p = self.menu_section();
+        let size = self.ini.ints(&format!("{p}/{p}_B_TEXT_POS"));
+        let px = size.get(2).copied().unwrap_or(20);
+        let font = self.text_font(px);
+        // as many letters as fit right of the text's place
+        let fit = ((l.size[0] - size.first().copied().unwrap_or(l.size[0] / 3) - 8) / px.max(1))
+            .max(1) as usize;
+        let mut slots = Vec::new();
+        for k in 0..l.count {
+            let name = self.slot_name(k);
+            let view = self
+                .files
+                .read_save(&format!("{name}.dat"))
+                .and_then(|b| SaveData::decode(&b))
+                .map(|d| {
+                    let mut thumb = Image::new(d.thumb.0, d.thumb.1);
+                    if thumb.px.len() == d.thumb.2.len() {
+                        thumb.px = d.thumb.2;
+                    }
+                    let lines = [d.title.clone(), d.text.clone()]
+                        .iter()
+                        .filter(|s| !s.is_empty())
+                        .filter_map(|s| {
+                            let f = font.as_ref()?;
+                            let s: String = s.chars().take(fit).collect();
+                            Some(Rc::new(f.render(
+                                &nexas::sjis::encode(&s),
+                                [255, 255, 255],
+                                2,
+                            )))
+                        })
+                        .collect();
+                    SlotView {
+                        thumb: Rc::new(thumb),
+                        lines,
+                    }
+                });
+            slots.push(view);
+        }
+        if let Some(m) = &mut self.menu {
+            m.slots = slots;
+        }
+    }
+
+    fn menu_click(&mut self, x: i32, y: i32) {
+        let Some(save) = self.menu.as_ref().map(|m| m.save) else {
+            return;
+        };
+        if inside(self.menu_button("RETURN_POS").0, x, y) {
+            self.menu = None;
+            return;
+        }
+        if let Some(k) = self.menu_pages().iter().position(|p| inside(p.0, x, y)) {
+            if let Some(m) = &mut self.menu {
+                m.page = k;
+            }
+            self.load_page();
+            return;
+        }
+        let l = self.menu_layout();
+        let Some(k) = (0..l.count).find(|&k| inside(self.slot_rect(&l, k), x, y)) else {
+            return;
+        };
+        let name = self.slot_name(k);
+        if save {
+            let thumb = self
+                .menu
+                .as_ref()
+                .map(|m| m.thumb.clone())
+                .unwrap_or_default();
+            self.save_slot(&name, thumb);
+            self.load_page();
+        } else if self
+            .menu
+            .as_ref()
+            .is_some_and(|m| m.slots.get(k).is_some_and(|s| s.is_some()))
+        {
+            self.menu = None;
+            self.load_slot(&name);
+        }
+    }
+
+    fn save_slot(&mut self, name: &str, thumb: (u32, u32, Vec<u8>)) {
+        let text = strip_ruby(&self.text.replace("\\n", ""));
+        let d = SaveData {
+            script: self.script.name.clone(),
+            pc: self.resume_pc as u32,
+            stack: self
+                .stack
+                .iter()
+                .map(|(s, pc)| (s.name.clone(), *pc as u32))
+                .collect(),
+            vars: self.vars.iter().map(|(&(b, n), &v)| (b, n, v)).collect(),
+            bg: self.bg_name.clone(),
+            chars: self
+                .chars
+                .iter()
+                .enumerate()
+                .filter_map(|(k, c)| {
+                    let c = c.as_ref().filter(|c| c.fade != Some(false))?;
+                    Some(SavedChara {
+                        slot: k as u8,
+                        name: c.name.clone(),
+                        x: c.to.0,
+                        y: c.to.1,
+                    })
+                })
+                .collect(),
+            bgm: self.bgm.clone(),
+            title: self.title.clone(),
+            text,
+            thumb,
+        };
+        self.files.write_save(&format!("{name}.dat"), &d.encode());
+    }
+
+    fn load_slot(&mut self, name: &str) {
+        let Some(d) = self
+            .files
+            .read_save(&format!("{name}.dat"))
+            .and_then(|b| SaveData::decode(&b))
+        else {
+            return;
+        };
+        let Ok(script) = self.load(&d.script) else {
+            return;
+        };
+        let mut stack = Vec::new();
+        for (s, pc) in &d.stack {
+            match self.load(s) {
+                Ok(s) => stack.push((s, *pc as usize)),
+                Err(_) => return,
+            }
+        }
+        self.reset();
+        self.script = script;
+        self.pc = d.pc as usize;
+        self.stack = stack;
+        // the game's settings and all-time flags (banks 4 and 5) stay as they are
+        self.vars.retain(|&(bank, _), _| bank >= 4);
+        for (bank, n, v) in d.vars {
+            if bank < 4 {
+                self.vars.insert((bank, n), v);
+            }
+        }
+        self.set_bg(&d.bg);
+        for c in d.chars {
+            self.set_chara(c.slot as usize, &c.name, (c.x, c.y), (c.x, c.y), 0, None);
+        }
+        if !d.bgm.is_empty() {
+            self.play_bgm(&d.bgm);
+        }
+        self.title = d.title;
+    }
+
+    /// Clears the screen, the sounds and what was waiting.
+    fn reset(&mut self) {
+        self.stop_sounds();
+        self.stack.clear();
+        self.bg.clear();
+        self.bg_name.clear();
+        self.pan = None;
+        self.chars.iter_mut().for_each(|c| *c = None);
+        self.fade = None;
+        self.flash = None;
+        self.window = false;
+        self.hidden = false;
+        self.auto = false;
+        self.skip = false;
+        self.name.clear();
+        self.text.clear();
+        self.text_images.clear();
+        self.buttons.clear();
+        self.wait = Wait::None;
+    }
+
+    /// Back to the title: the start script with the game's variables cleared.
+    fn restart(&mut self) {
+        self.reset();
+        self.vars.retain(|&(bank, _), _| bank >= 4);
+        self.jump_file("start");
     }
 
     fn play(&mut self, kinds: &[&str], name: &str, channel: Option<i32>, voice: bool) {
@@ -810,7 +1347,12 @@ impl Engine {
         if let Some(v) = voice {
             let v = v.trim().to_string();
             self.play(&["vic"], &v, None, true);
+            self.voice = v;
+        } else {
+            self.voice.clear();
         }
+        self.resume_pc = self.pc - 1;
+        self.said_at = self.now;
         self.name = name.map(|n| self.names(n)).unwrap_or_default();
         self.text = self.names(&text);
         self.window = true;
@@ -939,14 +1481,159 @@ impl Engine {
                 }
             }
         }
-        if self.window && self.fade.is_none() && !self.text.is_empty() {
+        if self.window && !self.hidden && self.fade.is_none() && !self.text.is_empty() {
             self.window_draws(&mut out);
+        }
+        if self.window_up() {
+            self.window_button_draws(&mut out);
         }
         if let Wait::Choice(options) = &self.wait {
             let options = options.clone();
             self.choice_draws(&options, &mut out);
         }
+        if self.menu.is_some() {
+            self.menu_draws(&mut out);
+        }
         out
+    }
+
+    /// The buttons on the window, the bar at the top when the pointer is there, and the
+    /// click-wait mark.
+    fn window_button_draws(&mut self, out: &mut Vec<Draw>) {
+        let wy = self.ini.int("MESSAGEWINDOW/MW_DRAW_POS_Y", 400);
+        let wx = self.ini.int("MESSAGEWINDOW/MW_DRAW_POS_X", 0);
+        let top = self.top_bar_out();
+        if top && let Some(g) = self.image("sys_window_menu") {
+            out.push(draw(&g.image, g.x as f32, g.y as f32, 1.0, [0.0; 4]));
+        }
+        if let Some(g) = self.image("sys_window_button") {
+            for b in self.window_buttons() {
+                if b.rect[1] < wy && !top {
+                    continue;
+                }
+                let lit = inside(b.rect, self.hover.0, self.hover.1)
+                    || (b.key == "AUTO" && self.auto)
+                    || (b.key == "SKIP" && self.skip);
+                let sy = b.src[1] + if lit { b.rect[3] } else { 0 };
+                let src = [b.src[0] - g.x, sy - g.y, b.rect[2], b.rect[3]];
+                out.push(part(&g.image, src, b.rect[0] as f32, b.rect[1] as f32));
+            }
+        }
+        // the click-wait mark: CW_DRAW_PAT pictures side by side, CW_DRAW_TIME ms each
+        let i = &self.ini;
+        let (cx, cy) = (
+            i.int("MESSAGEWINDOW/CW_DRAW_POS_X", -1),
+            i.int("MESSAGEWINDOW/CW_DRAW_POS_Y", -1),
+        );
+        let (cw, ch) = (
+            i.int("MESSAGEWINDOW/CW_DRAW_WIDTH", 0),
+            i.int("MESSAGEWINDOW/CW_DRAW_HEIGHT", 0),
+        );
+        let pat = i.int("MESSAGEWINDOW/CW_DRAW_PAT", 1).max(1) as u64;
+        let ms = i.int("MESSAGEWINDOW/CW_DRAW_TIME", 50).max(1) as u64;
+        if cx >= 0
+            && cw > 0
+            && let Some(g) = self.image("sys_click_wait")
+        {
+            let k = ((self.now / ms) % pat) as i32;
+            let src = [k * cw - g.x, -g.y, cw, ch];
+            out.push(part(&g.image, src, (wx + cx) as f32, (wy + cy) as f32));
+        }
+    }
+
+    /// The save or load screen over the game.
+    fn menu_draws(&mut self, out: &mut Vec<Draw>) {
+        let Some((save, page)) = self.menu.as_ref().map(|m| (m.save, m.page)) else {
+            return;
+        };
+        let (w, h) = (self.screen.0 as f32, self.screen.1 as f32);
+        let kind = if save { "save" } else { "load" };
+        match self.image(&format!("sys_{kind}_base")) {
+            Some(g) => out.push(draw(
+                &g.image,
+                g.x as f32,
+                g.y as f32,
+                1.0,
+                [0.0, 0.0, w, h],
+            )),
+            None => {
+                let p = Rc::new(panel(self.screen.0, self.screen.1));
+                out.push(draw(&p, 0.0, 0.0, 1.0, [0.0, 0.0, w, h]));
+            }
+        }
+        let buttons = self.image(&format!("sys_{kind}_button"));
+        let hover = self.hover;
+        // a button of the sheet: normal, lit one row below, chosen two rows below
+        let sheet = |out: &mut Vec<Draw>, r: [i32; 4], src: Option<[i32; 2]>, chosen: bool| {
+            let state = if chosen {
+                2
+            } else if inside(r, hover.0, hover.1) {
+                1
+            } else {
+                0
+            };
+            match (&buttons, src) {
+                (Some(g), Some(s)) => {
+                    let src = [s[0] - g.x, s[1] + state * r[3] - g.y, r[2], r[3]];
+                    out.push(part(&g.image, src, r[0] as f32, r[1] as f32));
+                }
+                _ => {
+                    let p = Rc::new(panel(r[2].max(1) as u32, r[3].max(1) as u32));
+                    let a = if state > 0 { 1.0 } else { 0.6 };
+                    out.push(draw(&p, r[0] as f32, r[1] as f32, a, [0.0, 0.0, w, h]));
+                }
+            }
+        };
+        let l = self.menu_layout();
+        let p = self.menu_section();
+        let thumb_at = self.ini.ints(&format!("{p}/{p}_B_THUM_POS"));
+        let text_at = self.ini.ints(&format!("{p}/{p}_B_TEXT_POS"));
+        let (tx, ty) = (
+            thumb_at.first().copied().unwrap_or(8),
+            thumb_at.get(1).copied().unwrap_or(8),
+        );
+        let (sx, sy) = (
+            text_at.first().copied().unwrap_or(l.size[0] / 3),
+            text_at.get(1).copied().unwrap_or(8),
+        );
+        let size = text_at.get(2).copied().unwrap_or(20);
+        for k in 0..l.count {
+            let r = self.slot_rect(&l, k);
+            sheet(out, r, l.src, false);
+            let Some(Some(v)) = self.menu.as_ref().and_then(|m| m.slots.get(k)) else {
+                continue;
+            };
+            out.push(draw(
+                &v.thumb,
+                (r[0] + tx) as f32,
+                (r[1] + ty) as f32,
+                1.0,
+                [0.0, 0.0, w, h],
+            ));
+            for (n, line) in v.lines.iter().enumerate() {
+                let y = r[1] + sy + n as i32 * (size + 12);
+                out.push(draw(
+                    line,
+                    (r[0] + sx) as f32,
+                    y as f32,
+                    1.0,
+                    [0.0, 0.0, w, h],
+                ));
+            }
+        }
+        for (k, (r, src)) in self.menu_pages().into_iter().enumerate() {
+            sheet(out, r, Some(src), k == page);
+        }
+        let (r, src) = self.menu_button("RETURN_POS");
+        sheet(out, r, src, false);
+        if src.is_none()
+            && let Some(f) = self.text_font(size)
+        {
+            let img = Rc::new(f.render(&nexas::sjis::encode("戻る"), [255, 255, 255], 2));
+            let x = r[0] as f32 + (r[2] as f32 - img.w as f32) / 2.0;
+            let y = r[1] as f32 + (r[3] as f32 - img.h as f32) / 2.0;
+            out.push(draw(&img, x, y, 1.0, [0.0, 0.0, w, h]));
+        }
     }
 
     fn text_font(&self, size: i32) -> Option<Font> {
@@ -976,9 +1663,31 @@ impl Engine {
         );
         let color = i.color("MESSAGEWINDOW/TEXT_COLOR", [255, 255, 255]);
         let (w, h) = (self.screen.0 as f32, self.screen.1 as f32);
-        // a dark panel under the text, then the window's own picture if there is one
-        let panel = Rc::new(panel(ww.max(1) as u32, wh.max(1) as u32));
-        out.push(draw(&panel, wx as f32, wy as f32, 1.0, [0.0, 0.0, w, h]));
+        // the window's picture (white, coloured by SYS_DEF_WINDOW_STAT, AARRGGBB), or a dark
+        // panel for games without one
+        if self.window_base.is_none() {
+            let stat = self
+                .ini
+                .get("SYSTEM/SYS_DEF_WINDOW_STAT")
+                .and_then(|v| u32::from_str_radix(v.trim(), 16).ok());
+            let base = self.image("sys_window_base").map(|g| {
+                let c = stat.unwrap_or(0x8000_0000).to_be_bytes();
+                let mut img = (*g.image).clone();
+                for p in img.px.chunks_exact_mut(4) {
+                    for k in 0..3 {
+                        p[k] = (p[k] as u32 * c[k + 1] as u32 / 255) as u8;
+                    }
+                    p[3] = (p[3] as u32 * c[0] as u32 / 255) as u8;
+                }
+                Rc::new(img)
+            });
+            self.window_base = Some(base);
+        }
+        let base = match self.window_base.clone().flatten() {
+            Some(b) => b,
+            None => Rc::new(panel(ww.max(1) as u32, wh.max(1) as u32)),
+        };
+        out.push(draw(&base, wx as f32, wy as f32, 1.0, [0.0, 0.0, w, h]));
         if self.text_images.is_empty() {
             let Some(font) = self.text_font(size) else {
                 return;
@@ -1094,6 +1803,17 @@ impl Engine {
         }
         img
     }
+}
+
+fn inside(r: [i32; 4], x: i32, y: i32) -> bool {
+    x >= r[0] && y >= r[1] && x < r[0] + r[2] && y < r[1] + r[3]
+}
+
+/// Part of a picture (`src`: x, y, w, h) at (x, y).
+fn part(image: &Rc<Image>, src: [i32; 4], x: f32, y: f32) -> Draw {
+    let mut d = draw(image, x - src[0] as f32, y - src[1] as f32, 1.0, [0.0; 4]);
+    d.place.clip = [x, y, x + src[2] as f32, y + src[3] as f32];
+    d
 }
 
 fn draw(image: &Rc<Image>, x: f32, y: f32, alpha: f32, clip: [f32; 4]) -> Draw {

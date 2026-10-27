@@ -3,10 +3,13 @@
 //!     tmrhiro-run <game folder> <frames> <out prefix> [frame[:x:y] ...]
 //!
 //! Each `frame` is saved as `<out prefix><frame>.png`; with `:x:y`, there is also a click there
-//! on that frame. The last frame is always saved. TMRHIRO_FONT names a TrueType font for text,
-//! TMRHIRO_TRACE=1 prints each command and TMRHIRO_START=<script> starts at that script.
+//! on that frame (`:x:y:r` a right click, `:x:y:m` only moves the pointer there). The last
+//! frame is always saved. TMRHIRO_FONT names a TrueType font for text, TMRHIRO_TRACE=1 prints
+//! each command and TMRHIRO_START=<script> starts at that script.
 
 use std::path::Path;
+
+type Pointer = (i32, i32, char);
 
 use nexas::files::Disk;
 use tmrhiro::engine::Engine;
@@ -21,12 +24,14 @@ fn main() -> Result<(), String> {
     let dir = Path::new(&args[1]);
     let frames: u64 = args[2].parse().map_err(|_| "frames: not a number")?;
     let prefix = &args[3];
-    let mut marks: Vec<(u64, Option<(i32, i32)>)> = Vec::new();
+    // frame, then where and how the pointer acts (c click, r right click, m move)
+    let mut marks: Vec<(u64, Option<Pointer>)> = Vec::new();
     for m in &args[4..] {
         let v: Vec<&str> = m.split(':').collect();
         let n = |s: &str| s.parse::<i64>().map_err(|_| format!("{m}: not a number"));
-        let click = if v.len() == 3 {
-            Some((n(v[1])? as i32, n(v[2])? as i32))
+        let click = if v.len() >= 3 {
+            let kind = v.get(3).and_then(|k| k.chars().next()).unwrap_or('c');
+            Some((n(v[1])? as i32, n(v[2])? as i32, kind))
         } else {
             None
         };
@@ -49,9 +54,13 @@ fn main() -> Result<(), String> {
             eprintln!("-- frame {f}");
         }
         for (_, click) in marks.iter().filter(|m| m.0 == f) {
-            if let Some((x, y)) = click {
+            if let Some((x, y, kind)) = click {
                 e.point(*x, *y);
-                e.click(*x, *y);
+                match kind {
+                    'r' => e.cancel(),
+                    'm' => {}
+                    _ => e.click(*x, *y),
+                }
             }
         }
         e.frame()?;
