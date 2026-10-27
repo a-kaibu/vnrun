@@ -50,6 +50,11 @@ fn main() -> Result<(), String> {
         .and_then(|s| s.split_once(':'))
         .and_then(|(f, s)| Some((f.parse::<u64>().ok()?, s)));
     let sounds = std::env::var_os("ADVHD_SOUNDS").is_some();
+    let checkpoint_frames = std::env::var("ADVHD_CHECKPOINT").ok().and_then(|s| {
+        let (save, load) = s.split_once(':')?;
+        Some((save.parse::<u64>().ok()?, load.parse::<u64>().ok()?))
+    });
+    let mut checkpoint = None;
     for f in 1..=frames {
         if let Some((_, s)) = start.filter(|x| x.0 == f) {
             e.goto(s)?;
@@ -64,6 +69,16 @@ fn main() -> Result<(), String> {
             }
         }
         e.frame()?;
+        if let Some((save, load)) = checkpoint_frames {
+            if f == save {
+                checkpoint = Some(e.checkpoint()?);
+                eprintln!("{f}: checkpoint saved {}", e.describe());
+            }
+            if f == load {
+                e.restore_checkpoint(checkpoint.as_deref().ok_or("checkpoint not saved")?)?;
+                eprintln!("{f}: checkpoint loaded {}", e.describe());
+            }
+        }
         // ADVHD_SOUNDS lists what would play
         for snd in e.take_sounds() {
             if sounds {

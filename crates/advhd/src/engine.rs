@@ -7,6 +7,7 @@ use crate::exe::Formats;
 use crate::files::Files;
 use crate::host::{self, St};
 use crate::layers::{Content, Effect, Snap};
+use crate::snapshot::ScenarioState;
 use crate::state::State;
 use crate::ws2::{Arg, Ins, Script};
 use luavm::{Lua, Value};
@@ -19,6 +20,17 @@ pub const FRAME_MS: f64 = 1000.0 / 60.0;
 const SCENE: &str = "";
 /// ms per character of message text
 const CHAR_MS: f64 = 30.0;
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct Checkpoint {
+    version: u32,
+    script: String,
+    pc: usize,
+    stack: Vec<(String, usize)>,
+    scene: ScenarioState,
+    message: Option<(String, String, String, usize)>,
+    name: Option<(String, String, String)>,
+}
 
 #[derive(Debug, Clone, PartialEq)]
 enum Wait {
@@ -64,6 +76,85 @@ fn lua_str(v: &Value) -> String {
 }
 
 impl Engine {
+    /// Serializes a stable dialogue point. UI menus, choices and transitions require their own
+    /// restoration logic and must not be silently saved as a different state.
+    pub fn checkpoint(&self) -> Result<Vec<u8>, String> {
+        if !matches!(self.wait, Wait::Click | Wait::Typing) {
+            return Err("saving is only supported at a dialogue".into());
+        }
+        let state = self.st.borrow();
+        let message = self.msg.as_ref().and_then(|(set, layer, _)| {
+            state.texts.get(&(set.clone(), layer.clone())).map(|t| {
+                (
+                    set.clone(),
+                    layer.clone(),
+                    t.chars.iter().collect(),
+                    if matches!(self.wait, Wait::Typing) {
+                        t.chars.len()
+                    } else {
+                        t.shown
+                    },
+                )
+            })
+        });
+        let name = state
+            .texts
+            .get(&("system".into(), "Name01".into()))
+            .map(|t| ("system".into(), "Name01".into(), t.chars.iter().collect()));
+        let checkpoint = Checkpoint {
+            version: 1,
+            script: self.cur.name.clone(),
+            pc: self.pc,
+            stack: self
+                .stack
+                .iter()
+                .map(|(script, pc)| (script.name.clone(), *pc))
+                .collect(),
+            scene: ScenarioState::capture(&state)?,
+            message,
+            name,
+        };
+        serde_json::to_vec(&checkpoint).map_err(|e| e.to_string())
+    }
+
+    /// Restores a checkpoint after validating all referenced scripts and scene assets.
+    pub fn restore_checkpoint(&mut self, bytes: &[u8]) -> Result<(), String> {
+        let saved: Checkpoint = serde_json::from_slice(bytes).map_err(|e| e.to_string())?;
+        if saved.version != 1 {
+            return Err("unsupported checkpoint version".into());
+        }
+        let script = self
+            .script(&saved.script)
+            .ok_or("missing checkpoint script")?;
+        if saved.pc >= script.code.len() {
+            return Err("invalid checkpoint position".into());
+        }
+        let mut stack = Vec::with_capacity(saved.stack.len());
+        for (name, pc) in saved.stack {
+            let script = self
+                .script(&name)
+                .ok_or("missing checkpoint return script")?;
+            if pc >= script.code.len() {
+                return Err("invalid checkpoint return position".into());
+            }
+            stack.push((script, pc));
+        }
+        saved.scene.restore(&mut self.st.borrow_mut())?;
+        self.cur = script;
+        self.pc = saved.pc;
+        self.stack = stack;
+        self.wait = Wait::Click;
+        self.msg = None;
+        if let Some((set, layer, text, shown)) = saved.message {
+            let mut state = self.st.borrow_mut();
+            state.set_text(&set, &layer, &text, Some(shown));
+            self.msg = Some((set, layer, state.now));
+        }
+        if let Some((set, layer, text)) = saved.name {
+            self.st.borrow_mut().set_text(&set, &layer, &text, None);
+        }
+        Ok(())
+    }
     pub fn new(files: Box<dyn Files>) -> Result<Engine, String> {
         let st: St = Rc::new(RefCell::new(State::new(files, 1280, 720)));
         let exe = {
