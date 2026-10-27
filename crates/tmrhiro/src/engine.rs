@@ -61,6 +61,34 @@ struct Fade {
     ms: u64,
 }
 
+/// A character in one of the sprite slots, moving from `from` to `to` over `ms`.
+struct Chara {
+    pics: Vec<Pic>,
+    from: (f32, f32),
+    to: (f32, f32),
+    start: u64,
+    ms: u64,
+    /// fades in (`Some(true)`) or out and goes away (`Some(false)`) while it moves
+    fade: Option<bool>,
+}
+
+impl Chara {
+    fn progress(&self, now: u64) -> f32 {
+        if self.ms == 0 {
+            1.0
+        } else {
+            (now.saturating_sub(self.start) as f32 / self.ms as f32).min(1.0)
+        }
+    }
+}
+
+/// A flash of colour: in, held, out (ms).
+struct Flash {
+    image: Rc<Image>,
+    start: u64,
+    ms: [u64; 3],
+}
+
 struct Pan {
     from: (f32, f32),
     to: (f32, f32),
@@ -83,7 +111,9 @@ pub struct Engine {
     wait: Wait,
     bg: Vec<Pic>,
     pan: Option<Pan>,
-    chars: Vec<Pic>,
+    /// the sprite slots (picture layers 5 and up)
+    chars: Vec<Option<Chara>>,
+    flash: Option<Flash>,
     fade: Option<Fade>,
     window: bool,
     name: String,
@@ -146,7 +176,8 @@ impl Engine {
             wait: Wait::None,
             bg: Vec::new(),
             pan: None,
-            chars: Vec::new(),
+            chars: (0..10).map(|_| None).collect(),
+            flash: None,
             fade: None,
             window: false,
             name: String::new(),
@@ -347,6 +378,12 @@ impl Engine {
         }
     }
 
+    /// Starts the script of a name from its beginning (for trying out a scene).
+    pub fn start_at(&mut self, name: &str) {
+        self.stack.clear();
+        self.jump_file(name);
+    }
+
     fn jump_file(&mut self, name: &str) {
         match self.load(name) {
             Ok(s) => {
@@ -369,6 +406,20 @@ impl Engine {
             .is_some_and(|f| self.now >= f.start + f.ms)
         {
             self.fade = None;
+        }
+        for c in self.chars.iter_mut() {
+            if c.as_ref()
+                .is_some_and(|c| c.fade == Some(false) && c.progress(self.now) >= 1.0)
+            {
+                *c = None;
+            }
+        }
+        if self
+            .flash
+            .as_ref()
+            .is_some_and(|f| self.now >= f.start + f.ms.iter().sum::<u64>())
+        {
+            self.flash = None;
         }
         if matches!(self.wait, Wait::Until(t) if self.now >= t) {
             self.wait = Wait::None;
@@ -538,16 +589,60 @@ impl Engine {
                 });
             }
             (0x20, 0xc8) => {
+                // [effect][count]",names": one goes in the middle, two left and right
                 self.begin_fade(c.u16(0));
                 let n = c.u8(2) as usize;
                 let names: Vec<String> = c.str(3).split(',').map(|s| s.to_string()).collect();
-                self.chars.clear();
                 let names: Vec<&String> = names.iter().filter(|s| !s.is_empty()).collect();
+                self.chars.iter_mut().for_each(|c| *c = None);
+                let first = if n == 2 { 1 } else { 0 };
                 for (i, name) in names.iter().take(n).enumerate() {
-                    let x = self.slot_x(i, n, name);
-                    let pics = self.pictures(name, x, 0.0);
-                    self.chars.extend(pics);
+                    let at = self.slot_pos(first + i);
+                    self.set_chara(first + i, name, at, at, 0, None);
                 }
+            }
+            (0x20, 0x64) | (0x20, 0x65) => {
+                // [effect][?][slot] name: one character at its slot's place
+                self.begin_fade(c.u16(0));
+                let slot = c.u8(3) as usize;
+                let at = self.slot_pos(slot);
+                self.set_chara(slot, &c.str(4), at, at, 0, None);
+            }
+            (0x20, 0x66..=0x69) => {
+                // [effect][slot][x0][y0][x1][y1][ms] name ('-': the picture already there);
+                // 0x67 has one more byte before the slot, 0x68 fades in, 0x69 fades out
+                self.begin_fade(c.u16(0));
+                let at = if c.op == 0x67 { 3 } else { 2 };
+                let slot = c.u8(at) as usize;
+                let from = (c.i16(at + 1) as f32, c.i16(at + 3) as f32);
+                let to = (c.i16(at + 5) as f32, c.i16(at + 7) as f32);
+                let ms = c.u16(at + 9) as u64;
+                let fade = match c.op {
+                    0x68 => Some(true),
+                    0x69 => Some(false),
+                    _ => None,
+                };
+                self.set_chara(slot, &c.str(at + 11), from, to, ms, fade);
+            }
+            (0x20, 0x6c) => {
+                // [effect][slot] name: another picture where the character stands
+                self.begin_fade(c.u16(0));
+                let slot = c.u8(2) as usize;
+                let at = self.chars.get(slot).and_then(|c| c.as_ref()).map(|c| c.to);
+                let at = at.unwrap_or_else(|| self.slot_pos(slot));
+                self.set_chara(slot, &c.str(3), at, at, 0, None);
+            }
+            (0x20, 0x190) | (0x20, 0x191) => {
+                // [r g b 0][in][hold][out ms]
+                let mut img = Image::new(self.screen.0, self.screen.1);
+                img.fill([c.u8(0), c.u8(1), c.u8(2), 255]);
+                let ms = [c.u16(4) as u64, c.u16(6) as u64, c.u16(8) as u64];
+                self.wait = Wait::Until(self.now + ms.iter().sum::<u64>());
+                self.flash = Some(Flash {
+                    image: Rc::new(img),
+                    start: self.now,
+                    ms,
+                });
             }
             (0x30, 0x00) => {
                 let name = c.str(4);
@@ -626,17 +721,57 @@ impl Engine {
         Ok(())
     }
 
-    /// Where a character's canvas goes: one in the middle, two or three spread out.
-    fn slot_x(&mut self, i: usize, n: usize, name: &str) -> f32 {
-        let w = self.screen.0 as f32;
-        let canvas = self
-            .macros
-            .get(&name.to_lowercase())
-            .and_then(|p| p.first().cloned())
-            .unwrap_or_else(|| name.to_string());
-        let cw = self.image(&canvas).map_or(w, |g| g.canvas.0 as f32);
-        let center = w * (i as f32 + 1.0) / (n as f32 + 1.0);
-        center - cw / 2.0
+    /// Where a slot puts a character: 0 in the middle, 1 left and 2 right (GAMESYSTEM
+    /// CHARA_SPR_LEFT / CHARA_SPR_RIGHT, moved from the middle).
+    fn slot_pos(&self, slot: usize) -> (f32, f32) {
+        let side = self.screen.0 as i32 / 4;
+        let x = match slot {
+            1 => self.ini.int("GAMESYSTEM/CHARA_SPR_LEFT", -side),
+            2 => self.ini.int("GAMESYSTEM/CHARA_SPR_RIGHT", side),
+            _ => 0,
+        };
+        (x as f32, 0.0)
+    }
+
+    /// Puts a character in a slot (a name of '-' or nothing keeps the pictures there), its
+    /// canvas centred on the screen and lowered by CHARA_SPR_PLUS_Y, then moved from `from` to
+    /// `to`.
+    fn set_chara(
+        &mut self,
+        slot: usize,
+        name: &str,
+        from: (f32, f32),
+        to: (f32, f32),
+        ms: u64,
+        fade: Option<bool>,
+    ) {
+        if slot >= self.chars.len() {
+            return;
+        }
+        let pics = if name.is_empty() || name == "-" {
+            match self.chars[slot].take() {
+                Some(c) => c.pics,
+                None => return,
+            }
+        } else {
+            let canvas = self
+                .macros
+                .get(&name.to_lowercase())
+                .and_then(|p| p.first().cloned())
+                .unwrap_or_else(|| name.to_string());
+            let w = self.screen.0 as f32;
+            let cw = self.image(&canvas).map_or(w, |g| g.canvas.0 as f32);
+            let y = self.ini.int("GAMESYSTEM/CHARA_SPR_PLUS_Y", 0) as f32;
+            self.pictures(name, (w - cw) / 2.0, y)
+        };
+        self.chars[slot] = Some(Chara {
+            pics,
+            from,
+            to,
+            start: self.now,
+            ms,
+            fade,
+        });
     }
 
     fn play(&mut self, kinds: &[&str], name: &str, channel: Option<i32>, voice: bool) {
@@ -713,17 +848,50 @@ impl Engine {
                 p.from.1 + (p.to.1 - p.from.1) * t,
             )
         });
-        for (k, pic) in self.bg.iter().chain(self.chars.iter()).enumerate() {
-            let (dx, dy) = if k < self.bg.len() {
-                pan.unwrap_or((0.0, 0.0))
-            } else {
-                (0.0, 0.0)
-            };
+        for pic in &self.bg {
+            let (dx, dy) = pan.unwrap_or((0.0, 0.0));
             out.push(draw(
                 &pic.image,
                 pic.x + dx,
                 pic.y + dy,
                 1.0,
+                [0.0, 0.0, w, h],
+            ));
+        }
+        for c in self.chars.iter().flatten() {
+            let t = c.progress(self.now);
+            let dx = c.from.0 + (c.to.0 - c.from.0) * t;
+            let dy = c.from.1 + (c.to.1 - c.from.1) * t;
+            let alpha = match c.fade {
+                Some(true) => t,
+                Some(false) => 1.0 - t,
+                None => 1.0,
+            };
+            for pic in &c.pics {
+                out.push(draw(
+                    &pic.image,
+                    pic.x + dx,
+                    pic.y + dy,
+                    alpha,
+                    [0.0, 0.0, w, h],
+                ));
+            }
+        }
+        if let Some(f) = &self.flash {
+            let t = self.now.saturating_sub(f.start) as f32;
+            let [a, b, c] = f.ms.map(|v| v as f32);
+            let alpha = if t < a {
+                t / a.max(1.0)
+            } else if t < a + b {
+                1.0
+            } else {
+                1.0 - (t - a - b) / c.max(1.0)
+            };
+            out.push(draw(
+                &f.image,
+                0.0,
+                0.0,
+                alpha.clamp(0.0, 1.0),
                 [0.0, 0.0, w, h],
             ));
         }

@@ -4,7 +4,7 @@
 //!
 //! Each `frame` is saved as `<out prefix><frame>.png`; with `:x:y`, there is also a click there
 //! on that frame. The last frame is always saved. TMRHIRO_FONT names a TrueType font for text,
-//! TMRHIRO_TRACE=1 prints each command.
+//! TMRHIRO_TRACE=1 prints each command and TMRHIRO_START=<script> starts at that script.
 
 use std::path::Path;
 
@@ -40,6 +40,9 @@ fn main() -> Result<(), String> {
     e.log = std::env::var_os("TMRHIRO_TRACE").is_some();
     if let Some(f) = std::env::var_os("TMRHIRO_FONT") {
         e.set_font(&std::fs::read(f).map_err(|e| e.to_string())?)?;
+    }
+    if let Some(name) = std::env::var_os("TMRHIRO_START") {
+        e.start_at(&name.to_string_lossy());
     }
     for f in 1..=frames {
         if e.log && marks.iter().any(|m| m.0 == f) {
