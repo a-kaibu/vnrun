@@ -1,0 +1,87 @@
+//! Names of the built-in functions and component properties (LiveMaker's own, as the
+//! LiveNovel manual lists them), by number.
+
+pub const FUNCS: [&str; 171] = [
+    "IntToStr", "IntToHex", "GetProp", "SetProp", "GetArraySize", "Length", "JLength", "Copy",
+    "JCopy", "Delete", "JDelete", "Insert", "JInsert", "CompareStr", "CompareText", "Pos",
+    "JPos", "Trim", "JTrim", "Exists", "Not", "SetArray", "FillMem", "CopyMem", "GetCheck",
+    "SetCheck", "Random", "GetSaveCaption", "ArrayToString", "StringToArray", "IndexOfStr",
+    "SortStr", "ListCompo", "ToClientX", "ToClientY", "ToScreenX", "ToScreenY", "Int", "Float",
+    "Sin", "Cos", "Tan", "ArcSin", "ArcCos", "ArcTan", "ArcTan2", "Hypot", "IndexOfMenu", "Abs",
+    "Fabs", "VarExists", "EncodeDate", "EncodeTime", "DecodeDate", "DecodeTime", "GetYear",
+    "GetMonth", "GetDay", "GetHour", "GetMin", "GetSec", "GetWeek", "GetWeekStr", "GetWeekJStr",
+    "FixStr", "GetDisplayMode", "AddArray", "InsertArray", "DeleteArray", "InPrimary",
+    "CopyArray", "FileExists", "LoadTextFile", "LowerCase", "UpperCase", "ExtractFilePath",
+    "ExtractFileName", "ExtractFileExt", "IsPathDelimiter", "AddBackSlash", "ChangeFileExt",
+    "IsDelimiter", "StringOfChar", "StringReplace", "AssignTemp", "HanToZen", "ZenToHan",
+    "DBCreateTable", "DBSetActive", "DBAddField", "DBSetRecNo", "DBInsert", "DBDelete",
+    "DBGetInt", "DBSetInt", "DBGetFloat", "DBSetFloat", "DBGetBool", "DBSetBool", "DBGetStr",
+    "DBSetStr", "DBRecordCount", "DBFindFirst", "DBFindLast", "DBFindNext", "DBFindPrior",
+    "DBLocate", "DBLoadTsvFile", "DBDirectGetInt", "DBDirectSetInt", "DBDirectGetFloat",
+    "DBDirectSetFloat", "DBDirectGetBool", "DBDirectSetBool", "DBDirectGetStr",
+    "DBDirectSetStr", "DBCopyTable", "DBDeleteTable", "DBInsertTable", "DBCopy",
+    "DBClearTable", "DBSort", "DBGetActive", "DBGetRecNo", "DBClearRecord", "SetWallPaper",
+    "Min", "Max", "Fmin", "Fmax", "GetVarType", "GetEnabled", "SetEnabled", "AddDelimiter",
+    "ListSaveCaption", "OpenUrl", "Calc", "SaveScreen", "StrToIntDef", "StrToFloatDef",
+    "GetVisible", "SetVisible", "GetHistoryCount", "GetHistoryMaxCount", "SetHistoryMaxCount",
+    "GetGroupIndex", "GetSelected", "SetSelected", "SelectOpenFile", "SelectSaveFile",
+    "SelectDirectory", "ExtractFile", "Chr", "Ord", "InCabinet", "PushVar", "PopVar",
+    "DeleteStack", "CopyFile", "DBGetTableCount", "DBGetTable", "CreateObject", "DeleteObject",
+    "GetItem", "UniqueArray", "TrimArray", "GetImeOpened", "SetImeOpened", "Alert",
+    "GetCinemaProp", "SetCinemaProp",
+];
+
+pub const PROPS: [&str; 174] = [
+    "NONE", "NAME", "PARENT", "SOURCE", "LEFT", "TOP", "WIDTH", "HEIGHT", "ZOOMX", "COLOR",
+    "BORDERWIDTH", "BORDERCOLOR", "ALPHA", "PRIORITY", "OFFSETX", "OFFSETY", "FONTNAME",
+    "FONTHEIGHT", "FONTSTYLE", "LINESPACE", "FONTCOLOR", "FONTLINKCOLOR", "FONTBORDERCOLOR",
+    "FONTHOVERCOLOR", "FONTHOVERSTYLE", "HOVERCOLOR", "ANTIALIAS", "DELAY", "PAUSED", "VOLUME",
+    "REPEAT", "BALANCE", "ANGLE", "ONPLAYING", "ONNOTIFY", "ONMOUSEMOVE", "ONMOUSEOUT",
+    "ONLBTNDOWN", "ONLBTNUP", "ONRBTNDOWN", "ONRBTNUP", "ONWHEELDOWN", "ONWHEELUP",
+    "BRIGHTNESS", "ONPLAYEND", "INDEX", "COUNT", "ONLINK", "VISIBLE", "COLCOUNT", "ROWCOUNT",
+    "TEXT", "MARGINX", "MARGINY", "HALIGN", "BORDERSOURCETL", "BORDERSOURCETC",
+    "BORDERSOURCETR", "BORDERSOURCECL", "BORDERSOURCECC", "BORDERSOURCECR", "BORDERSOURCEBL",
+    "BORDERSOURCEBC", "BORDERSOURCEBR", "BORDERHALIGNT", "BORDERHALIGNC", "BORDERHALIGNB",
+    "BORDERVALIGNL", "BORDERVALIGNC", "BORDERVALIGNR", "SCROLLSOURCE", "CHECKSOURCE",
+    "AUTOSCRAP", "ONSELECT", "RCLICKSCRAP", "ONOPENING", "ONOPENED", "ONCLOSING", "ONCLOSED",
+    "CARETX", "CARETY", "IGNOREMOUSE", "TEXTPAUSED", "TEXTDELAY", "HOVERSOURCE",
+    "PRESSEDSOURCE", "GROUPINDEX", "ALLOWALLUP", "SELECTED", "CAPTUREMASK", "POWER",
+    "ORIGWIDTH", "ORIGHEIGHT", "APPEARX", "APPEARY", "PARTMOTION", "PARAM", "PARAM2",
+    "TOPINDEX", "READONLY", "CURSOR", "POSZOOMED", "ONPLAYSTART", "PARAM3", "ONMOUSEIN",
+    "ONMAPIN", "ONMAPOUT", "MAPSOURCE", "AMP", "WAVELEN", "SCROLLX", "SCROLLY", "FLIPH", "FLIPV",
+    "ONIDLE", "DISTANCEX", "DISTANCEY", "CLIPLEFT", "CLIPTOP", "CLIPWIDTH", "CLIPHEIGHT",
+    "DURATION", "THUMBSOURCE", "BUTTONSOURCE", "MIN", "MAX", "VALUE", "ORIENTATION",
+    "SMALLCHANGE", "LARGECHANGE", "MAPTEXT", "GLYPHWIDTH", "GLYPHHEIGHT", "ZOOMY",
+    "CLICKEDSOURCE", "ANIPAUSED", "ONHOLD", "ONRELEASE", "REVERSE", "PLAYING", "REWINDONLOAD",
+    "COMPOTYPE", "FONTSHADOWCOLOR", "FONTBORDER", "FONTSHADOW", "ONKEYDOWN", "ONKEYUP",
+    "ONKEYREPEAT", "HANDLEKEY", "ONFOCUSIN", "ONFOCUSOUT", "OVERLAY", "TAG", "CAPTURELINK",
+    "FONTHOVERBORDER", "FONTHOVERBORDERCOLOR", "FONTHOVERSHADOW", "FONTHOVERSHADOWCOLOR",
+    "BARSIZE", "MUTEONLOAD", "PLUSX", "PLUSY", "CARETHEIGHT", "REPEATPOS", "BLURSPAN",
+    "BLURDELAY", "FONTCHANGEABLED", "IMEMODE", "FLOATANGLE", "FLOATZOOMX", "FLOATZOOMY",
+    "CAPMASKLEVEL", "PADDINGLEFT", "PADDINGRIGHT",
+];
+
+pub fn func(n: u8) -> &'static str {
+    FUNCS.get(n as usize).copied().unwrap_or("?")
+}
+
+pub fn prop(n: u8) -> &'static str {
+    PROPS.get(n as usize).copied().unwrap_or("?")
+}
+
+/// The property number of a name ("PR_LEFT" or "LEFT").
+pub fn prop_number(name: &str) -> Option<u8> {
+    let n = name.strip_prefix("PR_").unwrap_or(name);
+    PROPS.iter().position(|p| p.eq_ignore_ascii_case(n)).map(|i| i as u8)
+}
+
+pub const COMMANDS: [&str; 64] = [
+    "If", "Elseif", "Else", "Label", "Jump", "Call", "Exit", "Wait", "BoxNew", "ImgNew",
+    "MesNew", "Timer", "Movie", "Flip", "Calc", "VarNew", "VarDel", "GetProp", "SetProp",
+    "ObjDel", "TextIns", "MovieStop", "ClrHist", "Cinema", "Caption", "Menu", "MenuClose",
+    "Comment", "TextClr", "CallHist", "Button", "While", "WhileInit", "WhileLoop", "Break",
+    "Continue", "ParticleNew", "FireNew", "GameSave", "GameLoad", "PCReset", "Reset", "Sound",
+    "EditNew", "MemoNew", "Terminate", "DoEvent", "ClrRead", "MapImgNew", "WaveNew", "TileNew",
+    "SliderNew", "ScrollbarNew", "GaugeNew", "CGCaption", "MediaPlay", "PrevMenuNew",
+    "PropMotion", "FormatHist", "SaveCabinet", "LoadCabinet", "IFDEF", "IFNDEF", "ENDIF",
+];
