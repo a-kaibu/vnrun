@@ -91,7 +91,6 @@ function studioApi(fs: GameFS) {
 // NW.js games that edit the RPG Maker core can call Node's require at the top level (an
 // RPG Maker MV game reads its language from lng.txt with fs). This require has the synchronous
 // fs calls (reads from the game, writes as saves) and path; other modules throw as in Node.
-// `process` stays undefined, so the core keeps its web storage.
 function nodeRequire(fs: GameFS) {
   const file = (p: string) => normalizePath(p);
   const encoding = (opt: unknown) =>
@@ -135,6 +134,22 @@ function nodeRequire(fs: GameFS) {
   };
 }
 
+// Plugins that see `require` take NW.js for granted and read process.mainModule.filename for
+// the game folder (Text2Frame). This `process` is a function, so the cores' NW.js check
+// (typeof process === "object") still fails and they keep their web storage.
+function nodeProcess() {
+  return Object.assign(function process() {}, {
+    mainModule: { filename: "index.html" },
+    platform: "win32",
+    env: {},
+    argv: [],
+    versions: {},
+    cwd: () => ".",
+    exit: () => undefined,
+    on: () => undefined,
+  });
+}
+
 export async function start({ fs, manifest, ui }: EngineContext): Promise<void> {
   const localStorage = storage(fs);
   const studio = studioApi(fs);
@@ -144,7 +159,7 @@ export async function start({ fs, manifest, ui }: EngineContext): Promise<void> 
       Object.defineProperty(win, "localStorage", { value: localStorage });
       // RPG Maker MZ refuses to start without IndexedDB and keeps its saves there (localforage,
       // keys named after the game id), so it stays the browser's own.
-      Object.assign(win, { studio_api: studio, require });
+      Object.assign(win, { studio_api: studio, require, process: nodeProcess() });
     },
   });
 
