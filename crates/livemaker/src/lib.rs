@@ -6,6 +6,7 @@ pub mod archive;
 pub mod compo;
 pub mod engine;
 pub mod gal;
+pub mod lcm;
 pub mod lsb;
 pub mod names;
 pub mod project;

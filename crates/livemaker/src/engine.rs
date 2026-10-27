@@ -669,7 +669,7 @@ impl Engine {
         };
         let o = &self.objs[i];
         match (p, o.kind) {
-            (PLAYING, lsb::SOUND | lsb::MOVIE) => {
+            (PLAYING, lsb::SOUND | lsb::MOVIE | lsb::CINEMA) => {
                 Value::Flag(o.playing && (o.flag(REPEAT) || self.now < o.t0 + o.dur))
             }
             (PLAYING, lsb::MES_NEW) => {
@@ -796,7 +796,24 @@ impl Engine {
                 o.props.insert(WIDTH, Value::Int(w));
                 o.props.insert(HEIGHT, Value::Int(h));
             }
-            lsb::SOUND | lsb::MOVIE | lsb::CINEMA | lsb::MES_NEW | lsb::TIMER => {}
+            lsb::CINEMA => {
+                let cinema = self.data(src).and_then(|b| crate::lcm::parse(&b));
+                if cinema.is_none() {
+                    eprintln!("livemaker: cinema {src}: missing or not read");
+                }
+                let dir = src.rfind('\\').map_or("", |n| &src[..n + 1]).to_string();
+                let now = self.now;
+                let o = &mut self.objs[i];
+                if let Some(c) = cinema {
+                    o.props.insert(WIDTH, Value::Int(c.width as i64));
+                    o.props.insert(HEIGHT, Value::Int(c.height as i64));
+                    o.dur = c.frames() as f64 * 1000.0 / crate::lcm::FPS;
+                    o.cinema = Some((Rc::new(c), dir));
+                }
+                o.t0 = now;
+                o.playing = true;
+            }
+            lsb::SOUND | lsb::MOVIE | lsb::MES_NEW | lsb::TIMER => {}
             _ => {
                 let img = self.image(src);
                 let o = &mut self.objs[i];
@@ -1121,7 +1138,47 @@ impl Engine {
                         put(&mut out, img, lx, y + t + my + k as i32 * line, iw, ih, a);
                     }
                 }
-                lsb::SOUND | lsb::MOVIE | lsb::TIMER | lsb::CINEMA => {}
+                lsb::CINEMA => {
+                    let Some((c, dir)) = self.objs[i].cinema.clone() else {
+                        continue;
+                    };
+                    let o = &self.objs[i];
+                    let mut frame = (self.now - o.t0).max(0.0) / 1000.0 * crate::lcm::FPS;
+                    let frames = c.frames().max(1) as f64;
+                    if o.flag(REPEAT) {
+                        frame %= frames;
+                    }
+                    for p in c.poses(frame) {
+                        let Some(img) = self.image(&format!("{dir}{}", p.picture)) else {
+                            continue;
+                        };
+                        let (cx, cy) = (x as f32 + p.at.0 as f32, y as f32 + p.at.1 as f32);
+                        let (l, t) = (cx - p.pivot.0 as f32, cy - p.pivot.1 as f32);
+                        let alpha = a * p.alpha as f32;
+                        if alpha <= 0.0 {
+                            continue;
+                        }
+                        out.push(Draw {
+                            src: [0, 0, img.w as i32, img.h as i32],
+                            dst: [l, t, l + img.w as f32, t + img.h as f32],
+                            image: img,
+                            place: Place {
+                                x: l,
+                                y: t,
+                                sx: p.scale.0 as f32,
+                                sy: p.scale.1 as f32,
+                                cx,
+                                cy,
+                                rot: (p.turn as f32).to_radians(),
+                                alpha,
+                                add: p.add,
+                                flip: (false, false),
+                                clip: [0.0, 0.0, sw, sh],
+                            },
+                        });
+                    }
+                }
+                lsb::SOUND | lsb::MOVIE | lsb::TIMER => {}
                 _ => {
                     let o = &self.objs[i];
                     if let Some(img) = o.img.clone() {
@@ -1430,7 +1487,7 @@ impl Engine {
                         }
                     }
                 }
-                lsb::SOUND | lsb::MOVIE
+                lsb::SOUND | lsb::MOVIE | lsb::CINEMA
                     if o.playing && !o.flag(REPEAT) && self.now >= o.t0 + o.dur =>
                 {
                     o.playing = false;

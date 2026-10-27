@@ -176,6 +176,8 @@ pub struct Obj {
     pub playing: bool,
     /// the cabinet holding it (put away, not drawn)
     pub cab: Option<String>,
+    /// a cinema surface: its animation and the folder its pictures are in
+    pub cinema: Option<(Rc<crate::lcm::Cinema>, String)>,
 }
 
 impl Obj {
@@ -198,6 +200,7 @@ impl Obj {
             dur: 0.0,
             playing: false,
             cab: None,
+            cinema: None,
         }
     }
 
