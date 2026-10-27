@@ -647,8 +647,15 @@ impl Engine {
         } else {
             (self.cfg("MOJI_MAX_X", 42), self.cfg("MOJI_MAX_Y", 4))
         };
-        for l in wrap(&s, cols.max(2) as usize) {
-            if self.page.len() >= rows.max(1) as usize {
+        // A line that does not fit starts a new page whole, not split across two.
+        let lines = wrap(&s, cols.max(2) as usize);
+        let rows = rows.max(1) as usize;
+        if self.page.len() + lines.len() > rows {
+            self.page.clear();
+            self.said = s.clone();
+        }
+        for l in lines {
+            if self.page.len() >= rows {
                 self.page.clear();
             }
             self.page.push(l);
