@@ -94,7 +94,7 @@ r1_tyrano	要再確認	NW.js のゲームが exe に埋め込まれている (pa
 dl_VJ01000810	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)
 dl_RJ01731048	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルとメニューまで。「Cannot find module ./js/libs/greenworks」は出るが続行する
 dl_RJ01604592	タイトル	416970b (IndexedDB) でタイトルまで
-dl_RJ01698597	NG	読み込み中の表示は抜けたが「process is not defined」(NW.js の Node API)
+dl_RJ01698597	本編	0df7c53 でタイトル→ニューゲーム→本編の文章 (名前入力の案内) まで (Chromium、タイトルまで約 240 秒)
 dl_RJ01730521	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
 dl_RJ01741863	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
 dl_RJ01642779	タイトル	RPGツクール。画面が拡大されない
