@@ -62,6 +62,20 @@ function storage(fs: GameFS): Storage {
   });
 }
 
+// Node's path, on the GameFS's forward-slash paths.
+const join = (...parts: string[]) => normalizePath(parts.join("/"));
+const nodePath = {
+  sep: "/",
+  join,
+  resolve: join,
+  dirname: (p: string) => join(p).split("/").slice(0, -1).join("/") || ".",
+  basename: (p: string, ext = "") => {
+    const base = join(p).split("/").pop() || "";
+    return ext && base.endsWith(ext) ? base.slice(0, -ext.length) : base;
+  },
+  extname: (p: string) => /\.[^./]*$/.exec(join(p).split("/").pop() || "")?.[0] ?? "",
+};
+
 // TyranoScript's Electron build (configSave=file) keeps its saves as files next to the exe,
 // through the `studio_api` its preload script exposes (fs-extra and an ipcRenderer that answers
 // getAppPath and getProcess). This one keeps them as save files named after the file.
@@ -75,12 +89,14 @@ function studioApi(fs: GameFS) {
   };
   return {
     fs: {
-      existsSync: (p: string) => !/\.sav$/i.test(p) || fs.saves.has(path(p)),
+      // Folders exist; of the files, only the saves (a .tpatch was applied by vnrun-prep).
+      existsSync: (p: string) => (/\.sav$/i.test(p) ? fs.saves.has(path(p)) : !/\.[^./\\]*$/.test(String(p))),
       mkdirSync: () => undefined,
       readFileSync: (p: string) => new TextDecoder().decode(fs.saves.get(path(p)) ?? new Uint8Array()),
       writeFileSync: (p: string, data: string) => fs.write(path(p), new TextEncoder().encode(String(data))),
       unlinkSync: (p: string) => fs.saves.has(path(p)) && fs.remove(path(p)),
     },
+    path: nodePath,
     ipcRenderer: {
       sendSync: (channel: string) =>
         channel === "getAppPath" ? process.__dirname : channel === "getProcess" ? process : undefined,
@@ -116,18 +132,6 @@ function nodeRequire(fs: GameFS) {
         end: (s = "") => nodeFs.writeFileSync(p, text + s),
       };
     },
-  };
-  const join = (...parts: string[]) => normalizePath(parts.join("/"));
-  const nodePath = {
-    sep: "/",
-    join,
-    resolve: join,
-    dirname: (p: string) => join(p).split("/").slice(0, -1).join("/") || ".",
-    basename: (p: string, ext = "") => {
-      const base = join(p).split("/").pop() || "";
-      return ext && base.endsWith(ext) ? base.slice(0, -ext.length) : base;
-    },
-    extname: (p: string) => /\.[^./]*$/.exec(join(p).split("/").pop() || "")?.[0] ?? "",
   };
   // fs-extra: TyranoScript checks for an update patch with it at startup.
   const modules: Record<string, unknown> = { fs: nodeFs, "fs-extra": nodeFs, path: nodePath };
