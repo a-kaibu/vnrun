@@ -3,7 +3,7 @@
 
 use std::fmt;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum Value {
     Int(i64),
     Float(f64),
@@ -144,7 +144,7 @@ impl fmt::Display for Value {
 }
 
 /// A variable: its type, its value, and its elements when it was made an array.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct Var {
     pub ty: u8,
     pub v: Value,

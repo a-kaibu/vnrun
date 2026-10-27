@@ -3,7 +3,8 @@
 //!     livemaker-run <game folder> <frames> <out prefix> [frame[:x:y] ...]
 //!
 //! Each `frame` is saved as `<out prefix><frame>.png`; with `:x:y`, there is also a click there
-//! on that frame (`:x:y:r` a right click, `:x:y:m` only moves the pointer there). The last frame
+//! on that frame (`:x:y:r` a right click, `:x:y:m` only moves the pointer there); `:u` and `:d`
+//! turn the wheel up or down and `:k13` presses a key (Windows key codes). The last frame
 //! is always saved. LIVEMAKER_FONT names a TrueType font for text, LIVEMAKER_TRACE=1 prints the
 //! commands (2: also the per-frame idle handlers).
 
@@ -11,7 +12,7 @@ use std::path::Path;
 
 use nexas::files::Disk;
 
-/// where and how the pointer acts: c click, r right click, m move
+/// where and how the pointer acts: c click, r right click, m move, u/d wheel, k key (code in x)
 type Pointer = (i32, i32, char);
 
 fn main() -> Result<(), String> {
@@ -28,7 +29,15 @@ fn main() -> Result<(), String> {
     for m in &args[4..] {
         let v: Vec<&str> = m.split(':').collect();
         let n = |s: &str| s.parse::<i64>().map_err(|_| format!("{m}: not a number"));
-        let click = if v.len() >= 3 {
+        let click = if v.len() == 2 {
+            let kind = v[1].chars().next().unwrap_or('k');
+            let code = if kind == 'k' {
+                n(&v[1][1..])? as i32
+            } else {
+                0
+            };
+            Some((code, 0, kind))
+        } else if v.len() >= 3 {
             let kind = v.get(3).and_then(|k| k.chars().next()).unwrap_or('c');
             Some((n(v[1])? as i32, n(v[2])? as i32, kind))
         } else {
@@ -55,10 +64,14 @@ fn main() -> Result<(), String> {
         }
         for (_, click) in marks.iter().filter(|m| m.0 == f) {
             if let Some((x, y, kind)) = click {
-                e.point(*x, *y);
                 match kind {
-                    'r' => e.cancel(),
-                    'm' => {}
+                    'u' | 'd' => e.wheel(*kind == 'u'),
+                    'k' => e.key(*x as i64),
+                    'r' => {
+                        e.point(*x, *y);
+                        e.cancel()
+                    }
+                    'm' => e.point(*x, *y),
                     _ => e.click(*x, *y),
                 }
             }

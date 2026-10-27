@@ -107,7 +107,11 @@ pub enum Cmd {
     MenuClose(Expr),
     Comment,
     TextClr(Expr),
-    CallHist(Expr),
+    CallHist {
+        target: Expr,
+        index: Expr,
+        count: Expr,
+    },
     While {
         cond: Expr,
         end: u32,
@@ -427,11 +431,15 @@ fn read_command(r: &mut Reader, v: u32, props: &[Vec<u8>]) -> Result<Command, St
         0x1c => Cmd::TextClr(r.expr()?),
         0x1d => {
             let target = r.expr()?;
-            r.expr()?;
-            r.expr()?;
+            let index = r.expr()?;
+            let count = r.expr()?;
             r.expr()?;
             opt(r, v > 0x6e)?;
-            Cmd::CallHist(target)
+            Cmd::CallHist {
+                target,
+                index,
+                count,
+            }
         }
         0x1f => Cmd::While {
             cond: r.expr()?,
@@ -671,7 +679,11 @@ impl fmt::Display for Cmd {
             Cmd::MovieStop { target, .. } => write!(f, "MovieStop {target}"),
             Cmd::MenuClose(e) => write!(f, "MenuClose {e}"),
             Cmd::TextClr(e) => write!(f, "TextClr {e}"),
-            Cmd::CallHist(e) => write!(f, "CallHist {e}"),
+            Cmd::CallHist {
+                target,
+                index,
+                count,
+            } => write!(f, "CallHist {target} from {index} count {count}"),
             Cmd::While { cond, end } => write!(f, "While {cond} end {end}"),
             Cmd::WhileInit(e) => write!(f, "WhileInit {e}"),
             Cmd::WhileLoop { calc, start } => write!(f, "WhileLoop {calc} start {start}"),

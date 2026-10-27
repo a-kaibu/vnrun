@@ -37,11 +37,17 @@ pub const INDEX: u8 = 45;
 pub const COUNT: u8 = 46;
 pub const VISIBLE: u8 = 48;
 pub const TEXT: u8 = 51;
+pub const ROWCOUNT: u8 = 50;
+pub const TOPINDEX: u8 = 98;
 pub const AUTOSCRAP: u8 = 72;
 pub const ONSELECT: u8 = 73;
+pub const RCLICKSCRAP: u8 = 74;
+pub const ONCLOSING: u8 = 77;
+pub const ONCLOSED: u8 = 78;
 pub const CARETX: u8 = 79;
 pub const CARETY: u8 = 80;
 pub const IGNOREMOUSE: u8 = 81;
+pub const ONRBTNDOWN: u8 = 39;
 pub const TEXTPAUSED: u8 = 82;
 pub const TEXTDELAY: u8 = 83;
 pub const HOVERSOURCE: u8 = 84;
@@ -139,6 +145,11 @@ pub struct Mes {
     pub text: String,
     pub image: Option<Rc<Image>>,
     pub dirty: bool,
+    /// its lines go to the backlog; the line being kept
+    pub hist: bool,
+    pub hist_y: Option<i32>,
+    /// lines begun since the page was cleared
+    pub row: i32,
 }
 
 pub struct Obj {
@@ -240,6 +251,7 @@ pub fn place(m: &mut Mes, fonts: &mut Fonts, c: char, size: u32, width: i32, lin
     if m.x + adv > width && m.x > m.indent {
         m.x = m.indent;
         m.y += line;
+        m.row += 1;
     }
     m.chars.push((c, m.x, m.y));
     m.x += adv;
@@ -250,6 +262,7 @@ pub fn place(m: &mut Mes, fonts: &mut Fonts, c: char, size: u32, width: i32, lin
 pub fn newline(m: &mut Mes, line: i32) {
     m.x = m.indent;
     m.y += line;
+    m.row += 1;
     m.text.push_str("\r\n");
 }
 
@@ -260,6 +273,23 @@ pub fn clear(m: &mut Mes) {
     m.indent = 0;
     m.text.clear();
     m.waiting = false;
+    m.dirty = true;
+    m.hist_y = None;
+    m.row = 0;
+}
+
+/// Moves the text up by whole lines until the line being written fits the box.
+pub fn scroll(m: &mut Mes, size: u32, height: i32, line: i32) {
+    if height <= 0 || line <= 0 || m.y + size as i32 <= height || m.y == 0 {
+        return;
+    }
+    let lines = (m.y + size as i32 - height + line - 1) / line;
+    let shift = (lines * line).min(m.y);
+    m.chars.retain(|c| c.2 >= shift);
+    for c in m.chars.iter_mut() {
+        c.2 -= shift;
+    }
+    m.y -= shift;
     m.dirty = true;
 }
 

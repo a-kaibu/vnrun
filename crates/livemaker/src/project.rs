@@ -75,7 +75,7 @@ impl Project {
 }
 
 /// One button of a preview menu.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct MenuItem {
     pub name: String,
     pub left: i32,

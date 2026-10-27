@@ -547,6 +547,8 @@ dependencies = [
  "image 0.25.10",
  "miniz_oxide 0.8.9",
  "nexas",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

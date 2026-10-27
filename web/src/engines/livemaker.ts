@@ -15,6 +15,7 @@ interface Game {
   click(x: number, y: number): void;
   cancel(): void;
   wheel(up: boolean): void;
+  key(code: number): void;
   point(x: number, y: number): void;
   draws(): Float32Array;
   texture(id: number): Uint8Array;
@@ -110,15 +111,23 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
     },
     { passive: false },
   );
+  // Windows virtual-key codes, which the charts read as @KeyClick[code].
+  const keyCodes: Record<string, number> = {
+    Enter: 13,
+    NumpadEnter: 13,
+    Escape: 27,
+    Space: 32,
+    ArrowLeft: 37,
+    ArrowUp: 38,
+    ArrowRight: 39,
+    ArrowDown: 40,
+  };
   canvas.addEventListener("keydown", (event) => {
-    if (event.code === "Escape") {
-      event.preventDefault();
-      game.cancel();
-      return;
-    }
-    if (event.code !== "Enter" && event.code !== "Space") return;
+    const code = keyCodes[event.code];
+    if (code === undefined) return;
     event.preventDefault();
-    game.click(-1, -1);
+    game.key(code);
+    if (code === 13) game.click(-1, -1);
   });
   ui.hide();
   canvas.focus();

@@ -122,9 +122,14 @@ impl Game {
         self.e.cancel();
     }
 
-    /// The wheel: down goes forward.
+    /// The mouse wheel (the charts see it as keys 257 up and 256 down).
     pub fn wheel(&mut self, up: bool) {
         self.e.wheel(up);
+    }
+
+    /// A key press, by its Windows virtual-key code.
+    pub fn key(&mut self, code: i32) {
+        self.e.key(code as i64);
     }
 
     /// The pictures to draw over black, bottom first, DRAW_FIELDS numbers each: picture,

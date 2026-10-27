@@ -21,7 +21,11 @@ use crate::text::Fonts;
 use crate::tpword::Glyph;
 use crate::value::{Value, Var};
 
+mod save;
+
 pub const FRAME_MS: f64 = 1000.0 / 60.0;
+/// Backlog lines kept.
+const HISTORY_LINES: usize = 2000;
 /// The parent name of the back screen.
 const BACK: &str = "\u{1}";
 
@@ -102,6 +106,19 @@ pub struct Engine {
     rclick: bool,
     lclick_now: bool,
     rclick_now: bool,
+    /// keys pressed (LiveMaker codes: 13 Enter, 27 Esc, 38 up, 40 down, 256/257 wheel)
+    keys: Vec<i64>,
+    keys_now: Vec<i64>,
+    /// the backlog: the lines shown in message boxes that keep it, and their height
+    history: Vec<String>,
+    hist_line: i32,
+    /// the game as the page being read began, for GameSave; a save read by GameLoad
+    checkpoint: Option<save::State>,
+    pending_load: Option<save::State>,
+    captions: HashMap<i64, String>,
+    captions_read: bool,
+    /// pictures kept by SaveScreen under "mem:"
+    mem: HashMap<String, Rc<Image>>,
     sounds: Vec<SoundEvent>,
     images: HashMap<String, Option<Rc<Image>>>,
     datas: HashMap<String, Option<Rc<Vec<u8>>>>,
@@ -112,6 +129,49 @@ pub struct Engine {
     ended: bool,
     log: u8,
     rand: u64,
+}
+
+/// The saves-store name of a game's "save:" file.
+fn save_file(name: &str) -> String {
+    format!("livemaker-{}", name.replace(['\\', '/', ':'], "_"))
+}
+
+/// A smaller copy of a picture (each pixel the average of the ones it covers).
+fn shrink(img: &Image, w: u32, h: u32) -> Image {
+    let mut out = Image::new(w, h);
+    for y in 0..h {
+        let (y0, y1) = (y * img.h / h, ((y + 1) * img.h / h).max(y * img.h / h + 1));
+        for x in 0..w {
+            let (x0, x1) = (x * img.w / w, ((x + 1) * img.w / w).max(x * img.w / w + 1));
+            let mut sum = [0u32; 4];
+            let mut n = 0;
+            for sy in y0..y1.min(img.h) {
+                for sx in x0..x1.min(img.w) {
+                    let p = ((sy * img.w + sx) * 4) as usize;
+                    for (acc, v) in sum.iter_mut().zip(&img.px[p..p + 4]) {
+                        *acc += *v as u32;
+                    }
+                    n += 1;
+                }
+            }
+            let o = ((y * w + x) * 4) as usize;
+            for (dst, acc) in out.px[o..o + 4].iter_mut().zip(sum) {
+                *dst = (acc / n.max(1)) as u8;
+            }
+        }
+    }
+    out
+}
+
+/// The lines of a menu on show: the first, and how many (ROWCOUNT, scrolled to TOPINDEX).
+fn menu_window(o: &Obj) -> (usize, usize) {
+    let n = o.items.len();
+    let rows = match o.int(ROWCOUNT) {
+        r if r > 0 => n.min(r as usize),
+        _ => n,
+    };
+    let first = (o.int(TOPINDEX).max(0) as usize).min(n - rows);
+    (first, rows)
 }
 
 fn split_list(s: &str) -> Vec<String> {
@@ -292,6 +352,15 @@ impl Engine {
             rclick: false,
             lclick_now: false,
             rclick_now: false,
+            keys: Vec::new(),
+            keys_now: Vec::new(),
+            history: Vec::new(),
+            hist_line: 22,
+            checkpoint: None,
+            pending_load: None,
+            captions: HashMap::new(),
+            captions_read: false,
+            mem: HashMap::new(),
             sounds: Vec::new(),
             images: HashMap::new(),
             datas: HashMap::new(),
@@ -355,9 +424,13 @@ impl Engine {
     }
 
     pub fn wheel(&mut self, up: bool) {
-        if !up {
-            self.click = true;
-        }
+        // The game's scripts read these as @KeyClick[257] and [256].
+        self.keys.push(if up { 257 } else { 256 });
+    }
+
+    /// A key press, by its Windows virtual-key code.
+    pub fn key(&mut self, code: i64) {
+        self.keys.push(code);
     }
 
     pub fn take_sounds(&mut self) -> Vec<SoundEvent> {
@@ -414,6 +487,18 @@ impl Engine {
         let k = key(path);
         if let Some(i) = self.images.get(&k) {
             return i.clone();
+        }
+        if let Some(k) = path.strip_prefix("mem:") {
+            return self.mem.get(&key(k)).cloned();
+        }
+        if let Some(name) = path.strip_prefix("save:") {
+            let img = self
+                .files
+                .read_save(&save_file(name))
+                .and_then(|b| Image::decode(&b).ok())
+                .map(Rc::new);
+            self.images.insert(k, img.clone());
+            return img;
         }
         let mut found = None;
         let tries = if file_ext(path).is_empty() {
@@ -598,6 +683,11 @@ impl Engine {
                 }
                 return;
             }
+            TEXT if self.objs[i].kind == lsb::MENU => {
+                self.objs[i].props.insert(p, v);
+                self.menu_lines(i);
+                return;
+            }
             PAUSED if self.objs[i].kind == lsb::TIMER => {
                 self.objs[i].playing = !v.truthy();
                 self.objs[i].t0 = self.now;
@@ -762,19 +852,7 @@ impl Engine {
                 o.playing = !o.flag(PAUSED);
             }
             lsb::MENU => {
-                let lines: Vec<MenuItem> = self.objs[i]
-                    .str(TEXT)
-                    .split("\r\n")
-                    .filter(|s| !s.is_empty())
-                    .map(|s| MenuItem {
-                        name: s.to_string(),
-                        ..MenuItem::default()
-                    })
-                    .collect();
-                let o = &mut self.objs[i];
-                o.disabled = vec![false; lines.len()];
-                o.items = lines;
-                self.menu_setup(i);
+                self.menu_lines(i);
                 let h = self.objs[i].str(75);
                 self.spawn(&h, Vec::new(), &name, None);
             }
@@ -960,6 +1038,7 @@ impl Engine {
                     ];
                     let srcs: Vec<String> = (55..=63).map(|p| o.str(p)).collect();
                     let (align, my) = (o.int(54), o.int(53) as i32);
+                    let (first, rows) = menu_window(o);
                     let (lines, hover) = (o.lines.clone(), o.hover);
                     if srcs.iter().all(|s| s.is_empty()) {
                         let bg = self.solid(0);
@@ -970,8 +1049,8 @@ impl Engine {
                             put(&mut out, img, c.0, c.1, c.2, c.3, a);
                         }
                     }
-                    for (k, pics) in lines.into_iter().enumerate() {
-                        let img = pics[(hover == Some(k)) as usize].clone();
+                    for (k, pics) in lines.into_iter().skip(first).take(rows).enumerate() {
+                        let img = pics[(hover == Some(first + k)) as usize].clone();
                         let lw = img.w as i32;
                         let lx = match align {
                             1 => x + (w - lw) / 2,
@@ -997,6 +1076,23 @@ impl Engine {
             }
         }
         out
+    }
+
+    /// A menu's lines from its TEXT.
+    fn menu_lines(&mut self, i: usize) {
+        let lines: Vec<MenuItem> = self.objs[i]
+            .str(TEXT)
+            .split("\r\n")
+            .filter(|s| !s.is_empty())
+            .map(|s| MenuItem {
+                name: s.to_string(),
+                ..MenuItem::default()
+            })
+            .collect();
+        let o = &mut self.objs[i];
+        o.disabled.resize(lines.len(), false);
+        o.items = lines;
+        self.menu_setup(i);
     }
 
     /// Sizes a menu from its border pictures and lines, and draws the lines.
@@ -1035,7 +1131,11 @@ impl Engine {
             lines.push([pic(&mut self.fonts, color), pic(&mut self.fonts, hover)]);
         }
         let w = l + r + tw + 2 * mx;
-        let h = t + b + names.len() as i32 * line - space + 2 * my;
+        let rows = match self.objs[i].int(ROWCOUNT) {
+            n if n > 0 => names.len().min(n as usize),
+            _ => names.len(),
+        };
+        let h = t + b + rows as i32 * line - space + 2 * my;
         let o = &mut self.objs[i];
         o.geom = [l + mx, t, r + mx, b, line];
         o.lines = lines;
@@ -1053,8 +1153,10 @@ impl Engine {
         if mx < x || mx >= x + o.int(WIDTH) as i32 || my < top || line <= 0 {
             return None;
         }
-        let n = ((my - top) / line) as usize;
-        (n < o.items.len() && o.disabled.get(n) != Some(&true)).then_some(n)
+        let (first, rows) = menu_window(o);
+        let k = ((my - top) / line) as usize;
+        let n = first + k;
+        (k < rows && n < o.items.len() && o.disabled.get(n) != Some(&true)).then_some(n)
     }
 
     /// The text picture of a caption, button, edit box or menu.
@@ -1206,6 +1308,36 @@ impl Engine {
         true
     }
 
+    fn history_height(&self) -> i64 {
+        self.history.len() as i64 * self.hist_line as i64
+    }
+
+    /// Shows the backlog in a message box: `count` pixels of it from `from` (pixels from
+    /// the oldest line).
+    fn call_hist(&mut self, name: &str, from: i64, count: Option<i64>) {
+        let Some(i) = self.find(name).filter(|&i| self.objs[i].mes.is_some()) else {
+            return;
+        };
+        let o = &self.objs[i];
+        let (size, width) = (mes_size(o), o.int(WIDTH) as i32);
+        let line = size as i32 + o.int(LINESPACE) as i32;
+        let count = count.unwrap_or(o.int(HEIGHT)).max(0);
+        let first = (from.max(0) / self.hist_line.max(1) as i64) as usize;
+        let rows = (count / line.max(1) as i64).max(1) as usize;
+        let mut m = self.objs[i].mes.take().unwrap();
+        clear(&mut m);
+        m.queue.clear();
+        for (k, l) in self.history.iter().skip(first).take(rows).enumerate() {
+            if k > 0 {
+                newline(&mut m, line);
+            }
+            for ch in l.chars() {
+                place(&mut m, &mut self.fonts, ch, size, width, line);
+            }
+        }
+        self.objs[i].mes = Some(m);
+    }
+
     /// Runs one frame (the scripts count on 60 a second).
     pub fn frame(&mut self) -> Result<(), String> {
         if self.ended {
@@ -1214,8 +1346,12 @@ impl Engine {
         self.now += FRAME_MS;
         self.lclick_now = false;
         self.rclick_now = std::mem::take(&mut self.rclick);
+        self.keys_now = std::mem::take(&mut self.keys);
         if std::mem::take(&mut self.click) && !self.hit() {
             self.lclick_now = true;
+        }
+        if self.rclick_now {
+            self.right_click();
         }
         self.hover();
         self.animate();
@@ -1270,6 +1406,10 @@ impl Engine {
             }
             t += 1;
         }
+        if let Some(st) = self.pending_load.take() {
+            self.restore(st);
+            return Ok(());
+        }
         let main_done = self.threads.iter().any(|t| t.main && t.done);
         self.threads.retain(|t| !t.done);
         if main_done {
@@ -1322,7 +1462,7 @@ impl Engine {
                         let scrap = o.flag(AUTOSCRAP);
                         self.spawn_chain(&chain, params, &name);
                         if scrap {
-                            self.delete(&name);
+                            self.close_menu(&name);
                         }
                         return true;
                     }
@@ -1339,6 +1479,51 @@ impl Engine {
             }
         }
         false
+    }
+
+    /// A right click goes to the front thing that takes the mouse: a menu that closes on
+    /// it, or one with an ONRBTNDOWN handler under the pointer.
+    fn right_click(&mut self) {
+        let (mx, my) = self.mouse;
+        for (i, x, y, _) in self.order().into_iter().rev() {
+            let o = &self.objs[i];
+            if o.int(IGNOREMOUSE) == 1 {
+                continue;
+            }
+            let name = o.name().to_string();
+            if matches!(o.kind, lsb::MENU | lsb::PREV_MENU_NEW) && o.flag(RCLICKSCRAP) {
+                self.close_menu(&name);
+                self.rclick_now = false;
+                return;
+            }
+            let (w, h) = (o.int(WIDTH) as i32, o.int(HEIGHT) as i32);
+            if mx < x || my < y || mx >= x + w || my >= y + h {
+                continue;
+            }
+            let handler = o.str(ONRBTNDOWN);
+            if !handler.is_empty() {
+                // handled: the charts do not see it as @RClick
+                self.spawn(&handler, Vec::new(), &name, None);
+                self.rclick_now = false;
+            }
+            return;
+        }
+    }
+
+    /// Closes a menu: it goes, and its ONCLOSING and ONCLOSED handlers run.
+    fn close_menu(&mut self, name: &str) {
+        let Some(i) = self.find(name) else { return };
+        let o = &self.objs[i];
+        let chain = [o.str(ONCLOSING), o.str(ONCLOSED)];
+        self.delete(name);
+        let mut th = Thread::default();
+        th.then.extend(
+            chain
+                .into_iter()
+                .filter(|h| !h.is_empty())
+                .map(|h| (h, Vec::new(), name.to_string())),
+        );
+        self.threads.push(th);
     }
 
     /// Where the buttons of a preview menu at (x, y) are: left, top, right, bottom.
@@ -1437,6 +1622,7 @@ impl Engine {
             if self.objs[i].kind != lsb::MES_NEW || self.objs[i].cab.is_some() {
                 continue;
             }
+            self.checkpoint(i);
             let o = &self.objs[i];
             let m = o.mes.as_ref().unwrap();
             if o.flag(TEXTPAUSED) || m.waiting || m.queue.is_empty() {
@@ -1444,7 +1630,7 @@ impl Engine {
             }
             let name = o.name().to_string();
             let delay = (o.int(TEXTDELAY) as f64).min(50.0);
-            let width = o.int(WIDTH) as i32;
+            let (width, height) = (o.int(WIDTH) as i32, o.int(HEIGHT) as i32);
             let size = mes_size(o);
             let line = size as i32 + o.int(LINESPACE) as i32;
             let (on_char, on_end, on_event) = (o.str(ONPLAYING), o.str(ONPLAYEND), o.str(ONNOTIFY));
@@ -1464,6 +1650,18 @@ impl Engine {
                                 m.acc -= delay;
                             }
                             place(&mut m, &mut self.fonts, ch, size, width, line);
+                            scroll(&mut m, size, height, line);
+                            if m.hist {
+                                if m.hist_y != Some(m.row) {
+                                    m.hist_y = Some(m.row);
+                                    self.history.push(String::new());
+                                    if self.history.len() > HISTORY_LINES {
+                                        self.history.remove(0);
+                                    }
+                                }
+                                self.history.last_mut().unwrap().push(ch);
+                                self.hist_line = line;
+                            }
                             chars += 1;
                         }
                         Glyph::Var { name: v, .. } => {
@@ -1600,6 +1798,10 @@ impl Engine {
         let Some(f) = th.frames.pop() else { return };
         if !f.result_var.is_empty() && !th.frames.is_empty() {
             let target = f.result_var.clone();
+            if let Some(arr) = f.locals.get("@Result").and_then(|v| v.arr.clone()) {
+                self.set_array(th, &target, arr);
+                return;
+            }
             if let Some(open) = target.find('[') {
                 let name = &target[..open];
                 let idx = target[open + 1..].trim_end_matches(']');
@@ -1860,7 +2062,11 @@ impl Engine {
                 self.delete(&n);
             }
             Cmd::TextIns {
-                text, target, wait, ..
+                text,
+                target,
+                wait,
+                hist,
+                ..
             } => {
                 let n = self.eval(th, target).to_string();
                 let Some(i) = self.find(&n).filter(|&i| self.objs[i].mes.is_some()) else {
@@ -1873,8 +2079,10 @@ impl Engine {
                     if self.log > 0 {
                         eprintln!("  text {}", text.plain().replace('\n', " / "));
                     }
+                    let keep = hist.0.is_empty() || self.cond(th, hist);
                     let o = &mut self.objs[i];
                     let m = o.mes.as_mut().unwrap();
+                    m.hist = keep;
                     m.queue.extend(text.body.iter().cloned());
                     let h = o.str(ONPLAYSTART);
                     self.spawn(&h, vec![Value::Str("0".into())], &n, None);
@@ -2011,13 +2219,34 @@ impl Engine {
                     }
                 }
             }
-            Cmd::ClrHist
-            | Cmd::MenuClose(_)
-            | Cmd::CallHist(_)
-            | Cmd::GameSave { .. }
-            | Cmd::GameLoad(_)
-            | Cmd::ClrRead
-            | Cmd::FormatHist => {}
+            Cmd::ClrHist => self.history.clear(),
+            Cmd::CallHist {
+                target,
+                index,
+                count,
+            } => {
+                let n = self.eval(th, target).to_string();
+                let from = self.eval(th, index).int();
+                let count = (!count.0.is_empty()).then(|| self.eval(th, count).int());
+                self.call_hist(&n, from, count);
+            }
+            Cmd::GameSave { no, caption } => {
+                let no = self.eval(th, no).int();
+                let caption = self.eval(th, caption).to_string();
+                self.game_save(no, caption);
+            }
+            Cmd::GameLoad(e) => {
+                let no = self.eval(th, e).int();
+                self.game_load(no);
+                if self.pending_load.is_some() {
+                    return Go::Yield;
+                }
+            }
+            Cmd::MenuClose(e) => {
+                let name = self.eval(th, e).to_string();
+                self.close_menu(&name);
+            }
+            Cmd::ClrRead | Cmd::FormatHist => {}
         }
         Go::Next
     }
@@ -2182,6 +2411,16 @@ impl Engine {
         th: &'a mut Thread,
         name: &str,
     ) -> &'a mut Var {
+        if name == "@Result" && !th.frames.is_empty() {
+            // a chart's result made an array (SetArray(@Result, n))
+            return th
+                .frames
+                .last_mut()
+                .unwrap()
+                .locals
+                .entry(name.to_string())
+                .or_insert_with(|| Var::new(0, Value::default()));
+        }
         if let Some(f) = th
             .frames
             .iter_mut()
@@ -2211,9 +2450,11 @@ impl Engine {
             "@MouseX" => Value::Int(self.mouse.0 as i64),
             "@MouseY" => Value::Int(self.mouse.1 as i64),
             "@ActiveCompo" => self.sys.get(name).cloned().unwrap_or_default(),
-            "@HistoryCount" => Value::Int(0),
+            "@HistoryCount" => Value::Int(self.history_height()),
             "@TickCount" => Value::Int(self.now as i64),
             "@KeyClick" | "@KeyPush" => Value::Flag(false),
+            "@WheelUp" => Value::Flag(self.keys_now.contains(&257)),
+            "@WheelDown" => Value::Flag(self.keys_now.contains(&256)),
             "@Year" => Value::Int(2026),
             "@Month" | "@Day" => Value::Int(1),
             "@Hour" | "@Min" | "@Sec" => Value::Int(0),
@@ -2229,12 +2470,10 @@ impl Engine {
                     .and_then(|f| f.params.get(i.max(0) as usize).cloned())
                     .unwrap_or_default();
             }
-            "@KeyClick" => {
+            "@KeyClick" | "@KeyRepeat" | "@KeyPush" => {
                 let k = idx.first().copied().unwrap_or(0);
-                let _ = k;
-                return Value::Flag(false);
+                return Value::Flag(self.keys_now.contains(&k));
             }
-            "@KeyPush" => return Value::Flag(false),
             _ => {}
         }
         match self.var_ref(th, name) {
@@ -2567,7 +2806,45 @@ impl Engine {
                     0
                 })
             }
-            "GetSaveCaption" | "ListSaveCaption" => Value::Str(String::new()),
+            "AssignTemp" => {
+                let v = self.var(th, &s(0));
+                self.sys.insert("@Temp".into(), v);
+                Value::Flag(true)
+            }
+            "GetSaveCaption" => Value::Str(self.captions().get(&n(0)).cloned().unwrap_or_default()),
+            "ListSaveCaption" => Value::Str(String::new()),
+            "SaveScreen" => {
+                let shot = self.render();
+                let (w, h) = (n(1), n(2));
+                let shot = if w > 0 && h > 0 {
+                    shrink(&shot, w as u32, h as u32)
+                } else {
+                    shot
+                };
+                if let Some(k) = s(0).strip_prefix("mem:") {
+                    self.mem.insert(key(k), Rc::new(shot));
+                }
+                Value::Flag(true)
+            }
+            "CopyFile" => {
+                let (from, to) = (s(0), s(1));
+                let img = from
+                    .strip_prefix("mem:")
+                    .and_then(|k| self.mem.get(&key(k)).cloned());
+                if let (Some(img), Some(to_name)) = (img, to.strip_prefix("save:")) {
+                    let mut png = Vec::new();
+                    let enc = image::codecs::png::PngEncoder::new(&mut png);
+                    use image::ImageEncoder;
+                    if enc
+                        .write_image(&img.px, img.w, img.h, image::ExtendedColorType::Rgba8)
+                        .is_ok()
+                    {
+                        self.files.write_save(&save_file(to_name), &png);
+                        self.images.remove(&key(&to));
+                    }
+                }
+                Value::Flag(true)
+            }
             "ArrayToString" => {
                 let a = self.array(th, &Self::param_name(args.first(), refs));
                 let d = if v.len() > 1 { s(1) } else { "\r\n".into() };
@@ -2760,6 +3037,8 @@ impl Engine {
                 Value::Flag(c.is_some_and(|c| s(0).contains(c)))
             }
             "StringOfChar" => Value::Str(s(0).repeat(n(1).max(0) as usize)),
+            // a string cut inside a two-byte character loses the half
+            "FixStr" => Value::Str(s(0).trim_end_matches('\u{fffd}').to_string()),
             "StringReplace" => Value::Str(s(0).replace(&s(1), &s(2))),
             "HanToZen" => Value::Str(s(0).chars().map(nexas::sjis::to_zen).collect()),
             "ZenToHan" => Value::Str(s(0).chars().map(nexas::sjis::to_han).collect()),
@@ -2805,7 +3084,12 @@ impl Engine {
                 Value::Int(parsed.unwrap_or(n(1)))
             }
             "StrToFloatDef" => Value::Float(s(0).trim().parse::<f64>().unwrap_or(arg(1).float())),
-            "GetHistoryCount" | "GetHistoryMaxCount" => Value::Int(0),
+            "GetHistoryCount" => Value::Int(self.history_height()),
+            "GetHistoryMaxCount" => Value::Int((HISTORY_LINES as i32 * self.hist_line) as i64),
+            "ClrHist" => {
+                self.history.clear();
+                Value::Flag(true)
+            }
             "Chr" => {
                 let c = n(0) as u32;
                 let b = if c > 0xff {
@@ -2824,7 +3108,7 @@ impl Engine {
                     _ => b[0] as i64,
                 })
             }
-            "SetSelected" | "SetCheck" | "SetHistoryMaxCount" | "ClrHist" => Value::Flag(true),
+            "SetSelected" | "SetCheck" | "SetHistoryMaxCount" => Value::Flag(true),
             "GetItem" if self.find(&s(0)).is_some() => Value::Str(
                 self.menu_index(&s(0), &Value::Int(n(1)))
                     .map_or(String::new(), |(i, k)| self.objs[i].items[k].name.clone()),

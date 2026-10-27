@@ -14,7 +14,7 @@ pub struct Style {
     pub ruby: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Glyph {
     Char {
         ch: char,
