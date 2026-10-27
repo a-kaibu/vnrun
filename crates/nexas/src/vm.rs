@@ -648,7 +648,8 @@ impl Thread {
                 };
                 set_a(self, v);
             }
-            0x1b | 0x1d | 0x2c => {}
+            // 0x29: once after a label in ひなたテラス (2011); nothing seen comes of it
+            0x1b | 0x1d | 0x29 | 0x2c => {}
             // (the label comes as "A = n; label n")
             0x1c if self.label_ends
                 && self

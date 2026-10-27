@@ -187,6 +187,8 @@ struct Obj {
     flip: (bool, bool),
     /// the part of the screen it shows: left, top, right, bottom
     clip: Option<[Tween; 4]>,
+    /// where it was made (2011 ひなたテラス moves are offsets from here)
+    origin: (f32, f32),
 }
 
 impl Obj {
@@ -206,6 +208,7 @@ impl Obj {
             pivot: None,
             flip: (false, false),
             clip: None,
+            origin: (x as f32, y as f32),
         }
     }
     fn moving(&self, now: u64) -> bool {
@@ -1315,11 +1318,13 @@ impl Host for Engine {
             0x144 | 0x148 | 0x14a | 0x159 => {
                 let (n, t) = (a(0), a(1));
                 let wait = if id == 0x14a { a(4) } else { a(5) };
+                let relative = self.build.relative_moves;
                 if let Some(o) = self.obj(n) {
                     match id {
                         0x144 => {
-                            o.x.go(a(2) as f32, t, now);
-                            o.y.go(a(3) as f32, t, now);
+                            let (ox, oy) = if relative { o.origin } else { (0.0, 0.0) };
+                            o.x.go(ox + a(2) as f32, t, now);
+                            o.y.go(oy + a(3) as f32, t, now);
                         }
                         0x148 => {
                             o.sx.go(a(2) as f32 / 100.0, t, now);

@@ -17,6 +17,8 @@ pub struct Build {
     old_ops: bool,
     /// 2007: the VM lacks two of the bitwise ops, so its ops from 0x13 on are two lower than 2010's.
     pub early: bool,
+    /// ひなたテラス (2011): a move (0x144) goes to an offset from where the object was made
+    pub relative_moves: bool,
 }
 
 pub const BUILDS: &[Build] = &[
@@ -25,30 +27,35 @@ pub const BUILDS: &[Build] = &[
         rows: B2015,
         old_ops: false,
         early: false,
+        relative_moves: false,
     },
     Build {
         name: "2012 (キスベル)",
         rows: B2012,
         old_ops: true,
         early: false,
+        relative_moves: false,
     },
     Build {
         name: "2013 (キスアト)",
         rows: B2013,
         old_ops: true,
         early: false,
+        relative_moves: false,
     },
     Build {
         name: "2011 (ホチキス)",
         rows: B2011,
         old_ops: true,
         early: false,
+        relative_moves: false,
     },
     Build {
         name: "2019 (アイキス)",
         rows: B2019,
         old_ops: false,
         early: false,
+        relative_moves: false,
     },
 ];
 
@@ -85,6 +92,7 @@ static B2010_BUILD: Build = Build {
     ],
     old_ops: true,
     early: false,
+    relative_moves: false,
 };
 
 // 姫さまっ、お手やわらかに！ (2007): matched to the 2009 table by handler body and by what the
@@ -118,6 +126,7 @@ static B2007_BUILD: Build = Build {
     ],
     old_ops: true,
     early: true,
+    relative_moves: false,
 };
 
 // さかあがりハリケーン (2008): the 2009 table's cases matched by handler body; most ids are 4
@@ -150,6 +159,7 @@ static B2008_BUILD: Build = Build {
     ],
     old_ops: true,
     early: false,
+    relative_moves: false,
 };
 
 // キュアフル！ (2009): the cases of the 2010 table matched by handler body (nxbest.py).
@@ -186,6 +196,16 @@ static B2009_BUILD: Build = Build {
     ],
     old_ops: true,
     early: false,
+    relative_moves: false,
+};
+
+// ひなたテラス (2011): the 2010 numbering in the newer file layout, with relative moves.
+static B2011H_BUILD: Build = Build {
+    name: "2011 (ひなたテラス)",
+    rows: B2010_BUILD.rows,
+    old_ops: true,
+    early: false,
+    relative_moves: true,
 };
 
 impl Build {
@@ -226,14 +246,17 @@ impl Build {
 
     /// The build whose argument counts fit the calls of `script` best.
     pub fn detect(script: &Script) -> &'static Build {
-        if script.legacy
-            && script
-                .main
-                .code
-                .iter()
-                .any(|i| i.op == 7 && i.arg == (10 << 16 | 0x39))
+        if script
+            .main
+            .code
+            .iter()
+            .any(|i| i.op == 7 && i.arg == (10 << 16 | 0x39))
         {
-            return &B2010_BUILD;
+            return if script.legacy {
+                &B2010_BUILD
+            } else {
+                &B2011H_BUILD
+            };
         }
         if script.legacy
             && script
@@ -290,7 +313,7 @@ mod tests {
     use crate::script::Ins;
 
     #[test]
-    fn identifies_early_scene_calls_only_in_legacy_scripts() {
+    fn identifies_the_2010_build_by_its_scene_call() {
         let mut script = Script::default();
         script.legacy = true;
         script.main.code.push(Ins {
@@ -304,7 +327,7 @@ mod tests {
         assert_eq!(build.canonical(0x116), 0x138);
         assert_eq!(build.canonical(0x121), 0x144);
         assert_eq!(build.canonical(0x122), 0xffff);
-        script.legacy = false;
+        script.main.code.clear();
         assert_ne!(Build::detect(&script).name, B2010_BUILD.name);
     }
 
