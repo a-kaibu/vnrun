@@ -487,10 +487,17 @@ fn match_pat(
                 caps[n] = s[at..e].iter().collect();
                 match_pat(rest, s, e, caps, k)
             });
-            if !r {
-                caps.truncate(n);
+            if r {
+                return true;
             }
-            r
+            // a group may be left out ("&ID_START&(%n)" matches "ID_START")
+            caps.truncate(n + 1);
+            caps[n].clear();
+            if match_pat(rest, s, at, caps, k) {
+                return true;
+            }
+            caps.truncate(n);
+            false
         }
     }
 }
@@ -683,6 +690,12 @@ impl Engine {
                     // a data table
                     None if name == "GetLength" => match &v {
                         Value::Struct(_, m) => int(m.len() as i32),
+                        _ => ok(),
+                    },
+                    None if name == "GetTagName" => match &v {
+                        Value::Struct(_, m) => Ok(Done::Val(s(&m
+                            .get(ai(args, 0, 0).max(0) as usize)
+                            .map_or(String::new(), |e| e.0.to_string())))),
                         _ => ok(),
                     },
                     None => Err(format!("{}::{name}: no such function", v.type_name())),
@@ -1114,7 +1127,7 @@ impl Engine {
     fn input_method(&mut self, name: &str, args: &[Var]) -> Option<Result<Done, String>> {
         Some(match name {
             "LoadInputFilter" | "OpenFilter" | "CloseFilter" | "DeleteInputFilter"
-            | "FlushInputQueue" => ok(),
+            | "FlushInputQueue" | "AddFilter" | "RemoveFilter" => ok(),
             "FlushJoyButtonPushed" => {
                 let k = ai(args, 1, -1);
                 if k < 0 {
