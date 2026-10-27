@@ -1,0 +1,15 @@
+[package]
+name = "tmrhiro-web"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "The Tmr-Hiro engine for the browser: wasm-bindgen exports for web/src/engines/tmrhiro.ts"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+tmrhiro = { path = "../tmrhiro" }
+nexas = { path = "../nexas" }
+wasm-bindgen = "=0.2.129"
+js-sys = "0.3"

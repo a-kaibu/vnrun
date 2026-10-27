@@ -1,0 +1,11 @@
+[package]
+name = "tmrhiro"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "A Tmr-Hiro ADV System engine for the browser: reads .pac archives, GRD images and .srp scripts and runs them"
+
+[dependencies]
+nexas = { path = "../nexas" }
+fontdue = "0.9"
+image = { version = "0.25", default-features = false, features = ["png"] }

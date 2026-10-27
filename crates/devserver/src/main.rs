@@ -173,6 +173,8 @@ fn detect(game: &Path) -> Option<String> {
         Some("bgi".into())
     } else if has("ysbin.ypf") || has("ysbin") || has("yscfg.dat") {
         Some("yuris".into())
+    } else if has("srp.pac") {
+        Some("tmrhiro".into())
     } else if has("script.pac") {
         Some("nexas".into())
     } else if has("data.pac") {
