@@ -21,6 +21,8 @@ use nexas::gfx::{Draw, Image, Place};
 use super::{mbl, prs, wady};
 use crate::engine::Sound;
 
+mod save;
+
 const MS_PER_FRAME: u64 = 16;
 
 /// (fade step out of 256, ms a step, ms a step of mode 17) for `!S016` 0..=16
@@ -111,6 +113,10 @@ struct Scene {
     bg: Option<Rc<Image>>,
     /// how far a background taller than the screen is moved up
     bg_y: f32,
+    /// what the scene was made from, for saves
+    bg_name: String,
+    spr_name: String,
+    ovr_name: String,
     sprites: Vec<(Rc<Image>, f32, f32)>,
     ovr: Option<Rc<Image>>,
 }
@@ -130,6 +136,7 @@ enum Wait {
     Trans,
     Choice,
     Map,
+    Menu,
 }
 
 struct Choice {
@@ -158,6 +165,16 @@ pub struct Engine {
     wipe: Option<String>,
     shake: Option<(i32, i32, u64, u64)>,
     voice_end: u64,
+    /// the music playing (0: none)
+    bgm: i32,
+    /// the last `*mark`: script, line, and the calls under it
+    mark: Option<(String, usize, Vec<(String, usize)>)>,
+    /// the chapter (`*title`) and the first text of the page, shown with saves
+    chapter: String,
+    said: String,
+    menu: Option<save::Menu>,
+    /// the save list's lines while the save screen is open
+    slots: Vec<String>,
     /// a background moving: from, to, start, ms
     pan: Option<(f32, f32, u64, u64)>,
     window: bool,
@@ -237,6 +254,12 @@ impl Engine {
             wipe: None,
             shake: None,
             voice_end: 0,
+            bgm: 0,
+            mark: None,
+            chapter: String::new(),
+            said: String::new(),
+            menu: None,
+            slots: Vec::new(),
             pan: None,
             window: false,
             novel: false,
@@ -412,6 +435,7 @@ impl Engine {
     pub fn click(&mut self, x: i32, y: i32) {
         self.pointer = (x, y);
         match self.wait {
+            Wait::Menu => self.menu_click(x, y),
             Wait::Click => {
                 self.wait = Wait::None;
                 if !self.novel {
@@ -448,9 +472,15 @@ impl Engine {
         }
     }
 
+    /// A right click: the save screen during the story, closed again by another.
     pub fn cancel(&mut self) {
-        if self.wait == Wait::Click {
-            self.window = !self.window;
+        match self.wait {
+            Wait::Menu => self.close_menu(),
+            Wait::Click | Wait::Choice => {
+                self.slots.clear();
+                self.open_menu(true);
+            }
+            _ => {}
         }
     }
 
@@ -609,6 +639,9 @@ impl Engine {
             }
         }
         self.window = true;
+        if self.page.is_empty() {
+            self.said = s.clone();
+        }
         let (cols, rows) = if self.novel {
             (self.cfg("MOJI_MAX2_X", 52), self.cfg("MOJI_MAX2_Y", 12))
         } else {
@@ -638,56 +671,23 @@ impl Engine {
         match name.as_str() {
             "gra" | "grb" | "bg" => {
                 let pic = a[0].to_uppercase();
-                if pic.starts_with('S') && pic.len() == 4 {
-                    let level = |c: char| (c.to_digit(17).unwrap_or(0) * 16).min(255) as u8;
-                    let c: Vec<u8> = pic[1..].chars().map(level).collect();
-                    let mut img = Image::new(self.screen.0, self.screen.1);
-                    img.fill([c[0], c[1], c[2], 255]);
-                    self.next.bg = Some(Rc::new(img));
-                    self.next.sprites.clear();
-                } else if pic.starts_with('B') {
-                    if let Some(img) = self.image(&pic) {
-                        self.next.sprites = vec![(img, 0.0, 0.0)];
-                    }
-                } else if let Some(img) = self.image(&pic) {
-                    if img.w > self.screen.0 || self.shown.bg.is_none() {
-                        self.screen = (self.screen.0.max(800), self.screen.1.max(600));
-                    }
-                    self.next.bg = Some(img);
-                    self.next.bg_y = 0.0;
-                    self.next.sprites.clear();
-                } else if self.log {
-                    eprintln!("marble: no picture {pic}");
+                if pic.starts_with('B') {
+                    self.set_sprites(&pic);
+                } else {
+                    self.set_bg(&pic);
                 }
                 self.show(mode(1));
             }
             "spr" => {
-                let set = a[0].trim_start_matches('#').to_uppercase();
-                let parts = self
-                    .sprset
-                    .get(&set)
-                    .cloned()
-                    .unwrap_or_else(|| vec![(set.clone(), 0, 0)]);
-                let mut sprites = Vec::new();
-                for (pic, x, y) in parts {
-                    if let Some(img) = self.image(&pic) {
-                        sprites.push((img, x as f32, y as f32));
-                    }
-                }
-                self.next.sprites = sprites;
+                self.set_sprites(a[0]);
                 self.show(mode(1));
             }
             "clrb" => {
-                self.next.sprites.clear();
+                self.set_sprites("");
                 self.show(mode(0));
             }
             "ovr" => {
-                let pic = a[0].to_uppercase();
-                self.next.ovr = if pic == "OFF" {
-                    None
-                } else {
-                    self.image(&pic).map(|i| Rc::new(side_mask(&i)))
-                };
+                self.set_ovr(a[0]);
                 self.show(mode(1));
             }
             "wipeset" => self.wipe = Some(a[0].to_uppercase()),
@@ -705,9 +705,8 @@ impl Engine {
                     self.pan = Some((from, to, self.now, ms));
                     self.wait = Wait::Until(self.now + ms);
                 } else {
-                    self.next.bg = Some(img);
+                    self.set_bg(a[0]);
                     self.next.bg_y = to;
-                    self.next.sprites.clear();
                     self.show(mode(3));
                 }
             }
@@ -836,8 +835,21 @@ impl Engine {
                 self.page.clear();
             }
             "exitgame" | "exit" => self.ended = true,
-            "mark" | "break" | "title" | "mode" | "setname" | "load" | "save" | "fix"
-            | "special" | "rec" | "vend" | "backto" | "string" | "setname2" => {}
+            "mark" => {
+                let stack = self
+                    .stack
+                    .iter()
+                    .map(|(s, pc)| (s.name.clone(), *pc))
+                    .collect();
+                self.mark = Some((self.script.name.clone(), self.pc - 1, stack));
+            }
+            "title" => self.chapter = self.subst(args),
+            "load" => {
+                self.slots.clear();
+                self.open_menu(false);
+            }
+            "break" | "mode" | "setname" | "save" | "fix" | "special" | "rec" | "vend"
+            | "backto" | "string" | "setname2" => {}
             _ => {
                 if self.log {
                     eprintln!("marble: unknown command {cmd}");
@@ -881,7 +893,72 @@ impl Engine {
         self.wait = Wait::Trans;
     }
 
-    fn music(&mut self, n: i32) {
+    /// The background of the next scene: a picture, or S and three digits (0..9, A..G) for a
+    /// colour. The characters go.
+    pub(super) fn set_bg(&mut self, pic: &str) {
+        let pic = pic.to_uppercase();
+        let img = if pic.starts_with('S') && pic.len() == 4 {
+            let level = |c: char| (c.to_digit(17).unwrap_or(0) * 16).min(255) as u8;
+            let c: Vec<u8> = pic[1..].chars().map(level).collect();
+            let mut img = Image::new(self.screen.0, self.screen.1);
+            img.fill([c[0], c[1], c[2], 255]);
+            Some(Rc::new(img))
+        } else {
+            self.image(&pic)
+        };
+        match img {
+            Some(img) => {
+                self.next.bg = Some(img);
+                self.next.bg_name = pic;
+                self.next.bg_y = 0.0;
+                self.set_sprites("");
+            }
+            None if self.log => eprintln!("marble: no picture {pic}"),
+            None => {}
+        }
+    }
+
+    /// The characters of the next scene: a set of `_SPRSET` ("#B01C_11"), a picture, or none.
+    pub(super) fn set_sprites(&mut self, set: &str) {
+        let set = set.trim_start_matches('#').to_uppercase();
+        let parts = if set.is_empty() {
+            Vec::new()
+        } else {
+            self.sprset
+                .get(&set)
+                .cloned()
+                .unwrap_or_else(|| vec![(set.clone(), 0, 0)])
+        };
+        let mut sprites = Vec::new();
+        for (pic, x, y) in parts {
+            if let Some(img) = self.image(&pic) {
+                sprites.push((img, x as f32, y as f32));
+            }
+        }
+        self.next.sprites = sprites;
+        self.next.spr_name = set;
+    }
+
+    /// The overlay of the next scene (a picture with its mask on the right), or OFF.
+    pub(super) fn set_ovr(&mut self, pic: &str) {
+        let pic = pic.to_uppercase();
+        self.next.ovr = if pic == "OFF" {
+            None
+        } else {
+            self.image(&pic).map(|i| Rc::new(side_mask(&i)))
+        };
+        self.next.ovr_name = if self.next.ovr.is_some() {
+            pic
+        } else {
+            String::new()
+        };
+    }
+
+    pub(super) fn music(&mut self, n: i32) {
+        if n > 0 && n == self.bgm {
+            return;
+        }
+        self.bgm = n.max(0);
         if n <= 0 {
             self.sounds.push(Sound {
                 data: Vec::new(),
@@ -1025,6 +1102,10 @@ impl Engine {
         if let Some(c) = &self.choice {
             let options = c.options.clone();
             self.choice_draws(&options, &mut out);
+        }
+        if self.menu.is_some() {
+            self.menu_draws(&mut out);
+            return out;
         }
         if let (Some((rects, _)), Some(parts)) = (&self.map, &self.parts) {
             let (x, y) = self.pointer;
