@@ -8,6 +8,7 @@
 //! | op | does |
 //! |----|------|
 //! | 0x00 | A = arg |
+//! | 0x01 / 0x02 / 0x03 | early scripts: jump / jump if A == 0 / branch label |
 //! | 0x04 / 0x06 | push reg[arg] / pop into reg[arg] |
 //! | 0x05 | push A (arg 0: as an integer, else the string A refers to) |
 //! | 0x07 | call arg & 0xFFFF with arg >> 16 arguments: a builtin, or (0x8000) a function of the file |
@@ -34,6 +35,75 @@ use crate::sjis;
 pub enum Value {
     Int(i32),
     Str(Vec<u8>),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct NoCalls;
+    impl Host for NoCalls {
+        fn builtin(
+            &mut self,
+            _: &mut Thread,
+            _: &mut Globals,
+            _: u32,
+            _: &[Value],
+        ) -> Result<(Value, Flow), String> {
+            panic!("unexpected builtin")
+        }
+    }
+
+    #[test]
+    fn early_branches_skip_to_next_label_in_the_same_group() {
+        let code = vec![
+            Ins { op: 0, arg: 0 },
+            Ins {
+                op: 2,
+                arg: 0x10001,
+            },
+            Ins { op: 0, arg: 10 },
+            Ins {
+                op: 3,
+                arg: 0x20001,
+            },
+            Ins { op: 0, arg: 20 },
+            Ins {
+                op: 3,
+                arg: 0x10002,
+            },
+            Ins { op: 0, arg: 30 },
+            Ins {
+                op: 1,
+                arg: 0x1ffff,
+            },
+            Ins { op: 0, arg: 40 },
+            Ins {
+                op: 3,
+                arg: 0x1ffff,
+            },
+            Ins { op: 0, arg: 50 },
+        ];
+        let script = Rc::new(Script {
+            main: Block {
+                code,
+                ..Block::default()
+            },
+            ..Script::default()
+        });
+        let mut thread = Thread::new("test", script);
+        let mut globals = Globals::default();
+        let mut host = NoCalls;
+        thread.step(&mut globals, &mut host).unwrap();
+        thread.step(&mut globals, &mut host).unwrap();
+        assert_eq!(thread.frames[0].ip, 6);
+        thread.step(&mut globals, &mut host).unwrap();
+        assert_eq!(thread.regs[0], 30);
+        thread.step(&mut globals, &mut host).unwrap();
+        assert_eq!(thread.frames[0].ip, 10);
+        thread.step(&mut globals, &mut host).unwrap();
+        assert_eq!(thread.regs[0], 50);
+    }
 }
 
 impl Value {
@@ -347,6 +417,20 @@ impl Thread {
         let set_a = |t: &mut Thread, v: i32| t.regs[0] = v;
         match op {
             0x00 => set_a(self, arg as i32),
+            // Early scripts use named control-flow labels instead of instruction offsets.
+            0x01 | 0x02 if op == 0x01 || a == 0 => {
+                let at = self
+                    .code_of(self.frames.last().unwrap())
+                    .iter()
+                    .position(|ins| {
+                        ins.op == 0x03
+                            && ins.arg >> 16 == arg >> 16
+                            && (ins.arg & 0xffff) >= (arg & 0xffff)
+                    })
+                    .ok_or_else(|| format!("{}: no branch label {arg:#x}", self.name))?;
+                self.frame().ip = at;
+            }
+            0x02 | 0x03 => {}
             0x04 => self.stack.push(Value::Int(self.regs[reg])),
             0x05 => {
                 let v = if arg == 0 {
