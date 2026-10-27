@@ -13,7 +13,6 @@ use std::path::Path;
 type Pointer = (i32, i32, char);
 
 use nexas::files::Disk;
-use tmrhiro::engine::Engine;
 
 fn main() -> Result<(), String> {
     let args: Vec<String> = std::env::args().collect();
@@ -42,8 +41,9 @@ fn main() -> Result<(), String> {
         root: dir.to_path_buf(),
         saves: dir.join("vnrun-saves"),
     };
-    let mut e = Engine::new(Box::new(disk))?;
-    e.log = std::env::var_os("TMRHIRO_TRACE").is_some();
+    let mut e = tmrhiro::open(Box::new(disk))?;
+    let log = std::env::var_os("TMRHIRO_TRACE").is_some();
+    e.set_log(log);
     if let Some(f) = std::env::var_os("TMRHIRO_FONT") {
         e.set_font(&std::fs::read(f).map_err(|e| e.to_string())?)?;
     }
@@ -51,7 +51,7 @@ fn main() -> Result<(), String> {
         e.start_at(&name.to_string_lossy());
     }
     for f in 1..=frames {
-        if e.log && marks.iter().any(|m| m.0 == f) {
+        if log && marks.iter().any(|m| m.0 == f) {
             eprintln!("-- frame {f}");
         }
         for (_, click) in marks.iter().filter(|m| m.0 == f) {

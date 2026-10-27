@@ -5,7 +5,6 @@
 use js_sys::{Array, Float32Array, Object, Reflect, Uint8Array};
 use nexas::files::Files;
 use nexas::gfx::Draw;
-use tmrhiro::engine::Engine;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -50,7 +49,7 @@ pub const DRAW_FIELDS: usize = 21;
 
 #[wasm_bindgen]
 pub struct Game {
-    e: Engine,
+    e: Box<dyn tmrhiro::Game>,
     /// the last frame's draws, which hold the pictures `texture` hands out
     draws: Vec<Draw>,
 }
@@ -60,7 +59,7 @@ impl Game {
     #[wasm_bindgen(constructor)]
     /// `font`: a TrueType font for the text (empty: none).
     pub fn new(font: &[u8]) -> Result<Game, JsError> {
-        let mut e = Engine::new(Box::new(Host)).map_err(|e| JsError::new(&e))?;
+        let mut e = tmrhiro::open(Box::new(Host)).map_err(|e| JsError::new(&e))?;
         if !font.is_empty() {
             e.set_font(font).map_err(|e| JsError::new(&e))?;
         }
@@ -71,11 +70,11 @@ impl Game {
     }
 
     pub fn width(&self) -> u32 {
-        self.e.screen.0
+        self.e.screen().0
     }
 
     pub fn height(&self) -> u32 {
-        self.e.screen.1
+        self.e.screen().1
     }
 
     /// The pointer moved.
@@ -157,7 +156,7 @@ impl Game {
     pub fn draws(&mut self) -> Float32Array {
         self.draws = self.e.draws();
         let mut out = Vec::with_capacity(self.draws.len() * DRAW_FIELDS);
-        let (w, h) = (self.e.screen.0 as f32, self.e.screen.1 as f32);
+        let (w, h) = (self.e.screen().0 as f32, self.e.screen().1 as f32);
         for d in &self.draws {
             out.extend([d.image.id as f32, d.image.w as f32, d.image.h as f32]);
             out.extend(d.corners().into_iter().flatten());
