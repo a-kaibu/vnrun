@@ -468,6 +468,31 @@ impl Engine {
                 }
             }
         }
+        // A plane the script never shows itself (it may hide it) is shown whatever its DISP
+        // column says (ニュートンと林檎の樹's title puts its picture on such a plane).
+        for d in &fes.defs {
+            let Def::Define(kind, plane) = d else {
+                continue;
+            };
+            if kind != "PLANE" {
+                continue;
+            }
+            let base = plane.split('[').next().unwrap_or(plane);
+            let shown = fes.lines.iter().any(|l| {
+                let Some(rest) = l.strip_prefix(base) else {
+                    return false;
+                };
+                let w: Vec<&str> = rest.split_whitespace().collect();
+                w.windows(2).any(|p| p[0] == "disp" && p[1] != "0")
+            });
+            if !shown {
+                for i in self.resolve(r, base) {
+                    if let Some(o) = self.obj(i) {
+                        o.disp = true;
+                    }
+                }
+            }
+        }
         if self.log > 0 {
             eprintln!("execfes {name}");
         }
