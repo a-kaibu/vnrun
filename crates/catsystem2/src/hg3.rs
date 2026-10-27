@@ -215,7 +215,8 @@ fn unpack(data: &[u8], ctl: &[u8], w: usize, h: usize, ps: usize) -> Result<Vec<
     let mut bits = Bits { b: ctl, at: 0 };
     let mut copy = bits.bit()? != 0;
     let size = bits.count()?;
-    if size != w * h * ps {
+    // the planes may be padded past the picture (6x7 in 1024 bytes)
+    if size < w * h * ps || size % 4 != 0 || size > (w * h * ps).max(4096) * 4 {
         return Err(format!("HG-3 size {size} for {w}x{h}x{ps}"));
     }
     let mut out = vec![0u8; size];
@@ -245,7 +246,7 @@ fn unpack(data: &[u8], ctl: &[u8], w: usize, h: usize, ps: usize) -> Result<Vec<
         table[3][i as usize] = v;
     }
     let plane = size / 4;
-    let mut px = vec![0u8; size];
+    let mut px = vec![0u8; plane * 4];
     let conv = |v: u8| if v & 1 != 0 { (v >> 1) ^ 0xff } else { v >> 1 };
     for k in 0..plane {
         let v = table[0][out[k] as usize]
@@ -258,6 +259,7 @@ fn unpack(data: &[u8], ctl: &[u8], w: usize, h: usize, ps: usize) -> Result<Vec<
         px[k * 4 + 3] = conv((v >> 24) as u8);
     }
     let stride = w * ps;
+    px.truncate(stride * h);
     for x in ps..stride {
         px[x] = px[x].wrapping_add(px[x - ps]);
     }

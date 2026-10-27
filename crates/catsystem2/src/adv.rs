@@ -24,6 +24,8 @@ enum Wait {
     Window,
     Click,
     Select,
+    /// a screen script the story started (`fex sel`), by run, and the flag for its exit code
+    Fes(usize, i64),
 }
 
 pub struct Adv {
@@ -32,6 +34,8 @@ pub struct Adv {
     parent: usize,
     scene: Rc<Scene>,
     name: String,
+    /// the scenes to go back to after a `call`ed one: scene, name, line
+    calls: Vec<(Rc<Scene>, String, usize)>,
     pc: usize,
     wait: Wait,
     text: String,
@@ -124,6 +128,12 @@ fn clean(s: &str) -> String {
     out
 }
 
+impl Adv {
+    pub fn waits_fes(&self) -> bool {
+        matches!(self.wait, Wait::Fes(..))
+    }
+}
+
 impl Engine {
     /// `execkcs`: plays the story from the scene in string variable 200 (the games' sscript
     /// start file), or the first scene.
@@ -136,14 +146,16 @@ impl Engine {
             .unwrap_or_else(|| "00_01".into());
         let adv_xml = self.g.text("adv.xml").unwrap_or_default();
         let wnd = crate::game::xml_path(&adv_xml, &["etc", "defwnd"])
-            .unwrap_or("meswnd01.xml")
-            .to_string();
+            .map(str::to_string)
+            .or_else(|| self.g.find("meswnd01", &["xml"]))
+            .unwrap_or_else(|| "meswnd.xml".into());
         let owner = self.new_owner();
         self.adv = Some(Adv {
             owner,
             parent,
             scene: Rc::new(Scene { lines: Vec::new() }),
             name: String::new(),
+            calls: Vec::new(),
             pc: 0,
             wait: Wait::None,
             text: String::new(),
@@ -298,6 +310,17 @@ impl Engine {
             Wait::All if busy => return Ok(()),
             Wait::Window if a.window_move.is_some() => return Ok(()),
             Wait::Click | Wait::Select => return Ok(()),
+            Wait::Fes(r, var) => {
+                if self.runs.get(r).is_some_and(|run| !run.done) {
+                    return Ok(());
+                }
+                if let Some(run) = self.runs.get(r) {
+                    let v = run.exit_code;
+                    self.flags.insert(var, v);
+                    self.end_children(r - 1);
+                }
+                self.adv.as_mut().unwrap().wait = Wait::None;
+            }
             _ => a.wait = Wait::None,
         }
         for _ in 0..5000 {
@@ -318,6 +341,10 @@ impl Engine {
                 }
             }
             let Some(line) = a.scene.lines.get(a.pc).cloned() else {
+                if let Some((scene, name, pc)) = a.calls.pop() {
+                    (a.scene, a.name, a.pc) = (scene, name, pc);
+                    continue;
+                }
                 if self.log > 0 {
                     eprintln!("scene {} ends", a.name);
                 }
@@ -338,14 +365,19 @@ impl Engine {
                 Line::Page => a.fresh = true,
                 Line::Name => {
                     self.new_page();
+                    // `$str20`: the player's name
+                    let n = self.story_strings(&line.text);
                     let a = self.adv.as_mut().unwrap();
-                    let n = line.text.rsplit('＠').next().unwrap_or("");
-                    a.speaker = n.to_string();
+                    a.speaker = n.rsplit('＠').next().unwrap_or("").to_string();
                 }
                 Line::Message => {
                     self.new_page();
+                    let t = clean(&self.story_strings(&line.text));
+                    if self.log > 1 {
+                        eprintln!("  text {t:?}");
+                    }
                     let a = self.adv.as_mut().unwrap();
-                    a.text.push_str(&clean(&line.text));
+                    a.text.push_str(&t);
                     if a.window <= 0.0 && a.window_move.is_none() {
                         a.window = 1.0;
                     }
@@ -489,6 +521,21 @@ impl Engine {
                 };
                 self.set_wait(w);
             }
+            "call" => {
+                // a scene as a subroutine (pictures of an event CG)
+                let a = self.adv.as_mut().unwrap();
+                if a.calls.len() < 16 {
+                    a.calls.push((a.scene.clone(), a.name.clone(), a.pc));
+                }
+                let n = arg(1).to_string();
+                if let Err(e) = self.load_scene(&n) {
+                    eprintln!("{e}");
+                    let a = self.adv.as_mut().unwrap();
+                    if let Some((scene, name, pc)) = a.calls.pop() {
+                        (a.scene, a.name, a.pc) = (scene, name, pc);
+                    }
+                }
+            }
             "next" => {
                 let n = arg(1).to_string();
                 if let Err(e) = self.load_scene(&n) {
@@ -526,6 +573,17 @@ impl Engine {
                 let dur = n.parse().unwrap_or(def);
                 let old = std::mem::take(&mut a.prev);
                 a.trans = (dur > 0).then_some((old, now, dur));
+            }
+            "fex" if arg(1) == "sel" => {
+                // a screen script (a map to pick from); the story waits for its exit
+                if let Err(e) = self.exec_fes(arg(2)) {
+                    eprintln!("{e}");
+                    return Ok(());
+                }
+                let r = self.runs.len() - 1;
+                self.runs[r].story = true;
+                let var = arg(3).parse().unwrap_or(-1);
+                self.adv.as_mut().unwrap().wait = Wait::Fes(r, var);
             }
             "frameon" | "frameoff" => {
                 let a = self.adv.as_mut().unwrap();
@@ -877,9 +935,14 @@ impl Engine {
                 .trim_end_matches(".hg3")
                 .to_string()
         };
+        // one picture may hold the window (frame 1) and its places, its frame 0 a mask
+        let (bg, frame) = match img("img01") {
+            f if f.is_empty() => (String::new(), img("img00")),
+            f => (img("img00"), f),
+        };
         let t = Rc::new(Theme {
-            bg: img("img00"),
-            frame: img("img01"),
+            bg,
+            frame,
             names: img("img03"),
         });
         self.adv.as_mut().unwrap().win = Some(t.clone());
@@ -935,7 +998,10 @@ impl Engine {
                 })
             };
             let tr = rect(self, 10, [w * 0.2, h - 150.0, w * 0.7, 110.0]);
-            let nr = rect(self, 100, [w * 0.2, h - 190.0, 200.0, 40.0]);
+            let nr = match self.g.frame(frame, 100) {
+                Some(_) => rect(self, 100, [0.0; 4]),
+                None => rect(self, 11, [w * 0.2, h - 190.0, 200.0, 40.0]),
+            };
             let a = self.adv.as_ref().unwrap();
             let (text, shown, speaker) = (a.text.clone(), a.shown as usize, a.speaker.clone());
             let cached = a

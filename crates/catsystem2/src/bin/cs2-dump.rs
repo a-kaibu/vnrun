@@ -6,7 +6,7 @@
 //!     cs2-dump <game folder> <archive.int> <name> <out>    saves a file
 
 use catsystem2::int::Archive;
-use nexas::files::{Disk, Files};
+use nexas::files::Disk;
 
 fn main() -> Result<(), String> {
     let args: Vec<String> = std::env::args().collect();
@@ -18,13 +18,10 @@ fn main() -> Result<(), String> {
         root: dir.clone(),
         saves: dir.join("vnrun-saves"),
     };
-    let key = disk
-        .read("cs2.exe")
-        .and_then(|pe| catsystem2::exe::passphrase(&pe))
-        .map(|p| {
-            eprintln!("passphrase {:?}", catsystem2::sjis(&p));
-            catsystem2::int::game_key(&p)
-        });
+    let key = catsystem2::game::passphrase(&mut disk).map(|p| {
+        eprintln!("passphrase {:?}", catsystem2::sjis(&p));
+        catsystem2::int::game_key(&p)
+    });
     let arc = Archive::open(&mut disk, &args[2], key)?;
     let Some(name) = args.get(3) else {
         for n in &arc.names {

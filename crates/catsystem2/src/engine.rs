@@ -87,6 +87,10 @@ pub struct Obj {
     pub enable: bool,
     /// story pictures are placed by their base point, screen pictures by their canvas
     pub anchor: bool,
+    /// `coordmode 1`: a screen picture scales and turns about its frame's base point
+    pub center: bool,
+    /// the class whose handlers the object also has (`DEFAULT defbtn`)
+    pub class: String,
     pub add: bool,
     pub motions: Vec<Motion>,
     /// a story picture made of parts (files), drawn in order
@@ -116,6 +120,8 @@ impl Obj {
             pri: 0,
             enable: true,
             anchor: false,
+            center: false,
+            class: String::new(),
             add: false,
             motions: Vec::new(),
             parts: Vec::new(),
@@ -152,7 +158,9 @@ pub struct Run {
     /// the child's exit code, -1 while it runs
     pub exit_code: i64,
     /// exited: it no longer runs, its objects stay until the parent's endfes
-    done: bool,
+    pub(crate) done: bool,
+    /// started by the story (`fex sel`): its exit code is its own, the story waits on it
+    pub(crate) story: bool,
     names: HashMap<String, usize>,
     groups: HashMap<String, Vec<usize>>,
     /// the button under the pointer
@@ -187,6 +195,8 @@ pub struct Engine {
     colors: HashMap<[u8; 3], Rc<Image>>,
     /// the event number (`@`) while a handler runs
     at: i64,
+    /// the object (`@ setid 1`) while a handler runs
+    at_obj: Option<usize>,
 }
 
 fn num(s: &str) -> f32 {
@@ -263,10 +273,18 @@ impl Env for Ctx<'_> {
     fn get(&mut self, n: &str) -> i64 {
         let e = self.e;
         if let Some(v) = n.strip_prefix('$').or_else(|| n.strip_prefix('#')) {
-            return v
-                .parse::<i64>()
-                .map(|k| e.flags.get(&k).copied().unwrap_or(0))
-                .unwrap_or(0);
+            // `$700`, or `$g_TEMP_0` with a macro for the number
+            let k = match v.parse::<i64>() {
+                Ok(k) => k,
+                Err(_) if self.depth < 8 => {
+                    self.depth += 1;
+                    let k = self.get(v);
+                    self.depth -= 1;
+                    k
+                }
+                Err(_) => return 0,
+            };
+            return self.e.flags.get(&k).copied().unwrap_or(0);
         }
         if let Some(v) = n.strip_prefix('\\') {
             let Some(r) = self.run else { return 0 };
@@ -344,6 +362,7 @@ impl Engine {
             skip_to: None,
             colors: HashMap::new(),
             at: 0,
+            at_obj: None,
         };
         e.exec_fes("flow")?;
         Ok(e)
@@ -410,7 +429,7 @@ impl Engine {
 
     // ---- screen scripts
 
-    fn exec_fes(&mut self, name: &str) -> Result<(), String> {
+    pub(crate) fn exec_fes(&mut self, name: &str) -> Result<(), String> {
         let data = self
             .g
             .read(&format!("{name}.fes"))
@@ -429,6 +448,7 @@ impl Engine {
             locals: HashMap::new(),
             exit_code: -1,
             done: false,
+            story: false,
             names: HashMap::new(),
             groups: HashMap::new(),
             focus: None,
@@ -490,6 +510,9 @@ impl Engine {
 
     /// The objects a name means in a script: `pl[1]`, `btn1[@]`, or a whole array `pl`.
     fn resolve(&self, r: usize, name: &str) -> Vec<usize> {
+        if name == "@" {
+            return self.at_obj.into_iter().collect();
+        }
         let run = &self.runs[r];
         let name = if name.contains('[') {
             // the index may be an expression
@@ -576,6 +599,8 @@ impl Engine {
                     "BASE" => o.base = pair(v),
                     "SIZE" => o.size = pair(v),
                     "ENABLE" => o.enable = num(v) != 0.0,
+                    "BLEND" => o.alpha = num(v),
+                    "DEFAULT" => o.class = v.to_string(),
                     "COLOR" => {
                         let c = u32::from_str_radix(v.trim_start_matches("0x"), 16).unwrap_or(0);
                         o.color = [(c >> 16) as u8, (c >> 8) as u8, c as u8];
@@ -747,7 +772,25 @@ impl Engine {
             }
             return Ok(());
         }
-        let a = split_args(&self.strings(line));
+        let mut a = split_args(&self.strings(line));
+        // `$128=1` without spaces
+        if let Some(first) = a.first().cloned()
+            && (first.starts_with('$') || first.starts_with('\\'))
+            && let Some(eq) = first.find('=')
+        {
+            let op_at = if eq > 0 && "+-*/".contains(&first[eq - 1..eq]) {
+                eq - 1
+            } else {
+                eq
+            };
+            let rest: Vec<String> = a.drain(1..).collect();
+            let rhs = [vec![first[eq + 1..].to_string()], rest].concat().join(" ");
+            a = vec![
+                first[..op_at].to_string(),
+                first[op_at..=eq].to_string(),
+                rhs,
+            ];
+        }
         let Some(cmd) = a.first().map(String::as_str) else {
             return Ok(());
         };
@@ -770,7 +813,10 @@ impl Engine {
                 }
                 _ => v,
             };
-            let k: i64 = cmd[1..].parse().unwrap_or(0);
+            // `$700` or `$g_TEMP_0` (a macro for the number)
+            let k: i64 = cmd[1..]
+                .parse()
+                .unwrap_or_else(|_| self.eval(Some(r), &cmd[1..]));
             if cmd.starts_with('$') {
                 self.flags.insert(k, v);
             } else {
@@ -806,7 +852,9 @@ impl Engine {
             "exit" => {
                 let v = self.eval(Some(r), arg(1));
                 self.runs[r].done = true;
-                if r == 0 {
+                if self.runs[r].story {
+                    self.runs[r].exit_code = v;
+                } else if r == 0 {
                     self.ended = true;
                 } else {
                     self.runs[r - 1].exit_code = v;
@@ -846,6 +894,11 @@ impl Engine {
                 };
                 self.flags.insert(k, v);
             }
+            "input_text" | "messagebox" => {
+                // Windows dialogs (a name to type, a yes/no box): take the default and OK
+                let k = self.eval(Some(r), arg(1));
+                self.flags.insert(k, 1);
+            }
             "sysvoice" => {
                 // no system voices
                 let k = self.eval(Some(r), arg(1));
@@ -883,7 +936,7 @@ impl Engine {
     }
 
     /// Ends the scripts started by script `r` and removes their objects.
-    fn end_children(&mut self, r: usize) {
+    pub(crate) fn end_children(&mut self, r: usize) {
         while self.runs.len() > r + 1 {
             let c = self.runs.pop().unwrap();
             self.drop_owner(c.id);
@@ -892,10 +945,47 @@ impl Engine {
 
     /// An object's command (`disp 1`, `fade 30 0 255`, `pos x y`, ...).
     pub fn obj_command(&mut self, r: Option<usize>, i: usize, sub: &str, vals: &[String]) {
-        let ev: Vec<f32> = vals.iter().map(|v| self.eval(r, v) as f32).collect();
+        // a bare `@` in a coordinate is its current value (`pos @+10 0`, `move 8 @-10 0`)
+        let cur = self
+            .objs
+            .get(i)
+            .and_then(|o| o.as_ref())
+            .map(|o| match sub {
+                "pos" => vec![o.pos.0, o.pos.1],
+                "move" => vec![0.0, o.pos.0, o.pos.1],
+                "base" => vec![o.base.0, o.base.1],
+                _ => Vec::new(),
+            });
+        let ev: Vec<f32> = vals
+            .iter()
+            .enumerate()
+            .map(|(k, v)| match cur.as_ref().and_then(|c| c.get(k)) {
+                Some(c) if v.starts_with('@') => {
+                    let rest = &v[1..];
+                    if rest.is_empty() {
+                        *c
+                    } else {
+                        *c + self.eval(r, &format!("0{rest}")) as f32
+                    }
+                }
+                _ => self.eval(r, v) as f32,
+            })
+            .collect();
         let n = |k: usize| ev.get(k).copied().unwrap_or(0.0);
         let now = self.now;
         let (cur_frame, getpos) = (sub == "getpos2", sub == "getpos");
+        if sub == "getsize" {
+            let Some(o) = self.objs.get(i).and_then(|o| o.clone()) else {
+                return;
+            };
+            let (w, h) = self
+                .g
+                .frame(&o.file, o.id())
+                .map_or((0, 0), |f| (f.image.w as i64, f.image.h as i64));
+            self.flags.insert(n(0) as i64, w);
+            self.flags.insert(n(1) as i64, h);
+            return;
+        }
         if cur_frame || getpos {
             let Some(o) = self.objs.get(i).and_then(|o| o.clone()) else {
                 return;
@@ -982,6 +1072,7 @@ impl Engine {
                     n(0),
                 ));
             }
+            "coordmode" => o.center = n(0) != 0.0,
             "draw" => {}
             _ => {
                 if self.log > 0 {
@@ -1108,13 +1199,28 @@ impl Engine {
         else {
             return;
         };
-        let label = format!("{group}.{ev}");
-        let Some(&start) = self.runs[r].fes.labels.get(&label) else {
-            return;
-        };
-        if self.log > 0 {
-            eprintln!("[{}] event {label} @{index}", self.runs[r].name);
+        // the handlers of the object's default class (`TYPE DEFAULT defbtn`), then its own
+        let class = self.objs[obj]
+            .as_ref()
+            .map_or(String::new(), |o| o.class.clone());
+        for label in [format!("{class}.{ev}"), format!("{group}.{ev}")] {
+            let Some(&start) = self.runs[r].fes.labels.get(&label) else {
+                continue;
+            };
+            if self.log > 0 {
+                eprintln!("[{}] event {label} @{index}", self.runs[r].name);
+            }
+            self.at_obj = Some(obj);
+            let jumped = self.handler(r, start, index);
+            self.at_obj = None;
+            if jumped || r >= self.runs.len() {
+                return;
+            }
         }
+    }
+
+    /// Runs a handler block from `start` to its end; true when it went on to another block.
+    fn handler(&mut self, r: usize, start: usize, index: i64) -> bool {
         let saved = (
             self.runs[r].pc,
             self.runs[r].block,
@@ -1143,7 +1249,7 @@ impl Engine {
             let block = self.runs[r].block;
             let _ = self.command(r, &l);
             if r >= self.runs.len() {
-                return;
+                return true;
             }
             // waits in handlers do not stop them
             self.runs[r].wait = Wait::None;
@@ -1156,6 +1262,7 @@ impl Engine {
             let run = &mut self.runs[r];
             (run.pc, run.block, run.calls, run.wait) = saved;
         }
+        jumped
     }
 
     fn input(&mut self) {
@@ -1163,7 +1270,8 @@ impl Engine {
         self.click_r = 0;
         let clicked = std::mem::take(&mut self.clicked);
         let rclicked = std::mem::take(&mut self.rclicked);
-        if self.adv.is_some() {
+        // the story takes the clicks, unless it waits on a screen script
+        if self.adv.as_ref().is_some_and(|a| !a.waits_fes()) {
             self.adv_input(clicked, rclicked);
             return;
         }
@@ -1323,7 +1431,9 @@ impl Engine {
                 });
             }
             Kind::Image | Kind::Button => {
-                if o.kind == Kind::Button {
+                // a button with one picture is a hit area under separate images (春風); one
+                // with a picture per state shows them
+                if o.kind == Kind::Button && o.ids.len() < 2 {
                     return;
                 }
                 let files: Vec<(String, i64)> = if o.parts.is_empty() {
@@ -1342,9 +1452,19 @@ impl Engine {
                         y -= f.base_y as f32;
                     }
                     let (mut w, mut h) = (f.image.w as f32, f.image.h as f32);
+                    // a picture's own scale and turn keep its position (base point) in place
+                    let (mut ax, mut ay) = (o.pos.0 + off.0, o.pos.1 + off.1);
+                    if o.center {
+                        ax += f.base_x as f32;
+                        ay += f.base_y as f32;
+                    }
+                    let mut place = place;
+                    if o.rot != 0.0 && place.rot == 0.0 && (place.sx, place.sy) == (1.0, 1.0) {
+                        place.cx = ax;
+                        place.cy = ay;
+                        place.rot = o.rot.to_radians();
+                    }
                     if o.scale != (1.0, 1.0) {
-                        // a picture's own scale keeps its position (base point) in place
-                        let (ax, ay) = (o.pos.0 + off.0, o.pos.1 + off.1);
                         x = ax + (x - ax) * o.scale.0;
                         y = ay + (y - ay) * o.scale.1;
                         w *= o.scale.0;

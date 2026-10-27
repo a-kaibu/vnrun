@@ -18,22 +18,7 @@ pub struct Game {
 
 impl Game {
     pub fn open(mut files: Box<dyn Files>) -> Result<Game, String> {
-        let key = ["cs2.exe", "CS2.exe", "cs2.EXE"]
-            .iter()
-            .find_map(|n| files.read(n))
-            .or_else(|| {
-                // some games rename the exe
-                let names = files.list();
-                names
-                    .iter()
-                    .filter(|n| n.to_lowercase().ends_with(".exe"))
-                    .find_map(|n| {
-                        let pe = files.read(n)?;
-                        crate::exe::passphrase(&pe).map(|_| pe)
-                    })
-            })
-            .and_then(|pe| crate::exe::passphrase(&pe))
-            .map(|p| crate::int::game_key(&p));
+        let key = passphrase(files.as_mut()).map(|p| crate::int::game_key(&p));
         let mut g = Game {
             files,
             archives: Vec::new(),
@@ -118,6 +103,22 @@ impl Game {
     pub fn text(&mut self, name: &str) -> Option<String> {
         self.read(name).map(|b| crate::sjis(&b))
     }
+}
+
+/// The archives' passphrase, from cs2.exe or whichever exe of the game folder has one (games
+/// rename it).
+pub fn passphrase(files: &mut dyn Files) -> Option<Vec<u8>> {
+    if let Some(p) = files
+        .read("cs2.exe")
+        .and_then(|pe| crate::exe::passphrase(&pe))
+    {
+        return Some(p);
+    }
+    let names = files.list();
+    names
+        .iter()
+        .filter(|n| n.to_lowercase().ends_with(".exe"))
+        .find_map(|n| crate::exe::passphrase(&files.read(n)?))
 }
 
 /// The text of the first `<tag>...</tag>` in `xml` after `from` (0 for the start).
