@@ -3,7 +3,7 @@
 //!
 //! ```text
 //! count:u32 name_len:u32 count x { name:[u8; name_len] offset:u32 size:u32 }   (newer)
-//! count:u32              count x { name:[u8; 16]       offset:u32 size:u32 }   (older)
+//! count:u32              count x { name:[u8; 16 or 0x38] offset:u32 size:u32 } (older)
 //! ```
 //!
 //! A name field holds the name, a NUL, then the extension ("PRS", "S", "OGG", or nothing).
@@ -28,18 +28,11 @@ pub struct Index {
 impl Index {
     /// How many bytes of the archive's start to read to parse the index, from its first 8.
     pub fn index_size(head: &[u8]) -> Option<usize> {
-        let u = |at: usize| u32::from_le_bytes(head[at..at + 4].try_into().unwrap()) as usize;
-        if head.len() < 8 {
-            return None;
-        }
-        let (count, name_len) = (u(0), u(4));
-        if (1..=0x40).contains(&name_len) {
-            Some(8 + count * (name_len + 8))
-        } else {
-            Some(4 + count * 24)
-        }
+        let count = u32::from_le_bytes(head.get(..4)?.try_into().unwrap()) as usize;
+        Some(8 + count.min(0x10000) * (0x40 + 8))
     }
 
+    /// `b`: the start of the archive, at least [`Index::index_size`] bytes or all of it.
     pub fn parse(b: &[u8], file_size: u64) -> Result<Index, String> {
         let u = |at: usize| u32::from_le_bytes(b[at..at + 4].try_into().unwrap());
         if b.len() < 8 {
@@ -75,6 +68,7 @@ impl Index {
             .then(|| try_layout(name_len, 8))
             .flatten()
             .or_else(|| try_layout(16, 4))
+            .or_else(|| try_layout(0x38, 4))
             .ok_or_else(|| "mbl: not a Marble archive".into())
     }
 }

@@ -86,7 +86,10 @@ impl Script {
                 }
             } else if let Some(cmd) = l.strip_prefix(['*', '@']) {
                 let word = cmd.split([' ', ',']).next().unwrap_or("").to_lowercase();
-                if matches!(word.as_str(), "select" | "clickmap" | "cjmp" | "seltree") {
+                if matches!(
+                    word.as_str(),
+                    "select" | "clickmap" | "cjmp" | "seltree" | "switch"
+                ) {
                     opener = Some(i);
                 } else if word != "mark" {
                     opener = None;
@@ -152,6 +155,7 @@ pub struct Engine {
     trans: Option<Trans>,
     wipe: Option<String>,
     shake: Option<(i32, i32, u64, u64)>,
+    voice_end: u64,
     window: bool,
     novel: bool,
     speaker: String,
@@ -228,6 +232,7 @@ impl Engine {
             trans: None,
             wipe: None,
             shake: None,
+            voice_end: 0,
             window: false,
             novel: false,
             speaker: String::new(),
@@ -608,6 +613,8 @@ impl Engine {
         let name = name.to_lowercase();
         let a: Vec<&str> = args.split(',').map(str::trim).collect();
         let n = |k: usize| a.get(k).map_or(0, |s| num(s));
+        // a transition left out is -1, a short fade
+        let mode = |k: usize| a.get(k).filter(|s| !s.is_empty()).map_or(-1, |s| num(s));
         match name.as_str() {
             "gra" | "grb" | "bg" => {
                 let pic = a[0].to_uppercase();
@@ -631,7 +638,7 @@ impl Engine {
                 } else if self.log {
                     eprintln!("marble: no picture {pic}");
                 }
-                self.show(n(1));
+                self.show(mode(1));
             }
             "spr" => {
                 let set = a[0].trim_start_matches('#').to_uppercase();
@@ -647,11 +654,11 @@ impl Engine {
                     }
                 }
                 self.next.sprites = sprites;
-                self.show(n(1));
+                self.show(mode(1));
             }
             "clrb" => {
                 self.next.sprites.clear();
-                self.show(n(0));
+                self.show(mode(0));
             }
             "ovr" => {
                 let pic = a[0].to_uppercase();
@@ -660,7 +667,7 @@ impl Engine {
                 } else {
                     self.image(&pic).map(|i| Rc::new(side_mask(&i)))
                 };
-                self.show(n(1));
+                self.show(mode(1));
             }
             "wipeset" => self.wipe = Some(a[0].to_uppercase()),
             "music" => self.music(n(0)),
@@ -679,20 +686,49 @@ impl Engine {
                 loop_start: 0,
             }),
             "cv" => {
-                self.play(&["ogg", "wav"], a[0], true, false);
+                if let Some(ms) = self.play(&["ogg", "wav"], a[0], true, false) {
+                    self.voice_end = self.now + ms;
+                }
+            }
+            "wait_v_end" => self.wait = Wait::Until(self.voice_end),
+            "if" => {
+                // "(cond) *command" or "(cond) label"
+                let Some((cond, rest)) = args.strip_prefix('(').and_then(|r| r.split_once(')'))
+                else {
+                    return;
+                };
+                if self.test(cond) {
+                    let rest = rest.trim();
+                    if rest.starts_with(['*', '@', '!']) {
+                        self.line(rest);
+                    } else {
+                        self.goto(rest);
+                    }
+                }
+            }
+            "switch" => {
+                let line = self.pc - 1;
+                let starts = self.script.branches.get(&line).cloned().unwrap_or_default();
+                let hit = starts.iter().find(|&&s| {
+                    let l = &self.script.lines[s];
+                    l[1..]
+                        .trim()
+                        .strip_prefix('(')
+                        .and_then(|r| r.split_once(')'))
+                        .is_some_and(|(c, _)| self.test(c))
+                });
+                match (hit, starts.first()) {
+                    (Some(&s), _) => self.pc = s + 1,
+                    (None, Some(s)) => self.pc = self.script.group_end[s] + 1,
+                    _ => {}
+                }
             }
             "sleep" | "wait" | "delay" => self.wait = Wait::Until(self.now + n(0).max(0) as u64),
             "shake" => {
                 self.shake = Some((n(0), n(1), self.now, (n(2).max(1) * 6) as u64));
                 self.wait = Wait::Until(self.now + (n(2).max(1) * 6) as u64);
             }
-            "go" => {
-                let label = a[0].to_uppercase();
-                match self.script.labels.get(&label) {
-                    Some(&l) => self.pc = l + 1,
-                    None => eprintln!("marble: no label {label} in {}", self.script.name),
-                }
-            }
+            "go" => self.goto(a[0]),
             "chain" | "call" => {
                 let (file, label) = match args.split_once(':') {
                     Some((f, l)) => (f.trim(), Some(l.trim())),
@@ -760,7 +796,7 @@ impl Engine {
             }
             "exitgame" | "exit" => self.ended = true,
             "mark" | "break" | "title" | "mode" | "setname" | "load" | "save" | "fix"
-            | "wait_v_end" | "special" | "rec" | "vend" => {}
+            | "special" | "rec" | "vend" | "backto" | "string" => {}
             _ => {
                 if self.log {
                     eprintln!("marble: unknown command {cmd}");
@@ -774,6 +810,7 @@ impl Engine {
         if mode == 0 {
             return;
         }
+        let mode = if mode < 0 { 1 } else { mode };
         let (step, delay, t17) = self.speed();
         let ms = match mode {
             4 => 0,
@@ -835,14 +872,16 @@ impl Engine {
         }
     }
 
-    fn play(&mut self, kinds: &[&str], name: &str, voice: bool, looped: bool) {
+    /// Plays a sound; returns how long it lasts (in ms) when that is known.
+    fn play(&mut self, kinds: &[&str], name: &str, voice: bool, looped: bool) -> Option<u64> {
         let Some(b) = self.read(kinds, name) else {
             if self.log {
                 eprintln!("marble: no sound {name}");
             }
-            return;
+            return None;
         };
         let data = wady::to_wav(&b).unwrap_or(b);
+        let ms = length_ms(&data);
         self.sounds.push(Sound {
             data,
             volume: 1.0,
@@ -853,6 +892,33 @@ impl Engine {
             fade_ms: 0,
             loop_start: 0,
         });
+        ms
+    }
+
+    fn goto(&mut self, label: &str) {
+        let label = label.trim().to_uppercase();
+        match self.script.labels.get(&label) {
+            Some(&l) => self.pc = l + 1,
+            None => eprintln!("marble: no label {label} in {}", self.script.name),
+        }
+    }
+
+    /// A condition: `A=1`, `A!=B`, `A<3`, ...
+    fn test(&self, cond: &str) -> bool {
+        for op in [">=", "<=", "!=", "<>", "==", "=", ">", "<"] {
+            if let Some((l, r)) = cond.split_once(op) {
+                let (l, r) = (self.eval(l), self.eval(r));
+                return match op {
+                    ">=" => l >= r,
+                    "<=" => l <= r,
+                    "!=" | "<>" => l != r,
+                    ">" => l > r,
+                    "<" => l < r,
+                    _ => l == r,
+                };
+            }
+        }
+        self.eval(cond) != 0
     }
 
     fn scene_draws(&self, s: &Scene, out: &mut Vec<Draw>) {
@@ -930,7 +996,7 @@ impl Engine {
 
     fn window_draws(&mut self, out: &mut Vec<Draw>) {
         let pitch_x = self.cfg("TX_PITCH_X", 13);
-        let size = (pitch_x * 2 - 2).max(12);
+        let size = (pitch_x * 2 - 2).min(self.cfg("FONT_SIZE", 20) + 4).max(12);
         let (x0, y0, pitch_y) = if self.novel {
             let mut dark = Image::new(self.screen.0, self.screen.1);
             let a = self.cfg("TXW_ALPHA2", 120).clamp(0, 255) as u8;
@@ -1038,6 +1104,22 @@ impl Engine {
         }
         img
     }
+}
+
+/// How long a WAV or Ogg Vorbis sound lasts.
+fn length_ms(b: &[u8]) -> Option<u64> {
+    if b.starts_with(b"RIFF") && b.len() >= 44 {
+        let rate = u32::from_le_bytes(b[28..32].try_into().unwrap()) as u64;
+        return (rate > 0).then(|| (b.len() as u64 - 44) * 1000 / rate);
+    }
+    if !b.starts_with(b"OggS") || b.len() < 44 {
+        return None;
+    }
+    // the sample rate is in the identification header, the length in the last page's granule
+    let rate = u32::from_le_bytes(b[40..44].try_into().unwrap()) as u64;
+    let last = b.windows(4).rposition(|w| w == b"OggS")?;
+    let granule = u64::from_le_bytes(b.get(last + 6..last + 14)?.try_into().unwrap());
+    (rate > 0).then(|| granule * 1000 / rate)
 }
 
 /// Lines of at most `cols` half-width columns.
