@@ -166,6 +166,8 @@ fn detect(game: &Path) -> Option<String> {
         Some("siglus".into())
     } else if has("seen.txt") {
         Some("reallive".into())
+    } else if has("advhd.exe") && names.iter().any(|n| n.ends_with(".arc")) {
+        Some("advhd".into())
     } else if has("system.arc") {
         Some("bgi".into())
     } else if has("ysbin.ypf") || has("ysbin") || has("yscfg.dat") {
@@ -688,6 +690,18 @@ fn main() {
 #[cfg(test)]
 mod detection_tests {
     use super::*;
+
+    #[test]
+    fn advhd_with_archives_is_detected_before_bgi() {
+        let dir = tempfile::tempdir().unwrap();
+        fs::write(dir.path().join("ADVHD.EXE"), b"").unwrap();
+        assert_eq!(detect(dir.path()), None);
+        fs::write(dir.path().join("Rio.arc"), b"").unwrap();
+        fs::write(dir.path().join("System.arc"), b"").unwrap();
+        assert_eq!(detect(dir.path()).as_deref(), Some("advhd"));
+        fs::remove_file(dir.path().join("ADVHD.EXE")).unwrap();
+        assert_eq!(detect(dir.path()).as_deref(), Some("bgi"));
+    }
 
     #[test]
     fn save_replacement_rejects_incomplete_and_oversized_uploads() {
