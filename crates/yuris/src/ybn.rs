@@ -168,9 +168,20 @@ fn version(b: &[u8]) -> u32 {
 
 /// Later versions put new system variables among the old ones; this gives them the 466 numbers
 /// the VM knows (and moves the new ones out of the way). The numbers were matched by the types
-/// in ysv.ybn: 474, 482, 550-555 games.
+/// in ysv.ybn: 300, 474, 482, 550-555 games.
 fn sysvar(ver: u32, id: u16) -> u16 {
     match ver {
+        // 300 (涼風のメルト): no strings at 32..47, fewer below @_TEXT and among the mouse
+        // ones; the script variables (490..) move past 512
+        300 => match id {
+            0..=31 => id,
+            32..=44 => id + 16,
+            58..=65 => id + 19,
+            66..=78 => id + 21,
+            79..=82 => id + 22,
+            83.. => id + 23,
+            _ => 10000 + id,
+        },
         ..474 => id,
         482..500 => match id {
             0..=49 | 541.. => id,
