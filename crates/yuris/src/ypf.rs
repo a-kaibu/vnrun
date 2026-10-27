@@ -7,7 +7,8 @@
 //!           offset:u32 checksum:u32 }
 //! ```
 //!
-//! Later versions (482 has it, 466 not) store the offset as a u64.
+//! Later versions (482 has it, 466 not) store the offset as a u64. Older ones (222, 263) have 8
+//! more bytes per entry and count data_start from the end of the 32-byte header.
 //!
 //! Names are stored in Shift_JIS, with `\` between folders, and every byte XORed with a key: 0xff
 //! (inverted) in most games, others (0xc9 in 鯨神のティアスティラ). The key is taken from the
@@ -122,7 +123,7 @@ impl Index {
             index.entries.push(Entry { name, compressed, size, packed_size, offset });
             at = p + tail;
         }
-        if exact && at != data_start {
+        if exact && at != data_start && at != data_start + 32 {
             return Err("the index does not end where the files start".into());
         }
         Ok(index)

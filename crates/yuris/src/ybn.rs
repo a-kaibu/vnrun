@@ -268,10 +268,12 @@ pub struct Config {
 
 pub fn config(b: &[u8]) -> Result<Config, String> {
     magic(b, b"YSCF")?;
-    let mut r = Reader::new(b, 16);
+    // 263 (マギウステイル) has the size 4 bytes later and the title 4 bytes earlier
+    let (size_at, title_at) = if version(b) < 300 { (20, 0x3c) } else { (16, 0x40) };
+    let mut r = Reader::new(b, size_at);
     let width = r.u32()?;
     let height = r.u32()?;
-    r.at = 0x40;
+    r.at = title_at;
     let n = r.u16()? as usize;
     let title = sjis::decode(r.bytes(n)?);
     Ok(Config { width, height, title })

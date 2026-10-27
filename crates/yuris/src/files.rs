@@ -54,7 +54,8 @@ impl Archives {
             }
             let Some(head) = files.read_range(&name, 0, 16) else { continue };
             let Some(start) = head.get(12..16).map(|b| u32::from_le_bytes(b.try_into().unwrap())) else { continue };
-            let Some(head) = files.read_range(&name, 0, start as usize) else { continue };
+            // (older archives give the index size without the 32-byte header)
+            let Some(head) = files.read_range(&name, 0, start as usize + 32) else { continue };
             match ypf::Index::parse(&head) {
                 Ok(index) => {
                     let p = a.packs.len();
