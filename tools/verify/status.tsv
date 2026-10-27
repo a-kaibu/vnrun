@@ -197,20 +197,20 @@ b2009_crossover	NG	64d6316 (2015 年版の表) で「no Script.pac」(DATA/ フ�
 b2012_giga	本編	b425e77 (2012 年版の表) で New Game から本編の文章まで
 b2013_giga	本編	6875c68 でタイトルから new game で本編テキストまで (冒頭は白背景+メッセージウィンドウ)
 b2011_giga	本編	6875c68 でタイトルから はじめから で本編テキストまで
-b2023_turumiku_another	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
-b2010_marine	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
-b2011_marine	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
-s2018_lune_elf_saimin	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
-s2006_lune_maimiko	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
-s2015_lune_kunoichi_suzaku	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
-s2014_lune_revenge_room	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
-s2013_lune_kazokusaimin	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
-s2016_lune_meikoku	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
-s2016_lune_dai_kazoku	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
+b2023_turumiku_another	本編	6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium)
+b2010_marine	本編	6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium)
+b2011_marine	本編	6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium)
+s2018_lune_elf_saimin	本編	6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium)
+s2006_lune_maimiko	本編	6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium)
+s2015_lune_kunoichi_suzaku	本編	6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium)
+s2014_lune_revenge_room	本編	6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium)
+s2013_lune_kazokusaimin	本編	6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium)
+s2016_lune_meikoku	本編	6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium)
+s2016_lune_dai_kazoku	本編	6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium)
 s2012_marine_deka_ane	要再確認	dcf3bf8 で画面が真っ白のまま (音声のデコード失敗のみ記録)。再確認中
-s2019_lune_dogeza_saimin	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
-s2016_marine_cospure_harem	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
-s2011_marine_marching	タイトル	dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから
+s2019_lune_dogeza_saimin	本編	6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium)
+s2016_marine_cospure_harem	本編	6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium)
+s2011_marine_marching	本編	6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium)
 s2025_milimili_hanako	対象外	中身は Unity 製 (vnbox の NeXAS 判定が誤り)
 s2015_giga_renaiphase	タイトル	b425e77 でもタイトルまで
 s2006_giga_cheerfull	要再確認	自己展開 exe のダウンロード/展開に失敗

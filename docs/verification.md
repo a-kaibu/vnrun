@@ -44,14 +44,14 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | RealLive (siglus_rs) | 8 | 4 | 2 |  | 1 |  | 1 |  |
 | BGI (ethornell-rs) | 21 | 1 | 20 |  |  |  |  |  |
 | Softpal (sena-rs) | 28 | 3 | 24 |  |  | 1 |  |  |
-| Artemis (art3m1s-core) | 6 |  | 5 |  |  | 1 |  |  |
+| Artemis (art3m1s-core) | 6 | 1 | 5 |  |  |  |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 2 | 17 | 9 | 3 | 2 |  |  |
 | 吉里吉里 (KiriKiri SDL2) | 135 | 4 | 128 |  |  | 2 | 1 |  |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 16 | 6 | 1 |  | 1 | 7 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
-| Tmr-Hiro (vnrun) | 22 |  | 13 |  | 1 | 8 |  |  |
+| Tmr-Hiro (vnrun) | 22 | 13 |  |  | 1 | 8 |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -153,12 +153,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| s2021_giga_fuyukiss | [フユキス　体験版 - Ver1.0.0](http://suezou.dyndns.org/dl2021/giga/fuyukiss/fuyukiss_trial.zip) | 本編 | E-Mote 旧形式 (truncated_width なし, RGBA8 など) に対応してタイトルから本編まで |
 | r1_artemis | [遥かなるニライカナイ 体験版](https://project-navel.com/niraikanai/niraikanai_Trial.zip) | タイトル |  |
 | s2020_wonder_fool_maokatsu | [まおかつ！　体験版 - Ver1.1](http://suezou.dyndns.org/dl2020/wonder-fool/maokatsu/maokatsu_webtrial1.1.zip) | タイトル |  |
 | s2023_j_studio_reaero_dt | [リアルエロゲシチュエーション！DT　体験版 - Ver1.0.0](http://suezou.dyndns.org/dl2023/j-studio/reaero_dt/reaerodt_Trial2.7z) | タイトル |  |
 | s2024_madosoft_selectoblige | [セレクトオブリージュ　体験版 - Ver1.0.0](http://suezou.dyndns.org/dl2024/madosoft/selectoblige/selectoblige_Trial.zip) | タイトル | f508d03 (欠けた include を飛ばす) でタイトルまで |
 | s2025_j_studio_galsfiction | [GALSFICTION_Trial.zip](http://suezou.dyndns.org/dl2025/j-studio/galsfiction/GALSFICTION_Trial.zip) | タイトル | blur_k のシェーダーのコンパイルに失敗 (表示には出ていない) |
-| s2021_giga_fuyukiss | [フユキス　体験版 - Ver1.0.0](http://suezou.dyndns.org/dl2021/giga/fuyukiss/fuyukiss_trial.zip) | NG | E-Mote の読み込みで止まる (image/fg/tok_0.psb: missing integer field truncated_width) |
 
 ### NScripter (ONScripter-Yuri)
 
@@ -442,19 +442,19 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2010_marine | [paicheer_trial.exe](http://suezou.dyndns.org/dl2010/marine/paicheer/paicheer_trial.exe) | タイトル | dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから |
-| b2011_marine | [kyonyutry_trial.exe](http://suezou.dyndns.org/dl2011/marine/kyonyutry/kyonyutry_trial.exe) | タイトル | dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから |
-| b2023_turumiku_another | [非道狩～ヒトカリ～ 体験版](http://suezou.dyndns.org/dl2023/turumiku-another/hitokari/hitokari-trial.zip) | タイトル | dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから |
-| s2006_lune_maimiko | [妹巫女・萌](http://suezou.dyndns.org/dl2006/lune/maimiko/maimiko_trial.exe) | タイトル | dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから |
-| s2011_marine_marching | [おっぱい学園マーチングバンド部！　体験版](http://suezou.dyndns.org/dl2011/marine/marching/marching_trial.zip) | タイトル | dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから |
-| s2013_lune_kazokusaimin | [巨乳家族催眠　体験版](http://suezou.dyndns.org/dl2013/lune/kazokusaimin/kazokusaimin_trial.zip) | タイトル | dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから |
-| s2014_lune_revenge_room | [リベンジルーム　体験版](http://suezou.dyndns.org/dl2014/lune/revenge_room/revenge_room_trial.zip) | タイトル | dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから |
-| s2015_lune_kunoichi_suzaku | [巨乳くのいち朱雀　体験版](http://suezou.dyndns.org/dl2015/lune/kunoichi_suzaku/kunoichisuzaku_trial.zip) | タイトル | dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから |
-| s2016_lune_dai_kazoku | [巨乳大家族催眠「家族みんなでイキまくるセックスがやめられないのぉ」](http://suezou.dyndns.org/dl2016/lune/dai_kazoku/dai_kazoku_saimin_trial.zip) | タイトル | dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから |
-| s2016_lune_meikoku | [冥刻学園受胎偏・体験版](http://suezou.dyndns.org/dl2016/lune/meikoku/meikoku_jutai_trial.zip) | タイトル | dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから |
-| s2016_marine_cospure_harem | [お嬢様学園こすぷれハーレム部！「今日はどの服でエッチしよっか」](http://suezou.dyndns.org/dl2016/marine/cospure_harem/cospure_harem_trial.zip) | タイトル | dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから |
-| s2018_lune_elf_saimin | [巨乳エルフ母娘催眠体験版](http://suezou.dyndns.org/dl2018/lune/elf_saimin/elfsaimin_trial.zip) | タイトル | dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから |
-| s2019_lune_dogeza_saimin | [巨乳女戦士・土下座催眠「ちくしょうっ……アタシはお前の思い通りになんか、ならないからな……！」](http://suezou.dyndns.org/dl2019/lune/dogeza_saimin/dogeza_saimin_trial.zip) | タイトル | dcf3bf8 (Tmr-Hiro) でタイトル画面まで表示。START からの確認はこれから |
+| b2010_marine | [paicheer_trial.exe](http://suezou.dyndns.org/dl2010/marine/paicheer/paicheer_trial.exe) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
+| b2011_marine | [kyonyutry_trial.exe](http://suezou.dyndns.org/dl2011/marine/kyonyutry/kyonyutry_trial.exe) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
+| b2023_turumiku_another | [非道狩～ヒトカリ～ 体験版](http://suezou.dyndns.org/dl2023/turumiku-another/hitokari/hitokari-trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
+| s2006_lune_maimiko | [妹巫女・萌](http://suezou.dyndns.org/dl2006/lune/maimiko/maimiko_trial.exe) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
+| s2011_marine_marching | [おっぱい学園マーチングバンド部！　体験版](http://suezou.dyndns.org/dl2011/marine/marching/marching_trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
+| s2013_lune_kazokusaimin | [巨乳家族催眠　体験版](http://suezou.dyndns.org/dl2013/lune/kazokusaimin/kazokusaimin_trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
+| s2014_lune_revenge_room | [リベンジルーム　体験版](http://suezou.dyndns.org/dl2014/lune/revenge_room/revenge_room_trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
+| s2015_lune_kunoichi_suzaku | [巨乳くのいち朱雀　体験版](http://suezou.dyndns.org/dl2015/lune/kunoichi_suzaku/kunoichisuzaku_trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
+| s2016_lune_dai_kazoku | [巨乳大家族催眠「家族みんなでイキまくるセックスがやめられないのぉ」](http://suezou.dyndns.org/dl2016/lune/dai_kazoku/dai_kazoku_saimin_trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
+| s2016_lune_meikoku | [冥刻学園受胎偏・体験版](http://suezou.dyndns.org/dl2016/lune/meikoku/meikoku_jutai_trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
+| s2016_marine_cospure_harem | [お嬢様学園こすぷれハーレム部！「今日はどの服でエッチしよっか」](http://suezou.dyndns.org/dl2016/marine/cospure_harem/cospure_harem_trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
+| s2018_lune_elf_saimin | [巨乳エルフ母娘催眠体験版](http://suezou.dyndns.org/dl2018/lune/elf_saimin/elfsaimin_trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
+| s2019_lune_dogeza_saimin | [巨乳女戦士・土下座催眠「ちくしょうっ……アタシはお前の思い通りになんか、ならないからな……！」](http://suezou.dyndns.org/dl2019/lune/dogeza_saimin/dogeza_saimin_trial.zip) | 本編 | 6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium) |
 | s2012_marine_deka_ane | [デカくてエッチな俺の姉　体験版](http://suezou.dyndns.org/dl2012/marine/deka_ane/dekaane_trial.zip) | 要再確認 | dcf3bf8 で画面が真っ白のまま (音声のデコード失敗のみ記録)。再確認中 |
 | b2006_lune | [ソウルイーター　体験版　Game Edition](http://suezou.dyndns.org/dl2006/lune/souleater/souleater_trial_g.exe) | NG | srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応 |
 | b2006_marine | [人妻搾乳飯店－体験版－](http://suezou.dyndns.org/dl2006/marine/hanten/hanten_trial.exe) | NG | srp.pac が無く mg_data.mbl / mg_gra.mbl などの .mbl アーカイブ形式。Tmr-Hiro の srp 形式とは別で未対応 |
