@@ -155,6 +155,23 @@ fn parse_args() -> Config {
     }
 }
 
+/// Whether a Data folder (any case) holds NOA archives.
+fn noa_in_data(game: &Path) -> bool {
+    let Ok(rd) = fs::read_dir(game) else {
+        return false;
+    };
+    rd.flatten()
+        .filter(|e| e.file_name().to_string_lossy().eq_ignore_ascii_case("data"))
+        .filter_map(|e| fs::read_dir(e.path()).ok())
+        .flat_map(|d| d.flatten())
+        .any(|e| {
+            e.file_name()
+                .to_string_lossy()
+                .to_lowercase()
+                .ends_with(".noa")
+        })
+}
+
 /// Guesses the engine from the files at the top of the game folder.
 fn detect(game: &Path) -> Option<String> {
     let names: Vec<String> = fs::read_dir(game)
@@ -181,6 +198,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("cs2.exe") || names.iter().any(|n| n == "scene.int") {
         // CatSystem2: cs2.exe beside the .int archives
         Some("catsystem2".into())
+    } else if names.iter().any(|n| n.ends_with(".noa")) || noa_in_data(game) {
+        // Entis GLS: NOA archives at the top or in Data/
+        Some("entis".into())
     } else if has("script.pac") {
         Some("nexas".into())
     } else if has("data.pac") {

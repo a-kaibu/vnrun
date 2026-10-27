@@ -512,7 +512,7 @@ impl Lossless {
         if i.blocking == 0 {
             return Err("eri: no blocking".into());
         }
-        if i.arch != -1 && i.arch != -4 {
+        if i.arch != -1 && i.arch != -4 && i.arch != -16 {
             return Err(format!("eri: code {} not supported", i.arch));
         }
         let channels = match i.format & 0xffff {
@@ -618,6 +618,10 @@ impl Lossless {
             v => return Err(format!("eri: stream version {v} not supported")),
         }
         let gamma = self.arch == -1;
+        let nemesis = self.arch == -16;
+        if nemesis && enc & 1 != 0 && self.channels >= 3 {
+            return Err("eri: bad stream header".into());
+        }
         let mut op_tree = Tree::new();
         let nblocks = self.wblocks * self.hblocks;
         let mut ops = Vec::new();
@@ -633,10 +637,18 @@ impl Lossless {
         if c.bits.bit() != 0 {
             return Err("eri: bad stream".into());
         }
+        let mut erisa = None;
         if gamma {
             if enc & 1 != 0 {
                 c.init_gamma();
             }
+        } else if nemesis {
+            let bits = std::mem::replace(&mut c.bits, Bits::new(&[]));
+            erisa = Some((
+                crate::erisa::Arith::from_bits(bits),
+                crate::erisa::Model::new(),
+                crate::erisa::ErisaBytes::default(),
+            ));
         } else {
             c.prepare_erina();
         }
@@ -663,6 +675,8 @@ impl Lossless {
                         let v = ops[opi];
                         opi += 1;
                         v
+                    } else if let Some((a, m, _)) = erisa.as_mut() {
+                        a.symbol(m) as i32 as u32
                     } else if !gamma {
                         huffman(&mut c.bits, &mut op_tree, false) as u32
                     } else {
@@ -676,7 +690,9 @@ impl Lossless {
                     }
                     if self.format == 2 { 0xc0 } else { 0 }
                 };
-                let got = if gamma {
+                let got = if let Some((a, _, e)) = erisa.as_mut() {
+                    e.decode(a, &mut arrange)
+                } else if gamma {
                     c.gamma_bytes(&mut arrange)
                 } else {
                     c.erina_bytes(&mut arrange)

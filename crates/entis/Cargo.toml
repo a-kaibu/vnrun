@@ -9,4 +9,5 @@ description = "An Entis GLS engine for the browser: reads NOA archives, ERI pict
 nexas = { path = "../nexas" }
 encoding_rs = "0.8"
 fontdue = "0.9"
+roxmltree = "0.20"
 image = { version = "0.25", default-features = false, features = ["png"] }

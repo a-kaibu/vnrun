@@ -162,7 +162,11 @@ pub struct Arith<'a> {
 
 impl<'a> Arith<'a> {
     pub fn new(src: &'a [u8]) -> Arith<'a> {
-        let mut bits = Bits::new(src);
+        Arith::from_bits(Bits::new(src))
+    }
+
+    /// Starts the code at the current position of a bit reader.
+    pub fn from_bits(mut bits: Bits<'a>) -> Arith<'a> {
         let code = bits.bits(32);
         Arith {
             bits,
@@ -229,6 +233,59 @@ impl<'a> Arith<'a> {
             }
             None => ESC,
         }
+    }
+}
+
+/// ERISA-coded bytes (lossless ERI pictures of the Nemesis architecture): each byte is coded in
+/// the model of the byte before it; a zero is followed by the count of zeros after it.
+pub struct ErisaBytes {
+    table: Vec<Model>,
+    run: Model,
+    last: usize,
+    length: u32,
+}
+
+impl Default for ErisaBytes {
+    fn default() -> Self {
+        ErisaBytes {
+            table: vec![Model::new(); 0x101],
+            run: Model::new(),
+            last: 0,
+            length: 0,
+        }
+    }
+}
+
+impl ErisaBytes {
+    pub fn decode(&mut self, a: &mut Arith, dst: &mut [i8]) -> usize {
+        let mut i = 0;
+        let mut p = self.last;
+        while i < dst.len() {
+            if self.length > 0 {
+                let n = (dst.len() - i).min(self.length as usize);
+                self.length -= n as u32;
+                dst[i..i + n].iter_mut().for_each(|v| *v = 0);
+                i += n;
+                continue;
+            }
+            let Some(k) = a.index(&self.table[p]) else {
+                break;
+            };
+            let sym = self.table[p].sym[k].1;
+            self.table[p].increase(k);
+            dst[i] = sym as i8;
+            i += 1;
+            if sym == 0 {
+                let Some(k) = a.index(&self.run) else {
+                    break;
+                };
+                self.length = self.run.sym[k].1 as u16 as u32;
+                self.run.increase(k);
+            }
+            p = (sym as i32 & 0xff) as usize;
+        }
+        self.last = p;
+        i
     }
 }
 

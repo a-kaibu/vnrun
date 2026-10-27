@@ -4,6 +4,8 @@
 
 use std::collections::HashMap;
 
+pub type S = std::rc::Rc<str>;
+
 #[derive(Clone, Debug)]
 pub enum Init {
     Object(String),
@@ -197,19 +199,19 @@ pub enum Mode {
 
 #[derive(Clone, Debug)]
 pub enum Imm {
-    Object(String),
+    Object(S),
     Reference,
     Array,
     Hash,
     Integer(i64),
     Real(f64),
-    String(String),
+    String(S),
 }
 
 #[derive(Clone, Debug)]
 pub enum Key {
     Index(i32),
-    Name(String),
+    Name(S),
     /// the whole frame / object
     Whole,
 }
@@ -217,7 +219,7 @@ pub enum Key {
 #[derive(Clone, Debug)]
 pub enum Op {
     /// a new variable: (where, type, class name for objects, name)
-    New(Mode, u8, Option<String>, String),
+    New(Mode, u8, Option<S>, S),
     Free,
     LoadImm(Imm),
     Load(Mode, Key),
@@ -225,12 +227,12 @@ pub enum Op {
     Store(Option<u8>),
     /// function entry: name, parameters (type, class, name); None: a try block whose catch
     /// handler is at the address
-    Enter(String, Result<Vec<(u8, Option<String>, String)>, u32>),
+    Enter(S, Result<Vec<(u8, Option<S>, S)>, u32>),
     Leave,
     Jump(u32),
     /// jump when the popped value is (non-)zero: (jump when true?, target)
     CJump(u8, u32),
-    Call(Mode, i32, String),
+    Call(Mode, i32, S),
     Return(u8),
     Element(Key),
     ElementIndirect,
@@ -250,14 +252,14 @@ impl Image {
         *p += 4;
         Ok(u32::from_le_bytes(v.try_into().unwrap()))
     }
-    fn rd_str(&self, p: &mut usize) -> Result<String, String> {
+    fn rd_str(&self, p: &mut usize) -> Result<S, String> {
         let n = self.rd_u32(p)?;
         if n == 0x8000_0000 {
             let i = self.rd_u32(p)? as usize;
             return self
                 .strings
                 .get(i)
-                .cloned()
+                .map(|s| S::from(s.as_str()))
                 .ok_or_else(|| format!("csx: string {i}"));
         }
         let n = n as usize;
@@ -267,7 +269,7 @@ impl Image {
             .chunks_exact(2)
             .map(|c| u16::from_le_bytes([c[0], c[1]]))
             .collect();
-        Ok(String::from_utf16_lossy(&u))
+        Ok(String::from_utf16_lossy(&u).into())
     }
     fn rd_mode(&self, p: &mut usize) -> Result<Mode, String> {
         Ok(match self.rd_u8(p)? {

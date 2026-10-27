@@ -3,8 +3,15 @@
 //! listed in the exe's IDR_COTOMI resource.
 
 pub mod csx;
+pub mod engine;
 pub mod eri;
 pub mod erisa;
 pub mod game;
+pub mod mio;
+pub mod natives;
 pub mod noa;
 pub mod pe;
+pub mod skin;
+pub mod text;
+pub mod value;
+pub mod vm;
