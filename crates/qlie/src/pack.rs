@@ -236,7 +236,7 @@ fn name_hash(name: &str, mut hash: u32, mut seed: u32) -> (u32, u32) {
 fn decrypt_v31(data: &mut [u8], e: &Entry, arc_key: u32, key_file: Option<&[u8]>) {
     let len = data.len() as u32;
     if e.method == 1 {
-        let (hash, seed) = name_hash(&e.name, 0x85F532, 0x33F641);
+        let (hash, seed) = name_hash(&e.name.replace('/', "\\"), 0x85F532, 0x33F641);
         let seed = seed.wrapping_add(
             arc_key
                 ^ (7u32
@@ -253,7 +253,7 @@ fn decrypt_v31(data: &mut [u8], e: &Entry, arc_key: u32, key_file: Option<&[u8]>
             t[k] as u64 | (t[k + 1] as u64) << 32
         });
     } else {
-        let (hash, seed) = name_hash(&e.name, 0x86F7E2, 0x4437F1);
+        let (hash, seed) = name_hash(&e.name.replace('/', "\\"), 0x86F7E2, 0x4437F1);
         let seed = seed.wrapping_add(
             arc_key
                 ^ (13u32
