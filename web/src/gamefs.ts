@@ -2,6 +2,8 @@
 // the engines read files from inside their frame loop.
 
 const CACHE_BYTES = 256 * 1024 * 1024;
+// Largest save body sent with keepalive: two must fit in its 64 KiB budget (send below).
+const KEEPALIVE_BODY = 30 * 1024;
 
 /** One file of manifest.json: path and size. */
 export interface ManifestFile {
@@ -241,10 +243,16 @@ export class GameFS {
     const url = `${this.base}saves/${encodePath(path)}`;
     this.pending = this.pending.then(async () => {
       try {
-        const res = await fetch(url, {
-          method,
-          body: body as BodyInit | undefined,
-          keepalive: !body || body.length < 60000,
+        // keepalive lets a save finish after the page closes, but Chromium allows only 64 KiB
+        // of keepalive bodies in flight, and the previous request still counts for a moment
+        // after its response: two 50 KB saves in a row failed with "Failed to fetch".
+        // Small bodies keep it; a refused one goes again as an ordinary request.
+        const send = (keepalive: boolean) =>
+          fetch(url, { method, body: body as BodyInit | undefined, keepalive });
+        const keepalive = !body || body.length <= KEEPALIVE_BODY;
+        const res = await send(keepalive).catch((error) => {
+          if (!keepalive) throw error;
+          return send(false);
         });
         if (!res.ok && !(method === "DELETE" && res.status === 404)) throw new Error(`HTTP ${res.status}`);
         this.failed.delete(path);
