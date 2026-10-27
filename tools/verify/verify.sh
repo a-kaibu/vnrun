@@ -64,6 +64,7 @@ game_root() {
     advhd) m=(-iname rio.arc) ;;
     tmrhiro) m=(-iname srp.pac -o -iname mg_data.mbl) ;;
     livemaker) m=(-iname live.dll -o -iname game.ext) ;;
+    catsystem2) m=(-iname scene.int) ;;
     nscripter) m=(-iname nscript.dat -o -iname 0.txt -o -iname 00.txt -o -iname '*.nsa' -o -iname '*.sar') ;;
     html) m=(-iname package.json -o -iname index.html -o -iname package.nw) ;;
   esac

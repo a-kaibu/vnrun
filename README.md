@@ -48,7 +48,7 @@ cargo run --release -p vnrun-devserver -- --game ~/games/シオンの血族_体�
 # → http://127.0.0.1:8090/ をブラウザで開く。セーブは ./saves/<フォルダ名>/ に残る
 ```
 
-`--game` はエンジンのファイルがある場所 (Siglus なら `Scene.pck` と `Gameexe.dat` のあるフォルダ) を指す。エンジンは自動で判定し、外れたら `--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter|kirikiri|yuris|nexas|tmrhiro|livemaker|advhd|html` で指定する。別の端末から開くなら `--addr 0.0.0.0:8090`。
+`--game` はエンジンのファイルがある場所 (Siglus なら `Scene.pck` と `Gameexe.dat` のあるフォルダ) を指す。エンジンは自動で判定し、外れたら `--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter|kirikiri|yuris|nexas|tmrhiro|livemaker|catsystem2|advhd|html` で指定する。別の端末から開くなら `--addr 0.0.0.0:8090`。
 
 `vnrun-devserver --game` は、配信を始める前に SDRS の展開、EXE 内蔵 cxdec のパラメーター抽出、Siglus の二次鍵の前処理を自動で行う。前処理が失敗した場合はエラーで止まり、配信しない。
 

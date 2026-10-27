@@ -1,0 +1,15 @@
+[package]
+name = "catsystem2-web"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "The CatSystem2 engine for the browser: wasm-bindgen exports for web/src/engines/catsystem2.ts"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+catsystem2 = { path = "../catsystem2" }
+nexas = { path = "../nexas" }
+wasm-bindgen = "=0.2.129"
+js-sys = "0.3"

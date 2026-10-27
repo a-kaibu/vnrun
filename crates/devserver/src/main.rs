@@ -178,6 +178,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("live.dll") || has("game.ext") {
         // LiveMaker: the archive is appended to the exe (live.dll beside it) or in game.dat/.ext
         Some("livemaker".into())
+    } else if has("cs2.exe") || names.iter().any(|n| n == "scene.int") {
+        // CatSystem2: cs2.exe beside the .int archives
+        Some("catsystem2".into())
     } else if has("script.pac") {
         Some("nexas".into())
     } else if has("data.pac") {
