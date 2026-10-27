@@ -739,12 +739,10 @@ const CFUNC: &[(&str, HostFn)] = &[
         vec![]
     }),
     ("LegacyGame__lua_GetGameState", |s, a| {
-        vec![Value::Num(
-            s.game_state.get(&a.i(0)).copied().unwrap_or(0.0),
-        )]
+        ok(s.game_state.get(&a.i(0)).copied().unwrap_or(false))
     }),
     ("LegacyGame__lua_SetGameState", |s, a| {
-        s.game_state.insert(a.i(0), a.n(1));
+        s.game_state.insert(a.i(0), a.b(1));
         vec![]
     }),
     ("LegacyGame__lua_NeedProcess", |s, a| {
@@ -812,6 +810,59 @@ const CFUNC: &[(&str, HostFn)] = &[
         vec![a.0.first().cloned().unwrap_or_default()]
     }),
 ];
+
+#[cfg(test)]
+mod state_tests {
+    use super::*;
+    use crate::files::Files;
+
+    struct Empty;
+    impl Files for Empty {
+        fn size(&mut self, _: &str) -> Option<u64> {
+            None
+        }
+        fn read_range(&mut self, _: &str, _: u64, _: usize) -> Option<Vec<u8>> {
+            None
+        }
+        fn list(&mut self) -> Vec<String> {
+            Vec::new()
+        }
+        fn read_save(&mut self, _: &str) -> Option<Vec<u8>> {
+            None
+        }
+        fn write_save(&mut self, _: &str, _: &[u8]) {}
+    }
+
+    #[test]
+    fn lua_game_state_round_trips_boolean_values() {
+        let get = CFUNC
+            .iter()
+            .find(|(name, _)| *name == "LegacyGame__lua_GetGameState")
+            .unwrap()
+            .1;
+        let set = CFUNC
+            .iter()
+            .find(|(name, _)| *name == "LegacyGame__lua_SetGameState")
+            .unwrap()
+            .1;
+        let mut state = State::new(Box::new(Empty), 1, 1);
+        let key = Value::Int(4);
+        assert!(matches!(
+            get(&mut state, &A(vec![key.clone()]))[0],
+            Value::Bool(false)
+        ));
+        set(&mut state, &A(vec![key.clone(), Value::Bool(true)]));
+        assert!(matches!(
+            get(&mut state, &A(vec![key.clone()]))[0],
+            Value::Bool(true)
+        ));
+        set(&mut state, &A(vec![key.clone(), Value::Bool(false)]));
+        assert!(matches!(
+            get(&mut state, &A(vec![key]))[0],
+            Value::Bool(false)
+        ));
+    }
+}
 
 /// Gives Lua the host's classes, functions and constants.
 pub fn install(lua: &mut Lua, st: &St) {

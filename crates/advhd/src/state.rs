@@ -53,7 +53,7 @@ pub struct State {
     /// value in other commands' strings and as <@NAME> in text
     pub strings: HashMap<String, String>,
     /// LegacyGame__lua_SetGameState
-    pub game_state: HashMap<i64, f64>,
+    pub game_state: HashMap<i64, bool>,
     /// the interface asked the scenario to wait (LUA_PROCESS_GAME_PAUSED)
     pub paused: bool,
     /// other requests of the interface (LegacyGame__lua_NeedProcess), for the engine to act on

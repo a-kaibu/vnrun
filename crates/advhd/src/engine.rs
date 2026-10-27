@@ -735,6 +735,7 @@ impl Engine {
             }
             0x16 => {
                 if a(0).int() == 0 && self.window_open {
+                    self.st.borrow_mut().game_state.insert(4, false);
                     self.call("closeMessageWindow", vec![Value::Bool(true)]);
                     self.window_open = false;
                 }
@@ -1000,6 +1001,7 @@ impl Engine {
 
     fn message(&mut self, text: &str) {
         if !self.window_open {
+            self.st.borrow_mut().game_state.insert(4, true);
             self.call("openMessageWindow", vec![Value::Bool(true)]);
             self.window_open = true;
         }
