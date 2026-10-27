@@ -1,0 +1,52 @@
+--- a/base/XP3Archive.cpp
++++ b/base/XP3Archive.cpp
+@@ -592,6 +592,18 @@
+ 	}
+ }
+ //---------------------------------------------------------------------------
++// vnrun: reads an entry whole for checking it, false when it can't be read. The notice of
++// protected KiriKiri Z archives lists more bytes than it stores, so reading it fails.
++template <class Open> static bool ReadEntry(Open open, std::vector<tjs_uint8> &out)
++{
++	try {
++		std::unique_ptr<tTJSBinaryStream> stream(open());
++		return stream->Read(out.data(), (tjs_uint)out.size()) == out.size();
++	} catch(...) {
++		return false;
++	}
++}
++//---------------------------------------------------------------------------
+ // Validate a candidate against complete entries before using it. Plugin names
+ // alone cannot identify trial/release variants of cxdec.
+ bool tTVPXP3Archive::DetectCxdec()
+@@ -603,8 +615,7 @@
+    const auto &item=ItemVector[i];
+    if(!item.Protected || item.OrgSize<16 || item.OrgSize>1024*1024) continue;
+    std::vector<tjs_uint8> bytes((size_t)item.OrgSize);
+-   std::unique_ptr<tTJSBinaryStream> stream(CreateStreamByIndex(i));
+-   stream->ReadBuffer(bytes.data(),(tjs_uint)bytes.size());
++   if(!ReadEntry([&]{ return CreateStreamByIndex(i); }, bytes)) continue;
+    decoder->decrypt(item.FileHash,0,bytes.data(),bytes.size());
+    if(adler32(adler32(0L,Z_NULL,0),bytes.data(),bytes.size())!=item.FileHash) break;
+    ++valid;
+@@ -710,9 +721,7 @@
+         if(magic < 0 && item.OrgSize <= 1024*1024)
+         {
+             std::vector<tjs_uint8> raw((size_t)item.OrgSize);
+-            std::unique_ptr<tTJSBinaryStream> stream(CreateStreamByIndex(i));
+-            stream->ReadBuffer(raw.data(),(tjs_uint)raw.size());
+-            if(adler32(adler32(0L,Z_NULL,0),raw.data(),raw.size())==item.FileHash)
++            if(ReadEntry([&]{ return CreateStreamByIndex(i); }, raw) && adler32(adler32(0L,Z_NULL,0),raw.data(),raw.size())==item.FileHash)
+             {
+                 ++ntext;
+                 continue;
+@@ -819,8 +828,7 @@
+ 				const auto &item=ItemVector[i];
+ 				if(!item.Protected || item.OrgSize<16 || item.OrgSize>1024*1024) continue;
+ 				std::vector<tjs_uint8> bytes((size_t)item.OrgSize);
+-				std::unique_ptr<tTJSBinaryStream> stream(CreateStreamByIndex(i));
+-				stream->ReadBuffer(bytes.data(),(tjs_uint)bytes.size());
++				if(!ReadEntry([&]{ return CreateStreamByIndex(i); }, bytes)) continue;
+ 				vnrun::AkabeiDecrypt(key,item.FileHash,0,bytes.data(),bytes.size(),period);
+ 				if(adler32(adler32(0L,Z_NULL,0),bytes.data(),bytes.size())!=item.FileHash) break;
+ 				++valid;
