@@ -78,8 +78,9 @@ impl Index {
         let mut first = None;
         for exact in [true, false] {
             for swaps in SWAPS {
-                for wide_offsets in [false, true] {
-                    match Index::parse_with(head, swaps, wide_offsets, exact) {
+                // after the offset: nothing (466), its high half (482+), or 12 more bytes (222)
+                for tail in [18, 22, 26] {
+                    match Index::parse_with(head, swaps, tail, exact) {
                         Ok(index) => return Ok(index),
                         Err(e) => drop(first.get_or_insert(e)),
                     }
@@ -89,7 +90,7 @@ impl Index {
         Err(first.unwrap_or_default())
     }
 
-    fn parse_with(head: &[u8], swaps: &[u8], wide_offsets: bool, exact: bool) -> Result<Index, String> {
+    fn parse_with(head: &[u8], swaps: &[u8], tail: usize, exact: bool) -> Result<Index, String> {
         if head.get(..4) != Some(b"YPF\0") {
             return Err("not a YPF archive".into());
         }
@@ -113,13 +114,13 @@ impl Index {
             let size = u32_at(head, p + 2).ok_or("short index")?;
             let packed_size = u32_at(head, p + 6).ok_or("short index")?;
             let offset = u32_at(head, p + 10).ok_or("short index")?;
-            if (offset as usize) < data_start || wide_offsets && u32_at(head, p + 14).ok_or("short index")? != 0 {
+            if (offset as usize) < data_start || tail == 22 && u32_at(head, p + 14).ok_or("short index")? != 0 {
                 return Err(format!("entry {} points into the index", index.entries.len()));
             }
             let name = sjis::decode(&raw);
             index.by_name.insert(fold(&name), index.entries.len());
             index.entries.push(Entry { name, compressed, size, packed_size, offset });
-            at = p + if wide_offsets { 22 } else { 18 };
+            at = p + tail;
         }
         if exact && at != data_start {
             return Err("the index does not end where the files start".into());
