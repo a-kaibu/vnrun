@@ -14,6 +14,7 @@ interface Game {
   frame(): void;
   ended(): boolean;
   click(x: number, y: number): void;
+  right_click(x: number, y: number): void;
   move_to(x: number, y: number): void;
   input_wanted(): boolean;
   enter_text(text: string): void;
@@ -54,6 +55,7 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
   canvas.addEventListener("pointerdown", (event) => {
     canvas.focus();
     if (event.button === 0) game.click(...presenter.toFrame(event));
+    if (event.button === 2) game.right_click(...presenter.toFrame(event));
   });
   canvas.addEventListener("pointermove", (event) => game.move_to(...presenter.toFrame(event)));
   canvas.addEventListener("contextmenu", (event) => event.preventDefault());

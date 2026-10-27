@@ -94,6 +94,10 @@ impl Game {
         self.e.click(x, y);
     }
 
+    pub fn right_click(&mut self, x: f32, y: f32) {
+        self.e.right_click(x, y);
+    }
+
     pub fn move_to(&mut self, x: f32, y: f32) {
         self.e.mouse_move(x, y);
     }

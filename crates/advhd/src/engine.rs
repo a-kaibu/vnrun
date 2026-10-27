@@ -45,7 +45,7 @@ pub struct Engine {
     stack: Vec<(Rc<Script>, usize)>,
     wait: Wait,
     timers: HashMap<String, f64>,
-    clicks: Vec<(f32, f32)>,
+    clicks: Vec<(f32, f32, bool)>,
     moved: Option<(f32, f32)>,
     /// where message text goes (getMessageWindowKey) and since when it comes out
     msg: Option<(String, String, f64)>,
@@ -239,7 +239,11 @@ impl Engine {
     }
 
     pub fn click(&mut self, x: f32, y: f32) {
-        self.clicks.push((x, y));
+        self.clicks.push((x, y, false));
+    }
+
+    pub fn right_click(&mut self, x: f32, y: f32) {
+        self.clicks.push((x, y, true));
     }
 
     pub fn mouse_move(&mut self, x: f32, y: f32) {
@@ -376,7 +380,7 @@ impl Engine {
             let a = self.mouse_args(x, y);
             self.call("onMouseMove", a);
         }
-        for (x, y) in std::mem::take(&mut self.clicks) {
+        for (x, y, right) in std::mem::take(&mut self.clicks) {
             let paused = self.st.borrow().paused;
             if x >= 0.0 {
                 self.st.borrow_mut().cursor = (x, y);
@@ -385,10 +389,15 @@ impl Engine {
                     eprintln!("click {x},{y}: {:?}", &a[..3]);
                 }
                 self.call("onMouseMove", a.clone());
-                self.call("onLButtonDown", a.clone());
-                self.call("onLButtonUp", a);
+                if right {
+                    self.call("onRButtonDown", a.clone());
+                    self.call("onRButtonUp", a);
+                } else {
+                    self.call("onLButtonDown", a.clone());
+                    self.call("onLButtonUp", a);
+                }
             }
-            if paused {
+            if paused || right {
                 continue;
             }
             match self.wait {

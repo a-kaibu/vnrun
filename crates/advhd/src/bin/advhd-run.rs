@@ -1,6 +1,6 @@
 //! Runs an AdvHD game without a window and saves frames as PNG files.
 //!
-//!     advhd-run <game folder> <frames> <out prefix> [frame[:x:y] ...]
+//!     advhd-run <game folder> <frames> <out prefix> [frame[:x:y[:right]] ...]
 //!
 //! Each `frame` is saved as `<out prefix><frame>.png`; with `:x:y`, there is also a click there
 //! on that frame (`-1:-1`: a click on nothing, as Enter). The last frame is always saved.
@@ -21,12 +21,12 @@ fn main() -> Result<(), String> {
     let dir = Path::new(&args[1]);
     let frames: u64 = args[2].parse().map_err(|_| "frames: not a number")?;
     let prefix = &args[3];
-    let mut marks: Vec<(u64, Option<(f32, f32)>)> = Vec::new();
+    let mut marks: Vec<(u64, Option<(f32, f32, bool)>)> = Vec::new();
     for m in &args[4..] {
         let v: Vec<&str> = m.split(':').collect();
         let n = |s: &str| s.parse::<f32>().map_err(|_| format!("{m}: not a number"));
-        let click = if v.len() == 3 {
-            Some((n(v[1])?, n(v[2])?))
+        let click = if v.len() == 3 || (v.len() == 4 && v[3] == "right") {
+            Some((n(v[1])?, n(v[2])?, v.len() == 4))
         } else {
             None
         };
@@ -55,8 +55,12 @@ fn main() -> Result<(), String> {
             e.goto(s)?;
         }
         for (_, click) in marks.iter().filter(|m| m.0 == f) {
-            if let Some((x, y)) = click {
-                e.click(*x, *y);
+            if let Some((x, y, right)) = click {
+                if *right {
+                    e.right_click(*x, *y);
+                } else {
+                    e.click(*x, *y);
+                }
             }
         }
         e.frame()?;
