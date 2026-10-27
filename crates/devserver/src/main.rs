@@ -19,6 +19,7 @@ use tiny_http::{Header, Method, Request, Response, Server, StatusCode};
 
 const SAVE_LIMIT: u64 = 64 * 1024 * 1024;
 const WORKERS: usize = 8;
+const SAVE_STAGING: &str = ".vnrun-staging";
 
 struct Config {
     dist: PathBuf,
@@ -413,12 +414,16 @@ fn handle(cfg: &Config, mut req: Request) {
     if url == "/game/saves/" {
         let mut list = Vec::new();
         walk(&cfg.saves, "", &mut list);
+        list.retain(|entry| !entry.p.starts_with(&format!("{SAVE_STAGING}/")));
         return json(req, &list);
     }
     if let Some(rest) = url.strip_prefix("/game/saves/") {
         let Some(rel) = safe_rel(rest) else {
             return status(req, 400, "bad path");
         };
+        if rel.components().next() == Some(Component::Normal(SAVE_STAGING.as_ref())) {
+            return status(req, 404, "not found");
+        }
         let path = cfg.saves.join(rel);
         return match method {
             Method::Get => send_file(req, &path),
@@ -463,7 +468,7 @@ impl From<io::Error> for SaveError {
     }
 }
 
-// Stream into a sibling directory on the same filesystem, then replace the save in one rename.
+// Stream into a private directory on the same filesystem, then replace the save in one rename.
 // A reader sees either the old complete save or the new complete save, never a partial upload.
 fn write_save(
     root: &Path,
@@ -476,12 +481,7 @@ fn write_save(
         return Err(SaveError::TooLarge);
     }
     fs::create_dir_all(root)?;
-    let root = root.canonicalize()?;
-    let staging = root
-        .parent()
-        .filter(|p| !p.as_os_str().is_empty())
-        .unwrap_or_else(|| Path::new("."))
-        .join(".vnrun-staging");
+    let staging = root.join(SAVE_STAGING);
     fs::create_dir_all(&staging)?;
     let mut tmp = tempfile::NamedTempFile::new_in(staging)?;
     let bytes = io::copy(&mut input.take(limit.saturating_add(1)), &mut tmp)?;
@@ -553,12 +553,7 @@ mod detection_tests {
         assert_eq!(fs::read(&path).unwrap(), b"old");
         assert!(write_save(&root, &path, Some(3), 8, &mut &b"new"[..]).is_ok());
         assert_eq!(fs::read(&path).unwrap(), b"new");
-        assert_eq!(
-            fs::read_dir(dir.path().join(".vnrun-staging"))
-                .unwrap()
-                .count(),
-            0
-        );
+        assert_eq!(fs::read_dir(root.join(SAVE_STAGING)).unwrap().count(), 0);
     }
 
     #[test]

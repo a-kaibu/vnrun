@@ -61,7 +61,27 @@ fn slow_transfer_does_not_block_other_requests_or_expose_partial_saves() {
     let mut header = [0; 1];
     slow.read_exact(&mut header).unwrap();
     let mut upload = connect(&addr);
-    upload.write_all(b"PUT /game/saves/slot.dat HTTP/1.1\r\nHost: localhost\r\nContent-Length: 6\r\nConnection: close\r\n\r\nnew").unwrap();
+    upload.write_all(b"PUT /game/saves/slot.dat HTTP/1.1\r\nHost: localhost\r\nContent-Length: 65536\r\nConnection: close\r\n\r\n").unwrap();
+    upload.write_all(&vec![b'n'; 16384]).unwrap();
+    let deadline = Instant::now() + Duration::from_secs(5);
+    let staging = saves.join(".vnrun-staging");
+    while !fs::read_dir(&staging).is_ok_and(|mut files| files.next().is_some()) {
+        assert!(Instant::now() < deadline);
+        thread::sleep(Duration::from_millis(10));
+    }
+    let mut listing = connect(&addr);
+    listing
+        .write_all(b"GET /game/saves/ HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
+        .unwrap();
+    let mut list = String::new();
+    listing.read_to_string(&mut list).unwrap();
+    assert!(list.contains("slot.dat"));
+    assert!(!list.contains(".vnrun-staging"));
+    let mut private = connect(&addr);
+    private.write_all(b"GET /game/saves/.vnrun-staging/anything HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n").unwrap();
+    let mut response = String::new();
+    private.read_to_string(&mut response).unwrap();
+    assert!(response.starts_with("HTTP/1.1 404"), "{response}");
     let mut get = connect(&addr);
     get.write_all(
         b"GET /game/saves/slot.dat HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n",
@@ -70,9 +90,9 @@ fn slow_transfer_does_not_block_other_requests_or_expose_partial_saves() {
     let mut response = Vec::new();
     get.read_to_end(&mut response).unwrap();
     assert!(response.ends_with(b"old"));
-    upload.write_all(b"!!!").unwrap();
+    upload.write_all(&vec![b'n'; 49152]).unwrap();
     let mut response = String::new();
     upload.read_to_string(&mut response).unwrap();
     assert!(response.starts_with("HTTP/1.1 204"), "{response}");
-    assert_eq!(fs::read(saves.join("slot.dat")).unwrap(), b"new!!!");
+    assert_eq!(fs::read(saves.join("slot.dat")).unwrap(), vec![b'n'; 65536]);
 }
