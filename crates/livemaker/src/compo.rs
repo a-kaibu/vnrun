@@ -45,6 +45,7 @@ pub const RCLICKSCRAP: u8 = 74;
 pub const ONCLOSING: u8 = 77;
 pub const ONCLOSED: u8 = 78;
 pub const CARETX: u8 = 79;
+pub const READONLY: u8 = 99;
 pub const CARETY: u8 = 80;
 pub const IGNOREMOUSE: u8 = 81;
 pub const ONRBTNDOWN: u8 = 39;

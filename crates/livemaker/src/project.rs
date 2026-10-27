@@ -128,6 +128,76 @@ pub fn parse_lpm(text: &str) -> Vec<MenuItem> {
     out
 }
 
+/// A preview menu in the binary form of LiveMaker 2 ("LivePrevMenu" and a three-digit
+/// version): its size and buttons. Each button is its place, picture and name, then pictures
+/// for the pointer over it and so on; those are taken in the order the XML form names them.
+pub fn parse_lpm_bin(b: &[u8]) -> Option<(i64, i64, Vec<MenuItem>)> {
+    let u32_at = |at: usize| -> Option<u32> {
+        Some(u32::from_le_bytes(b.get(at..at + 4)?.try_into().ok()?))
+    };
+    // a length and a picture's name: (the name, where it ends)
+    let picture = |at: usize| -> Option<(String, usize)> {
+        let n = u32_at(at)? as usize;
+        if n == 0 || n > 260 {
+            return None;
+        }
+        let s = nexas::sjis::decode(b.get(at + 4..at + 4 + n)?);
+        let low = s.to_lowercase();
+        [".gal", ".png", ".bmp", ".jpg", ".gif"]
+            .iter()
+            .any(|e| low.ends_with(e))
+            .then_some((s, at + 4 + n))
+    };
+    let string = |at: usize| -> Option<(String, usize)> {
+        let n = u32_at(at)? as usize;
+        Some((nexas::sjis::decode(b.get(at + 4..at + 4 + n)?), at + 4 + n))
+    };
+    if !b.starts_with(b"LivePrevMenu") {
+        return None;
+    }
+    let mut at = 15;
+    let (w, h, count) = (u32_at(at)?, u32_at(at + 4)?, u32_at(at + 8)? as usize);
+    at += 12;
+    // a button starts with its place and its picture
+    let starts = |at: usize| picture(at + 8).is_some();
+    let mut out = Vec::new();
+    for _ in 0..count {
+        let (left, top) = (u32_at(at)? as i32, u32_at(at + 4)? as i32);
+        let (path, end) = picture(at + 8)?;
+        let (name, end) = string(end + 1)?;
+        // the rest of the button, up to the next one
+        let mut next = end;
+        while next + 12 <= b.len() && !starts(next) {
+            next += 1;
+        }
+        let next = if next + 12 > b.len() { b.len() } else { next };
+        let mut pics = Vec::new();
+        let mut k = end;
+        while k + 4 <= next {
+            match picture(k) {
+                Some((p, e)) if e <= next => {
+                    pics.push(p);
+                    k = e;
+                }
+                _ => k += 1,
+            }
+        }
+        let pick = |i: usize| pics.get(i).cloned().unwrap_or_else(|| path.clone());
+        out.push(MenuItem {
+            name,
+            left,
+            top,
+            group: 0,
+            hover: pick(0),
+            disabled: pick(3),
+            down: pick(4),
+            path: path.clone(),
+        });
+        at = next;
+    }
+    Some((w as i64, h as i64, out))
+}
+
 fn unescape(s: &str) -> String {
     s.replace("&lt;", "<")
         .replace("&gt;", ">")

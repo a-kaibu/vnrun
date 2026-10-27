@@ -4,7 +4,8 @@
 //!
 //! Each `frame` is saved as `<out prefix><frame>.png`; with `:x:y`, there is also a click there
 //! on that frame (`:x:y:r` a right click, `:x:y:m` only moves the pointer there); `:u` and `:d`
-//! turn the wheel up or down and `:k13` presses a key (Windows key codes). The last frame
+//! turn the wheel up or down, `:k13` presses a key (Windows key codes) and `:tabc` types abc.
+//! The last frame
 //! is always saved. LIVEMAKER_FONT names a TrueType font for text, LIVEMAKER_TRACE=1 prints the
 //! commands (2: also the per-frame idle handlers).
 
@@ -12,8 +13,9 @@ use std::path::Path;
 
 use nexas::files::Disk;
 
-/// where and how the pointer acts: c click, r right click, m move, u/d wheel, k key (code in x)
-type Pointer = (i32, i32, char);
+/// where and how the pointer acts: c click, r right click, m move, u/d wheel, k key (code in
+/// x), t typing (the text)
+type Pointer = (i32, i32, char, String);
 
 fn main() -> Result<(), String> {
     let args: Vec<String> = std::env::args().collect();
@@ -36,10 +38,10 @@ fn main() -> Result<(), String> {
             } else {
                 0
             };
-            Some((code, 0, kind))
+            Some((code, 0, kind, v[1][kind.len_utf8()..].to_string()))
         } else if v.len() >= 3 {
             let kind = v.get(3).and_then(|k| k.chars().next()).unwrap_or('c');
-            Some((n(v[1])? as i32, n(v[2])? as i32, kind))
+            Some((n(v[1])? as i32, n(v[2])? as i32, kind, String::new()))
         } else {
             None
         };
@@ -63,8 +65,9 @@ fn main() -> Result<(), String> {
             eprintln!("-- frame {f}");
         }
         for (_, click) in marks.iter().filter(|m| m.0 == f) {
-            if let Some((x, y, kind)) = click {
+            if let Some((x, y, kind, text)) = click {
                 match kind {
+                    't' => e.type_text(text),
                     'u' | 'd' => e.wheel(*kind == 'u'),
                     'k' => e.key(*x as i64),
                     'r' => {

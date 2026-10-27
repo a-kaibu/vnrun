@@ -353,8 +353,8 @@ b2008_marine	本編	961c800 (Marble) で START から本編の文章・立ち絵
 s2008_lune_inmu	本編	961c800 (Marble) で START から本編の文章・立ち絵まで (Chromium)
 dl_RJ129271	本編	タイトル→はじめから→名前入力→選択肢→本編の文章まで (livemaker-run とブラウザ)
 b2014_windmill_oasis	本編	タイトル→START→本編の文章・立ち絵・イベント CG まで (cs2-run とブラウザ)
-dl_RJ125204	タイトル	f1a4850 (LiveMaker) でタイトル画面まで表示 (Chromium)。START からの確認はこれから
+dl_RJ125204	本編	タイトル (バイナリ .lpm のメニュー)→初めから→本編の文章まで (livemaker-run)
 dl_RJ284038	本編	タイトル (背景つき、文字だけのメニューは体験版本来のもの)→はじめから→本編の文章まで (livemaker-run)
-dl_RJ341209	タイトル	f1a4850 (LiveMaker) でタイトル画面まで表示 (Chromium)。START からの確認はこれから
+dl_RJ341209	本編	タイトル→Start→名前入力 (打ち替えも可)→本編の文章まで、セーブ画面も開く (livemaker-run)。.lcm の演出 (ロゴ・タイトル前のアニメ) は未対応
 b2014_azarashi_soft	本編	タイトル→はじめから (名前は既定のまま)→案内文→マップ→選んだヒロインのシーンの文章・CG まで (cs2-run とブラウザ)
 b2017_laplacian	本編	タイトル→はじめから→選択肢 (体験版本編)→本編の文章・イベント CG まで (cs2-run とブラウザ)

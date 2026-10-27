@@ -16,7 +16,7 @@ use crate::archive::{Archive, key};
 use crate::compo::*;
 use crate::lsb::{self, Cmd, Expr, LabelRef, Param, Script};
 use crate::names;
-use crate::project::{MenuItem, Project, parse_lpm};
+use crate::project::{MenuItem, Project, parse_lpm, parse_lpm_bin};
 use crate::text::Fonts;
 use crate::tpword::Glyph;
 use crate::value::{Value, Var};
@@ -428,9 +428,34 @@ impl Engine {
         self.keys.push(if up { 257 } else { 256 });
     }
 
-    /// A key press, by its Windows virtual-key code.
+    /// A key press, by its Windows virtual-key code. Backspace also edits the text box
+    /// being typed in.
     pub fn key(&mut self, code: i64) {
         self.keys.push(code);
+        if code == 8 {
+            self.edit_text(|t| {
+                t.pop();
+            });
+        }
+    }
+
+    /// Typed text, for the text box in front (a name entry, say).
+    pub fn type_text(&mut self, s: &str) {
+        self.edit_text(|t| t.push_str(s));
+    }
+
+    fn edit_text(&mut self, f: impl FnOnce(&mut String)) {
+        let edit = self
+            .order()
+            .into_iter()
+            .rev()
+            .map(|t| t.0)
+            .find(|&i| self.objs[i].kind == lsb::EDIT_NEW && !self.objs[i].flag(READONLY));
+        let Some(i) = edit else { return };
+        let mut text = self.objs[i].str(TEXT);
+        f(&mut text);
+        let name = self.objs[i].name().to_string();
+        self.set_prop(&name, TEXT, Value::Str(text));
     }
 
     pub fn take_sounds(&mut self) -> Vec<SoundEvent> {
@@ -714,7 +739,11 @@ impl Engine {
                 };
                 let text = nexas::sjis::decode(&b);
                 let dir = src.rfind('\\').map_or("", |n| &src[..n + 1]).to_string();
-                let mut items = parse_lpm(&text);
+                let bin = parse_lpm_bin(&b);
+                let mut items = match &bin {
+                    Some((_, _, items)) => items.clone(),
+                    None => parse_lpm(&text),
+                };
                 for it in items.iter_mut() {
                     for p in [&mut it.path, &mut it.hover, &mut it.down, &mut it.disabled] {
                         if !p.is_empty() {
@@ -729,7 +758,10 @@ impl Engine {
                         .and_then(|s| s.trim().parse::<i64>().ok())
                         .unwrap_or(0)
                 };
-                let (w, h) = (tag("Width"), tag("Height"));
+                let (w, h) = match bin {
+                    Some((w, h, _)) => (w, h),
+                    None => (tag("Width"), tag("Height")),
+                };
                 let o = &mut self.objs[i];
                 o.disabled = vec![false; items.len()];
                 o.items = items;

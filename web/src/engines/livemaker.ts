@@ -16,6 +16,7 @@ interface Game {
   cancel(): void;
   wheel(up: boolean): void;
   key(code: number): void;
+  type_text(text: string): void;
   point(x: number, y: number): void;
   draws(): Float32Array;
   texture(id: number): Uint8Array;
@@ -123,6 +124,16 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
     ArrowDown: 40,
   };
   canvas.addEventListener("keydown", (event) => {
+    if (event.code === "Backspace") {
+      event.preventDefault();
+      game.key(8);
+      return;
+    }
+    // a character for a text box (a name entry, say)
+    if (event.key.length === 1 && event.code !== "Space" && !event.ctrlKey && !event.metaKey) {
+      game.type_text(event.key);
+      return;
+    }
     const code = keyCodes[event.code];
     if (code === undefined) return;
     event.preventDefault();
