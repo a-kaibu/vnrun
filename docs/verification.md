@@ -47,13 +47,13 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Artemis (art3m1s-core) | 6 | 1 | 5 |  |  |  |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 3 | 17 | 9 | 3 | 1 |  |  |
-| 吉里吉里 (KiriKiri SDL2) | 135 | 4 | 128 |  |  | 2 | 1 |  |
+| 吉里吉里 (KiriKiri SDL2) | 135 | 5 | 129 |  |  |  | 1 |  |
 | YU-RIS (vnrun) | 29 |  | 20 | 3 |  | 5 | 1 |  |
 | NeXAS (vnrun) | 16 | 6 | 1 |  | 1 | 7 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
 | Tmr-Hiro (vnrun) | 22 | 22 |  |  |  |  |  |  |
 | LiveMaker (vnrun) | 4 | 1 | 3 |  |  |  |  |  |
-| CatSystem2 (vnrun) | 1 | 1 |  |  |  |  |  |  |
+| CatSystem2 (vnrun) | 3 | 3 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -218,6 +218,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2019_tinkle_position | [おにギュＨ＿ＨＣＢ体験版](http://suezou.dyndns.org/dl2019/tinkle-position/onigyu_h/onigyuh_hcbtrial.zip) | 本編 | 1929e7a で「はじめる」からハグクリックの説明画面まで |
 | dl_RJ01677912 | [とける風花とシロうさぎ](https://trial.dlsite.com/doujin/RJ01678000/RJ01677912_trial.zip) | 本編 | 1929e7a で START から本編テキストまで (立ち絵・名前欄・文章) |
 | r1_kag3 | [KAG3 紹介デモ](https://krkrz.github.io/download/kr2_232r2.zip) | 本編 | 2026-10-26: 公式 syoukai デモ。Pad で Config を編集・保存し、再起動後に読み込み、紹介本文まで確認 |
+| s2017_nanawind_alice_gram | [春音アリス＊グラム　体験版](http://suezou.dyndns.org/dl2017/nanawind/alice_gram/harugra_trial.zip) | 本編 | a29c215 で STORY から本編テキストまで。cf28cf7 (開発サーバーの接続修正) 後は単独3回とも起動 (以前の「読み込み中」は開発サーバー側の不具合) |
 | b2006_akabeesoft | [その横顔を見つめてしまう ～a profile完全版～ web体験版](http://suezou.dyndns.org/dl2006/akabeesoft/sonoyoko/sonoyoko_trial.zip) | タイトル | dc42573 でタイトル画面まで表示 |
 | b2006_mille_feuille | [ソウルレイザー☆ユナ 体験版](http://suezou.dyndns.org/dl2006/mille-feuille/yuna/yuna_taiken.zip) | タイトル | 2026-10-26: InstallShield の MSI/CAB を展開してファイル名を復元。タイトルを確認 |
 | b2006_ninetail | [機械仕掛けのイブ　～Ｄｅａ　Ｅｘ　Ｍａｃｈｉｎａ～](http://suezou.dyndns.org/dl2006/ninetail/eve/0527_eve_trial_ver100.exe) | タイトル | 5d1348e でタイトル画面まで表示 |
@@ -244,6 +245,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2015_ammolite | [お兄ちゃん、教えて……～義妹とヒミツの保健実習～　体験版　Ver1.00](http://suezou.dyndns.org/dl2015/ammolite/oni/amml011_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2015_appetite | [愛娘は、マゾ性隷～娘だからって遠慮しないでね？～　体験版　Ver1.00](http://suezou.dyndns.org/dl2015/appetite/musume/apt054_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2015_mille_feuille | [極煌戦姫ミストルティア 体験版](http://suezou.dyndns.org/dl2015/mille-feuille/mistletear/blazingangel_mistletear_trial.zip) | タイトル | b9e72ec でタイトル画面まで表示 |
+| b2015_nanawind | [ALIA’s CARNIVAL! Flowering Sky　体験版(WEB.ver)](http://suezou.dyndns.org/dl2015/nanawind/alias_fs/ALIAs_CARNIVAL_floweringsky_trial.zip) | タイトル | cf28cf7 (開発サーバーの接続修正) 後は単独3回ともタイトル画面まで。Start 後の選択肢ボタンの文字が出ない件は未確認 |
 | b2015_pachipachi_soft | [おしおき生意気ギャル ～エロいオシオキをしたら自分からエッチを求めてきた～ 体験版](http://suezou.dyndns.org/dl2015/pachipachi-soft/oshioki/oshioki_trial.zip) | タイトル | 2026-10-26: Mado の31バイト周期 XOR を自動検出。保護対象749ファイルの Adler-32 が一致 |
 | b2016_alcot | [よめがみ My Sweet Goddess! リコＨシーン体験版](http://suezou.dyndns.org/dl2016/alcot/yomegami/yomegami_trial3.exe) | タイトル | ae3efe1 でタイトル画面まで表示 (起動から約 2 分) |
 | b2016_apadash | [満淫オーク電車～くっ！　任務じゃなければこんな場所…～　体験版　Ver1.00](http://suezou.dyndns.org/dl2016/apadash/oak_train/aptd005_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
@@ -299,7 +301,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2011_grand_cru_imostar | [しゅ～てぃんぐ妹スター☆ ～おにいちゃん、覚悟しててよね♪～　体験版](http://suezou.dyndns.org/dl2011/grand-cru/imostar/imosta_trial.zip) | タイトル | d2edfde でタイトル画面まで表示 |
 | s2011_hulotte_with_ribbon | [With Ribbon Hシーン体験版](http://suezou.dyndns.org/dl2011/hulotte/with-ribbon/with-ribbon_trial2.zip) | タイトル | d2edfde で注意書きの後クリックでタイトル画面まで表示 (OP ムービーは飛ばす) |
 | s2011_parasol_delivara | [でりばらっ！-deliverance of strays- 体験版](http://suezou.dyndns.org/dl2011/parasol/delivara/delivara_taiken.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| s2012_ninetail_gears_of_dragoon | [Gears of Dragoon  -RPG体験版 ver.1.00-](http://suezou.dyndns.org/dl2012/ninetail/gears_of_dragoon/GoD_RPG_trial_100.zip) | タイトル | d084599 (setLayerPos) でタイトル画面まで表示。e2e9bbf での Read error は検証側のダウンロード途中切れが原因 (再確認予定) |
+| s2012_ninetail_gears_of_dragoon | [Gears of Dragoon  -RPG体験版 ver.1.00-](http://suezou.dyndns.org/dl2012/ninetail/gears_of_dragoon/GoD_RPG_trial_100.zip) | タイトル | e2e9bbf + cf28cf7 で完全な data.xp3 (657,587,992 バイト) からタイトル画面まで |
 | s2013_hibiki_works_lovely_cation2 | [ＬＯＶＥＬＹ×Ｃ∧ＴＩＯＮ２](http://suezou.dyndns.org/dl2013/hibiki-works/lovely_cation2/LxC2_trial_web.zip) | タイトル | a29c215 でロゴと注意書き 2 枚をクリックで送るとタイトル画面まで表示 |
 | s2014_cross_over_tori | [鳥籠の姫 ～絶対妊娠の姉妹悦辱～　体験版](http://suezou.dyndns.org/dl2014/cross-over/tori/torikago_trial1_2.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2014_cube_koikano | [恋する彼女の不器用な舞台 体験版](http://suezou.dyndns.org/dl2014/cube/koikano/koikanoTrial.zip) | タイトル | d2edfde でクリック 3〜4 回の後タイトル画面まで表示 |
@@ -346,8 +348,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2026_no_strike_jyosou_yuriarashi | [Jyosou Yuriarasi Trial](http://suezou.dyndns.org/dl2026/no-strike/jyosou_yuriarashi/jyosouyuriarashi_trial.zip) | タイトル | 2026-10-27: 平文 UTF-8 の誤判定と、補助ウィンドウへの入力誤配送を修正。言語選択からタイトルメニューへの遷移を確認 |
 | s2026_poison_motion_sxs2_me | [姉妹X催眠２ - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2026/poison-motion/sxs2-me/sxs2me_trial.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
 | s2026_poison_motion_sxs_me | [姉妹X催眠 - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2026/poison-motion/sxs-me/sxsme_trial.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
-| b2015_nanawind | [ALIA’s CARNIVAL! Flowering Sky　体験版(WEB.ver)](http://suezou.dyndns.org/dl2015/nanawind/alias_fs/ALIAs_CARNIVAL_floweringsky_trial.zip) | NG | e2e9bbf で「エンジンを読み込み中」のまま進まない (吉里吉里の出力なし、単独実行でも再現。alice_gram と同じ症状) |
-| s2017_nanawind_alice_gram | [春音アリス＊グラム　体験版](http://suezou.dyndns.org/dl2017/nanawind/alice_gram/harugra_trial.zip) | NG | e2e9bbf で「エンジンを読み込み中」のまま進まない (吉里吉里の出力なし、単独実行でも再現)。a29c215 では本編まで |
 | s2019_parasol_renran_p | [恋嵐スピリッチュ 体験版](https://trial.dlsite.com/professional/VJ013000/VJ012599_trial.zip http://suezou.dyndns.org/dl2019/parasol/renran-p/renran_trial_101.zip) | 対象外 | 2026-10-26: 配布 URL は体験版の差分パッチのみ。起動用 EXE/startup と本体が含まれない |
 
 ### YU-RIS (vnrun)
@@ -480,5 +480,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| b2014_azarashi_soft | [アマカノ 体験版 甘えてくれる恋人とのエッチなひととき編](http://suezou.dyndns.org/dl2014/azarashi-soft/amakano/amakano_trialH.zip) | 本編 | タイトル→はじめから (名前は既定のまま)→案内文→マップ→選んだヒロインのシーンの文章・CG まで (cs2-run とブラウザ) |
 | b2014_windmill_oasis | [春風センセーション！体験版](http://suezou.dyndns.org/dl2014/windmill-oasis/harukaze/harukaze_trial.exe) | 本編 | タイトル→START→本編の文章・立ち絵・イベント CG まで (cs2-run とブラウザ) |
+| b2017_laplacian | [ニュートンと林檎の樹 体験版＋](http://suezou.dyndns.org/dl2017/laplacian/newrin/newrin-trial-plus.zip) | 本編 | タイトル→はじめから→選択肢 (体験版本編)→本編の文章・イベント CG まで (cs2-run とブラウザ) |
 <!-- /matrix -->

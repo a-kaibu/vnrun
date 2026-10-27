@@ -254,7 +254,7 @@ s2018_pin_point_yakyurare	タイトル	5d1348e でタイトル画面まで表示
 dl_VJ01000639	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
 s2014_hibiki_works	NG	customhistorylayer.tjs(124) ScrollBarInit で例外、「Invalid TLG header or unsupported TLG version」
 s2013_hibiki_works_lovely_cation2	タイトル	a29c215 でロゴと注意書き 2 枚をクリックで送るとタイトル画面まで表示
-b2015_nanawind	NG	e2e9bbf で「エンジンを読み込み中」のまま進まない (吉里吉里の出力なし、単独実行でも再現。alice_gram と同じ症状)
+b2015_nanawind	タイトル	cf28cf7 (開発サーバーの接続修正) 後は単独3回ともタイトル画面まで。Start 後の選択肢ボタンの文字が出ない件は未確認
 s2024_no_strike_yuribatake	タイトル	2026-10-27: 平文 UTF-8 の誤判定と、補助ウィンドウへの入力誤配送を修正。言語選択からタイトルメニューへの遷移を確認
 s2026_no_strike_jyosou_yuriarashi	タイトル	2026-10-27: 平文 UTF-8 の誤判定と、補助ウィンドウへの入力誤配送を修正。言語選択からタイトルメニューへの遷移を確認
 s2022_akabeesoft2_roleplayer_tororo	タイトル	0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 5,892 ファイルの Adler-32 一致
@@ -322,9 +322,9 @@ s2014_cube_koikano	タイトル	d2edfde でクリック 3〜4 回の後タイト
 s2021_nanawind_kanade_gram_ch1	タイトル	2026-10-27: EXE の bres リソースから cxdec を自動準備。data.xp3 の保護対象1,955ファイルが一致。PIMG の表示状態を初期化し、背景・キャラクター・メニュー・花びらを表示
 s2010_akabeesoft_lavender	タイトル	2026-10-26: 体験版の cxdec を自動検出。保護対象6,030ファイルの Adler-32 が一致
 s2021_akabeesoft2_roleplayer	タイトル	0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 6,195 ファイルの Adler-32 一致
-s2017_nanawind_alice_gram	NG	e2e9bbf で「エンジンを読み込み中」のまま進まない (吉里吉里の出力なし、単独実行でも再現)。a29c215 では本編まで
+s2017_nanawind_alice_gram	本編	a29c215 で STORY から本編テキストまで。cf28cf7 (開発サーバーの接続修正) 後は単独3回とも起動 (以前の「読み込み中」は開発サーバー側の不具合)
 s2022_mille_feuille_excelchiffon	タイトル	b9e72ec でタイトル画面まで表示 (ウィンドウより大きいレイヤの修正)
-s2012_ninetail_gears_of_dragoon	タイトル	d084599 (setLayerPos) でタイトル画面まで表示。e2e9bbf での Read error は検証側のダウンロード途中切れが原因 (再確認予定)
+s2012_ninetail_gears_of_dragoon	タイトル	e2e9bbf + cf28cf7 で完全な data.xp3 (657,587,992 バイト) からタイトル画面まで
 b2013_ensemble	本編	14cde42 で START から本編テキストまで (START 後しばらく白画面)
 s2013_guilty_yobai	本編	71cd396 で START から「誰の所へ行きますか？」のマップ選択まで (背景も表示)
 dl_VJ01004836	本編	b076f1f で START から本編テキストまで
