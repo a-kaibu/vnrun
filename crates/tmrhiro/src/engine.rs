@@ -22,6 +22,7 @@ use crate::script::{Command, OLD, Script};
 mod backlog;
 mod config;
 mod gallery;
+mod map;
 mod old;
 
 /// A sound to start or stop.
@@ -63,6 +64,9 @@ struct Button {
     label: String,
     /// a map button: its column in mapselect_charactor and its row in mapselect_plate
     icon: Option<[i32; 2]>,
+    /// a button drawn from the sheet of the button pictures: where in it, and how far the lit
+    /// copy is from there
+    sheet: Option<[i32; 4]>,
 }
 
 struct Fade {
@@ -81,6 +85,9 @@ struct Chara {
     ms: u64,
     /// fades in (`Some(true)`) or out and goes away (`Some(false)`) while it moves
     fade: Option<bool>,
+    /// how big it is (across and down) at the start and the end, around the middle of the
+    /// screen
+    zoom: [f32; 4],
 }
 
 impl Chara {
@@ -209,6 +216,7 @@ pub struct Engine {
     text_images: Vec<(Rc<Image>, f32, f32)>,
     buttons: Vec<Button>,
     button_images: (String, String),
+    button_set: map::Buttons,
     hover: (i32, i32),
     sounds: Vec<Sound>,
     font: Option<Rc<fontdue::Font>>,
@@ -219,6 +227,8 @@ pub struct Engine {
 
 const MS_PER_FRAME: u64 = 1000 / 60;
 const SHAKE_MS: u64 = 340;
+/// how many variables bank 3 has (it says which buttons show)
+const BANK3: u16 = 100;
 
 impl Engine {
     pub fn new(mut files: Box<dyn Files>) -> Result<Engine, String> {
@@ -295,6 +305,7 @@ impl Engine {
             text_images: Vec::new(),
             buttons: Vec::new(),
             button_images: (String::new(), String::new()),
+            button_set: map::Buttons::default(),
             hover: (-1, -1),
             sounds: Vec::new(),
             font: None,
@@ -444,6 +455,52 @@ impl Engine {
 
     fn var(&self, bank: u8, n: u16) -> i32 {
         self.vars.get(&(bank, n)).copied().unwrap_or(0)
+    }
+
+    /// A variable, or with bank 0 the number itself.
+    fn operand(&self, bank: u8, n: u16) -> i32 {
+        if bank == 0 {
+            n as i32
+        } else {
+            self.var(bank, n)
+        }
+    }
+
+    /// [how][bank][bank of the value][n:u16][value:u16] at `at`: compares a variable with a
+    /// number or another variable.
+    fn compare(&self, c: &Command, at: usize) -> bool {
+        let v = self.operand(c.u8(at + 1), c.u16(at + 3));
+        let w = self.operand(c.u8(at + 2), c.u16(at + 5));
+        match c.u8(at) {
+            0 => v == w,
+            1 => v != w,
+            2 => v > w,
+            3 => v < w,
+            4 => v >= w,
+            5 => v <= w,
+            _ => false,
+        }
+    }
+
+    /// [how][bank][bank of the value][n:u16][value:u16] at `at`: sets, adds, takes away,
+    /// multiplies, divides or keeps the remainder.
+    fn calc(&mut self, c: &Command, at: usize) {
+        let (bank, n) = (c.u8(at + 1), c.u16(at + 3));
+        if bank == 0 {
+            return;
+        }
+        let v = self.var(bank, n);
+        let w = self.operand(c.u8(at + 2), c.u16(at + 5));
+        let v = match c.u8(at) {
+            0 => w,
+            1 => v + w,
+            2 => v - w,
+            3 => v * w,
+            4 => v.checked_div(w).unwrap_or(0),
+            5 => v.checked_rem(w).unwrap_or(0),
+            _ => v,
+        };
+        self.vars.insert((bank, n), v);
     }
 
     fn random(&mut self, n: u32) -> i32 {
@@ -694,6 +751,8 @@ impl Engine {
                 self.window = false;
                 self.text.clear();
             }
+            // the name entry screen: the names stay those of the ini
+            (0x00, 0x14) => {}
             (0x00, op) if op < 0x50 => self.say(c),
             // labels
             (0x10, 0x00) => {}
@@ -716,18 +775,7 @@ impl Engine {
                 None => self.wait = Wait::Ended,
             },
             (0x10, 0x04) => {
-                let (cmp, bank, n, value) = (c.u8(0), c.u8(1), c.u16(2), c.u16(4) as i32);
-                let v = self.var(bank, n);
-                let yes = match cmp {
-                    0 => v == value,
-                    1 => v != value,
-                    2 => v < value,
-                    3 => v >= value,
-                    4 => v > value,
-                    5 => v <= value,
-                    _ => false,
-                };
-                if yes {
+                if self.compare(c, 0) {
                     let name = c.str(8);
                     if c.u8(7) == 2 {
                         self.jump_file(&name);
@@ -736,10 +784,11 @@ impl Engine {
                     }
                 }
             }
-            (0x10, 0x14) => {
-                // count:u8 at 2, then " d<text>,<label>" for each option
+            (0x10, 0x14) | (0x10, 0x16) => {
+                // count:u8 at 2, then " d<text>,<label>" for each option; 0x16 shows as many
+                // of them as bank 3 has variables set (from the first), or none
                 let s = c.str(3);
-                let options: Vec<(String, String)> = s
+                let mut options: Vec<(String, String)> = s
                     .split(" d")
                     .filter_map(|o| {
                         let o = o.trim_start_matches('d').trim();
@@ -747,33 +796,37 @@ impl Engine {
                         Some((text.to_string(), label.to_string()))
                     })
                     .collect();
+                if c.op == 0x16 {
+                    let n = options.len() as u16;
+                    let shown = (0..n).filter(|&k| self.var(3, k) != 0).count();
+                    options.truncate(shown);
+                }
                 if !options.is_empty() {
                     self.window = false;
                     self.resume_pc = self.pc - 1;
                     self.wait = Wait::Choice(options);
                 }
             }
-            (0x10, 0x28) => self.buttons.clear(),
-            (0x10, 0x29) => {
-                let s = c.str(4);
-                let mut it = s.split(',');
-                self.button_images = (
-                    it.next().unwrap_or("").to_string(),
-                    it.next().unwrap_or("").to_string(),
-                );
-            }
-            (0x10, 0x32) => {
-                self.buttons.push(Button {
-                    rect: [c.i16(0), c.i16(2), c.i16(4), c.i16(6)],
-                    label: c.str(8),
-                    icon: None,
-                });
-                // the buttons wait once the last of them is set up
-                let next = self.script.commands.get(self.pc);
-                if !next.is_some_and(|n| n.group == 0x10 && n.op == 0x32) {
-                    self.wait = Wait::Buttons;
+            (0x10, 0x28) => {
+                // every button shows again
+                self.buttons.clear();
+                for n in 0..BANK3 {
+                    self.vars.insert((3, n), 1);
                 }
             }
+            (0x10, 0x29) | (0x10, 0x2a) | (0x10, 0x5b) => self.buttons_begin(c),
+            (0x10, 0x32) => {
+                if self.button_shown() {
+                    self.buttons.push(Button {
+                        rect: [c.i16(0), c.i16(2), c.i16(4), c.i16(6)],
+                        label: c.str(8),
+                        icon: None,
+                        sheet: None,
+                    });
+                }
+                self.buttons_end();
+            }
+            (0x10, 0x33) => self.map_place(c),
             (0x20, 0x00) | (0x20, 0x02) => {
                 self.begin_fade(c.u16(0));
                 self.pan = None;
@@ -828,6 +881,19 @@ impl Engine {
                     _ => None,
                 };
                 self.set_chara(slot, &c.str(at + 11), from, to, ms, fade);
+            }
+            (0x20, 0x6a) => {
+                // [effect][slot][?][x0][y0][x1][y1][zoom x0][y0][x1][y1 (in hundredths)][ms]
+                // name: moves and zooms a character
+                self.begin_fade(c.u16(0));
+                let slot = c.u8(2) as usize;
+                let from = (c.i16(4) as f32, c.i16(6) as f32);
+                let to = (c.i16(8) as f32, c.i16(10) as f32);
+                let z = |k: usize| c.u16(12 + k * 2) as f32 / 100.0;
+                self.set_chara(slot, &c.str(22), from, to, c.u16(20) as u64, None);
+                if let Some(Some(ch)) = self.chars.get_mut(slot) {
+                    ch.zoom = [z(0), z(1), z(2), z(3)];
+                }
             }
             (0x20, 0x6c) => {
                 // [effect][slot] name: another picture where the character stands
@@ -903,13 +969,22 @@ impl Engine {
             (0x40, 0x3c) => self.gallery_begin(c),
             (0x40, 0x46) => self.gallery_place(c),
             (0x10, 0x34) => self.cancel_label = c.str(2),
-            (0x50, 0x01) => {
-                self.vars.insert((c.u8(1), c.u16(2)), c.u16(4) as i32);
+            (0x50, 0x00) => self.vars.retain(|&(bank, _), _| !(1..=3).contains(&bank)),
+            (0x50, 0x01) => self.calc(c, 0),
+            (0x50, 0x02) => {
+                if self.compare(c, 0) {
+                    self.calc(c, 7);
+                }
             }
             (0x50, 0x1e) => {
                 let v = self.random(c.u16(0) as u32);
                 self.vars.insert((2, 0), v);
             }
+            // skip and auto stop here (0 / 1: only when the text was seen / not seen)
+            (0x40, 0x28) | (0x40, 0x2c) => self.skip = false,
+            (0x40, 0x29) => self.auto = false,
+            // not needed here: whether the menu can open, the scene number, the map's menu bar
+            (0x40, 0x2b) | (0x50, 0x14) | (0x50, 0x32) => {}
             (0x50, 0x28) => self.wait = Wait::Until(self.now + c.u32(0) as u64),
             (0x50, 0x15) => self.title = c.str(0),
             (OLD, _) => self.run_old(c),
@@ -974,6 +1049,7 @@ impl Engine {
             start: self.now,
             ms,
             fade,
+            zoom: [1.0; 4],
         });
     }
 
@@ -1532,14 +1608,12 @@ impl Engine {
                 Some(false) => 1.0 - t,
                 None => 1.0,
             };
+            let z = |a: f32, b: f32| a + (b - a) * t;
+            let (sx, sy) = (z(c.zoom[0], c.zoom[2]), z(c.zoom[1], c.zoom[3]));
             for pic in &c.pics {
-                out.push(draw(
-                    &pic.image,
-                    pic.x + dx,
-                    pic.y + dy,
-                    alpha,
-                    [0.0, 0.0, w, h],
-                ));
+                let mut d = draw(&pic.image, pic.x + dx, pic.y + dy, alpha, [0.0, 0.0, w, h]);
+                (d.place.sx, d.place.sy, d.place.cx, d.place.cy) = (sx, sy, w / 2.0, h / 2.0);
+                out.push(d);
             }
         }
         for pic in &self.overlay {
@@ -1621,7 +1695,7 @@ impl Engine {
                 .buttons
                 .iter()
                 .find(|b| inside(b.rect, hx, hy))
-                .map(|b| (b.rect, b.icon.is_some()));
+                .map(|b| (b.rect, b.icon.is_some() || b.sheet.is_some()));
             let icons: Vec<([i32; 4], [i32; 2])> = self
                 .buttons
                 .iter()
@@ -1630,6 +1704,7 @@ impl Engine {
             if !icons.is_empty() {
                 self.map_draws(&icons, hit.map(|h| h.0), &mut out);
             }
+            self.sheet_button_draws(&over, hit.map(|h| h.0), &mut out);
             if let Some((r, false)) = hit {
                 for p in self.pictures(&over, 0.0, 0.0) {
                     let clip = [
@@ -1856,16 +1931,40 @@ impl Engine {
                     .get("SYSTEM/SYS_DEF_WINDOW_STAT")
                     .and_then(|v| u32::from_str_radix(v.trim(), 16).ok())
             });
-            let base = self.image("sys_window_base").map(|g| {
-                let c = stat.unwrap_or(0x8000_0000).to_be_bytes();
-                let mut img = (*g.image).clone();
-                for p in img.px.chunks_exact_mut(4) {
-                    for k in 0..3 {
-                        p[k] = (p[k] as u32 * c[k + 1] as u32 / 255) as u8;
+            let bar = self
+                .image("sys_window_base")
+                .filter(|g| (g.image.h as i32) < wh / 2);
+            let base = self
+                .image("sys_window_base")
+                .filter(|_| bar.is_none())
+                .map(|g| {
+                    let c = stat.unwrap_or(0x8000_0000).to_be_bytes();
+                    let mut img = (*g.image).clone();
+                    for p in img.px.chunks_exact_mut(4) {
+                        for k in 0..3 {
+                            p[k] = (p[k] as u32 * c[k + 1] as u32 / 255) as u8;
+                        }
+                        p[3] = (p[3] as u32 * c[0] as u32 / 255) as u8;
                     }
-                    p[3] = (p[3] as u32 * c[0] as u32 / 255) as u8;
+                    (Rc::new(img), 0, 0)
+                });
+            // in the 2010 games it is only the bar of the buttons, under a dark panel
+            let base = base.or_else(|| {
+                let g = bar?;
+                let mut img = Image::new(ww.max(1) as u32, wh.max(1) as u32);
+                let top = (g.y - 4).clamp(0, wh) as usize * ww.max(1) as usize * 4;
+                for p in img.px[..top].chunks_exact_mut(4) {
+                    p.copy_from_slice(&[0, 0, 0, 128]);
                 }
-                (Rc::new(img), 0, 0)
+                let d = draw(
+                    &g.image,
+                    g.x as f32,
+                    g.y as f32,
+                    1.0,
+                    [0.0, 0.0, ww as f32, wh as f32],
+                );
+                nexas::gfx::draw(&mut img, &d.image, d.src, d.dst, &d.place);
+                Some((Rc::new(img), 0, 0))
             });
             // the older games' window is one picture placed on its canvas
             let base = base.or_else(|| {
@@ -1886,11 +1985,14 @@ impl Engine {
             [0.0, 0.0, w, h],
         ));
         // the name on its plate (the older games; NP_PLATE_POS is our own key)
-        let plate = self.ini.ints("MESSAGEWINDOW/NP_PLATE_POS");
-        let plate = match (
-            plate.len() >= 2 && !self.name.is_empty(),
-            self.image("sys_nameplate"),
-        ) {
+        // (the 2010 games: sys_name_plate at NP_DRAW_POS)
+        let mut plate = self.ini.ints("MESSAGEWINDOW/NP_PLATE_POS");
+        let mut plate_image = self.image("sys_nameplate");
+        if plate.is_empty() && plate_image.is_none() {
+            plate_image = self.image("sys_name_plate");
+            plate = vec![nx, ny];
+        }
+        let plate = match (plate.len() >= 2 && !self.name.is_empty(), plate_image) {
             (true, Some(g)) => {
                 let (px, py) = (wx + plate[0] + g.x, wy + plate[1] + g.y);
                 out.push(draw(&g.image, px as f32, py as f32, 1.0, [0.0, 0.0, w, h]));

@@ -311,6 +311,7 @@ impl Engine {
                         rect: [n(0), n(1), n(2) - n(0), n(3) - n(1)],
                         label: b[12..].to_string(),
                         icon: None,
+                        sheet: None,
                     });
                 }
                 if !self.buttons.is_empty() {
@@ -343,6 +344,7 @@ impl Engine {
                         rect: [x - left, y - h, w, h],
                         label,
                         icon: Some([icon as i32, c.u8(4) as i32 - 0x15]),
+                        sheet: None,
                     });
                 }
                 self.old_buttons_wait(0x31);
