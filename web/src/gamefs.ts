@@ -89,6 +89,7 @@ export class GameFS {
   private readonly cache = new Map<string, Uint8Array>();
   private cached = 0;
   private pending: Promise<void> = Promise.resolve();
+  private readonly failed = new Map<string, unknown>();
 
   constructor(base: string, manifest: Manifest) {
     this.base = base.endsWith("/") ? base : `${base}/`;
@@ -245,8 +246,10 @@ export class GameFS {
           body: body as BodyInit | undefined,
           keepalive: !body || body.length < 60000,
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok && !(method === "DELETE" && res.status === 404)) throw new Error(`HTTP ${res.status}`);
+        this.failed.delete(path);
       } catch (error) {
+        this.failed.set(path, error);
         console.error(`${method} ${url}:`, error);
         const detail: SaveErrorDetail = { path, error };
         window.dispatchEvent(new CustomEvent("vnrun-save-error", { detail }));
@@ -255,7 +258,19 @@ export class GameFS {
   }
 
   /** Resolves when every save sent so far has reached the server. */
-  flush(): Promise<void> {
-    return this.pending;
+  async flush(): Promise<void> {
+    await this.pending;
+    // Retry the latest state of each failed path. A newer write may have replaced the
+    // original failed request while it was in flight.
+    for (const path of this.failed.keys()) {
+      const bytes = this.saves.get(path);
+      this.send(bytes ? "PUT" : "DELETE", path, bytes);
+    }
+    await this.pending;
+    const failure = this.failed.entries().next();
+    if (!failure.done) {
+      const [path, error] = failure.value;
+      throw new Error(`セーブの送信に失敗しました: ${path}: ${String(error)}`);
+    }
   }
 }

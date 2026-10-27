@@ -78,7 +78,13 @@ async function main(): Promise<void> {
     },
     exit: async () => {
       show("セーブを送信中…");
-      await fs.flush();
+      try {
+        await fs.flush();
+      } catch (error) {
+        overlay.hidden = true;
+        window.alert(`${String(error)}\n接続を確認してから、もう一度終了してください。`);
+        return;
+      }
       const back = params.get("back");
       if (back) location.href = back;
       else if (history.length > 1) history.back();
