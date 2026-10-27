@@ -88,7 +88,7 @@ dl_VJ01002655	タイトル	93bee9c 以降もタイトルまで
 s2023_casket_oshitona_vtuber02	タイトル	
 s2023_casket_oshitona_vtuber03	タイトル	
 s2020_casket_ayakashi03	タイトル	
-s2011_whirlpool_maikaze	起動	c03eae9 でも黒画面のまま (YSTB 550、エラーなし)
+s2011_whirlpool_maikaze	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
 s2023_milimili_onaho_yokai	タイトル	93bee9c 以降は panic せずタイトルまで
 r1_tyrano	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)。exe を zip として展開すれば読めるはず
 dl_VJ01000810	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)
@@ -98,7 +98,7 @@ dl_RJ01698597	本編	0df7c53 でタイトル→ニューゲーム→本編の文
 dl_RJ01730521	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
 dl_RJ01741863	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
 dl_RJ01642779	タイトル	RPGツクール。画面が拡大されない
-s2019_no_strike_jyosou_jinjya	起動	3e4a888 で真っ白 (ページ下のバーも出ない。タブが落ちた可能性)
+s2019_no_strike_jyosou_jinjya	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
 s2014_whirlpool_tearstilla	タイトル	6b6e16b / 3e4a888 (YU-RIS 554) でタイトルまで。初期化に40秒ほどかかる
 dl_VJ01001386	タイトル	5224635 (YU-RIS 482) でタイトルまで
 dl_VJ01004582	タイトル	5224635 (YU-RIS 482) でタイトルまで
@@ -156,8 +156,8 @@ dl_RJ01708454	タイトル	3e4a888 のビルドでタイトルまで
 b2007_whirlpool	NG	pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」
 b2006_whirlpool	NG	pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」
 dl_VJ01002338	NG	pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」
-b2010_whirlpool	起動	3e4a888 で真っ白 (ページ下のバーも出ない。タブが落ちた可能性)
-b2014_whirlpool	NG	3e4a888 で「yst00044.ybn: short arguments」
+b2010_whirlpool	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
+b2014_whirlpool	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
 b2021_whirlpool	NG	3e4a888 で「yst00067.ybn: short arguments」
 b2022_at_sakura	タイトル	591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動)
 b2024_at_sakura	タイトル	591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動)
@@ -185,12 +185,12 @@ b2023_lump_of_sugar_all	タイトル	dc42573 でタイトル画面まで表示
 b2012_alcot	タイトル	bd7853c でタイトル表示 (GAME START 等のメニュー描画まで)
 b2012_kai	タイトル	bd7853c でタイトル表示 (START/LOAD 等の看板メニュー描画まで)
 b2010_giga	本編	ネイティブと Chromium でタイトル、最初の台詞とボイスの再生開始を確認。背景演出、続き、セーブ等は未完成
-s2010_giga_bittersmile	NG	64d6316 (2015 年版の表) で「System.bin: string is cut short」
-s2007_giga_himesama	NG	64d6316 (2015 年版の表) で「System.bin: string is cut short」
-s2009_giga_curefull	NG	64d6316 (2015 年版の表) で「System.bin: string is cut short」
+s2010_giga_bittersmile	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
+s2007_giga_himesama	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
+s2009_giga_curefull	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
 s2006_giga_ab	NG	64d6316 (2015 年版の表) で「table is cut short」
-s2008_giga_sakahari	NG	64d6316 (2015 年版の表) で「table is cut short」
-s2011_giga_hinataterrace	NG	64d6316 (2015 年版の表) で「System.bin: unknown op 0x29 at 66」
+s2008_giga_sakahari	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
+s2011_giga_hinataterrace	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
 b2019_giga	本編	6875c68 でタイトルから本編テキストまで。メッセージウィンドウ画像は未表示 (既知)
 b2016_giga	本編	6875c68 でタイトルから New Game で本編テキストまで
 b2009_crossover	NG	64d6316 (2015 年版の表) で「no Script.pac」(DATA/ フォルダの形)
