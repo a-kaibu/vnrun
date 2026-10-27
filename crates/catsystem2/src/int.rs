@@ -70,7 +70,7 @@ impl Twister {
         Twister { mt, i: 624 }
     }
 
-    pub fn next(&mut self) -> u32 {
+    pub fn next_u32(&mut self) -> u32 {
         if self.i >= 624 {
             for k in 0..624 {
                 let y = (self.mt[k] & 0x8000_0000) | (self.mt[(k + 1) % 624] & 0x7fff_ffff);
@@ -93,12 +93,13 @@ impl Twister {
 
 fn decipher_name(raw: &[u8], key: u32) -> Vec<u8> {
     const ABC: &[u8] = b"zyxwvutsrqponmlkjihgfedcbaZYXWVUTSRQPONMLKJIHGFEDCBA";
-    let mut k = (key >> 24)
+    let k = (key >> 24)
         .wrapping_add(key >> 16)
         .wrapping_add(key >> 8)
         .wrapping_add(key) as u8 as i32;
     let mut out = Vec::new();
-    for &c in raw.iter().take_while(|&&c| c != 0) {
+    for (n, &c) in raw.iter().take_while(|&&c| c != 0).enumerate() {
+        let k = k + n as i32;
         let mut c = c;
         if let Some(j) = ABC.iter().position(|&a| a == c) {
             let mut j = j as i32 - k % 0x34;
@@ -108,7 +109,6 @@ fn decipher_name(raw: &[u8], key: u32) -> Vec<u8> {
             c = ABC[(0x33 - j) as usize];
         }
         out.push(c);
-        k += 1;
     }
     out
 }
@@ -163,7 +163,7 @@ impl Archive {
         }
         let main = game_key.ok_or("encrypted archive and no key")?;
         let seed = u32_at(rec(0), 0x44);
-        let bf = Cipher::new_from_slice(&Twister::new(seed).next().to_le_bytes())
+        let bf = Cipher::new_from_slice(&Twister::new(seed).next_u32().to_le_bytes())
             .map_err(|e| e.to_string())?;
         for i in 1..count {
             let r = rec(i);
@@ -171,7 +171,7 @@ impl Archive {
             block[..4].copy_from_slice(&u32_at(r, 0x40).wrapping_add(i as u32).to_le_bytes());
             block[4..].copy_from_slice(&r[0x44..0x48]);
             decrypt(&bf, &mut block);
-            let name_key = Twister::new(main.wrapping_add(i as u32)).next();
+            let name_key = Twister::new(main.wrapping_add(i as u32)).next_u32();
             let name = crate::sjis(&decipher_name(&r[..0x40], name_key));
             a.add(name, u32_at(&block, 0), u32_at(&block, 4));
         }

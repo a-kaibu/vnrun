@@ -182,6 +182,8 @@ pub struct Engine {
     pub adv: Option<Adv>,
     ended: bool,
     pub log: u8,
+    /// skip the story (no waits, no clicks) until this scene and line (for testing)
+    pub skip_to: Option<(String, usize)>,
     colors: HashMap<[u8; 3], Rc<Image>>,
     /// the event number (`@`) while a handler runs
     at: i64,
@@ -339,6 +341,7 @@ impl Engine {
             adv: None,
             ended: false,
             log: 0,
+            skip_to: None,
             colors: HashMap::new(),
             at: 0,
         };
@@ -908,16 +911,15 @@ impl Engine {
             self.flags.insert(n(1) as i64, y as i64);
             return;
         }
-        if sub == "load" || sub == "play" || sub == "stop" || sub == "blend" || sub == "fade" {
-            if self
+        if (sub == "load" || sub == "play" || sub == "stop" || sub == "blend" || sub == "fade")
+            && self
                 .objs
                 .get(i)
                 .and_then(|o| o.as_ref())
                 .is_some_and(|o| o.kind == Kind::Sound)
-            {
-                self.sound_command(i, sub, vals, &ev);
-                return;
-            }
+        {
+            self.sound_command(i, sub, vals, &ev);
+            return;
         }
         let Some(o) = self.obj(i) else { return };
         let motion = |m: Move, dur: f32| Motion {
@@ -1002,10 +1004,8 @@ impl Engine {
                 self.play(&channel, &name, volume, repeat);
             }
             "stop" => self.stop_sound(&channel, 0),
-            "fade" => {
-                if n(2) <= 0.0 {
-                    self.stop_sound(&channel, (n(0) * 1000.0 / 60.0) as u32);
-                }
+            "fade" if n(2) <= 0.0 => {
+                self.stop_sound(&channel, (n(0) * 1000.0 / 60.0) as u32);
             }
             _ => {}
         }
@@ -1341,7 +1341,15 @@ impl Engine {
                         x -= f.base_x as f32;
                         y -= f.base_y as f32;
                     }
-                    let (w, h) = (f.image.w as f32, f.image.h as f32);
+                    let (mut w, mut h) = (f.image.w as f32, f.image.h as f32);
+                    if o.scale != (1.0, 1.0) {
+                        // a picture's own scale keeps its position (base point) in place
+                        let (ax, ay) = (o.pos.0 + off.0, o.pos.1 + off.1);
+                        x = ax + (x - ax) * o.scale.0;
+                        y = ay + (y - ay) * o.scale.1;
+                        w *= o.scale.0;
+                        h *= o.scale.1;
+                    }
                     out.push(Draw {
                         src: [0, 0, f.image.w as i32, f.image.h as i32],
                         image: f.image,

@@ -41,7 +41,11 @@ pub struct Adv {
     fresh: bool,
     window: f32,
     window_move: Option<(f32, f32, u64, u64)>,
+    /// the window settings file and the theme in it (`view 1 meswnd_w`)
     theme: (String, String),
+    win: Option<Rc<Theme>>,
+    /// speaker -> number of its name picture (1000 + n in the theme's name pictures)
+    name_ids: HashMap<String, i64>,
     drawdef: u64,
     wipedef: u64,
     /// the story's pictures as the last frame showed them
@@ -149,6 +153,8 @@ impl Engine {
             window: 0.0,
             window_move: None,
             theme: (wnd, "default".into()),
+            win: None,
+            name_ids: name_table(&self.g.text("nametable.csv").unwrap_or_default()),
             drawdef: 15,
             wipedef: 30,
             prev: Vec::new(),
@@ -267,6 +273,26 @@ impl Engine {
         {
             a.trans = None;
         }
+        let skip = match &self.skip_to {
+            Some((n, l)) if *n == a.name && a.pc >= *l => {
+                self.skip_to = None;
+                false
+            }
+            Some(_) => true,
+            None => false,
+        };
+        if skip {
+            a.trans = None;
+            a.shown = a.text.chars().count() as f32;
+            if a.wait != Wait::Select {
+                a.wait = Wait::None;
+            }
+            let owner = a.owner;
+            for o in self.objs.iter_mut().flatten().filter(|o| o.owner == owner) {
+                finish(o);
+            }
+        }
+        let a = self.adv.as_mut().unwrap();
         match a.wait {
             Wait::Until(t) if now < t => return Ok(()),
             Wait::All if busy => return Ok(()),
@@ -281,6 +307,16 @@ impl Engine {
             if a.wait != Wait::None {
                 return Ok(());
             }
+            if self
+                .skip_to
+                .as_ref()
+                .is_some_and(|(n, l)| *n == a.name && a.pc >= *l)
+            {
+                self.skip_to = None;
+                if self.log > 0 {
+                    eprintln!("skipped to {} line {}", a.name, a.pc);
+                }
+            }
             let Some(line) = a.scene.lines.get(a.pc).cloned() else {
                 if self.log > 0 {
                     eprintln!("scene {} ends", a.name);
@@ -291,6 +327,11 @@ impl Engine {
             a.pc += 1;
             match line.kind {
                 Line::Input => {
+                    if self.skip_to.is_some() {
+                        a.fresh = true;
+                        a.shown = a.text.chars().count() as f32;
+                        continue;
+                    }
                     a.wait = Wait::Click;
                     return Ok(());
                 }
@@ -327,6 +368,9 @@ impl Engine {
     }
 
     fn set_wait(&mut self, w: Wait) {
+        if self.skip_to.is_some() {
+            return;
+        }
         if let Some(a) = self.adv.as_mut() {
             a.wait = w;
         }
@@ -362,11 +406,7 @@ impl Engine {
             "fg" => 200,
             _ => 300,
         } + n as i32;
-        o.pos = if matches!(kind, "cg" | "fg") {
-            (640.0, 280.0)
-        } else {
-            (0.0, 0.0)
-        };
+        o.pos = default_pos(kind);
         let i = self.add_obj(o);
         self.adv.as_mut().unwrap().layers.insert(key, i);
         i
@@ -499,10 +539,12 @@ impl Engine {
             }
             "view" => {
                 if let Some(t) = a.get(2) {
-                    self.adv.as_mut().unwrap().theme.1 = t.clone();
+                    let adv = self.adv.as_mut().unwrap();
+                    adv.theme.1 = t.clone();
+                    adv.win = None;
                 }
             }
-            "pcm" => {
+            "pcm" if self.skip_to.is_none() => {
                 let n = arg(1).to_string();
                 self.play("voice", &n, 1.0, false);
             }
@@ -799,12 +841,12 @@ impl Engine {
                     }
                 }
             }
-            let (cur, rest): ((f32, f32), Vec<String>) = {
-                let o = self.objs[i].as_ref().unwrap();
-                (o.pos, a[3..].to_vec())
-            };
-            let x = rest.first().map_or(cur.0, |s| self.value(s, cur.0));
-            let y = rest.get(1).map_or(cur.1, |s| self.value(s, cur.1));
+            // a new picture goes to the default place unless placed (`@` keeps the old one)
+            let cur = self.objs[i].as_ref().unwrap().pos;
+            let def = default_pos(kind);
+            let rest = a[3..].to_vec();
+            let x = rest.first().map_or(def.0, |s| self.value(s, cur.0));
+            let y = rest.get(1).map_or(def.1, |s| self.value(s, cur.1));
             let o = self.obj(i).unwrap();
             o.parts = files;
             o.file = base;
@@ -817,8 +859,11 @@ impl Engine {
 
     // ---- the message window
 
-    fn theme_images(&mut self) -> (String, String) {
+    fn theme(&mut self) -> Rc<Theme> {
         let a = self.adv.as_ref().unwrap();
+        if let Some(t) = &a.win {
+            return t.clone();
+        }
         let (file, theme) = a.theme.clone();
         let xml = self.g.text(&file).unwrap_or_default();
         let sec = crate::game::xml_tag(&xml, &theme)
@@ -832,7 +877,13 @@ impl Engine {
                 .trim_end_matches(".hg3")
                 .to_string()
         };
-        (img("img00"), img("img01"))
+        let t = Rc::new(Theme {
+            bg: img("img00"),
+            frame: img("img01"),
+            names: img("img03"),
+        });
+        self.adv.as_mut().unwrap().win = Some(t.clone());
+        t
     }
 
     pub fn window_draws(&mut self, out: &mut Vec<Draw>) {
@@ -864,16 +915,17 @@ impl Engine {
             });
         };
         if alpha > 0.0 {
-            let (bg, frame) = self.theme_images();
-            let canvas = self.g.frame(&frame, 1).or_else(|| self.g.frame(&bg, 0));
+            let theme = self.theme();
+            let (bg, frame) = (&theme.bg, &theme.frame);
+            let canvas = self.g.frame(frame, 1).or_else(|| self.g.frame(bg, 0));
             let top = canvas.as_ref().map_or(h - 200.0, |f| h - f.canvas_h as f32);
-            for (file, id) in [(&bg, 0), (&frame, 1)] {
+            for (file, id) in [(bg, 0), (frame, 1)] {
                 if let Some(f) = self.g.frame(file, id) {
                     put(out, f.image.clone(), f.x as f32, top + f.y as f32, alpha);
                 }
             }
             let rect = |e: &mut Engine, id: i64, d: [f32; 4]| {
-                e.g.frame(&frame, id).map_or(d, |f| {
+                e.g.frame(frame, id).map_or(d, |f| {
                     [
                         f.x as f32,
                         top + f.y as f32,
@@ -908,7 +960,23 @@ impl Engine {
                 }
             };
             put(out, img, tr[0] - 2.0, tr[1] - 2.0, alpha);
-            if !speaker.is_empty() {
+            // the game's picture of the name, or the name in the font
+            let named = self
+                .adv
+                .as_ref()
+                .unwrap()
+                .name_ids
+                .get(&speaker)
+                .and_then(|n| self.g.frame(&theme.names, 1000 + n));
+            if let Some(f) = named {
+                put(
+                    out,
+                    f.image.clone(),
+                    nr[0] + f.x as f32,
+                    nr[1] + f.y as f32,
+                    alpha,
+                );
+            } else if !speaker.is_empty() {
                 let a = self.adv.as_ref().unwrap();
                 let cached = a
                     .name_img
@@ -1034,6 +1102,35 @@ fn choice_at(n: usize, w: u32, h: u32, (mx, my): (i32, i32)) -> Option<usize> {
         let r = choice_rect(k, n, w, h);
         (mx as f32) >= r[0] && (mx as f32) < r[2] && (my as f32) >= r[1] && (my as f32) < r[3]
     })
+}
+
+/// The message window's pictures (`<mes>` of a theme in meswnd01.xml): img00 the window,
+/// img01 the frame (its pictures 10, 50 and 100 mark the text, the click mark and the name),
+/// img03 the names (1000 + their number in nametable.csv).
+pub struct Theme {
+    bg: String,
+    frame: String,
+    names: String,
+}
+
+/// nametable.csv: `number<TAB>name<TAB>...`.
+fn name_table(csv: &str) -> HashMap<String, i64> {
+    csv.lines()
+        .filter_map(|l| {
+            let mut f = l.split('\t');
+            let n = f.next()?.trim().parse().ok()?;
+            Some((f.next()?.trim().to_string(), n))
+        })
+        .collect()
+}
+
+/// Where pictures of a layer go (config.int/vram.xml).
+fn default_pos(kind: &str) -> (f32, f32) {
+    if matches!(kind, "cg" | "fg") {
+        (640.0, 280.0)
+    } else {
+        (0.0, 0.0)
+    }
 }
 
 fn reset_plane(o: &mut Obj, n: i64, w: u32, h: u32) {

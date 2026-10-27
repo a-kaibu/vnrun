@@ -5,7 +5,8 @@
 //! Each `frame` is saved as `<out prefix><frame>.png`; with `:x:y`, there is also a click there
 //! on that frame (`:x:y:r` a right click, `:x:y:m` only moves the pointer there). The last frame
 //! is always saved. CS2_FONT names a TrueType font for text, CS2_TRACE=1 prints the
-//! commands (2: also every command).
+//! commands (2: also every command). CS2_SKIP_TO=scene:line runs the story without waits or clicks
+//! until that line of that scene.
 
 use std::path::Path;
 
@@ -44,6 +45,11 @@ fn main() -> Result<(), String> {
         .and_then(|s| s.parse().ok())
         .unwrap_or(0);
     e.log = log;
+    if let Ok(s) = std::env::var("CS2_SKIP_TO") {
+        // scene:line, e.g. 00_01:5020
+        let (n, l) = s.split_once(':').ok_or("CS2_SKIP_TO=scene:line")?;
+        e.skip_to = Some((n.to_string(), l.parse().map_err(|_| "CS2_SKIP_TO line")?));
+    }
     if let Some(f) = std::env::var_os("CS2_FONT") {
         e.set_font(&std::fs::read(f).map_err(|e| e.to_string())?)?;
     }
@@ -72,6 +78,26 @@ fn main() -> Result<(), String> {
         if e.ended() {
             eprintln!("cs2: the game ended at frame {f}");
             break;
+        }
+    }
+    if log > 0 {
+        // what is on the screen at the end
+        for (i, o) in e.objs.iter().enumerate() {
+            if let Some(o) = o.as_ref().filter(|o| o.disp) {
+                eprintln!(
+                    "obj {i} {:?} owner {} plane {:?} pos {:?} base {:?} scale {:?} alpha {} pri {} {} {:?}",
+                    o.kind,
+                    o.owner,
+                    o.plane,
+                    o.pos,
+                    o.base,
+                    o.scale,
+                    o.alpha,
+                    o.pri,
+                    o.file,
+                    o.parts
+                );
+            }
         }
     }
     Ok(())
