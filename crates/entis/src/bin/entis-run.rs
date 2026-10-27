@@ -4,7 +4,8 @@
 //!
 //! Each `frame` is saved as `<out prefix><frame>.png`; with `:x:y`, there is also a click there
 //! on that frame (`:x:y:r` a right click, `:x:y:m` only moves the pointer there). The last frame
-//! is always saved. ENTIS_FONT names a TrueType font for text, ENTIS_TRACE=1 prints more.
+//! is always saved. ENTIS_FONT names a TrueType font for text; ENTIS_TRACE=1 prints every warning
+//! and where the threads are at the end, ENTIS_TRACE=3 also every script call.
 
 use std::path::Path;
 
@@ -71,6 +72,11 @@ fn main() -> Result<(), String> {
         if e.ended() {
             eprintln!("entis: the game ended at frame {f}");
             break;
+        }
+    }
+    if log > 0 {
+        for w in e.where_threads() {
+            eprintln!("entis: thread at {w}");
         }
     }
     Ok(())

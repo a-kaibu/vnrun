@@ -106,6 +106,8 @@ pub struct Native {
     pub thread: Option<usize>,
     // ToneFilter: the tone of each channel
     pub tone: Option<[i32; 4]>,
+    /// the elements of an object without a skin (the joints of a ModelJoint, ...), by key
+    pub elems: Vec<(String, Var)>,
 }
 
 impl Native {
@@ -132,7 +134,17 @@ impl Native {
     }
 }
 
-const SPRITES: [&str; 4] = ["Sprite", "Window", "MessageSprite", "SuperSprite"];
+/// Sprite classes; the 3D, particle and movie ones only take part as plain sprites.
+const SPRITES: [&str; 8] = [
+    "Sprite",
+    "Window",
+    "MessageSprite",
+    "SuperSprite",
+    "RenderSprite",
+    "ParticleSprite",
+    "MovieSprite",
+    "PolygonModel",
+];
 
 /// A 2D affine map: (x, y) → (a x + c y + tx, b x + d y + ty).
 #[derive(Clone, Copy)]
@@ -558,7 +570,16 @@ impl Engine {
             "Thread",
             "ThreadEvent",
             "ThreadMutex",
+            "RenderSprite",
+            "ParticleSprite",
+            "MovieSprite",
+            "PolygonModel",
+            "ParticleModel",
+            "ModelJoint",
         ];
+        if class == "FontArray" {
+            return Some(Value::Array(Vec::new()));
+        }
         known
             .contains(&class)
             .then(|| Value::Obj(Rc::new(RefCell::new(Native::new(class)))))
@@ -574,7 +595,14 @@ impl Engine {
             }
             return Ok(var(Value::Obj(Rc::new(RefCell::new(r)))));
         }
-        Err(format!("element {key:?} of a {}", o.borrow().class))
+        // 3D models and the like are not drawn: their elements are plain variables
+        let k = format!("{key:?}");
+        if let Some((_, v)) = o.borrow().elems.iter().find(|(n, _)| *n == k) {
+            return Ok(v.clone());
+        }
+        let v = var(Value::Int(0));
+        o.borrow_mut().elems.push((k, v.clone()));
+        Ok(v)
     }
 
     pub fn native_store_op(&mut self, d: &Var, o: u8, v: &Value) -> Result<(), String> {
@@ -652,6 +680,11 @@ impl Engine {
                 let parent = v.member("parent");
                 match parent {
                     Some(p) => self.builtin_method(&deref(&p), name, args),
+                    // a data table
+                    None if name == "GetLength" => match &v {
+                        Value::Struct(_, m) => int(m.len() as i32),
+                        _ => ok(),
+                    },
                     None => Err(format!("{}::{name}: no such function", v.type_name())),
                 }
             }
@@ -920,6 +953,16 @@ impl Engine {
         if let Some(r) = self.resource_method(o, name, args) {
             return r;
         }
+        if name == "AddSubJoint" {
+            // keeps the joint as the next element; the models are not drawn
+            let mut b = o.borrow_mut();
+            let i = b.elems.len();
+            let j = args.first().map(deref).unwrap_or_else(|| {
+                var(Value::Obj(Rc::new(RefCell::new(Native::new("ModelJoint")))))
+            });
+            b.elems.push((format!("{:?}", Key::Index(i as i32)), j));
+            return int(i as i32);
+        }
         self.warn(format!("{class}::{name}: no such function (returns 0)"));
         ok()
     }
@@ -997,7 +1040,7 @@ impl Engine {
                 } else {
                     let ms = ai(args, 0, -1);
                     if ms >= 0 && self.waited(ms as f64) {
-                        int(4)
+                        Ok(Done::Yield(Value::Int(4)))
                     } else {
                         Ok(Done::Block)
                     }
@@ -1084,7 +1127,7 @@ impl Engine {
             }
             "GetInputEvent" => {
                 if self.waited(ai(args, 1, -1).max(0) as f64) {
-                    int(4)
+                    Ok(Done::Yield(Value::Int(4)))
                 } else {
                     Ok(Done::Block)
                 }
@@ -1793,7 +1836,7 @@ impl Engine {
                     &f.map_or(String::new(), |f| f.borrow().sprite_id.clone())
                 )))
             }
-            "IsHitSprite" => int(0),
+            "IsHitSprite" | "IsMoviePlaying" => int(0),
             "GetSpriteAtPoint" => Ok(Done::Val(s(""))),
             "SetBlendingEnvelope" => {
                 let v = arg(args, 0);
@@ -1929,7 +1972,7 @@ impl Engine {
                 } else {
                     let ms = ai(args, 1, -1);
                     if ms >= 0 && self.waited(ms as f64) {
-                        int(4)
+                        Ok(Done::Yield(Value::Int(4)))
                     } else {
                         Ok(Done::Block)
                     }
@@ -2660,6 +2703,12 @@ fn array_method(t: &Var, name: &str, args: &[Var]) -> Result<Done, String> {
         }
         "RemoveAll" => {
             a.clear();
+            Value::Int(0)
+        }
+        // FontArray: the fonts there are
+        "EnumerateAllFonts" => {
+            a.clear();
+            a.push(var(s("ＭＳ ゴシック")));
             Value::Int(0)
         }
         "Detach" => {

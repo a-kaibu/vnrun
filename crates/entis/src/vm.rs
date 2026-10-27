@@ -75,7 +75,7 @@ pub struct Block {
 }
 
 pub struct Frame {
-    ret_pc: usize,
+    pub ret_pc: usize,
     base: usize,
     pub this: Option<Var>,
     /// "Class" of a "Class::Function"
@@ -225,6 +225,9 @@ impl Engine {
             .cloned()
             .unwrap_or_else(|| "?".into());
         let class = func.split_once("::").map(|(c, _)| Str::from(c));
+        if self.log > 2 {
+            eprintln!("entis: {}{func}", " ".repeat(t.frames.len()));
+        }
         t.frames.push(Frame {
             ret_pc: t.pc,
             base: t.stack.len(),
@@ -374,10 +377,17 @@ impl Engine {
                     None => Err(format!("no member {n}")),
                 }
             }
-            (Value::Struct(_, m), Key::Index(i)) => m
-                .get(*i as usize)
-                .map(|(_, v)| v.clone())
-                .ok_or_else(|| format!("no element {i}")),
+            (Value::Struct(_, m), Key::Index(i)) => {
+                // a class made on a parent (Bezier1D: an array) indexes the parent
+                if let Some((_, p)) = m.iter().find(|(k, _)| &**k == "parent") {
+                    let p = p.clone();
+                    drop(b);
+                    return self.element(t, &p, key);
+                }
+                m.get(*i as usize)
+                    .map(|(_, v)| v.clone())
+                    .ok_or_else(|| format!("no element {i}"))
+            }
             (Value::Hash(h, d), Key::Name(n)) => match hash_find(h, n) {
                 Ok(i) => Ok(h[i].1.clone()),
                 Err(i) => {

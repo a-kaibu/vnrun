@@ -65,9 +65,30 @@ impl Engine {
     pub fn open(mut host: Box<dyn Files>, paths: Option<Vec<String>>) -> Result<Engine, String> {
         let paths = paths.unwrap_or_else(|| host.list());
         let mut fs = Fs::open(host, &paths)?;
+        // script.csx, or else the one named after the exe (lyrical.exe → lyrical.csx)
+        let mut names: Vec<String> = fs
+            .entries()
+            .into_iter()
+            .map(|(_, e)| e.name)
+            .filter(|n| n.to_lowercase().ends_with(".csx"))
+            .collect();
+        let exe_stems: Vec<String> = paths
+            .iter()
+            .filter_map(|p| p.to_lowercase().strip_suffix(".exe").map(String::from))
+            .map(|p| p.rsplit('/').next().unwrap_or(&p).to_string())
+            .collect();
+        names.sort_by_key(|n| {
+            let l = n.to_lowercase();
+            let stem = l.trim_end_matches(".csx").to_string();
+            (l != "script.csx", !exe_stems.contains(&stem))
+        });
+        let name = names
+            .first()
+            .ok_or("no .csx script (no NOA archive with the script, or no password)")?
+            .clone();
         let csx = fs
-            .read("script.csx")
-            .ok_or("script.csx: not found (no NOA archive with the script, or no password)")?;
+            .read(&name)
+            .ok_or_else(|| format!("{name}: cannot read"))?;
         let img = crate::csx::Image::parse(&csx)?;
         let (globals, data, make) = crate::vm::variables(&img);
         let prologue = img.prologue.clone();
@@ -123,6 +144,29 @@ impl Engine {
         if self.log > 0 || self.warned.insert(msg.clone()) {
             eprintln!("entis: {msg}");
         }
+    }
+
+    /// Where each thread is (its calls, innermost last), for tracing.
+    pub fn where_threads(&self) -> Vec<String> {
+        self.threads
+            .iter()
+            .flatten()
+            .filter(|t| !t.done)
+            .map(|t| {
+                t.frames
+                    .iter()
+                    .map(|f| {
+                        format!(
+                            "{}({:#x})",
+                            f.func,
+                            self.prog.addr.get(f.ret_pc).copied().unwrap_or(0)
+                        )
+                    })
+                    .collect::<Vec<_>>()
+                    .join(" > ")
+                    + &format!(" at {:#x}", self.prog.addr.get(t.pc).copied().unwrap_or(0))
+            })
+            .collect()
     }
 
     pub fn ended(&self) -> bool {
