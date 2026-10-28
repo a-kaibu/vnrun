@@ -4,10 +4,11 @@
 
 use std::collections::HashMap;
 
-use crate::expr::{self, Kind, Place, Value, Var};
+use crate::expr::{self, Kind, Place, Value, Var, VarId};
 use crate::files::{Archives, Files};
 use crate::image::{Image, Rect, adjust};
 use crate::layers::{self, Draw, Layers};
+use crate::product;
 use crate::sjis;
 use crate::sysvar::{self, Input};
 use crate::text::{Font, Text};
@@ -772,6 +773,14 @@ impl Host for World {
             }
             "LOAD" => self.load(st, c),
             "FILEINFO" => {
+                // (555) CGFILE= / SOUNDFILE=: a picture / sound named without its extension
+                for (k, exts) in [("CGFILE", &IMAGE_EXTS[..]), ("SOUNDFILE", &SOUND_EXTS[..])] {
+                    if let Some(name) = text(st, c, k)? {
+                        let found = self.archives.find(self.files.as_mut(), &name, exts).is_some();
+                        store(st, c, Value::Int(found as i64))?;
+                        return Ok(Flow::Next);
+                    }
+                }
                 let file = text(st, c, "FILE")?.unwrap_or_default();
                 let exists = if file.to_lowercase().ends_with(".sd") || !file.contains('.') {
                     self.files.read_save(&Self::save_name(&file)).is_some()
@@ -874,6 +883,13 @@ impl Host for World {
                 Ok(Flow::Next)
             }
             "TEXT" => {
+                // FILE= LET=v[$S]: the file's lines, each with its line break, from $S(0) on
+                if let (Some(file), Some(e)) = (text(st, c, "FILE")?, c.arg("LET")) {
+                    let b = self.archives.read(self.files.as_mut(), &file).unwrap_or_default();
+                    let lines = b.split_inclusive(|&x| x == b'\n').map(<[u8]>::to_vec).collect();
+                    let var = st.place(e)?.var;
+                    st.fill(var, lines);
+                }
                 if on(st, c, "CLEAR")? {
                     st.set_sys(sysvar::TEXT, true, &[], Value::Str(Vec::new()));
                     st.set_sys(sysvar::TEXT_FLAG, true, &[], Value::Str(Vec::new()));
@@ -882,6 +898,7 @@ impl Host for World {
             }
             "ERROR" | "FPS" | "INPUT" | "MOUSE" | "SYSTEM" | "TRAY" | "MENU" | "PREP" | "CLIPACT"
             | "MOVIE" | "MOVIEEND" | "YMV" | "YMVEND" | "FLASH" | "FLASHEND" => Ok(Flow::Next),
+            "PRODUCT" => self.product(st, c),
             "MOVIEINFO" | "YMVINFO" | "FLASHINFO" | "MENUINFO" | "CLIPINFO" | "REGINFO" => {
                 store(st, c, Value::Int(0))?;
                 Ok(Flow::Next)
@@ -895,6 +912,54 @@ impl Host for World {
 
     fn text(&mut self, st: &mut State, text: &[u8]) -> Result<Flow, String> {
         self.text_out(st, text);
+        Ok(Flow::Next)
+    }
+}
+
+impl World {
+    /// PRODUCT: see [`product`].
+    fn product(&mut self, st: &mut State, c: &Call) -> Result<Flow, String> {
+        let at = |k: &str| int(st, c, k).map(|v| v.unwrap_or(0));
+        match int(st, c, "COM")?.unwrap_or(0) {
+            21 => {
+                let dir = text(st, c, "PSTR")?.unwrap_or_default();
+                let names = self.archives.list(self.files.as_mut(), &dir);
+                let files = VarId { id: sysvar::FILES, str: true };
+                st.declare(files, Kind::Str, vec![names.len().max(1)], Value::Str(Vec::new()));
+                for (i, n) in names.iter().enumerate() {
+                    st.set_sys(sysvar::FILES, true, &[i as i64], Value::text(n));
+                }
+                st.set_sys(sysvar::FILES_COUNT, false, &[], Value::Int(names.len() as i64));
+            }
+            22 => {
+                let line = c.arg("PSTR").map(|e| st.eval(e)).transpose()?.map_or_else(Vec::new, |v| v.bytes());
+                let (strs, kinds, flag) = (at("PINT")?, at("PINT2")?, at("PINT3")?);
+                let (toks, open) = product::tokens(&line, st.get_at(flag).int() != 0);
+                for (i, (t, k)) in toks.iter().enumerate() {
+                    st.set_at(strs + i as i64, Value::Str(t.clone()));
+                    st.set_at(kinds + i as i64, Value::Int(*k));
+                }
+                if let Some(open) = open {
+                    st.set_at(flag, Value::Int(open as i64));
+                }
+                store(st, c, Value::Int(toks.len() as i64))?;
+            }
+            23 => {
+                let (strs, lens) = (at("PINT")?, at("PINT2")?);
+                let mut n = 0;
+                loop {
+                    let len = st.get_at(strs + n).bytes().len() as i64;
+                    st.set_at(lens + n, Value::Int(len));
+                    if len == 0 {
+                        break;
+                    }
+                    n += 1;
+                }
+                store(st, c, Value::Int(n))?;
+            }
+            29 => store(st, c, Value::Int(0))?,
+            _ => {}
+        }
         Ok(Flow::Next)
     }
 }

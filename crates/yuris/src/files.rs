@@ -85,6 +85,26 @@ impl Archives {
         self.entry(name).is_some() || files.size(&name.replace('\\', "/")).is_some()
     }
 
+    /// The files in a folder ("scenario/"): in the archives and loose, by their names inside it,
+    /// sorted.
+    pub fn list(&self, files: &mut dyn Files, dir: &str) -> Vec<String> {
+        let dir = ypf::fold(dir);
+        let dir = dir.trim_end_matches('/');
+        let prefix = format!("{dir}/");
+        let mut out: Vec<String> = self
+            .packs
+            .iter()
+            .flat_map(|(_, index)| &index.entries)
+            .filter(|e| ypf::fold(&e.name).starts_with(&prefix))
+            .map(|e| e.name.replace('\\', "/")[prefix.len()..].to_string())
+            .filter(|n| !n.contains('/'))
+            .collect();
+        out.extend(files.list(dir));
+        out.sort_by_key(|n| n.to_lowercase());
+        out.dedup_by(|a, b| a.eq_ignore_ascii_case(b));
+        out
+    }
+
     fn entry(&self, name: &str) -> Option<&(usize, usize)> {
         self.names.get(&ypf::fold(name)).or_else(|| self.names.get(&ypf::fold(&sjis::archive_name(name)?)))
     }

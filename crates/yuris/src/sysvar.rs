@@ -27,6 +27,13 @@ pub const RINT: u16 = 54;
 pub const RFLT: u16 = 55;
 pub const RSTR: u16 = 56;
 pub const RFLG: u16 = 57;
+/// 555 only, left unnumbered (10000 + raw): @_REF(address, n), its float and string forms read
+/// and write the element n past an address (`#$S(0)`)
+pub const REF_INT: u16 = 10050;
+pub const REF_STR: u16 = 10052;
+/// $_FILES(n) / @_FILES: what PRODUCT COM=21 found in a folder
+pub const FILES: u16 = 14;
+pub const FILES_COUNT: u16 = 15;
 pub const PROJECT_PATH: u16 = 72;
 pub const SAVE_PATH: u16 = 73;
 /// @_DXMODE: Direct3D drawing; 0, so ERIS composes its layers itself (no DXBUF / MATH3D)

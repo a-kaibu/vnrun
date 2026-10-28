@@ -10,6 +10,7 @@
 //! | `H` | variable (`@` or `$`, id:u16) |
 //! | `V` ... `)` | element of an array variable: `V` starts it, the index expressions follow (with `,` between them), `)` ends it |
 //! | `v` | the variable itself (for keywords that take a variable, like VARACT's SET) |
+//! | `H`/`V` with `#` or `` ` `` | the address of a string / number variable or element (555: `#$S(0)`), see [`reference`] |
 //! | `+ - * / %` | arithmetic (`+` also joins strings) |
 //! | `= ! < > S Z` | `== != < > <= >=` |
 //! | `& \|` | `&& \|\|` |
@@ -163,6 +164,22 @@ pub struct Place {
 
 pub trait Vars {
     fn get(&self, place: &Place) -> Value;
+    /// Flat position of an element of a variable (for addresses).
+    fn slot(&self, var: VarId, index: &[i64]) -> i64 {
+        let _ = var;
+        index.first().copied().unwrap_or(0)
+    }
+}
+
+/// An address (`#$S(n)`, `` `@A(n) ``) as a number: the variable in the high 32 bits and the
+/// flat element in the low ones, so that adding n moves n elements on.
+pub fn reference(id: u16, slot: i64) -> i64 {
+    (id as i64) << 32 | (slot & 0xffff_ffff)
+}
+
+/// The variable and element of an address.
+pub fn dereference(r: i64) -> (u16, i64) {
+    ((r >> 32) as u16, r & 0xffff_ffff)
 }
 
 #[derive(Debug, Clone)]
@@ -170,6 +187,12 @@ enum Item {
     Val(Value),
     Place(Place),
     Open(VarId),
+    /// `V` with `#` or `` ` ``: the address of the element the indices name
+    OpenRef(VarId),
+}
+
+fn is_ref(d: &[u8]) -> bool {
+    matches!(d.first(), Some(b'#' | b'`'))
 }
 
 fn val(item: Item, vars: &dyn Vars) -> Value {
@@ -177,11 +200,12 @@ fn val(item: Item, vars: &dyn Vars) -> Value {
         Item::Val(v) => v,
         Item::Place(p) => vars.get(&p),
         Item::Open(id) => vars.get(&Place { var: id, index: Vec::new(), whole: false }),
+        Item::OpenRef(id) => Value::Int(reference(id.id, 0)),
     }
 }
 
 fn var_id(d: &[u8]) -> VarId {
-    VarId { id: d.get(1..3).map_or(0, |b| u16::from_le_bytes([b[0], b[1]])), str: d.first() == Some(&b'$') }
+    VarId { id: d.get(1..3).map_or(0, |b| u16::from_le_bytes([b[0], b[1]])), str: matches!(d.first(), Some(b'$' | b'#')) }
 }
 
 /// Splits an expression into its tokens.
@@ -213,6 +237,8 @@ fn run(e: &[u8], vars: &dyn Vars) -> Result<Item, String> {
             b'L' => Item::Val(Value::Int(i64::from_le_bytes(n))),
             b'F' => Item::Val(Value::Flt(f64::from_le_bytes(n))),
             b'M' => Item::Val(Value::Str(unquote(d))),
+            b'H' if is_ref(d) => Item::Val(Value::Int(reference(var_id(d).id, 0))),
+            b'V' if is_ref(d) => Item::OpenRef(var_id(d)),
             b'H' => Item::Place(Place { var: var_id(d), index: Vec::new(), whole: false }),
             b'v' => Item::Place(Place { var: var_id(d), index: Vec::new(), whole: true }),
             b'V' => Item::Open(var_id(d)),
@@ -224,6 +250,10 @@ fn run(e: &[u8], vars: &dyn Vars) -> Result<Item, String> {
                         Item::Open(var) => {
                             index.reverse();
                             break Item::Place(Place { var, index, whole: false });
+                        }
+                        Item::OpenRef(var) => {
+                            index.reverse();
+                            break Item::Val(Value::Int(reference(var.id, vars.slot(var, &index))));
                         }
                         i => index.push(val(i, vars).int()),
                     }
@@ -329,6 +359,7 @@ pub fn place(e: &[u8], vars: &dyn Vars) -> Result<Place, String> {
     match run(e, vars)? {
         Item::Place(p) => Ok(p),
         Item::Open(var) => Ok(Place { var, index: Vec::new(), whole: false }),
+        Item::OpenRef(_) => Err("not a variable: an address".into()),
         Item::Val(v) => Err(format!("not a variable: {v:?}")),
     }
 }

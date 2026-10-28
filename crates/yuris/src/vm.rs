@@ -257,11 +257,26 @@ pub struct State {
 
 impl expr::Vars for State {
     fn get(&self, p: &Place) -> Value {
+        if let Some(r) = deref_place(p) {
+            return self.get_at(r);
+        }
         let Some(Some(v)) = self.vars.get(p.var.id as usize) else {
             return if p.var.str { Value::Str(Vec::new()) } else { Value::Int(0) };
         };
         v.slot(&p.index).and_then(|i| v.vals.get(i)).cloned().unwrap_or_else(|| v.kind.zero())
     }
+    fn slot(&self, var: VarId, index: &[i64]) -> i64 {
+        match self.vars.get(var.id as usize) {
+            Some(Some(v)) => v.slot(index).map_or(0, |i| i as i64),
+            _ => index.first().copied().unwrap_or(0),
+        }
+    }
+}
+
+/// `@_REF(address, n)` and its float and string forms: the element n past an address.
+fn deref_place(p: &Place) -> Option<i64> {
+    let at = *p.index.first()?;
+    (sys::REF_INT..=sys::REF_STR).contains(&p.var.id).then(|| at + p.index.get(1).copied().unwrap_or(0))
 }
 
 fn kind_of(ty: VarType, id: VarId) -> Kind {
@@ -322,7 +337,42 @@ impl State {
         self.vars[i] = Some(Var::new(kind, dims, init));
     }
 
+    /// The element at an address (see [`expr::reference`]).
+    pub fn get_at(&self, r: i64) -> Value {
+        let (id, slot) = expr::dereference(r);
+        match self.vars.get(id as usize) {
+            Some(Some(v)) => v.vals.get(slot as usize).cloned().unwrap_or_else(|| v.kind.zero()),
+            _ => Value::Int(0),
+        }
+    }
+
+    pub fn set_at(&mut self, r: i64, v: Value) {
+        let (id, slot) = expr::dereference(r);
+        if let Some(Some(var)) = self.vars.get_mut(id as usize) {
+            let kind = var.kind;
+            if let Some(x) = var.vals.get_mut(slot as usize) {
+                *x = kind.coerce(v);
+            }
+        }
+    }
+
+    /// Fills a string array from its first element on, clearing the rest; it grows when the
+    /// values do not fit.
+    pub fn fill(&mut self, id: VarId, vals: Vec<Vec<u8>>) {
+        let var = self.var_mut(id);
+        if var.vals.len() <= vals.len() {
+            *var = Var::new(Kind::Str, vec![vals.len() + 1], Value::Str(Vec::new()));
+        }
+        let kind = var.kind;
+        for (i, x) in var.vals.iter_mut().enumerate() {
+            *x = kind.coerce(Value::Str(vals.get(i).cloned().unwrap_or_default()));
+        }
+    }
+
     pub fn set(&mut self, p: &Place, v: Value) {
+        if let Some(r) = deref_place(p) {
+            return self.set_at(r, v);
+        }
         let var = self.var_mut(p.var);
         if p.whole {
             let v = var.kind.coerce(v);

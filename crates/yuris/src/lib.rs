@@ -9,6 +9,7 @@ pub mod expr;
 pub mod files;
 pub mod image;
 pub mod layers;
+pub mod product;
 pub mod sjis;
 pub mod sysvar;
 pub mod text;

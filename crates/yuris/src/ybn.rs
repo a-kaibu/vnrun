@@ -227,7 +227,7 @@ fn remap_expr(ver: u32, e: &mut [u8]) {
     let mut i = 0;
     while i + 3 <= e.len() {
         let (op, n) = (e[i], u16::from_le_bytes([e[i + 1], e[i + 2]]) as usize);
-        if matches!(op, b'H' | b'V' | b'v') && n == 3 && i + 6 <= e.len() && matches!(e[i + 3], b'@' | b'$') {
+        if matches!(op, b'H' | b'V' | b'v') && n == 3 && i + 6 <= e.len() && matches!(e[i + 3], b'@' | b'$' | b'#' | b'`') {
             let id = sysvar(ver, u16::from_le_bytes([e[i + 4], e[i + 5]]));
             e[i + 4..i + 6].copy_from_slice(&id.to_le_bytes());
         }
