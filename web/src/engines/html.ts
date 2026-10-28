@@ -143,9 +143,21 @@ function nodeRequire(fs: GameFS) {
   const modules: Record<string, unknown> = { fs: nodeFs, "fs-extra": nodeFs, path: nodePath, electron };
   return (name: string) => {
     if (name in modules) return modules[name];
+    // Runtimes that load everything at the top (GameCreator's script.js takes nw.gui and
+    // child_process) get a module that does nothing; anything else is missing as in Node.
+    if (STUBBED.includes(name)) return stub;
     throw new Error(`Cannot find module '${name}'`);
   };
 }
+
+const STUBBED = ["nw.gui", "child_process", "os", "http", "https", "crypto"];
+
+// A value whose properties and calls all give itself back, and which turns into "" or 0.
+const stub: unknown = new Proxy(function () {}, {
+  get: (_, key) => (key === Symbol.toPrimitive ? () => "" : key === "then" ? undefined : stub),
+  apply: () => stub,
+  construct: () => stub as object,
+});
 
 // Plugins that see `require` take NW.js for granted and read process.mainModule.filename for
 // the game folder (Text2Frame). This `process` is a function, so the RPG Maker cores' NW.js
