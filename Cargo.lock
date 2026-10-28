@@ -352,6 +352,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "debonosu"
+version = "0.1.0"
+dependencies = [
+ "fontdue",
+ "image 0.25.10",
+ "luavm",
+ "miniz_oxide 0.8.9",
+ "nexas",
+]
+
+[[package]]
 name = "derive_arbitrary"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
