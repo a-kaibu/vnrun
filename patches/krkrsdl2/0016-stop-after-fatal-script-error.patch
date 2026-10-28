@@ -1,0 +1,37 @@
+--- a/src/core/sdl2/SDLApplication.cpp
++++ b/src/core/sdl2/SDLApplication.cpp
+@@ -2932,8 +2932,20 @@
+ #endif
+ 
+ #if defined(__EMSCRIPTEN__) && !defined(__EMSCRIPTEN_PTHREADS__)
++// vnrun: an unhandled script exception ends the engine (TVPTerminateSync: the script engine is
++// shut down, then exit(), which only unwinds in the browser). Input and the main loop must not
++// run scripts after that: they found no global object and called through a null function.
++extern tTJS *TVPScriptEngine;
++static bool vnrun_script_engine_seen = false;
++static bool vnrun_engine_stopped()
++{
++	if (TVPScriptEngine) vnrun_script_engine_seen = true;
++	return vnrun_script_engine_seen && !TVPScriptEngine;
++}
++
+ static int sdl_event_watch(void *userdata, SDL_Event *in_event)
+ {
++	if (vnrun_engine_stopped()) return 1;
+ 	SDL_Event event;
+ 	SDL_memcpy(&event, in_event, sizeof(SDL_Event));
+ #if defined(_WIN32) && defined(KRKRSDL2_USE_WIN32_EVENT_QUEUE)
+@@ -2959,6 +2971,13 @@
+ static bool process_events()
+ #endif
+ {
++#if defined(__EMSCRIPTEN__) && !defined(__EMSCRIPTEN_PTHREADS__)
++	if (vnrun_engine_stopped())
++	{
++		emscripten_cancel_main_loop();
++		return;
++	}
++#endif
+ 	try
+ 	{
+ 		try
