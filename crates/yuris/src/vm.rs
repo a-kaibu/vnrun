@@ -709,7 +709,8 @@ impl Vm {
                     "FLT" => Kind::Flt,
                     _ => Kind::Str,
                 };
-                let init = if ins.args.len() > 1 { st.eval(a(1))? } else { kind.zero() };
+                // 222 writes `STR $x` with an empty initial value
+                let init = if ins.args.len() > 1 && !a(1).is_empty() { st.eval(a(1))? } else { kind.zero() };
                 st.declare(id, kind, dims, init);
             }
             // declared from ysv.ybn before the start

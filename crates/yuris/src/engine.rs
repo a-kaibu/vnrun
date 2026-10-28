@@ -351,6 +351,10 @@ impl World {
                 Box::new(move |p| adjust::mono(p, value))
             } else if on(st, c, "REVERSE")? {
                 Box::new(adjust::invert)
+            } else if on(st, c, "RECTPAINT")? && self.numbered {
+                // 222: transparency in the top byte (its text layers are cleared with 0xff000000)
+                let a = 255 - ((value >> 24) & 0xff) as u8;
+                Box::new(move |p| p.copy_from_slice(&[(value >> 16) as u8, (value >> 8) as u8, value as u8, a]))
             } else if on(st, c, "RECTPAINT")? {
                 Box::new(move |p| p[..3].copy_from_slice(&[(value >> 16) as u8, (value >> 8) as u8, value as u8]))
             } else if on(st, c, "RECTPAINT2")? {

@@ -342,6 +342,9 @@ pub fn expr(t: &[u8]) -> Vec<u8> {
     let toks = split(cstr(t));
     let mut out = Vec::new();
     let mut k = 0;
+    // `$@x` and `@$x` convert the variable's value; after an index the cast follows its ")"
+    let mut depth = 0usize;
+    let mut casts: Vec<(usize, u8)> = Vec::new();
     while k < toks.len() {
         let tok = toks[k];
         k += 1;
@@ -361,22 +364,50 @@ pub fn expr(t: &[u8]) -> Vec<u8> {
             ),
             b'M' if tok.len() > 1 => token(&mut out, b'M', &tok[1..]),
             b'H' if tok.len() > 2 => {
-                let id: u16 = std::str::from_utf8(&tok[2..])
+                let (ty, digits, cast) = match tok[2] {
+                    b'@' | b'$' | b'&' if tok.len() > 3 => (
+                        tok[2],
+                        &tok[3..],
+                        Some(if tok[1] == b'$' { b's' } else { b'i' }),
+                    ),
+                    _ => (tok[1], &tok[2..], None),
+                };
+                let id: u16 = std::str::from_utf8(digits)
                     .ok()
                     .and_then(|s| s.parse().ok())
                     .unwrap_or(0);
-                let mut data = vec![tok[1]];
+                let mut data = vec![ty];
                 data.extend(sysvar(id).to_le_bytes());
                 match toks.get(k).copied() {
                     Some(b"(") => {
                         k += 1;
                         token(&mut out, b'V', &data);
+                        if let Some(op) = cast {
+                            casts.push((depth, op));
+                        }
+                        depth += 1;
                     }
                     Some(b"V") => {
                         k += 1;
                         token(&mut out, b'v', &data);
+                        if let Some(op) = cast {
+                            token(&mut out, op, &[]);
+                        }
                     }
-                    _ => token(&mut out, b'H', &data),
+                    _ => {
+                        token(&mut out, b'H', &data);
+                        if let Some(op) = cast {
+                            token(&mut out, op, &[]);
+                        }
+                    }
+                }
+            }
+            b')' if tok.len() == 1 => {
+                depth = depth.saturating_sub(1);
+                token(&mut out, b')', &[]);
+                if casts.last().is_some_and(|&(d, _)| d == depth) {
+                    let (_, op) = casts.pop().unwrap();
+                    token(&mut out, op, &[]);
                 }
             }
             _ if tok.len() == 1 => token(&mut out, tok[0], &[]),
@@ -487,5 +518,14 @@ mod tests {
         );
         assert_eq!(eval(&expr(b"H@00014 "), &NoVars).unwrap(), Value::Int(48));
         assert_eq!(eval(&expr(b"I1 R "), &NoVars).unwrap(), Value::Int(-1));
+        // `$@x` is the int as text, also after an index
+        assert_eq!(
+            eval(&expr(b"M\"a\" H$@01233 + "), &NoVars).unwrap(),
+            Value::text("a1233")
+        );
+        assert_eq!(
+            eval(&expr(b"H$@01117 ( I10 ) M\"b\" + "), &NoVars).unwrap(),
+            Value::text("1127b")
+        );
     }
 }

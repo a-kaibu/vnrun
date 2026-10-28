@@ -215,6 +215,19 @@ fn esc_arc(game: &Path, names: &[String]) -> bool {
     })
 }
 
+/// The first YU-RIS (2006) keeps only pac/*.ypf beside the exe.
+fn pac_ypf(game: &Path, names: &[String]) -> bool {
+    let Some(pac) = names.iter().find(|n| *n == "pac") else {
+        return false;
+    };
+    let dir = fs::read_dir(game).into_iter().flatten().flatten().find(|e| e.file_name().to_string_lossy().to_lowercase() == *pac);
+    dir.and_then(|d| fs::read_dir(d.path()).ok())
+        .into_iter()
+        .flatten()
+        .flatten()
+        .any(|e| e.file_name().to_string_lossy().to_lowercase().ends_with(".ypf"))
+}
+
 /// Guesses the engine from the files at the top of the game folder.
 fn detect(game: &Path) -> Option<String> {
     let names: Vec<String> = fs::read_dir(game)
@@ -252,7 +265,7 @@ fn detect(game: &Path) -> Option<String> {
         Some("majiro".into())
     } else if has("system.arc") {
         Some("bgi".into())
-    } else if has("ysbin.ypf") || has("ysbin") || has("yscfg.dat") {
+    } else if has("ysbin.ypf") || has("ysbin") || has("yscfg.dat") || pac_ypf(game, &names) {
         Some("yuris".into())
     } else if has("srp.pac") || has("mg_data.mbl") {
         Some("tmrhiro".into())
