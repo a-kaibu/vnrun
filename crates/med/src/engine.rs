@@ -14,7 +14,7 @@
 //! | 8 | flag, place | after IF / ELSE: where the false branch goes; after SELECT etc.: the block's end |
 //! | 10 | s, expr | a case of SELECT (s: its text), CLICKMAP or SWITCH (expr: its condition) |
 //! | 13 | s | the speaker's name |
-//! | 16 | mode, s | background (a `#name` of _BGSET or a picture); mode 0x80 shows it with a fade |
+//! | 16 | mode, s | background (a `#name` of _BGSET or a picture); mode 0x80 shows it with a fade (0x80 | n: a wipe by BG_FADEnn) |
 //! | 18 | mode, n, s.. | standing pictures (`#name`s of _SPRSET) |
 //! | 19 | mode | clear the standing pictures |
 //! | 20 / 21 | s | voice / sound |
@@ -43,7 +43,7 @@ use std::rc::Rc;
 
 use nexas::files::Files;
 use nexas::font::Font;
-use nexas::gfx::{Draw, Image, Place};
+use nexas::gfx::{Draw, Image, Place, Rule};
 
 use crate::arc::Archives;
 use crate::script::{self, Rec, Script, Tok};
@@ -96,7 +96,12 @@ struct Fade {
     from: Vec<Draw>,
     start: f64,
     ms: f64,
+    /// a mode 0x80 | n (n > 0): the old picture goes where the rule BG_FADEnn is dark first
+    rule: Option<Rc<Image>>,
 }
+
+/// How soft a rule wipe's edge is (part of the rule's brightness range).
+const RULE_VAGUE: f32 = 0.25;
 
 /// One running script and its next record.
 #[derive(Clone, Debug)]
@@ -157,6 +162,7 @@ pub struct Engine {
     view: View,
     frozen: Option<Vec<Draw>>,
     fade: Option<Fade>,
+    rules: Vec<(usize, Rule)>,
     now: f64,
     bgm: Option<i32>,
     loops: BTreeMap<u8, String>,
@@ -208,6 +214,7 @@ impl Engine {
             view: View::Game,
             frozen: None,
             fade: None,
+            rules: Vec::new(),
             now: 0.0,
             bgm: None,
             loops: BTreeMap::new(),
@@ -820,10 +827,17 @@ impl Engine {
         })
     }
 
-    /// The changes since the last showing come in: at once, or with a fade for mode 0x80.
+    /// The changes since the last showing come in: at once, or with a fade for mode 0x80 (a
+    /// wipe by the rule picture BG_FADEnn for 0x80 | n).
     fn show(&mut self, mode: u8) {
         if mode & 0x80 != 0 {
-            self.present(FADE_MS);
+            let n = mode & 0x7f;
+            let rule = if n > 0 && self.frozen.is_some() && !self.skip {
+                self.image(&format!("BG_FADE{n:02}"))
+            } else {
+                None
+            };
+            self.present_ruled(FADE_MS, rule);
         }
     }
 
@@ -842,6 +856,10 @@ impl Engine {
     }
 
     fn present(&mut self, ms: f64) {
+        self.present_ruled(ms, None);
+    }
+
+    fn present_ruled(&mut self, ms: f64, rule: Option<Rc<Image>>) {
         if let Some(from) = self.frozen.take()
             && ms > 0.0
             && !self.skip
@@ -850,6 +868,7 @@ impl Engine {
                 from,
                 start: self.now,
                 ms,
+                rule,
             });
             if self.wait == Wait::None {
                 self.wait = Wait::Fade;
@@ -891,11 +910,23 @@ impl Engine {
             Some(f) => f.clone(),
             None => self.stage_draws(),
         };
+        self.rules.clear();
         if let Some(f) = &self.fade {
             let p = ((self.now - f.start) / f.ms.max(1.0)).clamp(0.0, 1.0) as f32;
             for d in &f.from {
                 let mut d = d.clone();
-                d.place.alpha *= 1.0 - p;
+                match &f.rule {
+                    Some(r) => self.rules.push((
+                        out.len(),
+                        Rule {
+                            image: r.clone(),
+                            progress: p,
+                            vague: RULE_VAGUE,
+                            appear: false,
+                        },
+                    )),
+                    None => d.place.alpha *= 1.0 - p,
+                }
                 out.push(d);
             }
         }
@@ -1146,12 +1177,13 @@ impl Engine {
 
     /// The frame as one picture (for the native runner).
     pub fn render(&mut self) -> Image {
-        let mut img = Image::new(self.width, self.height);
-        img.fill([0, 0, 0, 255]);
-        for d in self.draws() {
-            nexas::gfx::draw(&mut img, &d.image, d.src, d.dst, &d.place);
-        }
-        img
+        let ds = self.draws();
+        nexas::gfx::render_ruled(self.width, self.height, &ds, &self.rules)
+    }
+
+    /// The rule wipes of the last [`Engine::draws`]: (draw index, rule).
+    pub fn rules(&self) -> &[(usize, Rule)] {
+        &self.rules
     }
 
     // ---- sounds ----
