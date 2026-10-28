@@ -424,3 +424,9 @@ b2016_evoll	本編	Ivory (vnrun) で注意書き・ロゴ→タイトル (TITLE_
 b2020_caramel_box_strawberry	本編	Ivory (vnrun) でブランド・注意書き→タイトル (横並びのボタン)→NEW GAME→00_CM_01..09 (アイキャッチの呼び出し、2 択・3 択の選択肢)→02_YN_01→02_YN_01_H01→タイトルに戻る (ivory-run、49000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る
 b2017_waffle	本編	NekoSDK (vnrun) で文字の序章→タイトル (obj の背景・ロゴ・ボタン)→はじめから→flow00_000 の順に本編の背景・立ち絵・CG (拡大・移動)・名前・文章 (neko-run 6000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
 b2014_waffle	本編	NekoSDK (vnrun) でタイトル (anime の背景・ロゴ)→はじめから→scr.pak の ep_* を名前順に本編の背景・立ち絵・顔窓・名前・文章 (neko-run 15000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
+b2006_blackcyc	本編	System-NNN (vnrun) で自己展開 exe (LZH) からオープニング→タイトル→はじめから→チャート (chart/*.xtx のスロット選択)→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium)
+b2008_blackcyc	本編	System-NNN (vnrun) でオープニング→タイトル→はじめから→依頼の掲示板 (bdd/irailist.xtx)→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium)。セーブ→ロードで本編に戻る (Chromium)
+b2011_blackcyc	本編	System-NNN (vnrun) でオープニング→タイトル→はじめから→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium)
+b2016_blackcyc	本編	System-NNN (vnrun) で zip 内の自己展開 exe (RAR) からオープニング→タイトル→NEW GAME→チャート (chart/*.fxf)→Prologue の背景・文章・名前まで (nnn-run と Chromium)
+b2021_metalogiq	本編	System-NNN (vnrun) で 1280x720 のロゴ→タイトル→新規スタート→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium)。ディスク容量のため ev0.gpk・cdvaw・movie を除いて展開して確認
+b2023_cyc_rose	本編	System-NNN (vnrun) で zip 内の自己展開 exe (RAR5) からオープニング→タイトル→本編の背景 (dwq/<xx>/ のばらの dwq)・文章・名前まで (nnn-run と Chromium)

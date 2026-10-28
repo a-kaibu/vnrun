@@ -38,6 +38,7 @@ const ENGINES: Record<string, () => Promise<EngineModule>> = {
   interheart: () => import("./engines/interheart"),
   anim: () => import("./engines/anim"),
   yuka: () => import("./engines/yuka"),
+  systemnnn: () => import("./engines/systemnnn"),
   html: () => import("./engines/html"),
 };
 

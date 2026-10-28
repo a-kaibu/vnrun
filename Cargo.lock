@@ -1244,6 +1244,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "systemnnn"
+version = "0.1.0"
+dependencies = [
+ "fontdue",
+ "image 0.25.10",
+ "nexas",
+]
+
+[[package]]
+name = "systemnnn-web"
+version = "0.1.0"
+dependencies = [
+ "js-sys",
+ "nexas",
+ "systemnnn",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "tempfile"
 version = "3.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

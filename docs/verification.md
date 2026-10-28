@@ -64,6 +64,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Interheart (vnrun) | 11 | 10 |  |  |  | 1 |  |  |
 | Crowd/ANIM (vnrun) | 9 | 5 |  |  |  | 4 |  |  |
 | Yuka (vnrun) | 7 | 7 |  |  |  |  |  |  |
+| System-NNN (vnrun) | 6 | 6 |  |  |  |  |  |  |
 | Cyberworks (vnrun) | 8 | 4 |  |  |  |  |  | 4 |
 | LiLiM (vnrun) | 7 | 7 |  |  |  |  |  |  |
 | Silky's (vnrun) | 2 | 2 |  |  |  |  |  |  |
@@ -593,6 +594,17 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2011_smee | [ラブラブル 体験版 vol.01](http://suezou.dyndns.org/dl2011/smee/loveable/loverable_trial_01.zip) | 本編 | Yuka (vnrun) でタイトル (SpriteCreate のパターンのボタン、MouseCase2)→名前入力 (既定の名前で「はい」)→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium) |
 | b2012_feng | [星空へ架かる橋ＡＡ 円佳スペシャルアフター体験版](http://suezou.dyndns.org/dl2012/feng/hoshikaka-aa/hoshiaamadotry.zip) | 本編 | Yuka (vnrun) で 1280x960 の注意書き→タイトル→はじめから→本編の背景・立ち絵・文章・名前 (@gf の名前画像) まで (yuka-run と Chromium)。セーブ→タイトルのつづきから (自前のロード画面) で本編に戻る (Chromium) |
 | b2013_hooksoft | [PriministAr 体験版](http://suezou.dyndns.org/dl2013/hooksoft/priministar/primini_trial.zip) | 本編 | Yuka (vnrun) で 1280x720 のタイトル→START GAME→体験版の説明→本編の背景・立ち絵・文章まで (yuka-run と Chromium) |
+
+### System-NNN (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2006_blackcyc | [EXTRAVAGANZA ～蟲愛でる少女～ 体験版2](http://suezou.dyndns.org/dl2006/blackcyc/extravaga/extravaganza_trial2.exe) | 本編 | System-NNN (vnrun) で自己展開 exe (LZH) からオープニング→タイトル→はじめから→チャート (chart/*.xtx のスロット選択)→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium) |
+| b2008_blackcyc | [ＢＤＤ 体験版Ⅱ](http://suezou.dyndns.org/dl2008/blackcyc/bdd/bdd_taiken2.exe) | 本編 | System-NNN (vnrun) でオープニング→タイトル→はじめから→依頼の掲示板 (bdd/irailist.xtx)→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium)。セーブ→ロードで本編に戻る (Chromium) |
+| b2011_blackcyc | [獄淫の尖塔 体験版](http://suezou.dyndns.org/dl2011/blackcyc/gokuin/gokuin_trial.exe) | 本編 | System-NNN (vnrun) でオープニング→タイトル→はじめから→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium) |
+| b2016_blackcyc | [EXTRAVAGANZA ～蟲愛でる少女～ 体験版 (幼虫)](http://suezou.dyndns.org/dl2016/blackcyc/extravaganza/EXTRAVAGANZA_trial_youtyu.zip) | 本編 | System-NNN (vnrun) で zip 内の自己展開 exe (RAR) からオープニング→タイトル→NEW GAME→チャート (chart/*.fxf)→Prologue の背景・文章・名前まで (nnn-run と Chromium) |
+| b2021_metalogiq | [魔法少女消耗戦線 DEADΩAEGIS 体験版](http://suezou.dyndns.org/dl2021/metalogiq/dead_end_aegis/DeadendAegis_trial.exe) | 本編 | System-NNN (vnrun) で 1280x720 のロゴ→タイトル→新規スタート→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium)。ディスク容量のため ev0.gpk・cdvaw・movie を除いて展開して確認 |
+| b2023_cyc_rose | [薔薇ノ木ニ薔薇ノ花咲ク 体験版](http://suezou.dyndns.org/dl2023/cyc-rose/bara_re/baraRe_trial.zip) | 本編 | System-NNN (vnrun) で zip 内の自己展開 exe (RAR5) からオープニング→タイトル→本編の背景 (dwq/<xx>/ のばらの dwq)・文章・名前まで (nnn-run と Chromium) |
 
 ### Cyberworks (vnrun)
 

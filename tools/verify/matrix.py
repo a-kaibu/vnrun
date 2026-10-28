@@ -32,6 +32,7 @@ ENGINES = {
     "interheart": "Interheart (vnrun)",
     "anim": "Crowd/ANIM (vnrun)",
     "yuka": "Yuka (vnrun)",
+    "systemnnn": "System-NNN (vnrun)",
     "cyberworks": "Cyberworks (vnrun)",
     "lilim": "LiLiM (vnrun)",
     "silkys": "Silky's (vnrun)",

@@ -342,6 +342,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if ykc_archive(game, &names) {
         // Yuka (HOOK, SMEE, feng): YKC001 archives (*.ykc, or *.dat in the older ones)
         Some("yuka".into())
+    } else if has("spt") && has("dwq") {
+        // System-NNN (Black Cyc and others): spt/*.spt scripts beside dwq/*.gpk picture packs
+        Some("systemnnn".into())
     } else if has("data.fpk") {
         // Interheart / Candy Soft: data.fpk (the scenario) beside the other .fpk archives
         Some("interheart".into())

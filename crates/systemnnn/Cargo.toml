@@ -1,0 +1,11 @@
+[package]
+name = "systemnnn"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "System-NNN (Black Cyc and others) for the browser: GPK/DWQ pictures, VPK/VAW sounds and SPT scripts run by their own interpreter"
+
+[dependencies]
+nexas = { path = "../nexas" }
+fontdue = "0.9"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
