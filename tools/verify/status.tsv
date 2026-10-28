@@ -465,4 +465,4 @@ dl_RJ01715225	本編	Electron の PixiJS ゲーム (app.asar を vnrun-prep が�
 dl_RJ01735938	本編	Electron の HTML ゲーム (app/index.html を開く) で導入の説明→最初の魂を迎える→転生先・生まれ方を決める本編画面まで (Chromium)。体験版はセーブ無し (説明に「セーブと図鑑は製品版」)
 dl_RJ01744242	本編	Electron の GDevelop ゲーム (app/index.html を開く) でタイトル→NEW GAME→はじめる→PLAY→本編の会話まで (Chromium)。ゲームにセーブ機能が無い (イベントに storage 系の命令が無い)
 dl_RJ01747016	本編	Electron の HTML ゲーム (dist/index.html を開く) で導入→冒険者の町のマップ→案内さんとの会話まで。localStorage の自動セーブ (ffcards_adventure_v1) がサーバーに残り、別セッションで同じ位置から再開 (Chromium)
-dl_VJ01000787	本編	DebonosuWorks (vnrun、crates/debonosu) でロゴ→注意書き→タイトル→最初から始める→プロローグ (01.scb) の背景・名前・文章・声・BGM まで (deb-run と Chromium)。ダンジョン (map) に入る所で止まり、Live2D の立ち絵・3D・戦闘はなし
+dl_VJ01000787	本編	DebonosuWorks (vnrun、crates/debonosu) でロゴ→注意書き→タイトル→最初から始める→プロローグ (01.scb) の背景・名前・文章・声・BGM まで (deb-run と Chromium)。ダンジョン (map) に入る所で止まり、Live2D の立ち絵・3D・戦闘はなし。自前のセーブ・ロード (Esc で保存、タイトルの「続きから始める」で読み込み) も Chromium で確認

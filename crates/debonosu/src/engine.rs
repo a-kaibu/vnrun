@@ -10,6 +10,9 @@
 //! The scripts' commands (`layer`, `effect`, `page`, `wait`, ...) are Lua functions that call
 //! the program's functions (`_layer`, `_effect`, `_page`, `_wait`, ...): those are ours here
 //! (crate::host). Live2D characters, 3D scenes and the dungeon are not drawn.
+//!
+//! Saving is ours (crate::save): a right click on a page opens the save screen, and the title's
+//! Load button (or a right click there) the load screen.
 
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -20,6 +23,7 @@ use nexas::files::Files;
 use nexas::gfx::{Draw, Image, Place};
 
 use crate::pak::Index;
+use crate::save::{Input, SLOTS, SaveData, slot_name};
 
 pub const W: u32 = 1280;
 pub const H: u32 = 720;
@@ -27,6 +31,43 @@ pub const FRAME: f64 = 1.0 / 60.0;
 const STEPS: usize = 2000;
 /// characters shown per second while a page is being written
 const CPS: f64 = 60.0;
+/// how many turns a load may take to replay its inputs
+const REPLAY_TURNS: usize = 400_000;
+/// our save/load screen: the tabs (save, load, close) and the slots
+const MENU_TABS: [[i32; 4]; 3] = [[60, 36, 180, 48], [260, 36, 180, 48], [1040, 36, 180, 48]];
+
+fn inside(r: [i32; 4], (x, y): (i32, i32)) -> bool {
+    x >= r[0] && y >= r[1] && x < r[0] + r[2] && y < r[1] + r[3]
+}
+
+fn slot_rect(k: usize) -> [i32; 4] {
+    let (col, row) = ((k % 2) as i32, (k / 2) as i32);
+    [60 + col * 590, 120 + row * 96, 570, 80]
+}
+
+struct Menu {
+    save: bool,
+    slots: Vec<Option<SaveData>>,
+}
+
+/// No files: what an engine holds for the moment a load moves its files to the new one.
+struct NoFiles;
+
+impl Files for NoFiles {
+    fn size(&mut self, _: &str) -> Option<u64> {
+        None
+    }
+    fn read_range(&mut self, _: &str, _: u64, _: usize) -> Option<Vec<u8>> {
+        None
+    }
+    fn list(&mut self) -> Vec<String> {
+        Vec::new()
+    }
+    fn read_save(&mut self, _: &str) -> Option<Vec<u8>> {
+        None
+    }
+    fn write_save(&mut self, _: &str, _: &[u8]) {}
+}
 
 pub struct Sound {
     pub data: Vec<u8>,
@@ -255,6 +296,8 @@ pub struct St {
     pub face: String,
     pub stand: String,
     pub unknown: std::collections::HashSet<String>,
+    /// the music playing (0: none) and its volume
+    pub bgm: (i32, f32),
 }
 
 pub type Shared = Rc<RefCell<St>>;
@@ -415,6 +458,9 @@ impl St {
     }
 
     pub fn stop_sound(&mut self, channel: i32, fade_ms: u32) {
+        if channel == 0 {
+            self.bgm = (0, 0.0);
+        }
         self.sounds.push(Sound {
             data: Vec::new(),
             volume: 0.0,
@@ -437,6 +483,7 @@ impl St {
         ]
         .into_iter()
         .find(|p| self.files.size(p).is_some());
+        self.bgm = (no, volume);
         match path.and_then(|p| self.files.read(&p)) {
             Some(data) => self.sounds.push(Sound {
                 data,
@@ -586,9 +633,13 @@ pub struct Engine {
     calls: Vec<(String, String)>,
     included: std::collections::HashSet<String>,
     clicked: bool,
+    cancelled: bool,
     ended: bool,
     halted: Option<String>,
     pub trace: bool,
+    /// what the player did since the game started, which a save keeps
+    inputs: Vec<Input>,
+    menu: Option<Menu>,
 }
 
 impl Engine {
@@ -608,6 +659,11 @@ impl Engine {
         if !index.has("_global.scb") {
             return Err("no game.pak with _global.scb".into());
         }
+        Engine::start(files, index)
+    }
+
+    /// Starts the game's scripts over the read archives.
+    fn start(files: Box<dyn Files>, index: Index) -> Result<Engine, String> {
         let st = Rc::new(RefCell::new(St {
             files,
             index,
@@ -639,6 +695,7 @@ impl Engine {
             face: String::new(),
             stand: String::new(),
             unknown: Default::default(),
+            bgm: (0, 0.0),
         }));
         let mut lua = Lua::new();
         lua.v51 = true;
@@ -650,9 +707,12 @@ impl Engine {
             calls: Vec::new(),
             included: Default::default(),
             clicked: false,
+            cancelled: false,
             ended: false,
             halted: None,
             trace: std::env::var_os("DEB_TRACE").is_some(),
+            inputs: Vec::new(),
+            menu: None,
         };
         e.include("_global")?;
         for f in ["reload", "init"] {
@@ -755,6 +815,11 @@ impl Engine {
             return Ok(());
         }
         let clicked = std::mem::take(&mut self.clicked);
+        let cancelled = std::mem::take(&mut self.cancelled);
+        if self.menu.is_some() {
+            return self.menu_frame(clicked, cancelled);
+        }
+        let mut open = None;
         {
             let mut st = self.st.borrow_mut();
             st.now += FRAME;
@@ -762,32 +827,32 @@ impl Engine {
             let len = st.msg.chars().count() as f64;
             match st.block.clone() {
                 Block::Page => {
-                    if st.shown < len {
+                    if cancelled {
+                        open = Some(true);
+                    } else if st.shown < len {
                         st.shown += CPS * FRAME;
                         if clicked {
                             st.shown = len;
                         }
-                    } else if clicked {
-                        st.msg.clear();
-                        st.name.clear();
-                        st.shown = 0.0;
-                        st.block = Block::None;
+                    } else if clicked && apply(&mut st, &Input::Page) {
+                        self.inputs.push(Input::Page);
                     }
                 }
                 Block::Title => {
-                    if clicked {
+                    if cancelled {
+                        open = Some(false);
+                    } else if clicked {
                         let p = st.pointer;
-                        let hit = st.title_items.iter().find(|i| {
-                            p.0 >= i.dst[0]
-                                && p.1 >= i.dst[1]
-                                && p.0 < i.dst[0] + i.size[0]
-                                && p.1 < i.dst[1] + i.size[1]
-                        });
+                        let hit = st
+                            .title_items
+                            .iter()
+                            .find(|i| inside([i.dst[0], i.dst[1], i.size[0], i.size[1]], p));
                         match hit.map(|i| i.code) {
                             Some(0) => {
-                                st.result = Some(0);
-                                st.block = Block::None;
+                                apply(&mut st, &Input::Title(0));
+                                self.inputs.push(Input::Title(0));
                             }
+                            Some(1) => open = Some(false),
                             Some(1000) => st.block = Block::Ended,
                             _ => {}
                         }
@@ -795,15 +860,17 @@ impl Engine {
                 }
                 Block::Choice(items) => {
                     if clicked && let Some(i) = choice_at(items.len(), st.pointer) {
-                        let k = st.result_key.clone();
-                        st.vars.insert(k, Value::Int(i as i64));
-                        st.result = Some(i as i32);
-                        st.block = Block::None;
+                        apply(&mut st, &Input::Choice(i));
+                        self.inputs.push(Input::Choice(i));
                     }
                 }
                 Block::Ended => self.ended = true,
                 Block::None => {}
             }
+        }
+        if let Some(save) = open {
+            self.open_menu(save);
+            return Ok(());
         }
         if self.ended {
             return Ok(());
@@ -820,12 +887,210 @@ impl Engine {
         Ok(())
     }
 
+    // ---- saves ----
+
+    fn open_menu(&mut self, save: bool) {
+        let slots = (0..SLOTS)
+            .map(|k| {
+                self.st
+                    .borrow_mut()
+                    .files
+                    .read_save(&slot_name(k))
+                    .and_then(|b| SaveData::decode(&b))
+            })
+            .collect();
+        self.menu = Some(Menu { save, slots });
+    }
+
+    /// What a save writes: the inputs so far, and the page showing.
+    fn save_data(&self) -> Option<SaveData> {
+        let st = self.st.borrow();
+        (st.block == Block::Page).then(|| SaveData {
+            inputs: self.inputs.clone(),
+            name: st.name.clone(),
+            text: st.msg.clone(),
+        })
+    }
+
+    /// The save/load screen's turn.
+    fn menu_frame(&mut self, clicked: bool, cancelled: bool) -> Result<(), String> {
+        if cancelled {
+            self.menu = None;
+            return Ok(());
+        }
+        if !clicked {
+            return Ok(());
+        }
+        let save = self.menu.as_ref().is_some_and(|m| m.save);
+        let p = self.st.borrow().pointer;
+        if inside(MENU_TABS[0], p) {
+            if self.save_data().is_some() {
+                self.open_menu(true);
+            }
+        } else if inside(MENU_TABS[1], p) {
+            self.open_menu(false);
+        } else if inside(MENU_TABS[2], p) {
+            self.menu = None;
+        } else if let Some(k) = (0..SLOTS).find(|&k| inside(slot_rect(k), p)) {
+            if save {
+                if let Some(d) = self.save_data() {
+                    self.st
+                        .borrow_mut()
+                        .files
+                        .write_save(&slot_name(k), &d.encode());
+                    self.open_menu(true);
+                }
+            } else if let Some(Some(d)) = self.menu.as_ref().map(|m| m.slots[k].clone()) {
+                self.menu = None;
+                if let Err(e) = self.load(&d) {
+                    eprintln!("deb: load: {e}");
+                    self.halted = Some(e);
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// Starts the game again and replays the slot's inputs, with no waiting, until its page
+    /// shows; then the music and the page's voice play.
+    fn load(&mut self, d: &SaveData) -> Result<(), String> {
+        let (files, index, font, globals, flags) = {
+            let mut st = self.st.borrow_mut();
+            (
+                std::mem::replace(&mut st.files, Box::new(NoFiles)),
+                std::mem::take(&mut st.index),
+                st.font.clone(),
+                st.globals.clone(),
+                st.flags.clone(),
+            )
+        };
+        let trace = self.trace;
+        *self = Engine::start(files, index)?;
+        self.trace = trace;
+        self.st.borrow_mut().font = font;
+        self.replay(&d.inputs)?;
+        let mut st = self.st.borrow_mut();
+        // what the player has seen stays (the system's variables and flags)
+        st.globals.extend(globals);
+        for (k, v) in flags {
+            st.flags.entry(k).or_insert(v);
+        }
+        st.shown = st.msg.chars().count() as f64;
+        let (no, vol) = st.bgm;
+        if no > 0 && !st.sounds.iter().any(|s| s.channel == 0) {
+            let page = std::mem::take(&mut st.sounds);
+            st.music(no, vol);
+            st.sounds.extend(page);
+        }
+        Ok(())
+    }
+
+    fn replay(&mut self, inputs: &[Input]) -> Result<(), String> {
+        let mut next = 0;
+        for _ in 0..REPLAY_TURNS {
+            {
+                let mut st = self.st.borrow_mut();
+                // a minute on each turn: every effect and timed wait is over
+                st.now += 60.0;
+                st.tick();
+                if st.block != Block::None {
+                    let Some(input) = inputs.get(next) else {
+                        return Ok(());
+                    };
+                    if !apply(&mut st, input) {
+                        return Err(format!(
+                            "input {next} ({input:?}) does not fit {:?}",
+                            st.block
+                        ));
+                    }
+                    self.inputs.push(input.clone());
+                    next += 1;
+                    // only the sounds of the page the load stops at play
+                    st.sounds.clear();
+                }
+            }
+            self.run()?;
+            if self.ended {
+                return Err("the game ended while loading".into());
+            }
+        }
+        Err(format!(
+            "loading stopped after {next} of {} inputs",
+            inputs.len()
+        ))
+    }
+
+    fn menu_draws(&self, st: &mut St, out: &mut Vec<Draw>) {
+        let Some(m) = &self.menu else {
+            return;
+        };
+        let (w, h) = (W, H);
+        let rect = |st: &mut St, out: &mut Vec<Draw>, r: [i32; 4], c: [u8; 4]| {
+            let s = st.solid(c);
+            out.push(Draw {
+                src: [0, 0, 16, 16],
+                dst: [
+                    r[0] as f32,
+                    r[1] as f32,
+                    (r[0] + r[2]) as f32,
+                    (r[1] + r[3]) as f32,
+                ],
+                image: s,
+                place: place(w, h, 1.0),
+            });
+        };
+        rect(st, out, [0, 0, w as i32, h as i32], [0, 0, 0, 200]);
+        let p = st.pointer;
+        let tabs = [("セーブ", m.save), ("ロード", !m.save), ("閉じる", false)];
+        for (i, (label, on)) in tabs.iter().enumerate() {
+            let r = MENU_TABS[i];
+            let c = if *on {
+                [90, 60, 130, 230]
+            } else if inside(r, p) {
+                [70, 70, 90, 230]
+            } else {
+                [40, 40, 50, 230]
+            };
+            rect(st, out, r, c);
+            if let Some(img) = st.text_image(label, 26.0) {
+                let x = r[0] as f32 + (r[2] as f32 - img.w as f32) / 2.0;
+                out.push(at(&img, x, r[1] as f32 + 8.0, w, h));
+            }
+        }
+        for k in 0..SLOTS {
+            let r = slot_rect(k);
+            let c = if inside(r, p) {
+                [70, 60, 100, 230]
+            } else {
+                [30, 30, 40, 230]
+            };
+            rect(st, out, r, c);
+            if let Some(img) = st.text_image(&format!("No.{:02}", k + 1), 20.0) {
+                out.push(at(&img, r[0] as f32 + 12.0, r[1] as f32 + 8.0, w, h));
+            }
+            let text = m.slots[k]
+                .as_ref()
+                .map(|d| d.summary())
+                .unwrap_or_else(|| "―".into());
+            if let Some(img) = st.text_image(&text, 22.0) {
+                out.push(at(&img, r[0] as f32 + 12.0, r[1] as f32 + 40.0, w, h));
+            }
+        }
+    }
+
     /// Why the scripts stopped, if they did.
     pub fn halted(&self) -> Option<&str> {
         self.halted.as_deref()
     }
 
     pub fn draws(&mut self) -> Vec<Draw> {
+        let mut out = self.screen_draws();
+        let st = self.st.clone();
+        self.menu_draws(&mut st.borrow_mut(), &mut out);
+        out
+    }
+
+    fn screen_draws(&mut self) -> Vec<Draw> {
         let mut st = self.st.borrow_mut();
         let mut out = st.layer_draws();
         let (w, h) = (W, H);
@@ -958,7 +1223,11 @@ impl Engine {
         self.clicked = true;
     }
 
-    pub fn cancel(&mut self) {}
+    /// A right click (or Escape): our save screen on a page, the load screen at the title;
+    /// again closes it.
+    pub fn cancel(&mut self) {
+        self.cancelled = true;
+    }
 
     /// 4 (enter) advances like a click.
     pub fn key(&mut self, k: i32) {
@@ -996,6 +1265,26 @@ impl Engine {
             st.msg.chars().take(24).collect::<String>()
         )
     }
+}
+
+/// Goes on from the block showing with what the player did; false when it does not fit.
+fn apply(st: &mut St, input: &Input) -> bool {
+    match (st.block.clone(), input) {
+        (Block::Page, Input::Page) => {
+            st.msg.clear();
+            st.name.clear();
+            st.shown = 0.0;
+        }
+        (Block::Title, Input::Title(c)) => st.result = Some(*c),
+        (Block::Choice(items), Input::Choice(i)) if *i < items.len() => {
+            let k = st.result_key.clone();
+            st.vars.insert(k, Value::Int(*i as i64));
+            st.result = Some(*i as i32);
+        }
+        _ => return false,
+    }
+    st.block = Block::None;
+    true
 }
 
 fn full(img: &Rc<Image>, w: u32, h: u32) -> Draw {

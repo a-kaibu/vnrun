@@ -40,8 +40,10 @@ fn main() -> Result<(), String> {
             let n = |i: usize| act.get(i).and_then(|s| s.parse::<i32>().ok()).unwrap_or(0);
             let (x, y) = (n(0), n(1));
             e.point(x, y);
-            if act.get(2).map(String::as_str) != Some("m") {
-                e.click(x, y);
+            match act.get(2).map(String::as_str) {
+                Some("m") => {}
+                Some("r") => e.cancel(),
+                _ => e.click(x, y),
             }
         }
         let r = e.frame();

@@ -691,7 +691,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| dl_VJ01000787 | [神楽黎明記 参 ～紫の章～ 体験版](https://trial.dlsite.com/professional/VJ01001000/VJ01000787_trial.zip) | 本編 | DebonosuWorks (vnrun、crates/debonosu) でロゴ→注意書き→タイトル→最初から始める→プロローグ (01.scb) の背景・名前・文章・声・BGM まで (deb-run と Chromium)。ダンジョン (map) に入る所で止まり、Live2D の立ち絵・3D・戦闘はなし |
+| dl_VJ01000787 | [神楽黎明記 参 ～紫の章～ 体験版](https://trial.dlsite.com/professional/VJ01001000/VJ01000787_trial.zip) | 本編 | DebonosuWorks (vnrun、crates/debonosu) でロゴ→注意書き→タイトル→最初から始める→プロローグ (01.scb) の背景・名前・文章・声・BGM まで (deb-run と Chromium)。ダンジョン (map) に入る所で止まり、Live2D の立ち絵・3D・戦闘はなし。自前のセーブ・ロード (Esc で保存、タイトルの「続きから始める」で読み込み) も Chromium で確認 |
 
 ### Cyberworks (vnrun)
 
