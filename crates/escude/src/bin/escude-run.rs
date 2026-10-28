@@ -47,6 +47,24 @@ fn main() -> Result<(), String> {
         let nums: Vec<i32> = v.split(';').filter_map(|s| s.parse().ok()).collect();
         match k {
             "run" => run(&mut e, v.parse().unwrap_or(1), &mut frame)?,
+            // profile:<frames>: time the built-ins over some frames
+            "profile" => {
+                e.st.profile = Some(Default::default());
+                let (t, steps) = (std::time::Instant::now(), e.vm.steps);
+                run(&mut e, v.parse().unwrap_or(1), &mut frame)?;
+                let total = t.elapsed().as_secs_f64();
+                let mut rows: Vec<_> = e.st.profile.take().unwrap().into_iter().collect();
+                rows.sort_by(|a, b| b.1.1.total_cmp(&a.1.1));
+                let natives: f64 = rows.iter().map(|r| r.1.1).sum();
+                eprintln!(
+                    "{total:.2}s, {:.2}s in built-ins, {} instructions",
+                    natives,
+                    e.vm.steps - steps
+                );
+                for (n, (c, s)) in rows.iter().take(15) {
+                    eprintln!("  {n:<14} {c:>8} {s:.3}s");
+                }
+            }
             "check" => {
                 for err in e.compile_all() {
                     eprintln!("{err}");

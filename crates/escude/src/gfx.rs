@@ -142,54 +142,23 @@ impl Planes {
     /// The pixels of a rectangle (inside the plane), with alpha from a 32-bit plane's
     /// fourth byte or an attached plane (255 otherwise).
     pub fn read(&self, vm: &Vm, n: i32, r: Rect) -> Vec<Px> {
+        let count = ((r[2] - r[0]) * (r[3] - r[1])).max(0) as usize;
         let Some(p) = self.map.get(&n) else {
-            return vec![[0, 0, 0, 255]; ((r[2] - r[0]) * (r[3] - r[1])).max(0) as usize];
+            return vec![[0, 0, 0, 255]; count];
         };
-        let mut out = Vec::with_capacity(((r[2] - r[0]) * (r[3] - r[1])).max(0) as usize);
-        let alpha = p
-            .alpha
-            .and_then(|a| self.map.get(&a))
-            .filter(|a| a.depth == 8);
+        let alpha = self.alpha_of(p);
+        let mut out = Vec::with_capacity(count);
         for y in r[1]..r[3] {
-            let row = p.row(y);
-            let arow = alpha.map(|a| if y < a.h { a.row(y) } else { usize::MAX });
-            for x in r[0]..r[2] {
-                let mut px = match p.depth {
-                    32 => {
-                        let i = row + x as usize * 4;
-                        [vm.mem[i], vm.mem[i + 1], vm.mem[i + 2], vm.mem[i + 3]]
-                    }
-                    24 => {
-                        let i = row + x as usize * 3;
-                        [vm.mem[i], vm.mem[i + 1], vm.mem[i + 2], 255]
-                    }
-                    16 => {
-                        let i = row + x as usize * 2;
-                        let v = u16::from_le_bytes([vm.mem[i], vm.mem[i + 1]]);
-                        let c = |s: u16| (((v >> s) & 31) as u32 * 255 / 31) as u8;
-                        [c(0), c(5), c(10), 255]
-                    }
-                    _ => {
-                        let v = vm.mem[row + x as usize];
-                        match &p.pal {
-                            Some(pal) => {
-                                let [b, g, r] = bgr(pal[v as usize]);
-                                [b, g, r, 255]
-                            }
-                            None => [v, v, v, 255],
-                        }
-                    }
-                };
-                if let (Some(a), Some(ar)) = (alpha, arow)
-                    && ar != usize::MAX
-                    && x < a.w
-                {
-                    px[3] = vm.mem[ar + x as usize];
-                }
-                out.push(px);
-            }
+            read_row(&vm.mem, p, alpha, y, r[0], r[2], &mut out);
         }
         out
+    }
+
+    /// The 8-bit plane holding a plane's alpha.
+    pub fn alpha_of(&self, p: &Plane) -> Option<&Plane> {
+        p.alpha
+            .and_then(|a| self.map.get(&a))
+            .filter(|a| a.depth == 8)
     }
 
     /// The 8-bit values of a rectangle of an 8-bit plane (or the alpha of another).
@@ -211,34 +180,12 @@ impl Planes {
     /// 32-bit plane.
     fn write(&self, vm: &mut Vm, n: i32, r: Rect, px: &[Px], alpha: bool) {
         let Some(p) = self.map.get(&n) else { return };
-        let mut k = 0;
-        for y in r[1]..r[3] {
-            let row = p.row(y);
-            for x in r[0]..r[2] {
-                let c = px[k];
-                k += 1;
-                match p.depth {
-                    32 => {
-                        let i = row + x as usize * 4;
-                        vm.mem[i..i + 3].copy_from_slice(&c[..3]);
-                        if alpha {
-                            vm.mem[i + 3] = c[3];
-                        }
-                    }
-                    24 => {
-                        let i = row + x as usize * 3;
-                        vm.mem[i..i + 3].copy_from_slice(&c[..3]);
-                    }
-                    16 => {
-                        let i = row + x as usize * 2;
-                        let v = (c[0] as u16 >> 3)
-                            | ((c[1] as u16 >> 3) << 5)
-                            | ((c[2] as u16 >> 3) << 10);
-                        vm.mem[i..i + 2].copy_from_slice(&v.to_le_bytes());
-                    }
-                    _ => vm.mem[row + x as usize] = c[2],
-                }
-            }
+        let w = (r[2] - r[0]).max(0) as usize;
+        if w == 0 {
+            return;
+        }
+        for (k, y) in (r[1]..r[3]).enumerate() {
+            write_row(&mut vm.mem, p, y, r[0], &px[k * w..(k + 1) * w], alpha);
         }
     }
 
@@ -286,6 +233,62 @@ impl Planes {
         if empty(dr) || empty(sr) {
             return;
         }
+        // a full blend is a copy (but keeps a 32-bit destination's alpha)
+        let plain = m.mode == 0 || (m.mode == 3 && m.level == 255 && d.depth != 32);
+        // the same kind of pixels: rows of bytes
+        if plain && s.depth == d.depth && (s.depth != 8 || s.pal == d.pal) {
+            let bpp = s.bpp();
+            let n = (sr[2] - sr[0]) as usize * bpp;
+            let mut tmp = vec![0u8; n];
+            for k in 0..(sr[3] - sr[1]) {
+                let from = s.row(sr[1] + k) + sr[0] as usize * bpp;
+                tmp.copy_from_slice(&vm.mem[from..from + n]);
+                let to = d.row(dr[1] + k) + dr[0] as usize * bpp;
+                vm.mem[to..to + n].copy_from_slice(&tmp);
+            }
+            return;
+        }
+        // 32-bit pictures laid over by their alpha
+        if m.mode == 7
+            && s.depth == 32
+            && self.alpha_of(s).is_none()
+            && (d.depth == 24 || d.depth == 32)
+        {
+            let dbpp = d.bpp();
+            let level = m.level as u32;
+            let w = (sr[2] - sr[0]) as usize;
+            let mut tmp = vec![0u8; w * 4];
+            for k in 0..(sr[3] - sr[1]) {
+                let from = s.row(sr[1] + k) + sr[0] as usize * 4;
+                tmp.copy_from_slice(&vm.mem[from..from + w * 4]);
+                let to = d.row(dr[1] + k) + dr[0] as usize * dbpp;
+                let drow = &mut vm.mem[to..to + w * dbpp];
+                for (sp, dp) in tmp.chunks_exact(4).zip(drow.chunks_exact_mut(dbpp)) {
+                    let a = sp[3] as u32 * level / 255;
+                    if a == 0 {
+                        continue;
+                    }
+                    if a == 255 {
+                        dp[..3].copy_from_slice(&sp[..3]);
+                        if dbpp == 4 {
+                            dp[3] = 255;
+                        }
+                        continue;
+                    }
+                    if dbpp == 4 && dp[3] == 0 {
+                        dp.copy_from_slice(&[sp[0], sp[1], sp[2], a as u8]);
+                        continue;
+                    }
+                    dp[0] = mix(dp[0], sp[0], a);
+                    dp[1] = mix(dp[1], sp[1], a);
+                    dp[2] = mix(dp[2], sp[2], a);
+                    if dbpp == 4 {
+                        dp[3] = (a + dp[3] as u32 * (255 - a) / 255).min(255) as u8;
+                    }
+                }
+            }
+            return;
+        }
         let s_px = self.read(vm, src, sr);
         let s_val = if needs_value(m.mode) {
             self.read_value(vm, src, sr)
@@ -293,10 +296,11 @@ impl Planes {
             Vec::new()
         };
         let s_depth = s.depth;
-        self.compose(vm, dst, dr, &s_px, &s_val, s_depth, m);
+        self.compose(vm, dst, dr, &s_px, &s_val, s_depth, m, None);
     }
 
     /// Lays source pixels (the size of `dr`) over `dst` in `dr`.
+    #[allow(clippy::too_many_arguments)]
     pub fn compose(
         &self,
         vm: &mut Vm,
@@ -306,184 +310,198 @@ impl Planes {
         s_val: &[u8],
         s_depth: u32,
         m: &Mode,
+        mask: Option<&[bool]>,
     ) {
         let Some(d) = self.map.get(&dst) else { return };
         let d32 = d.depth == 32;
-        if m.mode == 0 {
+        if m.mode == 0 && mask.is_none() {
             self.write(vm, dst, dr, s_px, true);
             return;
         }
-        let mut px = self.read(vm, dst, dr);
+        // the pattern wipes are not drawn yet
+        if m.mode == 11 || m.mode == 12 {
+            return;
+        }
+        let d_alpha = self.alpha_of(d);
         let level = m.level as u32;
         let col = bgr(m.color);
         let trans = bgr(m.trans);
-        for (i, dp) in px.iter_mut().enumerate() {
-            let s = s_px[i];
-            let v = s_val.get(i).copied().unwrap_or(s[3]);
-            let d = *dp;
-            let out: Option<Px> = match m.mode {
-                1 => (s[..3] != trans).then_some([s[0], s[1], s[2], 255]),
-                2 => (d[..3] == trans).then_some([s[0], s[1], s[2], 255]),
-                3 | 4 => {
-                    if m.mode == 4 && s[..3] == trans {
-                        None
-                    } else {
+        let w = (dr[2] - dr[0]).max(0) as usize;
+        let mut row: Vec<Px> = Vec::with_capacity(w);
+        for (k, y) in (dr[1]..dr[3]).enumerate() {
+            row.clear();
+            read_row(&vm.mem, d, d_alpha, y, dr[0], dr[2], &mut row);
+            for (j, dp) in row.iter_mut().enumerate() {
+                let i = k * w + j;
+                if let Some(mk) = mask
+                    && !mk[i]
+                {
+                    continue;
+                }
+                let s = s_px[i];
+                let v = s_val.get(i).copied().unwrap_or(s[3]);
+                let d = *dp;
+                let out: Option<Px> = match m.mode {
+                    1 => (s[..3] != trans).then_some([s[0], s[1], s[2], 255]),
+                    2 => (d[..3] == trans).then_some([s[0], s[1], s[2], 255]),
+                    3 | 4 => {
+                        if m.mode == 4 && s[..3] == trans {
+                            None
+                        } else {
+                            Some([
+                                mix(d[0], s[0], level),
+                                mix(d[1], s[1], level),
+                                mix(d[2], s[2], level),
+                                d[3],
+                            ])
+                        }
+                    }
+                    5 | 6 => {
+                        if m.mode == 6 && s[..3] == trans {
+                            None
+                        } else {
+                            Some([
+                                mix(s[0], col[0], level),
+                                mix(s[1], col[1], level),
+                                mix(s[2], col[2], level),
+                                255,
+                            ])
+                        }
+                    }
+                    // source alpha
+                    7 | 9 | 10 => {
+                        let a = s[3] as u32 * level / 255;
+                        let s = if m.mode == 10 {
+                            [
+                                (s[0] as u32 * col[0] as u32 / 255) as u8,
+                                (s[1] as u32 * col[1] as u32 / 255) as u8,
+                                (s[2] as u32 * col[2] as u32 / 255) as u8,
+                            ]
+                        } else {
+                            [s[0], s[1], s[2]]
+                        };
+                        if a == 0 {
+                            None
+                        } else {
+                            let da = if d32 {
+                                (a + d[3] as u32 * (255 - a) / 255).min(255) as u8
+                            } else {
+                                d[3]
+                            };
+                            if d32 && d[3] == 0 {
+                                Some([s[0], s[1], s[2], a as u8])
+                            } else {
+                                Some([
+                                    mix(d[0], s[0], a),
+                                    mix(d[1], s[1], a),
+                                    mix(d[2], s[2], a),
+                                    da,
+                                ])
+                            }
+                        }
+                    }
+                    // destination alpha
+                    8 => {
+                        let a = (255 - d[3] as u32) * level / 255;
                         Some([
-                            mix(d[0], s[0], level),
-                            mix(d[1], s[1], level),
-                            mix(d[2], s[2], level),
+                            mix(d[0], s[0], a),
+                            mix(d[1], s[1], a),
+                            mix(d[2], s[2], a),
                             d[3],
                         ])
                     }
-                }
-                5 | 6 => {
-                    if m.mode == 6 && s[..3] == trans {
-                        None
-                    } else {
-                        Some([
-                            mix(s[0], col[0], level),
-                            mix(s[1], col[1], level),
-                            mix(s[2], col[2], level),
-                            255,
-                        ])
-                    }
-                }
-                // source alpha
-                7 | 9 | 10 => {
-                    let a = s[3] as u32 * level / 255;
-                    let s = if m.mode == 10 {
-                        [
-                            (s[0] as u32 * col[0] as u32 / 255) as u8,
-                            (s[1] as u32 * col[1] as u32 / 255) as u8,
-                            (s[2] as u32 * col[2] as u32 / 255) as u8,
-                        ]
-                    } else {
-                        [s[0], s[1], s[2]]
-                    };
-                    if a == 0 {
-                        None
-                    } else {
-                        let da = if d32 {
-                            (a + d[3] as u32 * (255 - a) / 255).min(255) as u8
+                    // pattern wipes: the source is the pattern, the colour comes from ...
+                    11 | 12 => {
+                        let t = level as i32 * (256 + m.range as i32) / 255 - m.range as i32;
+                        let a = if m.range == 0 {
+                            if (v as i32) < t { 255 } else { 0 }
                         } else {
-                            d[3]
+                            ((t - v as i32) * 255 / m.range as i32).clamp(0, 255)
                         };
-                        if d32 && d[3] == 0 {
-                            Some([s[0], s[1], s[2], a as u8])
+                        Some([d[0], d[1], d[2], a as u8])
+                    }
+                    13 => Some(op3(s, d, level, |s, d| (d + s).min(255))),
+                    14 => Some(op3(s, d, level, |s, d| d.saturating_sub(s))),
+                    15 => Some(op3(s, d, level, |s, d| d * s / 255)),
+                    16 => Some(op3(s, d, level, |s, d| d & s)),
+                    17 => Some(op3(s, d, level, |s, d| d | s)),
+                    18 => Some(op3(s, d, level, |s, d| d ^ s)),
+                    19 => Some(op3(s, d, level, |s, d| 255 - (255 - d) * (255 - s) / 255)),
+                    20 => Some(op3(s, d, level, |s, d| d.max(s))),
+                    21 => Some(op3(s, d, level, |s, d| d.min(s))),
+                    22 => {
+                        let mut o = d;
+                        for (c, bit) in [(0, 1), (1, 2), (2, 4)] {
+                            if m.mask & bit != 0 {
+                                o[c] = s[c];
+                            }
+                        }
+                        Some(o)
+                    }
+                    // the source's value into the alpha
+                    23 => Some([d[0], d[1], d[2], if s_depth == 8 { v } else { s[3] }]),
+                    // a colour through the source's value as alpha
+                    24 => {
+                        let a = (if s_depth == 8 { v } else { s[3] }) as u32 * level / 255;
+                        if a == 0 {
+                            None
                         } else {
+                            let da = if d32 {
+                                (a + d[3] as u32 * (255 - a) / 255).min(255) as u8
+                            } else {
+                                d[3]
+                            };
                             Some([
-                                mix(d[0], s[0], a),
-                                mix(d[1], s[1], a),
-                                mix(d[2], s[2], a),
+                                mix(d[0], col[0], a),
+                                mix(d[1], col[1], a),
+                                mix(d[2], col[2], a),
                                 da,
                             ])
                         }
                     }
-                }
-                // destination alpha
-                8 => {
-                    let a = (255 - d[3] as u32) * level / 255;
-                    Some([
-                        mix(d[0], s[0], a),
-                        mix(d[1], s[1], a),
-                        mix(d[2], s[2], a),
-                        d[3],
-                    ])
-                }
-                // pattern wipes: the source is the pattern, the colour comes from ...
-                11 | 12 => {
-                    let t = level as i32 * (256 + m.range as i32) / 255 - m.range as i32;
-                    let a = if m.range == 0 {
-                        if (v as i32) < t { 255 } else { 0 }
-                    } else {
-                        ((t - v as i32) * 255 / m.range as i32).clamp(0, 255)
-                    };
-                    Some([d[0], d[1], d[2], a as u8])
-                }
-                13 => Some(op3(s, d, level, |s, d| (d + s).min(255))),
-                14 => Some(op3(s, d, level, |s, d| d.saturating_sub(s))),
-                15 => Some(op3(s, d, level, |s, d| d * s / 255)),
-                16 => Some(op3(s, d, level, |s, d| d & s)),
-                17 => Some(op3(s, d, level, |s, d| d | s)),
-                18 => Some(op3(s, d, level, |s, d| d ^ s)),
-                19 => Some(op3(s, d, level, |s, d| 255 - (255 - d) * (255 - s) / 255)),
-                20 => Some(op3(s, d, level, |s, d| d.max(s))),
-                21 => Some(op3(s, d, level, |s, d| d.min(s))),
-                22 => {
-                    let mut o = d;
-                    for (c, bit) in [(0, 1), (1, 2), (2, 4)] {
-                        if m.mask & bit != 0 {
-                            o[c] = s[c];
-                        }
+                    // monochrome
+                    25 => {
+                        let g =
+                            ((s[0] as u32 * 29 + s[1] as u32 * 150 + s[2] as u32 * 77) >> 8) as u8;
+                        let a = s[3] as u32 * level / 255;
+                        Some([mix(d[0], g, a), mix(d[1], g, a), mix(d[2], g, a), d[3]])
                     }
-                    Some(o)
-                }
-                // the source's value into the alpha
-                23 => Some([d[0], d[1], d[2], if s_depth == 8 { v } else { s[3] }]),
-                // a colour through the source's value as alpha
-                24 => {
-                    let a = (if s_depth == 8 { v } else { s[3] }) as u32 * level / 255;
-                    if a == 0 {
-                        None
-                    } else {
-                        let da = if d32 {
-                            (a + d[3] as u32 * (255 - a) / 255).min(255) as u8
+                    26 | 27 => Some(op3(s, d, level, |s, d| {
+                        if d < 128 {
+                            2 * s * d / 255
                         } else {
-                            d[3]
-                        };
-                        Some([
-                            mix(d[0], col[0], a),
-                            mix(d[1], col[1], a),
-                            mix(d[2], col[2], a),
-                            da,
-                        ])
-                    }
+                            255 - 2 * (255 - s) * (255 - d) / 255
+                        }
+                    })),
+                    28..=31 => Some(op3(s, d, level, |s, d| {
+                        if s < 128 {
+                            2 * s * d / 255
+                        } else {
+                            255 - 2 * (255 - s) * (255 - d) / 255
+                        }
+                    })),
+                    32 | 33 => Some(op3(s, d, level, |s, d| {
+                        if s >= 255 {
+                            255
+                        } else {
+                            (d * 255 / (255 - s)).min(255)
+                        }
+                    })),
+                    34 | 35 => Some(op3(s, d, level, |s, d| {
+                        if s == 0 {
+                            0
+                        } else {
+                            255 - ((255 - d) * 255 / s).min(255)
+                        }
+                    })),
+                    _ => Some(s),
+                };
+                if let Some(o) = out {
+                    *dp = o;
                 }
-                // monochrome
-                25 => {
-                    let g = ((s[0] as u32 * 29 + s[1] as u32 * 150 + s[2] as u32 * 77) >> 8) as u8;
-                    let a = s[3] as u32 * level / 255;
-                    Some([mix(d[0], g, a), mix(d[1], g, a), mix(d[2], g, a), d[3]])
-                }
-                26 | 27 => Some(op3(s, d, level, |s, d| {
-                    if d < 128 {
-                        2 * s * d / 255
-                    } else {
-                        255 - 2 * (255 - s) * (255 - d) / 255
-                    }
-                })),
-                28..=31 => Some(op3(s, d, level, |s, d| {
-                    if s < 128 {
-                        2 * s * d / 255
-                    } else {
-                        255 - 2 * (255 - s) * (255 - d) / 255
-                    }
-                })),
-                32 | 33 => Some(op3(s, d, level, |s, d| {
-                    if s >= 255 {
-                        255
-                    } else {
-                        (d * 255 / (255 - s)).min(255)
-                    }
-                })),
-                34 | 35 => Some(op3(s, d, level, |s, d| {
-                    if s == 0 {
-                        0
-                    } else {
-                        255 - ((255 - d) * 255 / s).min(255)
-                    }
-                })),
-                _ => Some(s),
-            };
-            if let Some(o) = out {
-                *dp = o;
             }
+            write_row(&mut vm.mem, d, y, dr[0], &row, d32);
         }
-        // the pattern wipes blend the second source in by the computed alpha
-        if m.mode == 11 || m.mode == 12 {
-            return;
-        }
-        self.write(vm, dst, dr, &px, d32);
     }
 
     /// Draws a rectangle of `src` mapped by an affine transform: `inv` takes a destination
@@ -558,15 +576,7 @@ impl Planes {
             }
         }
         // only the pixels the source covers change
-        let before = self.read(vm, dst, dr);
-        let s_depth = s.depth;
-        self.compose(vm, dst, dr, &out, &vals, s_depth, m);
-        let after = self.read(vm, dst, dr);
-        let merged: Vec<Px> = (0..n)
-            .map(|i| if inside[i] { after[i] } else { before[i] })
-            .collect();
-        let d32 = d.depth == 32;
-        self.write(vm, dst, dr, &merged, d32);
+        self.compose(vm, dst, dr, &out, &vals, s.depth, m, Some(&inside));
     }
 }
 
@@ -634,4 +644,94 @@ pub fn read_bmp(b: &[u8]) -> Option<(i32, i32, u32, Vec<u8>, Option<Vec<u32>>)> 
             .collect()
     });
     Some((w, h, bits, px, pal))
+}
+
+/// Appends the pixels x0..x1 of row y.
+pub fn read_row(
+    mem: &[u8],
+    p: &Plane,
+    alpha: Option<&Plane>,
+    y: i32,
+    x0: i32,
+    x1: i32,
+    out: &mut Vec<Px>,
+) {
+    let row = p.row(y);
+    let at = out.len();
+    let (a, b) = (x0 as usize, x1 as usize);
+    match p.depth {
+        32 => out.extend(
+            mem[row + a * 4..row + b * 4]
+                .chunks_exact(4)
+                .map(|c| [c[0], c[1], c[2], c[3]]),
+        ),
+        24 => out.extend(
+            mem[row + a * 3..row + b * 3]
+                .chunks_exact(3)
+                .map(|c| [c[0], c[1], c[2], 255]),
+        ),
+        16 => out.extend(mem[row + a * 2..row + b * 2].chunks_exact(2).map(|c| {
+            let v = u16::from_le_bytes([c[0], c[1]]);
+            let f = |s: u16| (((v >> s) & 31) as u32 * 255 / 31) as u8;
+            [f(0), f(5), f(10), 255]
+        })),
+        _ => match &p.pal {
+            Some(pal) => out.extend(mem[row + a..row + b].iter().map(|&v| {
+                let [b, g, r] = bgr(pal[v as usize]);
+                [b, g, r, 255]
+            })),
+            None => out.extend(mem[row + a..row + b].iter().map(|&v| [v, v, v, 255])),
+        },
+    }
+    if let Some(ap) = alpha
+        && y < ap.h
+    {
+        let ar = ap.row(y);
+        let end = b.min(ap.w as usize);
+        for x in a..end {
+            out[at + x - a][3] = mem[ar + x];
+        }
+    }
+}
+
+/// Writes pixels at x0.. of row y.
+pub fn write_row(mem: &mut [u8], p: &Plane, y: i32, x0: i32, px: &[Px], alpha: bool) {
+    let row = p.row(y);
+    let a = x0 as usize;
+    let n = px.len();
+    match p.depth {
+        32 => {
+            for (d, c) in mem[row + a * 4..row + (a + n) * 4]
+                .chunks_exact_mut(4)
+                .zip(px)
+            {
+                d[..3].copy_from_slice(&c[..3]);
+                if alpha {
+                    d[3] = c[3];
+                }
+            }
+        }
+        24 => {
+            for (d, c) in mem[row + a * 3..row + (a + n) * 3]
+                .chunks_exact_mut(3)
+                .zip(px)
+            {
+                d.copy_from_slice(&c[..3]);
+            }
+        }
+        16 => {
+            for (d, c) in mem[row + a * 2..row + (a + n) * 2]
+                .chunks_exact_mut(2)
+                .zip(px)
+            {
+                let v = (c[0] as u16 >> 3) | ((c[1] as u16 >> 3) << 5) | ((c[2] as u16 >> 3) << 10);
+                d.copy_from_slice(&v.to_le_bytes());
+            }
+        }
+        _ => {
+            for (d, c) in mem[row + a..row + a + n].iter_mut().zip(px) {
+                *d = c[2];
+            }
+        }
+    }
 }

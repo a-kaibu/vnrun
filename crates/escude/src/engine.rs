@@ -129,6 +129,8 @@ pub struct State {
     warned: HashSet<String>,
     pub log: Vec<String>,
     pub ended: bool,
+    /// time spent in each built-in (calls, seconds), when profiling
+    pub profile: Option<HashMap<String, (u64, f64)>>,
 }
 
 pub struct Engine {
@@ -213,25 +215,53 @@ impl Engine {
     /// Opens the game in `files`: reads its .cfg and compiles the program it runs.
     pub fn open(mut files: Box<dyn Files>) -> Result<Engine, String> {
         let arc = Archives::open(files.as_mut())?;
-        let mut cfg = None;
+        // the .cfg that says what to run, or one with the screen size
+        let mut cfg = String::new();
         for name in files.list() {
             if name.to_lowercase().ends_with(".cfg")
                 && let Some(b) = files.read(&name)
             {
                 let text = nexas::sjis::decode(&b);
-                if text.contains("Execute=") {
-                    cfg = Some(text);
-                    break;
+                let has_exec = text.contains("Execute=");
+                if has_exec || text.contains("Width=") {
+                    cfg = text;
+                    if has_exec {
+                        break;
+                    }
                 }
             }
         }
-        let cfg = cfg.ok_or("no .cfg with Execute=")?;
         let get = |k: &str| {
             cfg.lines()
                 .find_map(|l| l.trim().strip_prefix(k).and_then(|r| r.strip_prefix('=')))
                 .map(|v| v.trim().to_string())
         };
-        let exec = get("Execute").ok_or("no Execute=")?;
+        // without Execute= (Re;Lord), the main.c of an archive named like the exe
+        let exec = match get("Execute") {
+            Some(e) => e,
+            None => {
+                let exes: Vec<String> = files
+                    .list()
+                    .iter()
+                    .filter(|n| n.to_lowercase().ends_with(".exe"))
+                    .map(|n| n[..n.len() - 4].to_lowercase())
+                    .collect();
+                let mains: Vec<&String> = arc
+                    .names
+                    .iter()
+                    .filter(|n| n.to_lowercase().ends_with("\\main.c"))
+                    .collect();
+                mains
+                    .iter()
+                    .find(|n| {
+                        exes.iter()
+                            .any(|e| n.to_lowercase() == format!("{e}\\main.c"))
+                    })
+                    .or(mains.first())
+                    .map(|s| s.to_string())
+                    .ok_or("no Execute= in a .cfg and no main.c")?
+            }
+        };
         let width = get("Width").and_then(|v| v.parse().ok()).unwrap_or(800);
         let height = get("Height").and_then(|v| v.parse().ok()).unwrap_or(600);
         let base = exec
@@ -284,6 +314,7 @@ impl Engine {
             warned: HashSet::new(),
             log: Vec::new(),
             ended: false,
+            profile: None,
         };
         st.planes.alloc(&mut vm, 0, width, height, 24);
         let start = st.load_program(&mut vm, &exec)?;
@@ -442,6 +473,9 @@ impl State {
         let c = compile(&unit, vm, root.as_deref()).map_err(|e| format!("{path}: {e}"))?;
         if self.root.is_none() {
             self.spr = Layout::of(&c.exports.types, "_sprt_");
+            if self.spr.0.is_empty() {
+                self.spr = Layout::of(&c.exports.types, "sprite_t");
+            }
             self.rect_l = Layout::of(&c.exports.types, "_rect_");
             self.root = Some(Rc::new(c.exports));
         }
@@ -507,36 +541,23 @@ impl State {
     /// Shows plane `vpage` (moved by the origin) as the frame.
     fn present(&mut self, vm: &Vm) {
         let (w, h) = (self.width, self.height);
-        let px = match self.planes.get(self.vpage) {
-            Some(p) => {
-                let r = intersect(
-                    [self.org.0, self.org.1, self.org.0 + w, self.org.1 + h],
-                    [0, 0, p.w, p.h],
-                );
-                if empty(r) {
-                    Vec::new()
-                } else {
-                    self.planes
-                        .read(vm, self.vpage, r)
-                        .into_iter()
-                        .collect::<Vec<_>>()
-                }
-            }
-            None => Vec::new(),
-        };
         self.frame.fill(0);
-        let p = self.planes.get(self.vpage);
-        if let Some(p) = p {
-            let r = intersect(
-                [self.org.0, self.org.1, self.org.0 + w, self.org.1 + h],
-                [0, 0, p.w, p.h],
-            );
-            let rw = (r[2] - r[0]).max(0) as usize;
-            for (k, c) in px.iter().enumerate() {
-                let x = r[0] - self.org.0 + (k % rw) as i32;
-                let y = r[1] - self.org.1 + (k / rw) as i32;
-                let i = ((y * w + x) * 4) as usize;
-                self.frame[i..i + 4].copy_from_slice(&[c[2], c[1], c[0], 255]);
+        if let Some(p) = self.planes.get(self.vpage) {
+            let (ox, oy) = self.org;
+            let r = intersect([ox, oy, ox + w, oy + h], [0, 0, p.w, p.h]);
+            if !empty(r) {
+                let mut row = Vec::with_capacity((r[2] - r[0]) as usize);
+                for y in r[1]..r[3] {
+                    row.clear();
+                    crate::gfx::read_row(&vm.mem, p, None, y, r[0], r[2], &mut row);
+                    let at = (((y - oy) * w + (r[0] - ox)) * 4) as usize;
+                    for (d, c) in self.frame[at..at + row.len() * 4]
+                        .chunks_exact_mut(4)
+                        .zip(&row)
+                    {
+                        d.copy_from_slice(&[c[2], c[1], c[0], 255]);
+                    }
+                }
             }
         }
         for a in self.frame.chunks_exact_mut(4) {
@@ -680,9 +701,26 @@ impl State {
             }
         }
         list.sort();
+        let debug = std::env::var_os("ESCUDE_SPRITES").is_some() && self.frame_serial % 100 == 1;
         for (_, _, sp) in list {
+            #[cfg(not(target_arch = "wasm32"))]
+            let t = std::time::Instant::now();
             self.draw_sprite(vm, sp, target)?;
             vm.w8(sp + l.at("draw"), 1)?;
+            #[cfg(not(target_arch = "wasm32"))]
+            if debug {
+                let page = vm.ri32(sp + l.at("page"))?;
+                let rc = rd_rect(vm, sp + l.at("rc"))?;
+                let m = rd_mode(vm, sp + l.at("bm"))?;
+                let (zx, rot) = (vm.r32(sp + l.at("zx"))?, vm.r16(sp + l.at("rot"))?);
+                let depth = self.planes.get(page).map_or(0, |p| p.depth);
+                eprintln!(
+                    "sprite page {page} ({depth}) {rc:?} mode {} level {} zoom {zx:x} rot {rot}: {:.2}ms",
+                    m.mode,
+                    m.level,
+                    t.elapsed().as_secs_f64() * 1000.0
+                );
+            }
         }
         wr_rect(vm, out, full)?;
         Ok(())
@@ -977,8 +1015,8 @@ fn crc32(d: &[u8]) -> u32 {
     !c
 }
 
-impl Host for State {
-    fn native(&mut self, vm: &mut Vm, id: u16, a: &[u32]) -> Result<Native, String> {
+impl State {
+    fn call_native(&mut self, vm: &mut Vm, id: u16, a: &[u32]) -> Result<Native, String> {
         let name = vm.natives[id as usize].clone();
         let arg = |k: usize| a.get(k).copied().unwrap_or(0);
         let i = |k: usize| arg(k) as i32;
@@ -989,10 +1027,12 @@ impl Host for State {
             // ---- programs
             "call" | "jump" => {
                 let file = self.path(vm, arg(0))?;
-                let path = if file.contains('\\') {
-                    file
+                // beside the main program, or as it is
+                let near = format!("{}{file}", self.base);
+                let path = if self.arc.has(&near) || !self.arc.has(&file) {
+                    near
                 } else {
-                    format!("{}{file}", self.base)
+                    file
                 };
                 let start = self.load_program(vm, &path)?;
                 return Ok(Native::Call(start));
@@ -1167,9 +1207,15 @@ impl Host for State {
                 }
                 Native::Value(i(2) as u32)
             }
-            "gfill" => {
-                let r = rd_rect(vm, arg(1))?;
-                self.planes.fill(vm, i(0), r, arg(2));
+            // gfill(plane, rect, colour); in later engines gfill(plane, x, y, w, h, rgba) and
+            // gclear(plane, rect, rgba)
+            "gfill" | "gclear" => {
+                let (r, c) = if a.len() >= 6 {
+                    (Some([i(1), i(2), i(1) + i(3), i(2) + i(4)]), arg(5))
+                } else {
+                    (rd_rect(vm, arg(1))?, arg(2))
+                };
+                self.planes.fill(vm, i(0), r, c);
                 b(true)
             }
             "gcopy" => {
@@ -1335,7 +1381,7 @@ impl Host for State {
                         }
                     }
                     self.planes
-                        .compose(vm, i(0), c, &part, &[], 24, &Mode::NORMAL);
+                        .compose(vm, i(0), c, &part, &[], 24, &Mode::NORMAL, None);
                 }
                 b(true)
             }
@@ -1464,6 +1510,13 @@ impl Host for State {
                     }
                 } else if let Some(k) = self.sprites.iter().position(|&s| s == arg(0)) {
                     let sp = self.sprites.remove(k);
+                    self.unlink(vm, sp)?;
+                    if l.0.contains_key("child_count") {
+                        let kids = vm.r32(sp + l.at("child"))?;
+                        if kids != 0 {
+                            vm.free(kids);
+                        }
+                    }
                     // children lose their parent
                     for &c in &self.sprites {
                         if vm.r32(c + l.at("parent"))? == sp {
@@ -1476,12 +1529,27 @@ impl Host for State {
                 b(true)
             }
             "sp_link" => {
-                let l = self.spr.clone();
-                if arg(1) != 0 {
-                    vm.w32(arg(1) + l.at("parent"), arg(0))?;
-                    if arg(0) != 0 {
-                        vm.w32(arg(0) + l.at("child"), arg(1))?;
+                let (parent, child) = (arg(0), arg(1));
+                if child != 0 {
+                    self.unlink(vm, child)?;
+                    let l = self.spr.clone();
+                    vm.w32(child + l.at("parent"), parent)?;
+                    if parent != 0 {
+                        if l.0.contains_key("child_count") {
+                            // a parent keeps an array of its children
+                            let mut kids = self.children(vm, parent)?;
+                            kids.push(child);
+                            self.set_children(vm, parent, &kids)?;
+                        } else {
+                            vm.w32(parent + l.at("child"), child)?;
+                        }
                     }
+                }
+                b(true)
+            }
+            "sp_unlink" => {
+                if arg(0) != 0 {
+                    self.unlink(vm, arg(0))?;
                 }
                 b(true)
             }
@@ -2324,7 +2392,83 @@ impl Host for State {
     }
 }
 
+impl Host for State {
+    fn native(&mut self, vm: &mut Vm, id: u16, a: &[u32]) -> Result<Native, String> {
+        #[cfg(not(target_arch = "wasm32"))]
+        if let Some(prof) = &mut self.profile {
+            let t = std::time::Instant::now();
+            let steps = vm.steps;
+            let _ = prof;
+            let r = self.call_native(vm, id, a);
+            let e = t.elapsed().as_secs_f64();
+            let prof = self.profile.as_mut().unwrap();
+            let k = prof
+                .entry(vm.natives[id as usize].clone())
+                .or_insert((0, 0.0));
+            k.0 += 1;
+            k.1 += e;
+            let _ = steps;
+            return r;
+        }
+        self.call_native(vm, id, a)
+    }
+}
+
 impl State {
+    /// A sprite's children (sprites with a child array).
+    fn children(&self, vm: &Vm, sp: u32) -> Result<Vec<u32>, String> {
+        let l = &self.spr;
+        let n = vm.ri32(sp + l.at("child_count"))?.max(0) as u32;
+        let arr = vm.r32(sp + l.at("child"))?;
+        let mut out = Vec::new();
+        if arr != 0 {
+            for k in 0..n {
+                out.push(vm.r32(arr + 4 * k)?);
+            }
+        }
+        Ok(out)
+    }
+
+    fn set_children(&self, vm: &mut Vm, sp: u32, kids: &[u32]) -> Result<(), String> {
+        let l = &self.spr;
+        let old = vm.r32(sp + l.at("child"))?;
+        if old != 0 {
+            vm.free(old);
+        }
+        let arr = if kids.is_empty() {
+            0
+        } else {
+            vm.malloc(4 * kids.len() as u32)
+        };
+        for (k, c) in kids.iter().enumerate() {
+            vm.w32(arr + 4 * k as u32, *c)?;
+        }
+        vm.w32(sp + l.at("child"), arr)?;
+        vm.w32(sp + l.at("child_count"), kids.len() as u32)?;
+        Ok(())
+    }
+
+    /// Takes a sprite from its parent.
+    fn unlink(&self, vm: &mut Vm, sp: u32) -> Result<(), String> {
+        let l = self.spr.clone();
+        let parent = vm.r32(sp + l.at("parent"))?;
+        if parent == 0 {
+            return Ok(());
+        }
+        vm.w32(sp + l.at("parent"), 0)?;
+        if !self.sprites.contains(&parent) {
+            return Ok(());
+        }
+        if l.0.contains_key("child_count") {
+            let mut kids = self.children(vm, parent)?;
+            kids.retain(|&c| c != sp);
+            self.set_children(vm, parent, &kids)?;
+        } else if vm.r32(parent + l.at("child"))? == sp {
+            vm.w32(parent + l.at("child"), 0)?;
+        }
+        Ok(())
+    }
+
     fn stop_sound(&mut self, n: i32) {
         if let Some(s) = self.sounds.get_mut(&n)
             && s.started.take().is_some()
