@@ -10,19 +10,28 @@ const SAVES = "localStorage";
 const STUDIO = "studio";
 
 // The page to open: package.json's main (NW.js), else www/index.html (RPG Maker MV), else
-// index.html.
-function startPage(fs: GameFS, manifest: Manifest): string {
+// index.html, else the shallowest index.html in a subfolder (an Electron app whose main.js loads
+// app/index.html or dist/index.html). Those apps run without Node in the page (contextIsolation),
+// so they get no Node stand-ins: a global `process` stops a PixiJS game's title buttons.
+function startPage(fs: GameFS, manifest: Manifest): { page: string; node: boolean } {
   if (fs.exists("package.json")) {
     try {
       const main = JSON.parse(new TextDecoder().decode(fs.read("package.json"))).main;
       const page = typeof main === "string" ? main.replace(/^app:\/\/[^/]*\//, "").replace(/^\.\//, "") : "";
-      if (/\.html?$/i.test(page) && fs.exists(page)) return page;
+      if (/\.html?$/i.test(page) && fs.exists(page)) return { page, node: true };
     } catch (error) {
       console.warn("package.json:", error);
     }
   }
   const pages = (manifest.files || []).map((f) => f.p);
-  return pages.find((p) => p.toLowerCase() === "www/index.html") || "index.html";
+  const www = pages.find((p) => p.toLowerCase() === "www/index.html");
+  if (www || pages.includes("index.html")) return { page: www || "index.html", node: true };
+  // Electron apps whose main.js loads a page from a subfolder (app/index.html, dist/index.html).
+  const depth = (p: string) => p.split("/").length;
+  const nested = pages
+    .filter((p) => /(^|\/)index\.html$/i.test(p) && !/(^|\/)node_modules\//.test(p))
+    .sort((a, b) => depth(a) - depth(b));
+  return nested[0] ? { page: nested[0], node: false } : { page: "index.html", node: true };
 }
 
 // A Storage whose items are save files (one per key) in the GameFS.
@@ -179,6 +188,7 @@ function nodeProcess() {
 }
 
 export async function start({ fs, manifest, ui }: EngineContext): Promise<void> {
+  const { page, node } = startPage(fs, manifest);
   const localStorage = storage(fs);
   const studio = studioApi(fs);
   const require = nodeRequire(fs);
@@ -187,7 +197,7 @@ export async function start({ fs, manifest, ui }: EngineContext): Promise<void> 
       Object.defineProperty(win, "localStorage", { value: localStorage });
       // RPG Maker MZ refuses to start without IndexedDB and keeps its saves there (localforage,
       // keys named after the game id), so it stays the browser's own.
-      Object.assign(win, { studio_api: studio, require, process: nodeProcess() });
+      if (node) Object.assign(win, { studio_api: studio, require, process: nodeProcess() });
       // An RPG Maker plugin that throws while it loads (Last12's JSON.parse of an empty
       // parameter) makes main.js show the error instead of the game, which the release runs past.
       // Until the page has loaded, errors from plugin scripts only go to the console.
@@ -213,7 +223,7 @@ export async function start({ fs, manifest, ui }: EngineContext): Promise<void> 
   const frame = document.createElement("iframe");
   frame.id = "frame";
   frame.allow = "autoplay; fullscreen";
-  frame.src = fs.fileUrl(startPage(fs, manifest));
+  frame.src = fs.fileUrl(page);
   ui.canvas.hidden = true;
   document.body.append(frame);
   frame.addEventListener("load", () => {

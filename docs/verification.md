@@ -47,7 +47,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Softpal (sena-rs) | 28 | 27 |  |  |  | 1 |  |  |
 | Artemis (art3m1s-core) | 6 | 1 | 5 |  |  |  |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
-| HTML (TyranoScript、RPGツクール MV/MZ) | 35 | 34 | 1 |  |  |  |  |  |
+| HTML (TyranoScript、RPGツクール MV/MZ) | 43 | 42 | 1 |  |  |  |  |  |
 | 吉里吉里 (KiriKiri SDL2) | 135 | 121 | 13 |  |  |  | 1 |  |
 | YU-RIS (vnrun) | 29 | 28 |  |  |  |  | 1 |  |
 | NeXAS (vnrun) | 15 | 13 |  |  | 1 |  | 1 |  |
@@ -215,6 +215,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_RJ01642779 | [戦闘補習3～武闘派冒険者、魔術を学ぶ～](https://trial.dlsite.com/doujin/RJ01643000/RJ01642779_trial.zip) | 本編 | f41e050 (フレームに合わせて拡大) でタイトル→ニューゲーム→本編のマップ・会話まで (Chromium) |
 | dl_RJ01648691 | [測り難きは下心](https://trial.dlsite.com/doujin/RJ01649000/RJ01648691_trial.zip) | 本編 | 416970b (IndexedDB) 以降。クリックでマップ画面まで進む |
 | dl_RJ01650072 | [どこでもHな世界～地味子のバイト日記～](https://trial.dlsite.com/doujin/RJ01651000/RJ01650072_trial.zip) | 本編 | fcaacff (nw.gui などは代役) でタイトル→本編まで。既定の言語は中国語 (GameCreator、Chromium) |
+| dl_RJ01655345 | [エリア404](https://trial.dlsite.com/doujin/RJ01656000/RJ01655345_trial.zip) | 本編 | Electron 版 TyranoScript (app.asar を vnrun-prep が展開) でタイトル→START→章選択「少女と百合の丘」→本編の文章まで、歯車メニューからセーブし、別セッションでタイトルの歯車→LOAD で同じ文章に戻る (Chromium) |
 | dl_RJ01686418 | [秘密 女騎士NTR](https://trial.dlsite.com/doujin/RJ01687000/RJ01686418_trial.zip) | 本編 | タイトル→ニューゲーム→本編の会話まで (Chromium) |
 | dl_RJ01696742 | [サモンスピリッツ](https://trial.dlsite.com/doujin/RJ01697000/RJ01696742_trial.zip) | 本編 | タイトル→ニューゲーム→本編の会話まで (Chromium) |
 | dl_RJ01698597 | [かんもく:場面緘黙女子](https://trial.dlsite.com/doujin/RJ01699000/RJ01698597_trial.zip) | 本編 | 0df7c53 でタイトル→ニューゲーム→本編の文章 (名前入力の案内) まで (Chromium、タイトルまで約 240 秒) |
@@ -226,6 +227,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_RJ01702800 | [ドット勇者](https://trial.dlsite.com/doujin/RJ01703000/RJ01702800_trial.zip) | 本編 | タイトル→本編の放置ゲーム画面で操作できる (Chromium) |
 | dl_RJ01703802 | [決着はバトルファックで -初回特典付き-](https://trial.dlsite.com/doujin/RJ01704000/RJ01703802_trial.zip) | 本編 | タイトル→ニューゲーム→本編のマップ・会話まで (Chromium、タイトルまで約 200 秒) |
 | dl_RJ01706991 | [ショタおねRPG 爆乳お姉さんたちと催〇でドスケベ三昧 爆乳(クソデカボイン)の桃源郷(パラダイス)](https://trial.dlsite.com/doujin/RJ01707000/RJ01706991_trial.zip) | 本編 | タイトル→ニューゲーム→名前入力→本編まで (Chromium) |
+| dl_RJ01706994 | [戦術バトルは不○火舞に任せなさい♪](https://trial.dlsite.com/doujin/RJ01707000/RJ01706994_trial.zip) | 本編 | Electron の自作 HTML ゲーム (app.asar を vnrun-prep が展開、ページ遷移あり) でタイトル→START→街 (本編の拠点画面)→訓練所まで。localStorage の自動セーブ (tougij_save_v1) がサーバーに残り、別セッションで進めた時刻 (1日目 朝→昼) から再開 (Chromium) |
+| dl_RJ01707379 | [Alice In Distress RE](https://trial.dlsite.com/doujin/RJ01708000/RJ01707379_trial.zip) | 本編 | Electron 版 TyranoScript (app.asar を vnrun-prep が展開) でタイトル→はじめる→導入の文章→着せ替え・拘束の本編画面まで (Chromium)。ゲームにセーブ機能が無い ([hidemenubutton] のみ) |
+| dl_RJ01712071 | [魔胚受胎 ～古代触手と異種交配の実験記録～](https://trial.dlsite.com/doujin/RJ01713000/RJ01712071_trial.zip) | 本編 | Electron 版 TyranoScript (app.asar を vnrun-prep が展開) でロゴ (クリック待ち)→タイトル→初めから→難易度選択と確認→本編の文章まで。メニューからセーブし、別セッションでタイトルの「続きから」で同じ文章に戻る (Chromium) |
+| dl_RJ01715225 | [梨乃ねね ～子種を乞う村～](https://trial.dlsite.com/doujin/RJ01716000/RJ01715225_trial.zip) | 本編 | Electron の PixiJS ゲーム (app.asar を vnrun-prep が展開、dist/index.html を開く。ページに process を置くとタイトルのボタンが効かなくなるため、サブフォルダのページには Node の代役を置かない) で成人確認→タイトル→迷い込む→本編の文章まで (Chromium)。体験版はセーブを書かない (ElectronBridge の JSON 保存は終了処理しか使われていない) |
 | dl_RJ01720493 | [Moeのファンサービスリフト♡～つり出し](https://trial.dlsite.com/doujin/RJ01721000/RJ01720493_trial.zip) | 本編 | 782563a (studio_api.path、.tpatch は無いものとする) でタイトル→はじめから→本編の 3D 立ち絵・文章まで (Electron 版 Tyrano、Chromium) |
 | dl_RJ01720685 | [アイドルダークダンジョン](https://trial.dlsite.com/doujin/RJ01721000/RJ01720685_trial.zip) | 本編 | クリックで最初の会話まで |
 | dl_RJ01720958 | [魔法戦士 NANAMI 前編](https://trial.dlsite.com/doujin/RJ01721000/RJ01720958_trial.zip) | 本編 | タイトル→ニューゲーム→本編のマップまで (Chromium) |
@@ -233,7 +238,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_RJ01727123 | [監禁部屋から逃げれない1](https://trial.dlsite.com/doujin/RJ01728000/RJ01727123_trial.zip) | 本編 | タイトル→ニューゲーム→本編のマップまで (Chromium) |
 | dl_RJ01730521 | [大魔法少女カサネ](https://trial.dlsite.com/doujin/RJ01731000/RJ01730521_trial.zip) | 本編 | タイトル→ニューゲーム→本編の会話まで (Chromium) |
 | dl_RJ01731048 | [ヤリステナイメスブター 世界を救った後の ボクの日常『性』活](https://trial.dlsite.com/doujin/RJ01732000/RJ01731048_trial.zip) | 本編 | タイトル→ニューゲーム→本編の会話まで。「Cannot find module ./js/libs/greenworks」は出るが続行する (Chromium) |
+| dl_RJ01735938 | [【ver 1.0.6】転生の間へようこそ](https://trial.dlsite.com/doujin/RJ01736000/RJ01735938_trial.zip) | 本編 | Electron の HTML ゲーム (app/index.html を開く) で導入の説明→最初の魂を迎える→転生先・生まれ方を決める本編画面まで (Chromium)。体験版はセーブ無し (説明に「セーブと図鑑は製品版」) |
+| dl_RJ01744242 | [同じ階に住む美巨乳団地妻「改」](https://trial.dlsite.com/doujin/RJ01745000/RJ01744242_trial.zip) | 本編 | Electron の GDevelop ゲーム (app/index.html を開く) でタイトル→NEW GAME→はじめる→PLAY→本編の会話まで (Chromium)。ゲームにセーブ機能が無い (イベントに storage 系の命令が無い) |
 | dl_RJ01746541 | [女魔法使いセーラは俺から逃げられない！ ～便利なエロアイテムと孕むまでヤれる封鎖村～](https://trial.dlsite.com/doujin/RJ01747000/RJ01746541_trial.zip) | 本編 | タイトル→ニューゲーム→本編のマップ・立ち絵・会話まで (Chromium) |
+| dl_RJ01747016 | [原○カードクワルドトライアド Vol.2](https://trial.dlsite.com/doujin/RJ01748000/RJ01747016_trial.zip) | 本編 | Electron の HTML ゲーム (dist/index.html を開く) で導入→冒険者の町のマップ→案内さんとの会話まで。localStorage の自動セーブ (ffcards_adventure_v1) がサーバーに残り、別セッションで同じ位置から再開 (Chromium) |
 | dl_RJ357058 | [Last12 - 勇者の恥ずかしい育児日記 -](https://trial.dlsite.com/doujin/RJ358000/RJ357058_trial.zip) | 本編 | a11563d (読み込み中のプラグイン例外は警告だけ) でタイトル→ニューゲーム→序章のマップまで (Chromium) |
 | dl_VJ01000810 | [エッチなお姉ちゃんが、褐色巨乳の悪魔だった件](https://trial.dlsite.com/professional/VJ01001000/VJ01000810_trial.zip) | 本編 | exe 末尾の app を vnrun-prep が展開。タイトル→はじめから→本編の CG・文章まで (Chromium) |
 | dl_VJ01001309 | [エッチなお姉ちゃんが、褐色巨乳の悪魔だった件2 ～新たな悪魔ミリス登場♪～](https://trial.dlsite.com/professional/VJ01002000/VJ01001309_trial.zip) | 本編 | e7626d4 (EXE 基準オフセットの app zip、.tpatch を vnrun-prep が適用) でタイトル→はじめから→本編の立ち絵・文章まで (Chromium) |
