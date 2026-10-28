@@ -7,6 +7,7 @@
 use std::collections::HashMap;
 
 /// The per-game keys.
+#[derive(Clone)]
 pub struct Scheme {
     pub name: &'static str,
     pub version: u32,
@@ -26,6 +27,16 @@ const SCHEMES: &[(&str, &[u8])] = &[
     (
         "Tanetsuke Mura (trial)",
         include_bytes!("../schemes/tanetsuke_mura_trial.bin"),
+    ),
+    // ビッチ姉妹が清純なはずがないっ！！ (b2017_onomatope_raspberry)
+    (
+        "Bitch Shimai ga Seijun na Hazu ga Nai!!",
+        include_bytes!("../schemes/bitch_shimai.bin"),
+    ),
+    // ビッチ学園が清純なはずがないっ！！？
+    (
+        "Bitch Gakuen ga Seijun na Hazu ga Nai!!?",
+        include_bytes!("../schemes/bitch_gakuen.bin"),
     ),
 ];
 
@@ -85,11 +96,12 @@ pub struct Entry {
     pub flags: u32,
 }
 
+#[derive(Clone)]
 pub struct Warc {
     pub version: u32,
     pub entries: Vec<Entry>,
     by_name: HashMap<String, usize>,
-    scheme: Option<std::rc::Rc<Scheme>>,
+    pub scheme: Option<std::rc::Rc<Scheme>>,
 }
 
 struct Decoder<'a> {
@@ -590,6 +602,7 @@ impl Warc {
         } else {
             vec![None]
         };
+        let mut best: Option<(usize, Warc)> = None;
         for scheme in candidates {
             let plain = Scheme {
                 name: "",
@@ -667,14 +680,62 @@ impl Warc {
             if entries.is_empty() {
                 continue;
             }
-            return Some(Warc {
+            let w = Warc {
                 version,
                 entries,
                 by_name,
                 scheme,
-            });
+            };
+            // several schemes can share the index key: keep the one whose entries decode
+            let (good, tried) = w.check(read);
+            if tried == 0 || good == tried {
+                return Some(w);
+            }
+            if best.as_ref().is_none_or(|(g, _)| good > *g) {
+                best = Some((good, w));
+            }
         }
-        None
+        best.map(|(_, w)| w)
+    }
+
+    /// How many of a few entries with a known signature decode to it, of how many were tried.
+    fn check(&self, read: &mut dyn FnMut(u64, usize) -> Vec<u8>) -> (usize, usize) {
+        let (mut good, mut tried) = (0, 0);
+        for e in &self.entries {
+            let ext = e.name.rsplit('.').next().unwrap_or("").to_ascii_lowercase();
+            let magic: &[u8] = match ext.as_str() {
+                "s25" => b"S25",
+                "ogg" => b"OggS",
+                "ogv" => b"OGV",
+                "wav" => b"RIFF",
+                "png" => b"\x89PNG",
+                "txt" => b"",
+                _ => continue,
+            };
+            if e.size < 16 || e.size > 256 << 10 {
+                continue;
+            }
+            let d = self.decode(e, read(e.offset as u64, e.size as usize));
+            let ok = if ext == "txt" {
+                // the first lines (cut at a line end, so a character is never split)
+                let n = d.len().min(4096);
+                let n = if n < d.len() {
+                    d[..n].iter().rposition(|&b| b == b'\n').unwrap_or(n)
+                } else {
+                    n
+                };
+                let (_, _, bad) = encoding_rs::SHIFT_JIS.decode(&d[..n]);
+                !bad && !d[..n].contains(&0)
+            } else {
+                d.starts_with(magic)
+            };
+            tried += 1;
+            good += ok as usize;
+            if tried == 3 {
+                break;
+            }
+        }
+        (good, tried)
     }
 
     pub fn find(&self, name: &str) -> Option<&Entry> {
@@ -726,14 +787,36 @@ impl Warc {
         };
         match unpacked {
             Some(mut out) => {
-                if self.version > 110 && e.flags & 0x40000000 != 0 {
-                    dec.decrypt2(&mut out);
+                if self.version > 110 {
+                    if e.flags & 0x40000000 != 0 {
+                        dec.decrypt2(&mut out);
+                    }
+                    count_crypt(&scheme.extra, &mut out);
                 }
                 out
             }
             None => data,
         }
     }
+}
+
+/// GARbro's CountCrypt / AltCountCrypt on an unpacked entry: two bytes are XORed with the
+/// numbers of 0x00 and 0xff bytes near the start.
+fn count_crypt(extra: &str, data: &mut [u8]) {
+    let (min, swap) = match extra {
+        "CountCrypt" => (0x200, false),
+        "AltCountCrypt" => (0x400, true),
+        _ => return,
+    };
+    if data.len() < min {
+        return;
+    }
+    let n = (data.len() & 0x7e) | 1;
+    let zeros = data[..n].iter().filter(|&&b| b == 0).count() as u8;
+    let ffs = data[..n].iter().filter(|&&b| b == 0xff).count() as u8;
+    let (a, b) = if swap { (ffs, zeros) } else { (zeros, ffs) };
+    data[0x100] ^= a;
+    data[0x104] ^= b;
 }
 
 fn unpack_yh1(input: &mut [u8], size: usize) -> Vec<u8> {
