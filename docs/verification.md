@@ -49,7 +49,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 35 | 3 | 17 | 9 | 3 | 1 |  | 2 |
 | 吉里吉里 (KiriKiri SDL2) | 135 | 83 | 51 |  |  |  | 1 |  |
-| YU-RIS (vnrun) | 29 | 25 |  |  |  | 3 | 1 |  |
+| YU-RIS (vnrun) | 29 | 27 |  |  |  | 1 | 1 |  |
 | NeXAS (vnrun) | 16 | 11 | 1 |  | 1 | 2 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
 | Tmr-Hiro (vnrun) | 22 | 22 |  |  |  |  |  |  |
@@ -368,6 +368,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2006_whirlpool | [いな☆こい！ ～お稲荷さまとモテモテのたたり～ 体験版 ver 1.00](http://suezou.dyndns.org/dl2006/whirlpool/inakoi/inakoi_trial_100.exe) | 本編 | Chromium で はじめから→本編の文章まで (222 形式の pac/*.ypf) |
+| b2007_whirlpool | [magus_trial.exe](http://suezou.dyndns.org/dl2007/whirlpool/magus/magus_trial.exe) | 本編 | Chromium で はじめから→本編の文章まで (263 形式。音声と BGM の ypf は除いて確認) |
 | b2010_whirlpool | [涼風のメルト -Where wishes are drawn to each other- WEB体験版](http://suezou.dyndns.org/dl2010/whirlpool/melt/webtrial_melt.exe) | 本編 | Chromium (3f99c53) で START→本編の文章→体験版終了の選択肢まで |
 | b2013_anim | [息子の友達に堕とされて　体験版](http://suezou.dyndns.org/dl2013/anim/musuko2/musuko2_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | b2014_whirlpool | [G.I.B. ガールズ・イン・ブラック  WEB体験版](http://suezou.dyndns.org/dl2014/whirlpool/gib/gib_webtrial.exe) | 本編 | Chromium (3f99c53) で START→体験版メニュー (本編/Hシーン) と説明文まで |
@@ -381,6 +382,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_VJ01001385 | [【豪華版】ボクが当主になるために今日からメイドとHします2](https://trial.dlsite.com/professional/VJ01002000/VJ01001385_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | dl_VJ01001386 | [【通常版】ボクが当主になるために今日からメイドとHします2](https://trial.dlsite.com/professional/VJ01002000/VJ01001386_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | dl_VJ01002327 | [竜翼のメロディア −Diva with the blessed dragonol−](https://trial.dlsite.com/professional/VJ01003000/VJ01002327_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
+| dl_VJ01002338 | [いな☆こい！ ～お稲荷さまとモテモテのたたり～](https://trial.dlsite.com/professional/VJ01003000/VJ01002338_trial.zip) | 本編 | Chromium で はじめから→本編の文章まで (b2006_whirlpool と同じ 222 形式) |
 | dl_VJ01002863 | [【限定版】巨乳軍人支配催眠「私の任務は貴方にご奉仕する事です。色んな穴をご自由にお使い下さい」](https://trial.dlsite.com/professional/VJ01003000/VJ01002863_trial.zip) | 本編 | Chromium で START→本編の文章まで (名前入力 DIALOG は既定名で進む) |
 | dl_VJ01004582 | [【豪華版】家族は（俺以外）サキュバスでした ～二人の姉と母との性活で精液を搾り取られます～](https://trial.dlsite.com/professional/VJ01005000/VJ01004582_trial.zip) | 本編 | Chromium で START→本編の文章まで (名前入力 DIALOG は既定名で進む) |
 | s2011_whirlpool_maikaze | [舞風のメルト -Where leads to feeling destination- WEB体験版 (ver1.01)](http://suezou.dyndns.org/dl2011/whirlpool/maikaze/webtrial_maikaze_ver101.exe) | 本編 | Chromium (3f99c53) で START→本編の文章まで (クリック位置ずれで LOAD 画面も開く) |
@@ -392,9 +394,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2021_casket_bellaca02 | [リンカーベル・アカデミア～龍族のフィアンセ～Hシーン体験版](http://suezou.dyndns.org/dl2021/casket/bellaca02/bellaca02_trial.zip) | 本編 | Chromium で Hシーン体験版→本編の文章まで |
 | s2023_casket_oshitona_vtuber02 | [画面から出てきた推しVtuberとHな同棲生活 ～庶民派吸血鬼お嬢様は契約したい～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber02/oshitona02_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | s2023_casket_oshitona_vtuber03 | [画面から出てきた推しVtuberとHな同棲生活 ～夢魔かわASMR配信者は地雷系？～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber03/oshitona03_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
-| b2007_whirlpool | [magus_trial.exe](http://suezou.dyndns.org/dl2007/whirlpool/magus/magus_trial.exe) | NG | pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」 |
 | b2021_whirlpool | [けもの道☆ガーリッシュスクエア　体験版](http://suezou.dyndns.org/dl2021/whirlpool/kemonomichi-gs/kemonomichi-gs_trial.zip) | NG | 3e4a888 で「yst00067.ybn: short arguments」 |
-| dl_VJ01002338 | [いな☆こい！ ～お稲荷さまとモテモテのたたり～](https://trial.dlsite.com/professional/VJ01003000/VJ01002338_trial.zip) | NG | pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」 |
 | r1_yuris | [YU-RIS サンプル](https://yu-ris.net/download/yu-ris_0495_032.zip) | 対象外 | YU-RIS の SDK のサンプル (コンパイル前で ysbin.ypf が無い) |
 
 ### NeXAS (vnrun)
