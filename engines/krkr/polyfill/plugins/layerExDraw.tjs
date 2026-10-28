@@ -111,37 +111,40 @@ class VnrunGdiDraw
 		return rect(0, 0, l.width, l.height);
 	}
 }
+// Called through an instance: its methods then find each other (through the class, they ran
+// with the layer as this, and shapes threw "Member points does not exist").
+global.vnrunGdiDraw = new VnrunGdiDraw();
 
 {
 	var L = global.Layer;
-	L.drawRectangle = function(app, x, y, w, h) { return VnrunGdiDraw.box(this, app, x, y, w, h); };
+	L.drawRectangle = function(app, x, y, w, h) { return global.vnrunGdiDraw.box(this, app, x, y, w, h); };
 	L.drawRectangles = function(app, rects) {
 		for (var i = 0; i < rects.count; i++) {
 			var r = rects[i];
-			if (r instanceof "Array") VnrunGdiDraw.box(this, app, r[0], r[1], r[2], r[3]);
-			else VnrunGdiDraw.box(this, app, r.x, r.y, r.width, r.height);
+			if (r instanceof "Array") global.vnrunGdiDraw.box(this, app, r[0], r[1], r[2], r[3]);
+			else global.vnrunGdiDraw.box(this, app, r.x, r.y, r.width, r.height);
 		}
-		return VnrunGdiDraw.rect(0, 0, width, height);
+		return global.vnrunGdiDraw.rect(0, 0, width, height);
 	};
-	L.drawEllipse = function(app, x, y, w, h) { return VnrunGdiDraw.box(this, app, x, y, w, h); };
-	L.drawPie = function(app, x, y, w, h, start, sweep) { return VnrunGdiDraw.box(this, app, x, y, w, h); };
-	L.drawArc = function(app, x, y, w, h, start, sweep) { return VnrunGdiDraw.rect(x, y, w, h); };
+	L.drawEllipse = function(app, x, y, w, h) { return global.vnrunGdiDraw.box(this, app, x, y, w, h); };
+	L.drawPie = function(app, x, y, w, h, start, sweep) { return global.vnrunGdiDraw.box(this, app, x, y, w, h); };
+	L.drawArc = function(app, x, y, w, h, start, sweep) { return global.vnrunGdiDraw.rect(x, y, w, h); };
 	L.drawLine = function(app, x1, y1, x2, y2) {
-		VnrunGdiDraw.line(this, app, x1, y1, x2, y2);
-		return VnrunGdiDraw.rect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
+		global.vnrunGdiDraw.line(this, app, x1, y1, x2, y2);
+		return global.vnrunGdiDraw.rect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
 	};
-	L.drawLines = function(app, list) { return VnrunGdiDraw.path(this, app, list); };
+	L.drawLines = function(app, list) { return global.vnrunGdiDraw.path(this, app, list); };
 	L.drawBezier = function(app, x1, y1, x2, y2, x3, y3, x4, y4) {
-		VnrunGdiDraw.line(this, app, x1, y1, x4, y4);
-		return VnrunGdiDraw.rect(0, 0, width, height);
+		global.vnrunGdiDraw.line(this, app, x1, y1, x4, y4);
+		return global.vnrunGdiDraw.rect(0, 0, width, height);
 	};
-	L.drawBeziers = function(app, list) { return VnrunGdiDraw.shape(this, app, list); };
-	L.drawPolygon = function(app, list) { return VnrunGdiDraw.shape(this, app, list); };
-	L.drawClosedCurve = function(app, list) { return VnrunGdiDraw.shape(this, app, list); };
-	L.drawClosedCurve2 = function(app, list, tension) { return VnrunGdiDraw.shape(this, app, list); };
-	L.drawCurve = function(app, list) { return VnrunGdiDraw.path(this, app, list); };
-	L.drawCurve2 = function(app, list, tension) { return VnrunGdiDraw.path(this, app, list); };
-	L.drawCurve3 = function(app, list, offset, num, tension) { return VnrunGdiDraw.path(this, app, list); };
+	L.drawBeziers = function(app, list) { return global.vnrunGdiDraw.shape(this, app, list); };
+	L.drawPolygon = function(app, list) { return global.vnrunGdiDraw.shape(this, app, list); };
+	L.drawClosedCurve = function(app, list) { return global.vnrunGdiDraw.shape(this, app, list); };
+	L.drawClosedCurve2 = function(app, list, tension) { return global.vnrunGdiDraw.shape(this, app, list); };
+	L.drawCurve = function(app, list) { return global.vnrunGdiDraw.path(this, app, list); };
+	L.drawCurve2 = function(app, list, tension) { return global.vnrunGdiDraw.path(this, app, list); };
+	L.drawCurve3 = function(app, list, offset, num, tension) { return global.vnrunGdiDraw.path(this, app, list); };
 	L.drawPathString = function(font, app, x, y, text) {
 		var f = this.font;
 		f.height = int font.emSize;
@@ -156,14 +159,14 @@ class VnrunGdiDraw
 			var c = app.brushes[i];
 			drawText(x, y, text, c & 0xffffff, (c >> 24) & 0xff, true);
 		}
-		return VnrunGdiDraw.rect(x, y, f.getTextWidth(text), f.getTextHeight(text));
+		return global.vnrunGdiDraw.rect(x, y, f.getTextWidth(text), f.getTextHeight(text));
 	};
 	L.drawString = function(font, app, x, y, text) { return drawPathString(font, app, x, y, text); };
 	L.measureString = function(font, text) {
 		var f = this.font;
 		f.height = int font.emSize;
-		return VnrunGdiDraw.rect(0, 0, f.getTextWidth(text), f.getTextHeight(text));
+		return global.vnrunGdiDraw.rect(0, 0, f.getTextWidth(text), f.getTextHeight(text));
 	};
 	L.measureStringInternal = L.measureString;
-	L.drawImage = function(x, y, image) { return VnrunGdiDraw.rect(x, y, 0, 0); };
+	L.drawImage = function(x, y, image) { return global.vnrunGdiDraw.rect(x, y, 0, 0); };
 }
