@@ -303,6 +303,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("ags.exe") && has("misc") {
         // Ivory: ags.exe beside misc/*.pk (fPK archives: script, bg, chr, grp, se)
         Some("ivory".into())
+    } else if has("script.dat") && has("arc0.dat") {
+        // NonColor: script.dat (text scripts) beside arc0.dat.. (ACV1 / DAT archives)
+        Some("noncolor".into())
     } else if majiro_arc(game, &names) {
         // Majiro: MajiroArc archives (scenario.arc, data.arc, ...) beside the exe
         Some("majiro".into())

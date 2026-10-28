@@ -69,6 +69,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | LiLiM (vnrun) | 7 | 7 |  |  |  |  |  |  |
 | Silky's (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | Ivory (vnrun) | 2 | 2 |  |  |  |  |  |  |
+| NonColor (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | ShiinaRio (vnrun) | 3 | 1 |  |  |  |  |  | 2 |
 | NekoSDK / Waffle (vnrun) | 2 | 2 |  |  |  |  |  |  |
 
@@ -644,6 +645,13 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|
 | b2016_evoll | [お嬢様はイイナリみたいです！？ 体験版](http://suezou.dyndns.org/dl2016/evoll/oinari/trial_oinari.zip) | 本編 | Ivory (vnrun) で注意書き・ロゴ→タイトル (TITLE_BASE_TRIAL とボタン)→START→A01..A12_H の背景・立ち絵・イベント CG・名前・文章・選択肢 (A05_H) を進み、trial_finish の紹介→タイトルに戻る (ivory-run、31000 フレーム)。Chromium でタイトル→本編、SAVE ボタンからセーブ→LOAD でロードして保存したメッセージに戻る |
 | b2020_caramel_box_strawberry | [はじカノ 体験版](http://suezou.dyndns.org/dl2020/caramel-box-strawberry/hajikano/hk_trial.zip) | 本編 | Ivory (vnrun) でブランド・注意書き→タイトル (横並びのボタン)→NEW GAME→00_CM_01..09 (アイキャッチの呼び出し、2 択・3 択の選択肢)→02_YN_01→02_YN_01_H01→タイトルに戻る (ivory-run、49000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る |
+
+### NonColor (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2015_minato_carnival | [姉小路直子と銀色の死神 体験版](http://suezou.dyndns.org/dl2015/minato-carnival/anekouji/anegin_trial.zip) | 本編 | NonColor (vnrun) でタイトル (縦のボタン)→スタート→A1_151013_0..A1_151016_3 の背景・立ち絵 (ST2 の位置表)・CG・名前欄・文章・ボイス (複数同時も)・選択肢 (4 択・3 択・5 択) を進み、体験版ラストの絵→TL でタイトルに戻る (noncolor-run、36500 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る |
+| b2018_mirai | [宿星のガールフレンド２ 体験版](http://suezou.dyndns.org/dl2018/mirai/syukugar2/syukugar2_trialedition.zip) | 本編 | NonColor (vnrun) でタイトル (sys/title の絵とボタン)→START→B01A_180502_0..B02B_180728_0 の背景・立ち絵 (顔 + 体の合成)・CG・名前・文章・ボイス・選択肢 (3 択・2 択) を進み、B07B_180927_1→X02A のおまけトーク (rand のガチャ分岐)→予約する→バナー→TL でタイトルに戻る (noncolor-run、23000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る |
 
 ### ShiinaRio (vnrun)
 

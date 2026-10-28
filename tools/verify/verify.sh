@@ -78,6 +78,7 @@ game_root() {
     lilim) m=(-iname scr.aos) ;;
     silkys) m=(-iname layer.arc) ;;
     ivory) m=(-ipath '*/misc/script.pk') ;;
+    noncolor) m=(-iname arc0.dat) ;;
     shiina) m=(-iname '*.war') ;;
     nscripter) m=(-iname nscript.dat -o -iname 0.txt -o -iname 00.txt -o -iname '*.nsa' -o -iname '*.sar') ;;
     html) m=(-iname package.json -o -iname index.html -o -iname package.nw -o -iname nw.pak -o -iname app.asar) ;;

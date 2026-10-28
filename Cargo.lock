@@ -833,6 +833,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "noncolor"
+version = "0.1.0"
+dependencies = [
+ "fontdue",
+ "image 0.25.10",
+ "miniz_oxide 0.8.9",
+ "nexas",
+]
+
+[[package]]
+name = "noncolor-web"
+version = "0.1.0"
+dependencies = [
+ "js-sys",
+ "nexas",
+ "noncolor",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "num-traits"
 version = "0.2.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
