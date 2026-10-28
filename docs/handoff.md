@@ -489,3 +489,11 @@ Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softp
 - 体験版の起動直後 (0x20) からロゴ・注意書き・タイトル (0x434) までスクリプトどおり。ロード画面 (0x3f774) と設定 (0x38828) の呼び出しは自前のスロット画面に置き換え。
 - 確認: `PJADV_FONT=ipag.ttf PJADV_LOG=1 pjadv-run <game> <frames> <out> [frame:x:y[:r|m|s] ...]` (s はスキップ)、`pjadv-dump <game> list | extract <name> <out> | png <name.epa> <out.png>`。
 - 残り: .anm/.bnm のアニメ (タイトルの雲など)、回転・揺れ、ワイプ (クロスフェードで代用)、色型 10 の EPA、バックログ・オート・Q.SAVE。
+
+## 未着手の 2 本の調べ (2026-10-28)
+
+- b2020_rikuzendo (ティーリオ傭兵団の初仕事 体験版): data.dts ("SDTS")・runtime.rts ("SRTS")・environment.evs・game.ini は **SRPG Studio**。exe は IScript* の COM 風インターフェース (200 以上) と CryptDeriveKey/CryptDecrypt (data.dts の資源ごとの暗号) を持ち、ゲームの進行は SRPG Studio 本体の JScript (戦闘・マップ・会話イベント) が組み立てる。本編に届くにはこのホスト API 一式を作り直すことになるので見送り。
+- b2023_fg_remake (夜勤病棟 リメイク 体験版、1920x1080): エンジン名 Eomaia (exe の pdb)。systeminfo.json が設定 (script/image/data/music/effect/voice の .arc、画像は dll/LoaderJpeg・LoaderPing)。
+  - .arc: u32 LE 索引の長さ、各項目は u8 名前長・名前・BE size・BE size・BE offset (ファイル先頭から)。名前は i 文字目に (名前長 + 0x20 - i) を引いて格納、小文字以外 (. _ 数字) はさらに 0x20 足してある (戻すときは足して、小文字でなければ 0x20 引く)。
+  - script.arc の *.script / *.lib / *.package は "SCRE" (+12 と +16 にコードの始まり 0x14) のスタック型バイトコード: '2' + BE i32 を積む、'3' + C 文字列、0x15/0x16 + BE u32 の条件/無条件ジャンプ (位置はファイル先頭から)、0x17 は「引数… 引数の数 番号」を積んでから呼ぶ組み込み (番号 0x0b は関数定義、0x0c はパッケージのイベント定義で、直後に終わりの u32)、0x01 return、0x0d/0x10/0x11 変数、'B'/'C' 比較、';' '?' '4' 論理らしい。start.script はロゴ (logo_fgr.png)・注意書きを eomaia_image / eomaia_fade (ライブラリの関数) で出して main.script へ。
+  - 組み込み番号の意味は exe (MSVC、記号なし、1.5 MB) を読む必要があり、まだ表になっていない。タイトル (title_try.package)・窓 (meswnd.package)・クリック待ち (keywait.package) もスクリプト側。
