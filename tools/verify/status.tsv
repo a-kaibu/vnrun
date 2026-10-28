@@ -476,3 +476,4 @@ s2011_clochette_kamikaze	本編	CatSystem2 (vnrun) でタイトル→はじめ�
 s2014_clochette_sakigake	本編	CatSystem2 (vnrun、GameData/ をゲームフォルダに) でタイトル→START→本編 (背景・DSP の画面・名前・メッセージ窓) (cs2-run)。本編で右クリックのセーブ欄に保存→新しい実行でタイトルの LOAD の欄からロードし保存したページに戻る
 s2015_clochette_kokonatsu	本編	CatSystem2 (vnrun、GameData/ をゲームフォルダに) でタイトル→START→プロローグ→本編 (背景・イベント CG・名前・メッセージ窓) (cs2-run)。本編で右クリックのセーブ欄に保存→新しい実行でタイトルの LOAD の欄からロードし保存したページに戻る
 r1_cs2_hatsumira	本編	CatSystem2 (vnrun、GameData/ をゲームフォルダに) で注意書き→タイトル→はじめから→シーン選択→Prologue→本編 (背景・イベント CG・立ち絵・名前・メッセージ窓・ボイス) (cs2-run)。本編で右クリックのセーブ欄に保存→新しい実行でタイトルの「つづきから」(load.fes) の欄からロードし保存したページに戻る
+dl_VJ01002637	本編	Escu:de (vnrun) で .cfg に Width= の無いゲームは misc\\game.h の SCREEN_W / SCREEN_H (1280x720) を使い、gfx.bin の PNG を読んでタイトル→NEW GAME→本編 (背景・文章) (escude-run)。本編で右クリックのメニュー→Q.SAVE→YES で保存→新しい実行でタイトルの CONTINUE でロードし保存した文に戻る。タイトルの描画が重い (sp_draw 1 フレーム約 50ms、ネイティブ)

@@ -291,8 +291,32 @@ impl Engine {
                     .ok_or("no Execute= in a .cfg and no main.c")?
             }
         };
-        let width = get("Width").and_then(|v| v.parse().ok()).unwrap_or(800);
-        let height = get("Height").and_then(|v| v.parse().ok()).unwrap_or(600);
+        // without Width= (悠刻のファムファタル), the SCREEN_W / SCREEN_H of its headers
+        let mut defined = |k: &str| -> Option<i32> {
+            let heads: Vec<String> = arc
+                .names
+                .iter()
+                .filter(|n| n.to_lowercase().ends_with(".h"))
+                .cloned()
+                .collect();
+            heads.iter().find_map(|n| {
+                let text = nexas::sjis::decode(&arc.read(files.as_mut(), n)?);
+                text.lines().find_map(|l| {
+                    let mut w = l.split_whitespace();
+                    (w.next() == Some("#define") && w.next() == Some(k))
+                        .then(|| w.next()?.parse().ok())
+                        .flatten()
+                })
+            })
+        };
+        let width = get("Width")
+            .and_then(|v| v.parse().ok())
+            .or_else(|| defined("SCREEN_W"))
+            .unwrap_or(800);
+        let height = get("Height")
+            .and_then(|v| v.parse().ok())
+            .or_else(|| defined("SCREEN_H"))
+            .unwrap_or(600);
         let base = exec
             .rfind('\\')
             .map_or(String::new(), |n| exec[..n + 1].to_string());
@@ -1671,7 +1695,11 @@ impl State {
             }
             "snd_play" => {
                 let clock = self.clock;
-                if let Some(s) = self.sounds.get_mut(&i(0)) {
+                // a channel with nothing loaded (only its volume set) does not play: a voice
+                // the trial of 悠刻のファムファタル leaves out would play on for ever
+                if let Some(s) = self.sounds.get_mut(&i(0))
+                    && !s.data.is_empty()
+                {
                     s.started = Some(clock);
                     s.looped = arg(1) != 0;
                     s.paused_at = None;

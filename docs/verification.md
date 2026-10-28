@@ -58,7 +58,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | EntisGLS (vnrun) | 9 | 5 |  |  |  |  |  | 4 |
 | AliceSoft System4 (xsystem4) | 2 | 2 |  |  |  |  |  |  |
 | QLIE (vnrun) | 5 | 3 |  |  |  |  |  | 2 |
-| Escude (vnrun) | 8 | 2 |  |  |  |  |  | 6 |
+| Escude (vnrun) | 8 | 3 |  |  |  |  |  | 5 |
 | Majiro (vnrun) | 4 | 1 |  |  |  |  |  | 3 |
 | Kaguya (vnrun) | 12 | 6 |  |  |  |  |  | 6 |
 | Interheart (vnrun) | 12 | 10 |  |  |  | 1 |  | 1 |
@@ -574,7 +574,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|
 | b2008_escude | [ヴェルディア幻奏曲体験版](http://suezou.dyndns.org/dl2008/escude/verdia/verdia_trial.zip) | 本編 | Escu:de (ACPX の C を自前 VM で実行) でタイトル→NEW GAME→本編の背景・文章まで (escude-run と Chromium)。セーブ (スロットの日時・サムネイル)→タイトルからロードで本編に戻る (escude-run) |
 | b2014_escude | [Re;Lord ～ヘルフォルトの魔女とぬいぐるみ～ 体験版](http://suezou.dyndns.org/dl2014/escude/relord/ReLord_Trial.zip) | 本編 | Escu:de でロゴ→タイトル→はじめから→プロローグの文章まで (Chromium)、CG と文章ウィンドウの場面まで (escude-run)。セーブ→タイトルからロードでプロローグに戻る (Chromium と escude-run) |
-| dl_VJ01002637 | [悠刻のファムファタル](https://trial.dlsite.com/professional/VJ01003000/VJ01002637_trial.zip) | 未確認 |  |
+| dl_VJ01002637 | [悠刻のファムファタル](https://trial.dlsite.com/professional/VJ01003000/VJ01002637_trial.zip) | 本編 | Escu:de (vnrun) で .cfg に Width= の無いゲームは misc\\game.h の SCREEN_W / SCREEN_H (1280x720) を使い、gfx.bin の PNG を読んでタイトル→NEW GAME→本編 (背景・文章) (escude-run)。本編で右クリックのメニュー→Q.SAVE→YES で保存→新しい実行でタイトルの CONTINUE でロードし保存した文に戻る。タイトルの描画が重い (sp_draw 1 フレーム約 50ms、ネイティブ) |
 | dl_VJ01006026 | [姫と艶欲のインペリウム](https://trial.dlsite.com/professional/VJ01007000/VJ01006026_trial.zip) | 未確認 |  |
 | s2009_escude_prister | [乙女恋心プリスター体験版](http://suezou.dyndns.org/dl2009/escude/prister/prister_trial.zip) | 未確認 |  |
 | s2012_escude_gurenka | [紅蓮華 - 体験版](http://suezou.dyndns.org/dl2012/escude/gurenka/gurenka_trial_net.zip) | 未確認 |  |

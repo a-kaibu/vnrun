@@ -613,6 +613,9 @@ fn op3(s: Px, d: Px, level: u32, f: impl Fn(u32, u32) -> u32) -> Px {
 
 /// Reads a BMP: (width, height, depth, rows bottom up with 4-byte stride, palette).
 pub fn read_bmp(b: &[u8]) -> Option<(i32, i32, u32, Vec<u8>, Option<Vec<u32>>)> {
+    if b.starts_with(b"\x89PNG") {
+        return read_png(b);
+    }
     if b.len() < 54 || &b[..2] != b"BM" {
         return None;
     }
@@ -661,6 +664,23 @@ pub fn read_bmp(b: &[u8]) -> Option<(i32, i32, u32, Vec<u8>, Option<Vec<u32>>)> 
             .collect()
     });
     Some((w, h, bits, px, pal))
+}
+
+/// A PNG (悠刻のファムファタル's gfx.bin) as a 32-bit BMP would read: BGRA rows, bottom up.
+fn read_png(b: &[u8]) -> Option<(i32, i32, u32, Vec<u8>, Option<Vec<u32>>)> {
+    let img = image::load_from_memory_with_format(b, image::ImageFormat::Png)
+        .ok()?
+        .to_rgba8();
+    let (w, h) = img.dimensions();
+    let raw = img.into_raw();
+    let stride = w as usize * 4;
+    let mut px = Vec::with_capacity(raw.len());
+    for row in raw.chunks_exact(stride).rev() {
+        for c in row.chunks_exact(4) {
+            px.extend_from_slice(&[c[2], c[1], c[0], c[3]]);
+        }
+    }
+    Some((w as i32, h as i32, 32, px, None))
 }
 
 /// Appends the pixels x0..x1 of row y.
