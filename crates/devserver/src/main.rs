@@ -263,6 +263,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("scr.aos") && has("grp.aos") {
         // LiLiM: scr.aos (text scripts) beside grp.aos, cv.aos and the sfaNN.exe
         Some("lilim".into())
+    } else if names.iter().any(|n| n.ends_with(".war")) {
+        // ShiinaRio: WARC archives (.WAR) beside the exe and its [椎名里緒] .ini
+        Some("shiina".into())
     } else if majiro_arc(game, &names) {
         // Majiro: MajiroArc archives (scenario.arc, data.arc, ...) beside the exe
         Some("majiro".into())

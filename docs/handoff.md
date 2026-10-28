@@ -162,6 +162,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 | Kaguya | ? | 自作 (`crates/kaguya`, `crates/kaguya-web`) | Rust | あり (WebGPU) | 2006 年頃の世代 (GAME_SYS/AMATU.exe + WFL1 の .arc/.ari)。WFL1 アーカイブ (LZSS)、AP/BMP 画像、tblstr の文章と名前、.scr バイトコードの VM (変数・条件分岐・スクリプト移動)、背景・立ち絵 (胴体+表情の合成)・イベント CG・色かけ、ルール画像トランジション・フェード・フラッシュ・揺れ・カットイン、BGM/効果音/音声 (Ogg)、メッセージ窓とタイトルメニューは exe の代わりに vram01/02 の部品で自前描画。アマツ体験版 (2006) が最後まで通る (kaguya-run と Chromium)。2013 年頃の世代 (GAME_SYS.exe + ARC/、1024x600、label.tbl の GOSUB、ローカル変数、選択肢、APS3 部品画像、AO 立ち絵) も肉牝R30 体験版で本編と場面選択まで。2009 年の GAME_SYS.exe (さらさらささら体験版) も最後まで。2008 年 (夏神 体験版２) も場面選択と各場面まで。LINK の世代 (Start.exe + params.dat + message.dat + LINK6 の .arc、`kaguya::link`) もハラミタマ体験版 (2015) がタイトル→はじめから→プロローグ (A0000..A0070)→共通→マップ (4 人から選ぶ、文字の選択肢で代用)→各ルート①→体験版の終わりまで通る。LoveHolic 体験版 (2018、params v05.7) も同じ実装で最後まで。セーブ・2013 年のマップ画面 (op 54 1 0)・LINK の他の年 (2010/2011/2014/2019) は未確認 |
 | Cyberworks / TinkerBell (Arc0x.dat) | 8 | 自作 (`crates/cyberworks`, `crates/cyberworks-web`) | Rust | あり (WebGPU) | 索引と中身の組 (Arc01→04, 02→05, 03→06, 07→08)。索引は 10 進の桁 (^0x7f) の大きさ + LZSS。種類の文字ごとの 0 始まりの番号で参照。'a'/'d' 画像 (GetInt 符号の見出し、d は直前の土台との差分)、'b'/'c' は末尾の PNG、音声は先頭 "Tink" の Ogg を exe の鍵で XOR。脚本 'a' は文 (M# 命令 / M$ レイヤー命令 / S 文章) を直接解釈し、e0 (ボタン組) と f0 (レイヤー表) からタイトル・ウィンドウ・立ち絵の位置を組む。メッセージ窓の文字・選択肢・セーブ (10 スロット) はエンジンが描く。グランギニョルの夜 体験版 (2018) で警告→タイトル→本編、セーブ/ロード (cyberworks-run と Chromium)。2023 年以降の TinkerBell は ChakraCore 入りの別世代 |
 | LiLiM (AOS) | 7 | 自作 (`crates/lilim`, `crates/lilim-web`) | Rust | あり (WebGPU) | .aos アーカイブ (2009 年以降の版 2 と 2006〜2007 年の版 1)、.scr と .cmp のハフマン符号、BMP / ABM 画像 (ABM の詰めた行は上から)。脚本は平文 (Shift-JIS) のテキストで、行ごとに解釈する (^gsb/^go/^jp/^if/^sw、%変数、bgon/cgon/chon/ud/btnset/btnenable/cvon/bgmon など)。ボタンは画像の 3 段 (通常・ポインタの下・押下)。タイトルと選択肢はゲームの脚本のボタンそのもの、メッセージ窓は wnd(0, ...) の設定 (msgwnd1 と窓のボタン) で描く。セーブ・ロードの画面と右クリックのメニューはエンジンが描く。体験版 7 本 (2006〜2021) すべてでタイトルから本編まで (lilim-run、うち 3 本は Chromium も)。ud(2) のマスクはフェードで代用 |
+| ShiinaRio (椎名里緒) | 2 | 自作 (`crates/shiina`, `crates/shiina-web`) | Rust | あり (WebGPU) | WARC 1.7 アーカイブ (GARbro の鍵を `schemes/*.bin` に)、S25 画像 (複数フレーム・各フレームに置き場所、差分行)、OGV (Ogg の前に見出し)。ゲームの .SCN は VM で動かさず、シナリオ (A001.TXT.. の平文) を直接解釈する: `$L_BG` `$L_CHR` `$DRAW` `$DRAW_EX` `$VOICE` `$SE` `$MUSIC` `$MUSIC_FADE` `$EX,5`、`【名前】` と文章の段落、`;￥ジャンプ＜a002＞へ` で次のファイル。タイトル (SYSTITLE.S25) とメッセージ窓 (SYS_SYS.S25) はゲームの絵をエンジンが並べる。種憑け村 序章体験版 (2011) でタイトル→本編→体験版の終わり→タイトル (shiina-run と Chromium、セーブ/ロードも)。マスクのワイプはフェードで代用、EFECT (揺れ・フラッシュ) はまだ |
 
 Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softpal 31、FVP 6、Artemis 5)。
 
@@ -246,7 +247,7 @@ Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softp
 - SDRS の登録時自動準備は `a76be4a`、XP3 復号とブラウザ Pad は `fee9763`、入力と PIMG の修正は `afeaba8` にコミットした。
   push とホスト CI の実行はまだ行っていない。
 
-## ShiinaRio (椎名里緒) の途中経過 (2026-10-28)
+## ShiinaRio (椎名里緒) の実装メモ (2026-10-28)
 
 - 対象: `b2011_guilty` 種憑け村 序章体験版 (`TANE_T.exe`, ini は `[椎名里緒 v2.48]`, `Arc=T1TANE_T0.WAR`, `Scn=start.SCN`, 800x600)。
 - できたこと: `crates/shiina` の `warc.rs` が WARC 1.7 の索引と全エントリ (YH1/YPK/YLZ、Decrypt/Decrypt2、helper4 の SHA-1 系と領域 CRC) を復号する。
@@ -255,7 +256,21 @@ Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softp
 - 鍵: `tools/garbro_db.py` が GARbro の Formats.dat (MS-NRBF) を読み、`warc OUT NAME [HELPER]` で `crates/shiina/schemes/*.bin` を書く。
   体験版の EXE は製品版と helper key の文字列が違う (種憑け村体験版は `gy||OWey|diODD`)。
   helper4 のかからない小さいエントリだけ正しく出るときはこれを疑う。
-- まだのこと: .SCN の VM。タイトル画面は未到達。RE の道具は `tools/shiina/` (pe.py, dispatch.py, sig.py, dis.py)。
+- 実装 (VM なし): 本編の文章は T1TANE_SC.WAR の A001.TXT..A017.TXT (Shift-JIS の平文) にあり、.SCN の VM はこれを 1 行ずつ読むだけなので、
+  エンジン (`crates/shiina/src/engine.rs`, `story.rs`) がシナリオを直接解釈する。`shiina-run DIR FRAMES OUT [frame[:x:y[:r|m]]]`
+  (SHIINA_FONT / SHIINA_TRACE / SHIINA_START=a005 でタイトルを飛ばす)、`shiina-dump png <file.s25> <out>` で各フレームと置き場所。
+  - シナリオ: `;` は注釈 (`;￥ジャンプ＜a002＞へ` が次のファイル。無いファイルなら体験版の終わりでタイトルへ)、`$命令,引数`、`【名前】` の次の段落がその人の台詞、空行までの連続した行が 1 ページ (最大 3 行)。分岐はない。
+  - `$L_BG,bg\x.s25,0` 背景、`$L_CHR,層,bu\x.s25,x,y,0` 層ごとに 1 枚 (空の名前で消す。S25 のフレーム自身の位置に x,y を足す。層は番号順に重ねる。tbg01 は上下の黒帯、tbb01* は回想の片側の黒、tm01b は紋の背景)。
+    変更はまとめて `$DRAW,ms,待つか` / `$DRAW_EX,種類,マスク,ms,待つか` でフェード表示 (最後の 1 で終わりを待つ、0 は待たずに文章が出る)。マスクのワイプ (cf\eff_*.s25 はグラデーションのルール画像) はフェードで代用。
+  - `$VOICE,v\x.ogv,0`、`$SE,se\x.ogv,ループ,?` (空の名前で止める)、`$MUSIC,m\x.ogv,1` (空で止める)、`$MUSIC_FADE,ms`、`$EX,5` は窓を消してクリック待ち (章の題字の後)。`$EFECT,n` (揺れ・フラッシュ) は未実装。
+  - .OGV は "OGV" の見出し (fmt/data) の後に Ogg。名前は書庫の中ではフォルダなし (bg\ などは捨てて全 .WAR から引く)。
+  - タイトル: SYSTITLE.S25 のフレーム 0 が絵、250..270 が紋の光 (往復)、ボタンは 3 フレームずつ (通常・ポインタの下・使えない): 100 はじめから、103 つづきから (106 一時読込が同じ場所)、109 設定 (112 おまけが同じ場所。体験版では使えない状態で描く)、115 終了。200..214 はおまけの中身、50 は一枚絵。
+  - 窓: SYS_SYS.S25 の 10 が窓、12 が名前枠、20..38 がクリック待ちの絵、50..75 が下のボタン (一時保存 53・一時読込 50・設定 73・早送り 62・自動送り 66・読み返し 70・声再生 59・閉じる 56、+1 がポインタの下)。100.. はシステムの画面 (未使用)。
+    文字の位置 (44, 492、22px、行送り 26) と名前 (枠の中央) は絵に合わせた値。一時保存/一時読込は "quick" のスロット、設定・読み返しは自前のメニュー、右クリックでもメニュー (セーブ/ロード 10 スロット・タイトルへ)。
+  - S25 の差分行 (フラグの bit31) は GARbro どおり、その行を使うフレームの数だけ足し込みを繰り返す。
+- 他の作品: S25 と WARC は共通だが、シナリオの書式・ウィンドウの絵の番号・タイトルのボタンは作品ごとに確かめること。
+- .SCN の VM の解析メモ (使っていない。他作品で要るとき用):
+  - RE の道具は `tools/shiina/` (pe.py, dispatch.py, sig.py, dis.py)。
   - インタプリタは TANE_T.exe の 0x423f20〜0x42a447。ctx は ebx で、+4 がスクリプト先頭、+0x10 が pc、+0x18 bit8 が終了、+0x20 が命令、+0xff8 が引数表、+0xffc/+0x1000 がスタック。
   - 命令は u16 で、ハンドラは約718個。<=0x6b はバイト表 0x42a4f8 から飛び先表 0x42a450。0x78〜0x580 は飛び先表 0x42a564。0x582〜0x795 はバイト表 0x42bc30 から 0x42b988。0x6f/0x581/0x796 は個別に処理し、それより上は 0xfe39 までさらに分岐する。共通の次命令は 0x42a3d4、エラーは 0x42a410。
   - オペランド: 読み 0x415690、書き 0x415190、アドレス 0x415500、push 0x4150f0、pop 0x415140。
@@ -265,7 +280,7 @@ Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softp
   - START.SCN の末尾には x86/MMX のネイティブルーチンが埋め込まれている (`61 9d c3` = popad/popfd/ret)。スクリプトからこれを呼ぶため、その部分はハンドラごとに Rust で書き直すか x86 を解釈する必要がある。
   - 線形の逆アセンブルは START.SCN のオフセット 0xe (op 0xa の後の `82 d3 82 aa 48 00`) で崩れる。命令ごとのオペランド数の推定は途中。
   - 判明した命令の例: 0xa は待ち時間 (<=1000)、0x49d はグローバル c17c28 への代入、0x7ee は [v v w]、0x7ef は [v v v]。
-- 他の ShiinaRio 体験版: `b2017_onomatope_raspberry` (vnbox では NG で画面が出ない)。VM の後で試す。
+- 他の ShiinaRio 体験版: `b2017_onomatope_raspberry` (vnbox では NG で画面が出ない)。targets.tsv にはまだ無い。
 
 ## Majiro の実装メモ (2026-10-28)
 

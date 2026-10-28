@@ -405,3 +405,4 @@ b2007_lilim_darkness	本編	LiLiM (vnrun) の AOS 版 1 でタイトル→START�
 b2009_lilim	本編	LiLiM (vnrun) でタイトル→START→美夕の挨拶 (文字の選択肢 /...//)→体験版メニュー→プロローグ (00pro01, 00pro02, 010101) の背景・立ち絵・顔窓・名前・文章・音声→「体験版は、ここで終了です」→メニューに戻る (lilim-run)。OP ムービーは飛ばす
 b2011_princess_sugar	本編	LiLiM (vnrun) でタイトル (1024x600)→START→体験版メニュー (slctwnd のボタン)→プロローグ (00_01..00_10) の背景・立ち絵・名前 (窓の名札)・文章・音声を最後まで通り、メニューに戻る (lilim-run)。OP ムービーは飛ばす
 b2021_princess_sugar	本編	LiLiM (vnrun) でタイトル→START→注意書き→体験版メニュー (slctwnd のボタン)→共通パート (01_01..02_08、途中のボタンの選択肢を含む) の背景・立ち絵・イベント CG・名前・文章・音声を通る (lilim-run)。Chromium でタイトル→メニュー→本編の文章まで
+b2011_guilty	本編	ShiinaRio (vnrun) でタイトル (SYSTITLE.S25 の絵とボタン)→はじめから→A001..A017 の背景・立ち絵・名前・文章・音声を最後まで通り、体験版の終わりでタイトルに戻る (shiina-run)。Chromium でタイトル→本編、右クリックのメニューからセーブ→タイトルのつづきからロードで本編に戻る

@@ -1,0 +1,15 @@
+[package]
+name = "shiina-web"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "The ShiinaRio engine for the browser: wasm-bindgen exports for web/src/engines/shiina.ts"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+shiina = { path = "../shiina" }
+nexas = { path = "../nexas" }
+wasm-bindgen = "=0.2.129"
+js-sys = "0.3"

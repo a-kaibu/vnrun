@@ -50,7 +50,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | HTML (TyranoScript、RPGツクール MV/MZ) | 35 | 3 | 17 | 9 | 3 | 1 |  | 2 |
 | 吉里吉里 (KiriKiri SDL2) | 135 | 83 | 51 |  |  |  | 1 |  |
 | YU-RIS (vnrun) | 29 | 27 |  |  |  | 1 | 1 |  |
-| NeXAS (vnrun) | 16 | 11 | 1 |  | 1 | 2 | 1 |  |
+| NeXAS (vnrun) | 16 | 12 | 1 |  | 1 | 1 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
 | Tmr-Hiro (vnrun) | 22 | 22 |  |  |  |  |  |  |
 | LiveMaker (vnrun) | 5 | 4 |  |  |  |  |  | 1 |
@@ -65,6 +65,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Crowd/ANIM (vnrun) | 9 | 5 |  |  |  | 4 |  |  |
 | Cyberworks (vnrun) | 8 | 1 |  |  |  |  |  | 7 |
 | LiLiM (vnrun) | 7 | 7 |  |  |  |  |  |  |
+| ShiinaRio (vnrun) | 1 | 1 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -407,6 +408,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2013_giga | [キスアト体験版](http://suezou.dyndns.org/dl2013/giga/kissato/kissato_trial.zip) | 本編 | 6875c68 でタイトルから new game で本編テキストまで (冒頭は白背景+メッセージウィンドウ) |
 | b2016_giga | [リプキス　体験版](http://suezou.dyndns.org/dl2016/giga/repkiss/repkiss_trial.zip) | 本編 | 6875c68 でタイトルから New Game で本編テキストまで |
 | b2019_giga | [アイキス 豪華体験版](http://suezou.dyndns.org/dl2019/giga/aikiss/aikiss_premium_trial.zip) | 本編 | 6875c68 でタイトルから本編テキストまで。メッセージウィンドウ画像は未表示 (既知) |
+| s2006_giga_ab | [angel breath - エンジェルブレス体験版](http://suezou.dyndns.org/dl2006/giga/ab/ab_trial.zip) | 本編 | 2006 年版の VM (演算子 0xD 以降が 1 つずれる、ヘッダの無い .dat、.ani ボタン) に対応。タイトルの Start から体験版01.bin の本文まで (Chromium) |
 | s2007_giga_himesama | [姫さまっ、お手やわらかに！ -体験版-](http://suezou.dyndns.org/dl2007/giga/himesama/hime_trialc.zip) | 本編 | Chromium (3f99c53) で START→本編の文章まで |
 | s2008_giga_sakahari | [さかあがりハリケーン 体験版 Ver.2](http://suezou.dyndns.org/dl2008/giga/sakahari/sakahari_trial2.zip) | 本編 | Chromium (3f99c53) で START→本編の文章まで |
 | s2009_giga_curefull | [キュアフル！ 体験版](http://suezou.dyndns.org/dl2009/giga/curefull/curefull_trial.zip) | 本編 | Chromium (21b28be 以降) で START→本編の文章まで。メッセージ枠は中央に表示 |
@@ -415,7 +417,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2015_giga_renaiphase | [恋愛フェイズ 体験版](http://suezou.dyndns.org/dl2015/giga/renaiphase/RP_trial.zip) | タイトル | b425e77 でもタイトルまで |
 | s2006_giga_cheerfull | [チアフル！ ～cheerfull!～ 【 体験版 】](http://suezou.dyndns.org/dl2006/giga/cheerfull/cheerfull_trial.exe) | 要再確認 | 自己展開 exe のダウンロード/展開に失敗 |
 | b2009_crossover | [美乳淫妹 遥「私にイヤらしいコスプレさせるなんて……この変態！」](http://suezou.dyndns.org/dl2009/crossover/haruka/bnharuka_trial.zip) | NG | 64d6316 (2015 年版の表) で「no Script.pac」(DATA/ フォルダの形) |
-| s2006_giga_ab | [angel breath - エンジェルブレス体験版](http://suezou.dyndns.org/dl2006/giga/ab/ab_trial.zip) | NG | 64d6316 (2015 年版の表) で「table is cut short」 |
 | s2025_milimili_hanako | [ちょっとナマイキなトイレの花子さん ～えっちぃ学園のおばけとエロエロ搾精性活～ 【体験版】](http://suezou.dyndns.org/dl2025/milimili/hanako/hanako_try2.zip) | 対象外 | 中身は Unity 製 (vnbox の NeXAS 判定が誤り) |
 
 ### AdvHD (vnrun)
@@ -601,4 +602,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2011_princess_sugar | [姫様限定！～PrincessLimited～ web体験版ver1.0](http://suezou.dyndns.org/dl2011/princess-sugar/princess/hime_trial_1.zip) | 本編 | LiLiM (vnrun) でタイトル (1024x600)→START→体験版メニュー (slctwnd のボタン)→プロローグ (00_01..00_10) の背景・立ち絵・名前 (窓の名札)・文章・音声を最後まで通り、メニューに戻る (lilim-run)。OP ムービーは飛ばす |
 | b2019_lilim_darkness | [WhiteBlue web体験版ver2.0](http://suezou.dyndns.org/dl2019/lilim-darkness/whiteblue/WhiteBlue_trial_2.zip) | 本編 | LiLiM (vnrun) でタイトル (btn_play などの画像ボタン)→START→注意書き→体験版メニュー (slctwnd の選択肢)→旭ルートのダイジェスト (D_07..D_09) の背景・立ち絵・イベント CG・名前・文章・音声・回想のセピアを最後まで通り、メニューに戻る (lilim-run)。Chromium でタイトル→本編、右クリックのメニューからセーブ→タイトルの LOAD からロードで本編に戻る |
 | b2021_princess_sugar | [プリンセス☆シスターズ！～四姉妹は全員あなたの許嫁～ web体験版ver1.0](http://suezou.dyndns.org/dl2021/princess-sugar/prista/PriSta_trial_1.zip) | 本編 | LiLiM (vnrun) でタイトル→START→注意書き→体験版メニュー (slctwnd のボタン)→共通パート (01_01..02_08、途中のボタンの選択肢を含む) の背景・立ち絵・イベント CG・名前・文章・音声を通る (lilim-run)。Chromium でタイトル→メニュー→本編の文章まで |
+
+### ShiinaRio (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2011_guilty | [種憑け村 序章体験版](http://suezou.dyndns.org/dl2011/guilty/tanetsukemura/tanetsukemura_taiken.zip) | 本編 | ShiinaRio (vnrun) でタイトル (SYSTITLE.S25 の絵とボタン)→はじめから→A001..A017 の背景・立ち絵・名前・文章・音声を最後まで通り、体験版の終わりでタイトルに戻る (shiina-run)。Chromium でタイトル→本編、右クリックのメニューからセーブ→タイトルのつづきからロードで本編に戻る |
 <!-- /matrix -->

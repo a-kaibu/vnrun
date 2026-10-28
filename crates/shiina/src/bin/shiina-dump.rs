@@ -2,6 +2,7 @@
 //!
 //!   shiina-dump list <file.war>               entries
 //!   shiina-dump extract <file.war> <out dir>  every entry, decoded
+//!   shiina-dump png <file.s25> <out dir>      each frame of a picture as PNG (and its place)
 use shiina::warc::{Scheme, Warc};
 use std::fs;
 use std::io::{Read, Seek, SeekFrom};
@@ -48,6 +49,29 @@ fn main() {
                 fs::write(format!("{}/{}", args[3], e.name), out).unwrap();
             }
         }
-        _ => eprintln!("usage: shiina-dump list|extract <file.war> [out]"),
+        Some("png") => {
+            let b = fs::read(&args[2]).expect("read");
+            fs::create_dir_all(&args[3]).unwrap();
+            let stem = std::path::Path::new(&args[2])
+                .file_stem()
+                .unwrap()
+                .to_string_lossy()
+                .to_string();
+            for k in 0..shiina::s25::count(&b) {
+                let Some(f) = shiina::s25::frame(&b, k) else {
+                    continue;
+                };
+                println!("{k} {}x{} at {} {}", f.image.w, f.image.h, f.x, f.y);
+                image::save_buffer(
+                    format!("{}/{stem}_{k:03}.png", args[3]),
+                    &f.image.px,
+                    f.image.w,
+                    f.image.h,
+                    image::ExtendedColorType::Rgba8,
+                )
+                .unwrap();
+            }
+        }
+        _ => eprintln!("usage: shiina-dump list|extract|png <file> [out]"),
     }
 }

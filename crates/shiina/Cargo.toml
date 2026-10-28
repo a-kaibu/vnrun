@@ -3,8 +3,11 @@ name = "shiina"
 version = "0.1.0"
 edition.workspace = true
 license.workspace = true
-description = "A ShiinaRio (椎名里緒) engine for the browser: reads WARC archives, S25 pictures and the .SCN scripts and runs them"
+description = "A ShiinaRio (椎名里緒) engine for the browser: reads WARC archives and S25 pictures and runs the story text files"
 
 [dependencies]
 miniz_oxide = "0.8"
 encoding_rs = "0.8"
+nexas = { path = "../nexas" }
+fontdue = "0.9"
+image = { version = "0.25", default-features = false, features = ["png"] }
