@@ -53,6 +53,7 @@ const POLYFILL_FILES = [
     "layerExAlpha",
     "layerExRasterMP",
     "layerExImage",
+    "layerExBTOA",
     "extrans",
     "saveStruct",
     "psbFile",

@@ -1,0 +1,27 @@
+// vnrun: layerExBTOA.dll (also inside PackinOne.dll), Layer methods for alpha masks and fast
+// shrinking. Compat.tjs runs this at startup, because derived classes such as KAGLayer only see
+// methods that Layer had when they were defined.
+if (typeof(global.Layer.clipAlphaRect) === "undefined") {
+	// clipAlphaRect(dx, dy, src, sx, sy, sw, sh, clearAlpha = 0): keeps this layer's pixels inside
+	// the rectangle (dx, dy, sw, sh) and makes the rest transparent. The plugin also multiplies
+	// the alpha inside by src's alpha; that is not done (the clip images games use are opaque).
+	global.Layer.clipAlphaRect = function(dx, dy, src, sx, sy, sw, sh, clearAlpha = 0) {
+		dx = int dx; dy = int dy; sw = int sw; sh = int sh;
+		var w = imageWidth, h = imageHeight;
+		var l = dx < 0 ? 0 : dx > w ? w : dx, t = dy < 0 ? 0 : dy > h ? h : dy;
+		var r = dx + sw > w ? w : dx + sw < l ? l : dx + sw, b = dy + sh > h ? h : dy + sh < t ? t : dy + sh;
+		var fill = (clearAlpha & 0xff) << 24;
+		var oldFace = face, oldHold = holdAlpha;
+		face = dfAlpha; holdAlpha = false;
+		if (t > 0) fillRect(0, 0, w, t, fill);
+		if (b < h) fillRect(0, b, w, h - b, fill);
+		if (l > 0) fillRect(0, t, l, b - t, fill);
+		if (r < w) fillRect(r, t, w - r, b - t, fill);
+		face = oldFace; holdAlpha = oldHold;
+	} incontextof null;
+	// shrinkCopy(dx, dy, dw, dh, src, sx, sy, sw, sh): a smooth reduction; stretchCopy is close.
+	global.Layer.shrinkCopy = function(dx, dy, dw, dh, src, sx, sy, sw, sh) {
+		stretchCopy(dx, dy, dw, dh, src, sx, sy, sw, sh, stFastLinear);
+	} incontextof null;
+	global.Layer.shrinkCopyFast = global.Layer.shrinkCopy;
+}

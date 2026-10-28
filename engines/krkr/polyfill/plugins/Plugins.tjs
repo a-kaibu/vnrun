@@ -19,6 +19,7 @@ global.vnrunPlugins = %[
 		"layerexalpha.dll" => "layerExAlpha.tjs",
 		"layerexrastermp.dll" => "layerExRasterMP.tjs",
 		"layereximage.dll" => "layerExImage.tjs",
+		"layerexbtoa.dll" => "layerExBTOA.tjs",
 		"extrans.dll" => "extrans.tjs",
 		"extnagano.dll" => "extrans.tjs",
 		"savestruct.dll" => "saveStruct.tjs",
