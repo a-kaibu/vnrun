@@ -54,6 +54,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
   | お姉さん×すくらっち 体験版 (`http://suezou.dyndns.org/dl2008/hadashi/scratch2/trial.lzh`) | RealLive | 本編の文章まで |
   | 聖炎天使エレアノール 体験版 (`http://suezou.dyndns.org/dl2007/sagaplanets/eleanor/EleanorTrial.lzh`) | RealLive | タイトル画面まで。メニューのボタンがクリックにもキーにも反応しない (未調査、siglus_rs 側) |
   | 爆乳温泉 体験版 (`http://suezou.dyndns.org/dl2017/erectlip/bakuon/bakuon_try.zip`) | Softpal (sena-rs) | 注意書き画面まで。その後スクリプトがスタック不足で止まる (ネイティブ版も同じ。sena-rs 側の互換性) |
+  | 爆乳遊廓 体験版ほか Softpal 27 本 (b2023_erectlip など、`tools/verify/status.tsv`) | Softpal (sena-rs) | 本文まで。F9/F11 か Q.Save/Q.Load でセーブとロード (2026-10-28、ネイティブの sena と Chromium)。b2012_erectlip は配布 zip が切れていて NG |
   | クダンノフォークロア 体験版 (b2019_sukerasparo) | BGI (ethornell-rs) | 本編の文章まで。SwiftShader だとタイトルまで 60〜95 秒かかる (実 GPU なら速いはず) |
   | さくら、もゆ。 体験版 (f2019_sakuramoyu) | FVP (rfvp) | 本編の文章まで。セーブ (サムネイル付き) がサーバーに届く |
 
@@ -100,6 +101,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 - 同期 XHR の BOM: `responseText` を読むとブラウザが先頭の BOM を消す/解釈するため、UTF-8 BOM 付きの TJS が 3 バイト欠けて読めなかった。範囲読みに `X-Vnrun-Pad: 1` を付け、サーバーは先頭に 0x00 を 1 バイト足して返す (docs/protocol.md)。全エンジンに効く修正。
 - Web ページのゲーム (engine `html`、`web/src/engines/html.ts`): TyranoScript や RPGツクール MV/MZ は元から Web で動くので、ゲームのページを iframe で開くだけにした (描画もゲーム自身。WebGPU 方針の例外として判断を仰ぎ中)。セーブは、サーバーが iframe のページの先頭に `parent.vnrunFrame(window)` を差し込み、プレイヤーがそこで localStorage を GameFS 上のもの (`saves/localStorage/<key>`) に差し替える。IndexedDB はそのまま (RPGツクール MZ は IndexedDB が無いと起動せず、セーブもブラウザの IndexedDB に入る)。起動ページは package.json の main、無ければ www/index.html、無ければ index.html。Tyrano の公式サンプル (github.com/ShikemokuMK/tyranoscript) でタイトル・本編・セーブ・別セッションでのロードまで確認。未対応: package.nw (zip) や exe に固めた NW.js 作品 (展開してから渡す必要がある)、RPGツクールの実作品での確認。
 - Softpal (sena-rs):
+  - 2026-10-28 時点で targets の Softpal 28 本のうち 27 本が本文まで進み、多くは F9/F11 か文章窓の Q.Save/Q.Load で保存と読み込みも確認した (`tools/verify/status.tsv`)。残る b2012_erectlip は配布 zip が途中で切れている。
   - sena-rs は README のとおり「恋×シンアイ彼女」(2017) を対象に作られていて、ほかの作品は命令の引数の数や戻り値の扱いが少し違うところで止まる。エレクトリップ (Softpal の体験版が 2011〜2025 年に毎年ある) で 2 本試してどちらも止まった。直すには、止まった箇所ごとに旧版の Pal.dll の動きを確かめて sena-rs に版の違いを足す必要がある。
   - ブラウザ版のつなぎ (`web/src/engines/sena.ts`) は描画・入力・ファイルの範囲読みまで。上流の Web 版にはセーブと音声が無い (セーブは std::fs に書いていて wasm では失敗する) ので、動く作品が出てきたら足す。
   - `patches/sena-rs/0001`: スクリプトが止まったとき、上流の Web 版は最後の画面のまま黙って止まっていた。理由をページのエラーとして出す。
@@ -109,6 +111,12 @@ docs/protocol.md     プレイヤーとサーバーの約束事
   - `patches/sena-rs/0005`: SYSTEM.INI の DEF_CG_WIDTH/HEIGHT は CG の大きさで、画面の大きさではない作品がある (ドスケベクエスト: CG 1540x980、画面 1280x720)。Game.exe が窓を作るときの `push 高さ; push 幅` を探して画面の大きさにする。ずれていると座標がずれてタイトルのボタンが押せなかった。あわせて文字列を長さで切る extcall (18/7) を Shift-JIS のバイト数で切るようにした (UTF-8 の文字の途中で切ってパニックしていた)。
   - `patches/sena-rs/0006`: 2011-2012 年の版 (りとるびっち体験版で確認)。`sp_set_ex` が z なしの 4 引数なので、スクリプトの呼び出し直前の push の数を数えて見分ける (`CoreAssets::short_extcalls`、`old_softpal()`)。引数の数が違う extcall は足りない後ろの引数を 0 で補い、多い分は捨てる (sp_set_ex 4→5、bgm_play 4→7、se_stop 3→2)。SYSTEM.INI がなく画面は exe の 800x600 で、スクリプト座標から内部の 1920x1080 への倍率を 1.5 固定から画面の比に。ボタンの flags 0 はマウスで押せる扱い、押したボタンの点へは gosub ではなくジャンプ (ハンドラの `ret` がボタン待ちの関数から抜ける)。
   - `patches/sena-rs/0007`: 実装の無い extcall (引数の数も分からないもの) は、スクリプトがその直前に push した数だけ捨てる。残すと呼び出し元が保存した arg_base がずれ、temp_mem に 2^28 番地を書こうとしてブラウザで capacity overflow になった (爆乳遊廓の 0x12_0033)。ネイティブで同じ所に行くには 1500 フレームほど回す必要があった。ブラウザ版の wasm は関数名を残す (`--keep-debug`、約 1MB) ので panic の呼び出し元が見える。
+  - `patches/sena-rs/0008`: セーブのスナップショットが 8 MiB を超えるスプライトを落としていて、読み込むと立ち絵 (2048px) が消えた。
+  - `patches/sena-rs/0009`: 2011-2012 年版の ext 18:17 は引数なしで、Game.exe が自分に埋めた識別値を返す (exe を読み、最後の `/**/` の後の dword を 0xFEFEFDFC で xor して上下が一致するか確かめ、続く 12 バイトのうち 4 バイトを混ぜる。淫落痴漢電車 chikan_try.exe の sub_403D40 で 6263)。登録やコピー保護の確認ではない。末尾が切れたアーカイブも開く。
+  - `patches/sena-rs/0010`: セーブとシステムデータを asset の VFS 経由で書く。ページ (`senaWriteFile`) がサーバーに置く。
+  - `patches/sena-rs/0011`: Pal.dll の PalFontDrawText が効果 3 (縁取り) を描く版かを switch の case 数で見る。恋カケ前提で効果 3 を描かず、ちんかも2 の文章が見えなかった。0x010000NN のボタン参照 (レイヤー付き) のフェード。
+  - `patches/sena-rs/0012`: (1) 後年の版の 17:43 は「スロット、dx、dy、dz、カーブ番号、時間」のイージング付き相対移動 (種類 26)。カーブ 16〜48 は exe の表 (linear, sine, quad, cubic, quart, quint, expo, circ, back, elastic, bounce の in/out/in-out) と同じ式で、全 33 本を unicorn で動かした exe の値と 2e-3 以内で照合。extended (18:121 の時計を使う版) では 1920 座標のまま足すので 1.5 倍する。17:36 はバンクが動いているか。こはなたの START ボタンが出る。(2) 未登録版でも 0x02G0XXXX のボタン参照に pos_move を効かせる (爆乳淫辱霊媒師のタイトルの並び)。(3) 幅の狭い文章窓は text_set_base の x,y (無ければ PGD のオフセット) に置く (養花師)。(4) 9:24 (list_stack_pop_count) で押した点が残っていなければ呼び出しの戻り先そのものを外し、続く 9:23 はその点を戻り先として積む。2014 年版のタイトルの Start ハンドラはタイトルの待ちループから gosub され、自分の戻り先を外して `ret` でタイトルを抜ける (巨乳不良少女)。(5) Pal.dll の名前が C++ 修飾 (`?PalGetChangeWindowModeTime@@...`) で PalSystemPathInit が無くても、exe が起動時に `push handler; push 0x00CC00II` で extcall を 200 個以上登録していれば登録版として扱う。9:63 は is_active (常に 1)。つまもみの注意書きが進む。
+  - ヘッドレスのクリックは押して次のフレームで離すので、get_on_key (前フレームから押されたままのキー) には出ない。つまもみの注意書きのように押しっぱなしを待つ画面は `--diagnostic-key-hold <開始>:<終了>:Enter` で進める。人の操作 (数フレーム押す) なら問題ない。
   - 確認には sena のネイティブ版 (`cargo build --release -p pal-vm --bin sena`) の `--headless --diagnostic-png-at <frame>:<png> --trace-script` が便利。
 - NeXAS (自作、`crates/nexas`、ブラウザは `crates/nexas-web` + `web/src/engines/nexas.ts`):
   - PAC、コンパイル済みスクリプト (2010 年以降の形) の VM、.dat の表、SPM、.fnt (ビットマップフォント) を読む。組み込み命令の番号は exe ごとに違い、`engine.rs` は 2015 年の版 (恋愛フェイズ) の番号。

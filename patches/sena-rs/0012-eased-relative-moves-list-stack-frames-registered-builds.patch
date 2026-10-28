@@ -1,0 +1,396 @@
+diff --git a/crates/pal-vm/src/assets/native_profile.rs b/crates/pal-vm/src/assets/native_profile.rs
+index 9c6a3c3..6a5b263 100644
+--- a/crates/pal-vm/src/assets/native_profile.rs
++++ b/crates/pal-vm/src/assets/native_profile.rs
+@@ -149,8 +149,32 @@ pub(crate) fn has_registered_dispatch_exports(root: &Path) -> bool {
+     .into_iter()
+     .filter_map(|name| vfs::read_all(&root.join(name)).ok())
+     .any(|bytes| {
+-        has_export(&bytes, b"PalSystemPathInit")
+-            && has_export(&bytes, b"PalGetChangeWindowModeTime")
++        (has_export(&bytes, b"PalSystemPathInit")
++            && has_export(&bytes, b"PalGetChangeWindowModeTime"))
++            || (has_decorated_export(&bytes, b"PalGetChangeWindowModeTime")
++                && game_exe_registers_handlers(root))
++    })
++}
++
++/// Some registered builds (つまもみ 2022) ship a C++-decorated Pal.dll
++/// without PalSystemPathInit; their Game.exe still registers every extcall at start
++/// with `push handler; push 0x00CC00II`.  Hundreds of such pairs mark the
++/// registered dispatch table; static-table builds have none.
++fn game_exe_registers_handlers(root: &Path) -> bool {
++    vfs::list_dir(root).into_iter().any(|name| {
++        let lower = name.to_ascii_lowercase();
++        if !lower.ends_with(".exe") || lower.starts_with("config") {
++            return false;
++        }
++        let Ok(bytes) = vfs::read_all(&root.join(&name)) else { return false };
++        let pairs = bytes
++            .windows(10)
++            .filter(|w| {
++                w[0] == 0x68 && w[4] == 0 && w[5] == 0x68 && w[6] < 0x80 && w[7] == 0
++                    && (1..=0x20).contains(&w[8]) && w[9] == 0
++            })
++            .count();
++        pairs >= 200
+     })
+ }
+ 
+@@ -166,7 +190,7 @@ fn dword(bytes: &[u8], offset: usize) -> Option<u32> {
+     ))
+ }
+ 
+-fn export_match(bytes: &[u8], requested: &[u8]) -> Option<bool> {
++fn export_match(bytes: &[u8], requested: &[u8], prefix: bool) -> Option<bool> {
+     if bytes.get(..2)? != b"MZ" {
+         return Some(false);
+     }
+@@ -206,7 +230,7 @@ fn export_match(bytes: &[u8], requested: &[u8]) -> Option<bool> {
+     for index in 0..count {
+         let offset = to_file(dword(bytes, names.checked_add(index.checked_mul(4)?)?)?)?;
+         if bytes.get(offset..offset.checked_add(requested.len())?) == Some(requested)
+-            && bytes.get(offset.checked_add(requested.len())?) == Some(&0)
++            && (prefix || bytes.get(offset.checked_add(requested.len())?) == Some(&0))
+         {
+             return Some(true);
+         }
+@@ -215,7 +239,13 @@ fn export_match(bytes: &[u8], requested: &[u8]) -> Option<bool> {
+ }
+ 
+ fn has_export(bytes: &[u8], requested: &[u8]) -> bool {
+-    export_match(bytes, requested).unwrap_or(false)
++    export_match(bytes, requested, false).unwrap_or(false)
++}
++
++/// The C++-decorated export (`?Name@@...`) that some Pal.dll builds use.
++fn has_decorated_export(bytes: &[u8], requested: &[u8]) -> bool {
++    let decorated = [b"?", requested, b"@@"].concat();
++    export_match(bytes, &decorated, true).unwrap_or(false)
+ }
+ 
+ #[cfg(test)]
+diff --git a/crates/pal-vm/src/runtime.rs b/crates/pal-vm/src/runtime.rs
+index dc2a544..58500bd 100644
+--- a/crates/pal-vm/src/runtime.rs
++++ b/crates/pal-vm/src/runtime.rs
+@@ -95,6 +95,9 @@ const DEFAULT_STACK_LIMIT: usize = 0x10000;
+ const DEFAULT_MEM_SIZE: usize = 0x10000;
+ /// Maximum per-frame events recorded for PAL_DEBUG dump.
+ const MAX_FRAME_EVENTS: usize = 64;
++/// Call-stack tag for a return frame that list_stack_push_point put there:
++/// the low bits are a point id to resolve on ret, not a script offset.
++const LIST_POINT_RETURN: u32 = 0x8000_0000;
+ 
+ /// How many values the script pushes (allowing movs between them) right before the
+ /// instruction at `pc`.
+@@ -425,6 +428,10 @@ pub struct ScriptRuntime {
+     /// Native stores resolved script addresses in a PalList; Rust stores point
+     /// ids and resolves them through the script point table when needed.
+     list_point_stack: Vec<u32>,
++    /// Return frames that list_stack_pop_count removed from the VM call stack
++    /// because no pushed point was left to pop; the next list_stack_push_point
++    /// puts its point back as a return frame instead of a pending jump.
++    list_popped_frames: u32,
+     /// Raw operand word for the current extcall's return destination (a1[184629]).
+     extcall_dst_raw: u32,
+     extcall_instruction_size: u32,
+@@ -885,6 +892,8 @@ struct TextSubsystemState {
+     alpha: i32,
+     mode: i32,
+     base: i32,
++    /// text_set_base's x and y; 0x0FFFFFFF takes the base image's own offset.
++    base_pos: (i32, i32),
+     icon: i32,
+     button: i32,
+     history_enabled: bool,
+@@ -992,6 +1001,7 @@ impl Default for TextSubsystemState {
+             alpha: 0,
+             mode: 0,
+             base: 0,
++            base_pos: (0x0FFF_FFFF, 0x0FFF_FFFF),
+             icon: 0,
+             button: 0,
+             history_enabled: true,
+@@ -1513,6 +1523,7 @@ impl ScriptRuntime {
+             mem_dat_words: Vec::new(),
+             memory_state_stack: Vec::new(),
+             list_point_stack: Vec::new(),
++            list_popped_frames: 0,
+             extcall_dst_raw: 0,
+             extcall_instruction_size: 12,
+             input_control: InputControlState::default(),
+@@ -2611,7 +2622,20 @@ impl ScriptRuntime {
+         let base_width = base_image.as_ref().map(|image| image.width).unwrap_or(0);
+         let has_base_image = base_image.is_some();
+         let (logical_width, _) = self.logical_size();
+-        let x = if has_base_image && base_width >= logical_width {
++        // A narrower base sits where text_set_base puts it, or at its own PGD
++        // offset (養花師の背徳愛: 958x224 at 182,468 under name 272,540).
++        let placed_base = base_image
++            .as_ref()
++            .filter(|image| image.width < logical_width)
++            .and_then(|image| {
++                let (x, y) = self.text_state.base_pos;
++                let x = if x == 0x0FFF_FFFF { image.offset_x } else { x };
++                let y = if y == 0x0FFF_FFFF { image.offset_y } else { y };
++                (x != 0 || y != 0).then_some((x, y))
++            });
++        let x = if let Some((x, _)) = placed_base {
++            x
++        } else if has_base_image && base_width >= logical_width {
+             // TextInit's mid-field x values describe the body/name text area.
+             // Full-width ADV bases such as MAIN_BASE00.PGD are PAL window
+             // surfaces and must stay anchored at the logical screen origin.
+@@ -2633,7 +2657,9 @@ impl ScriptRuntime {
+         } else {
+             self.text_state.rect[1].saturating_add(18)
+         };
+-        let y = if has_base_image {
++        let y = if let Some((_, y)) = placed_base {
++            y
++        } else if has_base_image {
+             // MAIN_BASE00 is a full-width PAL window base.  Game.exe keeps the
+             // window base anchored at TextInit's name-y lane and draws body
+             // glyphs at the separate body-y lane inside that surface.
+@@ -4598,8 +4624,15 @@ impl ScriptRuntime {
+                 let Some(return_pc) = self.call_stack.pop() else {
+                     return Err(RuntimeError::ReturnStackUnderflow { pc: insn_pc });
+                 };
+-                self.vm_trace(format_args!("  op ret target=0x{return_pc:08X}"));
+-                self.pc = return_pc;
++                self.list_popped_frames = 0;
++                if return_pc & LIST_POINT_RETURN != 0 {
++                    let point_id = return_pc & !LIST_POINT_RETURN;
++                    self.vm_trace(format_args!("  op ret point[{point_id}]"));
++                    self.jump_point(point_table, point_id)?;
++                } else {
++                    self.vm_trace(format_args!("  op ret target=0x{return_pc:08X}"));
++                    self.pc = return_pc;
++                }
+             }
+             29 => {
+                 let raw = self.fetch_u32(script)?;
+@@ -6041,7 +6074,14 @@ impl ScriptRuntime {
+                 // byte-for-byte modeled.
+                 let args = self.pop_ext_args(1);
+                 let point_id = args.first().copied().unwrap_or(0);
+-                if point_id > 0 {
++                if point_id > 0 && self.list_popped_frames > 0 {
++                    // Native PalLists the resolved address on the same stack
++                    // the VM returns through: after a pop that took a return
++                    // frame, the pushed point is where the handler's ret goes
++                    // (巨乳不良少女 2014 title handlers: pop 1, push 1279, ret).
++                    self.list_popped_frames -= 1;
++                    self.call_stack.push(LIST_POINT_RETURN | point_id as u32);
++                } else if point_id > 0 {
+                     self.list_point_stack.push(point_id as u32);
+                     self.pending_jump_point = Some(point_id as u32);
+                     log::debug!(
+@@ -6063,10 +6103,21 @@ impl ScriptRuntime {
+                 } else {
+                     count_mode as usize
+                 };
++                self.list_popped_frames = 0;
+                 for _ in 0..pop_count {
+-                    if self.list_point_stack.pop().is_none() {
++                    if self.list_point_stack.pop().is_some() {
++                        continue;
++                    }
++                    // Nothing pushed is left: native pops the return frames
++                    // themselves.  The 2014 Softpal title's Start handler runs
++                    // as a gosub from the title's idle loop and pops its own
++                    // return so that its ret leaves the title routine.
++                    if self.call_stack.len() < 2 {
+                         break;
+                     }
++                    let frame = self.call_stack.pop();
++                    self.list_popped_frames += 1;
++                    log::debug!("[trace-system] list_stack_pop_count took return frame {frame:08X?}");
+                 }
+                 log::debug!(
+                     "[trace-system] list_stack_pop_count count_mode={count_mode} depth={}",
+@@ -6087,6 +6138,13 @@ impl ScriptRuntime {
+                 self.pop_ext_args(0);
+                 ExtCallOutcome::Value(self.system_scratch_value)
+             }
++            63 => {
++                // is_active (つまもみ 2022 0x451680): no arguments; native logs
++                // "is_active" and returns whether the game window has focus.
++                // Its click helper refuses every press while this reads 0.
++                self.pop_ext_args(0);
++                ExtCallOutcome::Value(1)
++            }
+             53 => {
+                 // Game.exe sub_437BC0: list_stack_get_count. Native returns
+                 // PalListGetDataCount(ctx+804228, 2); scripts use it to unwind
+@@ -6568,6 +6626,7 @@ impl ScriptRuntime {
+                 let args = self.pop_ext_args(4);
+                 let ordered = ext_args_source_order::<4>(&args);
+                 self.text_state.base = ordered[3];
++                self.text_state.base_pos = (ordered[1], ordered[2]);
+                 log::debug!("[trace-text] text_set_base args={ordered:?}");
+                 ExtCallOutcome::Value(1)
+             }
+@@ -11654,8 +11713,12 @@ impl ScriptRuntime {
+         // Newer Game.exe 0x44B900 updates the resolved wrapper's integer and
+         // float base coordinates directly. Packed button references use the
+         // same path, including while the button is still fully transparent.
+-        if self.input_registered_profile {
+-            if let Some(key) = Self::packed_button_key(slot) {
++        // Earlier builds take the same references (爆乳淫辱霊媒師, 2020, places its
++        // title buttons this way), so a button that exists moves there too.
++        let packed = Self::packed_button_key(slot)
++            .filter(|key| self.input_registered_profile || self.game_buttons.contains_key(key));
++        {
++            if let Some(key) = packed {
+                 if let (Some(entry), Some(sprites)) = (self.game_buttons.get_mut(&key), sprites) {
+                     sprites.move_pos(entry.handle, x as f32, y as f32, z as f32);
+                     entry.base_position[0] = entry.base_position[0].wrapping_add(x);
+diff --git a/crates/pal-vm/src/runtime/actions.rs b/crates/pal-vm/src/runtime/actions.rs
+index 4e4f2f5..bef32e6 100644
+--- a/crates/pal-vm/src/runtime/actions.rs
++++ b/crates/pal-vm/src/runtime/actions.rs
+@@ -93,6 +93,9 @@ fn entry_kind(index: u16) -> Option<(u8, usize)> {
+         20 => (13, 5),
+         21 => (14, 7),
+         29 => (15, 6),
++        // Later builds (小日向柚月と初夜したいっ！, 2025: 0x415650) add a relative
++        // move with an easing curve: slot, dx, dy, dz, curve, duration.
++        43 => (26, 7),
+         _ => return None,
+     })
+ }
+@@ -127,7 +130,10 @@ impl ScriptRuntime {
+                 return ExtCallOutcome::Block;
+             }
+             let duration = args.pop().unwrap() as u32;
+-            if kind == 15 && self.action_state.extended {
++            // Native adds these deltas to the wrapper's integer position as
++            // they are, like sp_set_pos_move; the extended builds keep that
++            // position in 1920x1080 units.
++            if matches!(kind, 15 | 26) && self.action_state.extended {
+                 for value in &mut args[1..4] {
+                     *value = (*value as f32 * 1.5) as i32;
+                 }
+@@ -288,6 +294,17 @@ impl ScriptRuntime {
+                 ExtCallOutcome::Value(old)
+             }
+             24 => ExtCallOutcome::Value(state.active_id),
++            36 => {
++                // Later builds (0x4152F0 in 小日向柚月と初夜したいっ！): whether a bank
++                // (-1 for the active one) is still running.
++                let running = self
++                    .pop_ext_args(1)
++                    .first()
++                    .filter(|id| **id == -1 || (0..16).contains(*id))
++                    .and_then(|id| state.resolve(*id))
++                    .is_some_and(|id| state.banks[id].mode != 0);
++                ExtCallOutcome::Value(i32::from(running))
++            }
+             30 => {
+                 if let Some(id) = self
+                     .pop_ext_args(1)
+@@ -540,7 +557,9 @@ impl ScriptRuntime {
+         let mut delta = SpriteActionLanes::default();
+         let args = &section.args;
+         match section.kind {
+-            0 | 7 | 8 | 15 => delta.position = [args[1] as f32, args[2] as f32, args[3] as f32],
++            0 | 7 | 8 | 15 | 26 => {
++                delta.position = [args[1] as f32, args[2] as f32, args[3] as f32]
++            }
+             2 => delta.alpha = args[1] as i16,
+             4 => delta.rotation = [args[1] as f32, args[2] as f32, args[3] as f32],
+             5 => delta.scale = args[1] as f32 / 100.0,
+@@ -580,6 +599,10 @@ impl ScriptRuntime {
+                 let ratio = curve(mode, elapsed, section.duration);
+                 delta.position = [a[1], a[2], a[3]].map(|value| biased_delta(value, ratio));
+             }
++            26 => {
++                let ratio = curve(a[4], elapsed, section.duration);
++                delta.position = [a[1], a[2], a[3]].map(|value| biased_delta(value, ratio));
++            }
+             1 => {
+                 let span = ((1.0 - t) * a[2] as f32) as u32;
+                 let modulus = span.wrapping_add(1).max(1);
+@@ -755,10 +778,80 @@ fn curve(mode: i32, elapsed: u32, duration: u32) -> f32 {
+             1.0 - (((ratio as f64).log10() as f32 * 80.0) * -0.01).min(1.0)
+         }
+         3 => (((t * 128.0) * 0.00390625 * std::f32::consts::PI) as f64).sin() as f32,
++        16..=48 if duration == 0 => 1.0,
++        16..=48 => ease(mode - 16, t),
+         _ => t,
+     }
+ }
+ 
++/// Curves 16-48 of the later builds (小日向柚月と初夜したいっ！ 0x408310 and its
++/// table at 0x4C3BD8): three linear entries, then the usual easing families
++/// (sine, quad, cubic, quart, quint, expo, circ, back, elastic, bounce), each as
++/// in, out and in-out.
++fn ease(index: i32, t: f32) -> f32 {
++    use std::f32::consts::PI;
++    if index < 3 {
++        return t;
++    }
++    let (family, kind) = ((index - 3) / 3, (index - 3) % 3);
++    let power = |n: i32| -> f32 {
++        match kind {
++            0 => t.powi(n),
++            1 => 1.0 - (1.0 - t).powi(n),
++            _ if t < 0.5 => 2f32.powi(n - 1) * t.powi(n),
++            _ => 1.0 - (-2.0 * t + 2.0).powi(n) / 2.0,
++        }
++    };
++    let bounce_out = |x: f32| -> f32 {
++        let (n1, d1) = (7.5625, 2.75);
++        if x < 1.0 / d1 {
++            n1 * x * x
++        } else if x < 2.0 / d1 {
++            let x = x - 1.5 / d1;
++            n1 * x * x + 0.75
++        } else if x < 2.5 / d1 {
++            let x = x - 2.25 / d1;
++            n1 * x * x + 0.9375
++        } else {
++            let x = x - 2.625 / d1;
++            n1 * x * x + 0.984375
++        }
++    };
++    let (c1, c4, c5) = (1.70158_f32, 2.0 * PI / 3.0, 2.0 * PI / 4.5);
++    let (c2, c3) = (c1 * 1.525, c1 + 1.0);
++    match (family, kind) {
++        (0, 0) => 1.0 - (t * PI / 2.0).cos(),
++        (0, 1) => (t * PI / 2.0).sin(),
++        (0, _) => -((PI * t).cos() - 1.0) / 2.0,
++        (1..=4, _) => power(family + 1),
++        (5, _) if t <= 0.0 => 0.0,
++        (5, _) if t >= 1.0 => 1.0,
++        (5, 0) => 2f32.powf(10.0 * t - 10.0),
++        (5, 1) => 1.0 - 2f32.powf(-10.0 * t),
++        (5, _) if t < 0.5 => 2f32.powf(20.0 * t - 10.0) / 2.0,
++        (5, _) => (2.0 - 2f32.powf(-20.0 * t + 10.0)) / 2.0,
++        (6, 0) => 1.0 - (1.0 - t * t).max(0.0).sqrt(),
++        (6, 1) => (1.0 - (t - 1.0).powi(2)).max(0.0).sqrt(),
++        (6, _) if t < 0.5 => (1.0 - (1.0 - (2.0 * t).powi(2)).max(0.0).sqrt()) / 2.0,
++        (6, _) => ((1.0 - (-2.0 * t + 2.0).powi(2)).max(0.0).sqrt() + 1.0) / 2.0,
++        (7, 0) => c3 * t * t * t - c1 * t * t,
++        (7, 1) => 1.0 + c3 * (t - 1.0).powi(3) + c1 * (t - 1.0).powi(2),
++        (7, _) if t < 0.5 => (2.0 * t).powi(2) * ((c2 + 1.0) * 2.0 * t - c2) / 2.0,
++        (7, _) => ((2.0 * t - 2.0).powi(2) * ((c2 + 1.0) * (t * 2.0 - 2.0) + c2) + 2.0) / 2.0,
++        (8, _) if t <= 0.0 => 0.0,
++        (8, _) if t >= 1.0 => 1.0,
++        (8, 0) => -(2f32.powf(10.0 * t - 10.0)) * ((t * 10.0 - 10.75) * c4).sin(),
++        (8, 1) => 2f32.powf(-10.0 * t) * ((t * 10.0 - 0.75) * c4).sin() + 1.0,
++        (8, _) if t < 0.5 => -(2f32.powf(20.0 * t - 10.0) * ((20.0 * t - 11.125) * c5).sin()) / 2.0,
++        (8, _) => 2f32.powf(-20.0 * t + 10.0) * ((20.0 * t - 11.125) * c5).sin() / 2.0 + 1.0,
++        (9, 0) => 1.0 - bounce_out(1.0 - t),
++        (9, 1) => bounce_out(t),
++        (9, _) if t < 0.5 => (1.0 - bounce_out(1.0 - 2.0 * t)) / 2.0,
++        (9, _) => (1.0 + bounce_out(2.0 * t - 1.0)) / 2.0,
++        _ => 1.0,
++    }
++}
++
+ #[cfg(test)]
+ mod tests {
+     use super::*;

@@ -1,0 +1,301 @@
+diff --git a/crates/pal-vm/src/config.rs b/crates/pal-vm/src/config.rs
+index 3d64ade..ead95e9 100644
+--- a/crates/pal-vm/src/config.rs
++++ b/crates/pal-vm/src/config.rs
+@@ -270,8 +270,6 @@ impl std::str::FromStr for TextLang {
+ /// All sections of an INI file, keyed by lowercased section name.
+ pub type IniFile = BTreeMap<String, IniSection>;
+ 
+-/// The screen size Game.exe hard-codes, as `push height; push width` for the window.
+-/// SYSTEM.INI's DEF_CG size is the CG canvas, which some games make larger than the
+ /// The id stamped into Game.exe, which category 18 index 17 returns in the 2011-2012
+ /// releases (淫落痴漢電車 体験版 compares it with 6263 and ends otherwise). Game.exe
+ /// (sub_403D40 there) reads its own file, finds the last `/**/` marker, checks that the
+@@ -317,6 +315,70 @@ fn stamp_of(bytes: &[u8]) -> Option<i32> {
+     Some(value as i32)
+ }
+ 
++/// Whether the release's Pal.dll draws font effect 3. PalFontDrawText hands each
++/// glyph to a helper that switches on the effect (`cmp reg, N; ja; jmp [reg*4+table]`);
++/// builds whose switch reaches 3 draw an outline for it. `None` when the game ships
++/// no Pal.dll or the helper is not recognized.
++pub fn pal_dll_draws_effect_three(root: &Path) -> Option<bool> {
++    let bytes = [root.join("dll"), root.to_path_buf()].iter().find_map(|dir| {
++        let name = vfs::list_dir(dir).into_iter().find(|name| name.eq_ignore_ascii_case("pal.dll"))?;
++        vfs::read_all(&dir.join(name)).ok()
++    })?;
++    let helper = pe_export_first_call(&bytes, b"PalFontDrawText")?;
++    let code = bytes.get(helper..bytes.len().min(helper + 0x800))?;
++    let mut cases = None;
++    for at in 0..code.len().saturating_sub(12) {
++        let w = &code[at..];
++        if w[0] != 0x83 || !(0xF8..=0xFF).contains(&w[1]) || !(2..=3).contains(&w[2]) {
++            continue;
++        }
++        let jump = match w[3] {
++            0x77 => 5,
++            0x0F if w[4] == 0x87 => 9,
++            _ => continue,
++        };
++        if w[jump] == 0xFF && w[jump + 1] == 0x24 {
++            cases = cases.max(Some(w[2]));
++        }
++    }
++    cases.map(|max| max >= 3)
++}
++
++/// File offset of the target of the first `call rel32` in the named export.
++fn pe_export_first_call(bytes: &[u8], export: &[u8]) -> Option<usize> {
++    let u16_at = |at: usize| Some(u16::from_le_bytes(bytes.get(at..at + 2)?.try_into().ok()?));
++    let u32_at = |at: usize| Some(u32::from_le_bytes(bytes.get(at..at + 4)?.try_into().ok()?));
++    let pe = u32_at(0x3C)? as usize;
++    let sections = u16_at(pe + 6)? as usize;
++    let optional = pe + 24;
++    let table = optional + u16_at(pe + 20)? as usize;
++    let file_offset = |rva: u32| -> Option<usize> {
++        (0..sections).find_map(|index| {
++            let s = table + index * 40;
++            let (size, va, raw) = (u32_at(s + 8)?, u32_at(s + 12)?, u32_at(s + 20)?);
++            (va..va + size.max(u32_at(s + 16)?)).contains(&rva).then(|| (rva - va + raw) as usize)
++        })
++    };
++    let exports = file_offset(u32_at(optional + 96)?)?;
++    let (count, functions, names, ordinals) =
++        (u32_at(exports + 24)?, u32_at(exports + 28)?, u32_at(exports + 32)?, u32_at(exports + 36)?);
++    let (functions, names, ordinals) = (file_offset(functions)?, file_offset(names)?, file_offset(ordinals)?);
++    let index = (0..count as usize).find(|&i| {
++        u32_at(names + i * 4)
++            .and_then(file_offset)
++            .and_then(|at| bytes.get(at..at + export.len() + 1))
++            .is_some_and(|name| &name[..export.len()] == export && name[export.len()] == 0)
++    })?;
++    let ordinal = u16_at(ordinals + index * 2)? as usize;
++    let rva = u32_at(functions + ordinal * 4)?;
++    let start = file_offset(rva)?;
++    let call = (0..0x80).find(|&k| bytes.get(start + k) == Some(&0xE8))?;
++    let target = (rva + call as u32 + 5).wrapping_add(u32_at(start + call + 1)?);
++    file_offset(target)
++}
++
++/// The screen size Game.exe hard-codes, as `push height; push width` for the window.
++/// SYSTEM.INI's DEF_CG size is the CG canvas, which some games make larger than the
+ /// screen (巨乳大魔王のドスケベクエスト: 1540x980 CGs on a 1280x720 screen).
+ pub fn exe_screen_size(root: &Path) -> Option<(u32, u32)> {
+     const SIZES: [(u32, u32); 6] = [(800, 600), (1024, 576), (1024, 768), (1280, 720), (1600, 900), (1920, 1080)];
+diff --git a/crates/pal-vm/src/engine.rs b/crates/pal-vm/src/engine.rs
+index cecbc66..6c636ec 100644
+--- a/crates/pal-vm/src/engine.rs
++++ b/crates/pal-vm/src/engine.rs
+@@ -156,6 +156,7 @@ impl Engine {
+                     }
+                     runtime.set_screen_size(screen_size);
+                     runtime.set_exe_stamp(crate::config::exe_stamp(root));
++                    runtime.set_font_effect_three(crate::config::pal_dll_draws_effect_three(root));
+                     if let Some(system_ini) = startup_config.system_ini.clone() {
+                         runtime.set_system_ini(system_ini);
+                     }
+diff --git a/crates/pal-vm/src/font.rs b/crates/pal-vm/src/font.rs
+index 588f268..06d758a 100644
+--- a/crates/pal-vm/src/font.rs
++++ b/crates/pal-vm/src/font.rs
+@@ -63,6 +63,8 @@ pub struct PalFontSystem {
+     begin_bitmap: Option<usize>,
+     begin_size: u16,
+     profile: PalFontProfile,
++    /// Whether the shipped Pal.dll draws effect 3 (outlined text), when known.
++    effect_three: Option<bool>,
+     font_nls: Nls,
+     /// Whether the PAL bitmap font may draw body text. A release that ships its
+     /// own TrueType faces draws text from those faces, and the bitmap font it
+@@ -95,6 +97,7 @@ impl PalFontSystem {
+             begin_bitmap: None,
+             begin_size: 28,
+             profile: PalFontProfile::Koikake,
++            effect_three: None,
+             font_nls: Nls::ShiftJis,
+             bitmap_text_enabled: true,
+             begun: false,
+@@ -122,6 +125,19 @@ impl PalFontSystem {
+         self.profile
+     }
+ 
++    /// Record whether the release's own Pal.dll dispatches effect 3. The Koikake
++    /// build draws nothing for it, while later builds (ちんかもツインズ！, 2021)
++    /// stamp a diamond outline and draw the face one pixel further in, and set
++    /// effect 3 for all ADV text.
++    pub fn set_effect_three(&mut self, supported: Option<bool>) {
++        self.effect_three = supported;
++    }
++
++    fn effect_three(&self) -> bool {
++        self.effect_three
++            .unwrap_or(self.profile != PalFontProfile::Koikake)
++    }
++
+     pub fn begin(&mut self) -> bool {
+         if self.profile == PalFontProfile::LocalizedReference && self.font_type == 4 {
+             self.font_type = 1;
+@@ -436,7 +452,7 @@ impl PalFontSystem {
+                     self.color,
+                     self.effect_color,
+                     self.effect,
+-                    self.profile,
++                    self.effect_three(),
+                 );
+                 // Native DrawText does not advance for an empty ordinary bitmap.
+                 if !glyph.coverage.is_empty() {
+@@ -467,7 +483,7 @@ impl PalFontSystem {
+                     self.color,
+                     self.effect_color,
+                     self.effect,
+-                    self.profile,
++                    self.effect_three(),
+                 );
+                 y = y.wrapping_add(i32::from(font_size));
+             }
+@@ -821,7 +837,7 @@ mod tests {
+             0x00ff0000,
+             0x000000ff,
+             1,
+-            PalFontProfile::Koikake,
++            false,
+         );
+         assert_eq!(pixel(&pixels, 3, 3), [255, 0, 0, 127]);
+         assert_eq!(pixel(&pixels, 3, 2), [0, 0, 255, 127]);
+@@ -839,7 +855,7 @@ mod tests {
+             0x00ff0000,
+             0x000000ff,
+             2,
+-            PalFontProfile::Koikake,
++            false,
+         );
+         assert_eq!(pixel(&shadow, 3, 3), [255, 0, 0, 255]);
+         assert_eq!(pixel(&shadow, 4, 4), [0, 0, 255, 255]);
+@@ -862,7 +878,7 @@ mod tests {
+             0x00ff0000,
+             0,
+             0,
+-            PalFontProfile::Koikake,
++            false,
+         );
+         assert_eq!(&pixels[16..20], [126, 0, 127, 254]);
+         raster::draw_glyph(
+@@ -877,7 +893,7 @@ mod tests {
+             0x0000ff00,
+             0,
+             0,
+-            PalFontProfile::Koikake,
++            false,
+         );
+         assert_eq!(&pixels[16..20], [0, 255, 0, 255]);
+     }
+@@ -902,7 +918,7 @@ mod tests {
+                 0x00ff0000,
+                 0x000000ff,
+                 3,
+-                profile,
++                profile != PalFontProfile::Koikake,
+             );
+             assert_eq!(
+                 pixels.chunks_exact(4).filter(|px| px[3] != 0).count(),
+@@ -925,7 +941,7 @@ mod tests {
+                 0x00ff0000,
+                 0,
+                 4,
+-                profile,
++                profile != PalFontProfile::Koikake,
+             );
+             assert!(unsupported.iter().all(|&value| value == 0));
+         }
+diff --git a/crates/pal-vm/src/font/native.rs b/crates/pal-vm/src/font/native.rs
+index c6dc21a..b919a96 100644
+--- a/crates/pal-vm/src/font/native.rs
++++ b/crates/pal-vm/src/font/native.rs
+@@ -318,7 +318,7 @@ impl PalFontSystem {
+                         self.color,
+                         self.effect_color,
+                         self.effect,
+-                        self.profile,
++                        self.effect_three(),
+                     );
+                     let advance = if self.profile == PalFontProfile::Totsulover {
+                         cell_height
+@@ -354,7 +354,7 @@ impl PalFontSystem {
+                         self.color,
+                         self.effect_color,
+                         self.effect,
+-                        self.profile,
++                        self.effect_three(),
+                     );
+                     let advance = i32::from(glyph.metrics.cell_inc_x);
+                     let rect_width = if advance > cell_height / 2 + 1 {
+diff --git a/crates/pal-vm/src/font/raster.rs b/crates/pal-vm/src/font/raster.rs
+index f9f85a5..8e8b096 100644
+--- a/crates/pal-vm/src/font/raster.rs
++++ b/crates/pal-vm/src/font/raster.rs
+@@ -1,5 +1,3 @@
+-use super::PalFontProfile;
+-
+ const CROSS: &[(i32, i32)] = &[(0, -1), (-1, 0), (1, 0), (0, 1)];
+ const DIAMOND: &[(i32, i32)] = &[
+     (0, -2),
+@@ -39,9 +37,9 @@ pub(super) fn draw_glyph(
+     color: u32,
+     effect_color: u32,
+     effect: u16,
+-    profile: PalFontProfile,
++    effect_three: bool,
+ ) {
+-    if effect > 3 || (effect == 3 && profile == PalFontProfile::Koikake) {
++    if effect > 3 || (effect == 3 && !effect_three) {
+         return;
+     }
+     let foreground_offset = if effect == 3 { 2 } else { 1 };
+diff --git a/crates/pal-vm/src/runtime.rs b/crates/pal-vm/src/runtime.rs
+index 819afa7..dc2a544 100644
+--- a/crates/pal-vm/src/runtime.rs
++++ b/crates/pal-vm/src/runtime.rs
+@@ -1668,11 +1668,15 @@ impl ScriptRuntime {
+         });
+     }
+ 
+-    /// The screen size from Game.exe, which wins over SYSTEM.INI's DEF_CG size.
++    pub fn set_font_effect_three(&mut self, supported: Option<bool>) {
++        self.font_state.set_effect_three(supported);
++    }
++
+     pub fn set_exe_stamp(&mut self, stamp: Option<i32>) {
+         self.exe_stamp = stamp;
+     }
+ 
++    /// The screen size from Game.exe, which wins over SYSTEM.INI's DEF_CG size.
+     pub fn set_screen_size(&mut self, size: Option<(u32, u32)>) {
+         self.screen_size = size;
+         if let (Some(size), Some(ini)) = (size, self.system_ini.take()) {
+diff --git a/crates/pal-vm/src/runtime/actions.rs b/crates/pal-vm/src/runtime/actions.rs
+index 8145633..4e4f2f5 100644
+--- a/crates/pal-vm/src/runtime/actions.rs
++++ b/crates/pal-vm/src/runtime/actions.rs
+@@ -396,10 +396,18 @@ impl ScriptRuntime {
+         if let Some(handle) = self.packed_button_sprite_handle(slot) {
+             return vec![handle];
+         }
+-        decode_pal_sprite_slot(slot)
+-            .and_then(|(slot, _)| self.game_sprites.get(&slot).copied())
+-            .into_iter()
+-            .collect()
++        match decode_pal_sprite_slot(slot) {
++            // 0x010000NN names a button of the native UI layer, as for sp_set_alpha;
++            // ちんかもツインズ！ fades its ADV buttons in this way.
++            Some((index, Some(layer))) => self
++                .encoded_button_key(layer, index)
++                .and_then(|key| self.game_buttons.get(&key))
++                .map(|entry| entry.handle)
++                .into_iter()
++                .collect(),
++            Some((slot, None)) => self.game_sprites.get(&slot).copied().into_iter().collect(),
++            None => Vec::new(),
++        }
+     }
+ 
+     fn start_action_section(

@@ -57,39 +57,39 @@ r1_trt	タイトル	ボタンだけで背景が出ない (anm.dll などのレ�
 r1_saku	NG	PONScripter の作品。0.txt / nscript.dat が無く読めない (0.utf などに未対応)
 r1_higanbana	対象外	インストーラ形式 (CreateInstall) で展開できない
 dl_RJ01724681	対象外	中身は Unity 製 (開発スレッドで確認)
-r1_softpal_tenmao	タイトル	93bee9c 以降は panic せずタイトルまで
+r1_softpal_tenmao	本編	本文まで。文章窓の Q.Save/Q.Load で保存と読み込み (sena 0011)
 r1_softpal_hanako	本編	654935e 以降も本編の文章まで
 b2024_milimili	本編	プロローグの文章 (r1_softpal_hanako と同じ作品)
-b2021_milimili	タイトル	
-b2022_amuse_craft_erotica	タイトル	
-b2026_crystalia	タイトル	654935e 以降もタイトルまで
-b2017_unisonshift	タイトル	
-b2020_milimili	タイトル	
-b2018_erectlip	タイトル	
-b2025_unisonshift	タイトル	
-b2020_erectlip	タイトル	
-s2026_amuse_craft_erotica_youkashi	タイトル	
-s2025_crystalia_crack_trick	タイトル	
-b2023_erectlip	タイトル	93bee9c (未実装 extcall の引数を捨てる) でタイトルまで
-b2025_erectlip	タイトル	654935e / 8c223b7 でタイトルのボタンまで出る
-dl_VJ01004424	タイトル	654935e / 8c223b7 でタイトルのボタンまで出る (b2025_erectlip と同じ作品)
-b2015_erectlip	タイトル	cccc0c0 / 93bee9c でタイトルまで
-b2011_erectlip	タイトル	b98f659 (2011-2012 年版) でタイトルまで
-b2012_erectlip	NG	b98f659 以降は「unsupported extcall pc=0x00013244 ext_0012_0011」で止まる
+b2021_milimili	本編	sena 0011 (Pal.dll が効果 3 の縁取りを描くかを見る) で文章が出る。Q.Save/Q.Load
+b2022_amuse_craft_erotica	本編	本文まで。Q.Save/Q.Load
+b2026_crystalia	本編	本文まで。F9/F11 で保存と読み込み
+b2017_unisonshift	本編	本文まで。F9/F11 で保存と読み込み
+b2020_milimili	本編	本文まで
+b2018_erectlip	本編	本文まで
+b2025_unisonshift	本編	sena 0012 (17:43 イージング付き相対移動、17:36) で START が出て本文まで。冒頭の演出が長い
+b2020_erectlip	本編	sena 0012 (未登録版のボタン位置 pos_move) でタイトルの並びが直り本文まで。セーブとロード
+s2026_amuse_craft_erotica_youkashi	本編	sena 0012 (幅の狭い文章窓を text_set_base の位置に置く) で文章窓が直る。セーブとロード
+s2025_crystalia_crack_trick	本編	本文まで。F9/F11 で保存と読み込み
+b2023_erectlip	本編	本文まで、セーブとロード
+b2025_erectlip	本編	本文まで、セーブとロード (Chromium)
+dl_VJ01004424	本編	b2025_erectlip と同じ作品。本文まで
+b2015_erectlip	本編	本文まで
+b2011_erectlip	本編	本文まで。体験版にセーブは無い (右クリックは設定)
+b2012_erectlip	NG	18:17 は exe の自己識別スタンプ (登録・コピー保護ではない、sena 0009 で実装)。配布 zip が途中で切れていて ev.pac などが欠ける
 r1_yuris	対象外	YU-RIS の SDK のサンプル (コンパイル前で ysbin.ypf が無い)
-s2013_erectlip_katekyo	タイトル	
+s2013_erectlip_katekyo	本編	本文まで。F9 で保存、F11 で読み込み
 s2015_erectlip_maou	本編	最初の文章
-s2020_amuse_craft_erotica_kinbaku	タイトル	
-s2022_amuse_craft_erotica_tsumamomi	タイトル	
-s2014_erectlip_furyou	タイトル	93bee9c 以降もタイトルまで
-s2014_qoobrand_majokoi	タイトル	654935e 以降でタイトルまで
-s2014_erectlip_gyokumajyo	タイトル	654935e / 8c223b7 でタイトルのボタンまで出る
-dl_VJ01002655	タイトル	93bee9c 以降もタイトルまで
+s2020_amuse_craft_erotica_kinbaku	本編	本文まで。F9/F11 で保存と読み込み
+s2022_amuse_craft_erotica_tsumamomi	本編	sena 0012 (装飾名の Pal.dll でも登録版として扱う、9:63 is_active) で注意書きの先の本文まで。保存は未確認
+s2014_erectlip_furyou	本編	sena 0012 (9:24 が呼び出し戻り先を外す) で Start から本文まで。体験版のメニューにセーブは無い
+s2014_qoobrand_majokoi	本編	本文まで。F9/F11 で保存と読み込み
+s2014_erectlip_gyokumajyo	本編	本文まで。F9/F11 で保存と読み込み
+dl_VJ01002655	本編	本文まで。F9/F11 で保存と読み込み
 s2023_casket_oshitona_vtuber02	本編	Chromium (3f99c53+) で START→本編の文章まで
 s2023_casket_oshitona_vtuber03	本編	Chromium (3f99c53+) で START→本編の文章まで
 s2020_casket_ayakashi03	本編	Chromium (3f99c53+) で START→本編の文章まで
 s2011_whirlpool_maikaze	本編	Chromium (3f99c53) で START→本編の文章まで (クリック位置ずれで LOAD 画面も開く)
-s2023_milimili_onaho_yokai	タイトル	93bee9c 以降は panic せずタイトルまで
+s2023_milimili_onaho_yokai	本編	本文まで。F9/F11 で保存と読み込み
 r1_tyrano	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)。exe を zip として展開すれば読めるはず
 dl_VJ01000810	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)
 dl_RJ01731048	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルとメニューまで。「Cannot find module ./js/libs/greenworks」は出るが続行する

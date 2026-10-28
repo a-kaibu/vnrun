@@ -44,7 +44,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | SiglusEngine (siglus_rs) | 19 | 5 | 14 |  |  |  |  |  |
 | RealLive (siglus_rs) | 8 | 4 | 2 |  | 1 |  | 1 |  |
 | BGI (ethornell-rs) | 21 | 1 | 20 |  |  |  |  |  |
-| Softpal (sena-rs) | 28 | 3 | 24 |  |  | 1 |  |  |
+| Softpal (sena-rs) | 28 | 27 |  |  |  | 1 |  |  |
 | Artemis (art3m1s-core) | 6 | 1 | 5 |  |  |  |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 35 | 3 | 17 | 9 | 3 | 1 |  | 2 |
@@ -132,34 +132,34 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| b2011_erectlip | [りとる†びっち ～Little Bitch Girls in Hog Farm～ 体験版](http://suezou.dyndns.org/dl2011/erectlip/littlebitch/LittleBitch_trial.zip) | 本編 | 本文まで。体験版にセーブは無い (右クリックは設定) |
+| b2015_erectlip | [巨乳大魔王のドスケベクエスト ～完全敗北した少年勇者クンＵＣ～　【体験版】](http://suezou.dyndns.org/dl2015/erectlip/dosukebe/dosukebe_try.zip) | 本編 | 本文まで |
+| b2017_unisonshift | [あなたに恋する恋愛ルセット　【体験版】](http://suezou.dyndns.org/dl2017/unisonshift/recette/recette_try.zip) | 本編 | 本文まで。F9/F11 で保存と読み込み |
+| b2018_erectlip | [爆乳催眠女教師　【体験版】](http://suezou.dyndns.org/dl2018/erectlip/bakusai/bakusai_try.zip) | 本編 | 本文まで |
+| b2020_erectlip | [爆乳淫辱霊媒師　【体験版】](http://suezou.dyndns.org/dl2020/erectlip/injyoku_reibaishi/injyoku_reibaishi_try.zip) | 本編 | sena 0012 (未登録版のボタン位置 pos_move) でタイトルの並びが直り本文まで。セーブとロード |
+| b2020_milimili | [shin-neko ～再会した妹との新たな関係～　【体験版】](http://suezou.dyndns.org/dl2020/milimili/shin_neko/shin-neko_try.zip) | 本編 | 本文まで |
+| b2021_milimili | [ちんかもツインズ２！　～夏だ！海だ！ふたごの妹おっぱい対決だ！～　【体験版】](http://suezou.dyndns.org/dl2021/milimili/chinkamo2/chinkamo2_try.zip) | 本編 | sena 0011 (Pal.dll が効果 3 の縁取りを描くかを見る) で文章が出る。Q.Save/Q.Load |
+| b2022_amuse_craft_erotica | [黒ギャル子ちゃんとしっぽり温泉旅行 ～Hしまくり三泊四日の旅～　【体験版】](http://suezou.dyndns.org/dl2022/amuse_craft-erotica/kurogal_onsen/kurogal_onsen_try.zip) | 本編 | 本文まで。Q.Save/Q.Load |
+| b2023_erectlip | [爆乳遊廓 ～癒され太夫孕ませの夜鶴～　【体験版】](http://suezou.dyndns.org/dl2023/erectlip/bakunyu_yukaku/yukaku_try.zip) | 本編 | 本文まで、セーブとロード |
 | b2024_milimili | [ちょっとナマイキなトイレの花子さん ～えっちぃ学園のおばけとエロエロ搾精性活～ 【体験版】](http://suezou.dyndns.org/dl2024/milimili/hanako/hanako_try.zip) | 本編 | プロローグの文章 (r1_softpal_hanako と同じ作品) |
+| b2025_erectlip | [爆乳淫乱ビーチ　体験版](http://suezou.dyndns.org/dl2025/erectlip/inran_beach/inran_beach_try.zip) | 本編 | 本文まで、セーブとロード (Chromium) |
+| b2025_unisonshift | [小日向柚月と初夜したいっ！　【体験版】](http://suezou.dyndns.org/dl2025/unisonshift/kohinata/kohinata_try.zip) | 本編 | sena 0012 (17:43 イージング付き相対移動、17:36) で START が出て本文まで。冒頭の演出が長い |
+| b2026_crystalia | [ディメンション凸ラバース!! 【体験版】](http://suezou.dyndns.org/dl2026/crystalia/totsu_lover/totsulover_try.zip) | 本編 | 本文まで。F9/F11 で保存と読み込み |
+| dl_VJ01002655 | [爆乳メイド調教 ～夜姦緊縛教育～](https://trial.dlsite.com/professional/VJ01003000/VJ01002655_trial.zip) | 本編 | 本文まで。F9/F11 で保存と読み込み |
+| dl_VJ01004424 | [爆乳淫乱ビーチ](https://trial.dlsite.com/professional/VJ01005000/VJ01004424_trial.zip) | 本編 | b2025_erectlip と同じ作品。本文まで |
 | r1_softpal_hanako | [トイレの花子さん 体験版](https://amusecraft.com/milimili/try/hanako_try.zip) | 本編 | 654935e 以降も本編の文章まで |
+| r1_softpal_tenmao | [転性魔王さま 体験版](https://kumanomi-soft.amusecraft.com/tenmao/dl/tenmao_try.zip) | 本編 | 本文まで。文章窓の Q.Save/Q.Load で保存と読み込み (sena 0011) |
+| s2013_erectlip_katekyo | [爆乳淫乱家庭教師　【体験版】](http://suezou.dyndns.org/dl2013/erectlip/katekyo/KATEKYO_try.zip) | 本編 | 本文まで。F9 で保存、F11 で読み込み |
+| s2014_erectlip_furyou | [学園の生贄――慰み者と化した巨乳不良少女 ～白濁に侵される褐色＆堕肉の狂宴～【体験版】](http://suezou.dyndns.org/dl2014/erectlip/furyou/furyou_try.zip) | 本編 | sena 0012 (9:24 が呼び出し戻り先を外す) で Start から本文まで。体験版のメニューにセーブは無い |
+| s2014_erectlip_gyokumajyo | [逆転魔女裁判－痴女な魔女に裁かれちゃう－　【体験版】](http://suezou.dyndns.org/dl2014/erectlip/gyokumajyo/gyakumajyo_try.zip) | 本編 | 本文まで。F9/F11 で保存と読み込み |
+| s2014_qoobrand_majokoi | [魔女こいにっき 体験版 (第一弾)](http://suezou.dyndns.org/dl2014/qoobrand/mazyokoi/MAJOKOI_try.zip) | 本編 | 本文まで。F9/F11 で保存と読み込み |
 | s2015_erectlip_maou | [巨乳魔王の敗北 魔王の挑戦](http://suezou.dyndns.org/dl2015/erectlip/maou/maou_try.zip) | 本編 | 最初の文章 |
-| b2011_erectlip | [りとる†びっち ～Little Bitch Girls in Hog Farm～ 体験版](http://suezou.dyndns.org/dl2011/erectlip/littlebitch/LittleBitch_trial.zip) | タイトル | b98f659 (2011-2012 年版) でタイトルまで |
-| b2015_erectlip | [巨乳大魔王のドスケベクエスト ～完全敗北した少年勇者クンＵＣ～　【体験版】](http://suezou.dyndns.org/dl2015/erectlip/dosukebe/dosukebe_try.zip) | タイトル | cccc0c0 / 93bee9c でタイトルまで |
-| b2017_unisonshift | [あなたに恋する恋愛ルセット　【体験版】](http://suezou.dyndns.org/dl2017/unisonshift/recette/recette_try.zip) | タイトル |  |
-| b2018_erectlip | [爆乳催眠女教師　【体験版】](http://suezou.dyndns.org/dl2018/erectlip/bakusai/bakusai_try.zip) | タイトル |  |
-| b2020_erectlip | [爆乳淫辱霊媒師　【体験版】](http://suezou.dyndns.org/dl2020/erectlip/injyoku_reibaishi/injyoku_reibaishi_try.zip) | タイトル |  |
-| b2020_milimili | [shin-neko ～再会した妹との新たな関係～　【体験版】](http://suezou.dyndns.org/dl2020/milimili/shin_neko/shin-neko_try.zip) | タイトル |  |
-| b2021_milimili | [ちんかもツインズ２！　～夏だ！海だ！ふたごの妹おっぱい対決だ！～　【体験版】](http://suezou.dyndns.org/dl2021/milimili/chinkamo2/chinkamo2_try.zip) | タイトル |  |
-| b2022_amuse_craft_erotica | [黒ギャル子ちゃんとしっぽり温泉旅行 ～Hしまくり三泊四日の旅～　【体験版】](http://suezou.dyndns.org/dl2022/amuse_craft-erotica/kurogal_onsen/kurogal_onsen_try.zip) | タイトル |  |
-| b2023_erectlip | [爆乳遊廓 ～癒され太夫孕ませの夜鶴～　【体験版】](http://suezou.dyndns.org/dl2023/erectlip/bakunyu_yukaku/yukaku_try.zip) | タイトル | 93bee9c (未実装 extcall の引数を捨てる) でタイトルまで |
-| b2025_erectlip | [爆乳淫乱ビーチ　体験版](http://suezou.dyndns.org/dl2025/erectlip/inran_beach/inran_beach_try.zip) | タイトル | 654935e / 8c223b7 でタイトルのボタンまで出る |
-| b2025_unisonshift | [小日向柚月と初夜したいっ！　【体験版】](http://suezou.dyndns.org/dl2025/unisonshift/kohinata/kohinata_try.zip) | タイトル |  |
-| b2026_crystalia | [ディメンション凸ラバース!! 【体験版】](http://suezou.dyndns.org/dl2026/crystalia/totsu_lover/totsulover_try.zip) | タイトル | 654935e 以降もタイトルまで |
-| dl_VJ01002655 | [爆乳メイド調教 ～夜姦緊縛教育～](https://trial.dlsite.com/professional/VJ01003000/VJ01002655_trial.zip) | タイトル | 93bee9c 以降もタイトルまで |
-| dl_VJ01004424 | [爆乳淫乱ビーチ](https://trial.dlsite.com/professional/VJ01005000/VJ01004424_trial.zip) | タイトル | 654935e / 8c223b7 でタイトルのボタンまで出る (b2025_erectlip と同じ作品) |
-| r1_softpal_tenmao | [転性魔王さま 体験版](https://kumanomi-soft.amusecraft.com/tenmao/dl/tenmao_try.zip) | タイトル | 93bee9c 以降は panic せずタイトルまで |
-| s2013_erectlip_katekyo | [爆乳淫乱家庭教師　【体験版】](http://suezou.dyndns.org/dl2013/erectlip/katekyo/KATEKYO_try.zip) | タイトル |  |
-| s2014_erectlip_furyou | [学園の生贄――慰み者と化した巨乳不良少女 ～白濁に侵される褐色＆堕肉の狂宴～【体験版】](http://suezou.dyndns.org/dl2014/erectlip/furyou/furyou_try.zip) | タイトル | 93bee9c 以降もタイトルまで |
-| s2014_erectlip_gyokumajyo | [逆転魔女裁判－痴女な魔女に裁かれちゃう－　【体験版】](http://suezou.dyndns.org/dl2014/erectlip/gyokumajyo/gyakumajyo_try.zip) | タイトル | 654935e / 8c223b7 でタイトルのボタンまで出る |
-| s2014_qoobrand_majokoi | [魔女こいにっき 体験版 (第一弾)](http://suezou.dyndns.org/dl2014/qoobrand/mazyokoi/MAJOKOI_try.zip) | タイトル | 654935e 以降でタイトルまで |
-| s2020_amuse_craft_erotica_kinbaku | [緊縛性奴会長 ～カレに知られたワタシの秘密～　【体験版】](http://suezou.dyndns.org/dl2020/amuse_craft-erotica/kinbaku/kinbaku_s_try.zip) | タイトル |  |
-| s2022_amuse_craft_erotica_tsumamomi | [つまもみ ～欲求不満の奥さんとなし崩しオイルマッサージ～　【体験版】](http://suezou.dyndns.org/dl2022/amuse_craft-erotica/tsumamomi/tsumamomi_try.zip) | タイトル |  |
-| s2023_milimili_onaho_yokai | [巨乳オナホ妖怪と田舎ライフもHも満喫生活　【体験版】](http://suezou.dyndns.org/dl2023/milimili/onaho_yokai/onaho_yokai_try.zip) | タイトル | 93bee9c 以降は panic せずタイトルまで |
-| s2025_crystalia_crack_trick | [CRACK≡TRICK!](http://suezou.dyndns.org/dl2025/crystalia/crack_trick/cratri_try.zip) | タイトル |  |
-| s2026_amuse_craft_erotica_youkashi | [養花師の背徳愛～純真天使は抱かれて色めく～ 【体験版】](http://suezou.dyndns.org/dl2026/amuse_craft-erotica/youkashi/youkashi_try.zip) | タイトル |  |
-| b2012_erectlip | [inrakuchikan_trial.zip](http://suezou.dyndns.org/dl2012/erectlip/inrakuchikan/inrakuchikan_trial.zip) | NG | b98f659 以降は「unsupported extcall pc=0x00013244 ext_0012_0011」で止まる |
+| s2020_amuse_craft_erotica_kinbaku | [緊縛性奴会長 ～カレに知られたワタシの秘密～　【体験版】](http://suezou.dyndns.org/dl2020/amuse_craft-erotica/kinbaku/kinbaku_s_try.zip) | 本編 | 本文まで。F9/F11 で保存と読み込み |
+| s2022_amuse_craft_erotica_tsumamomi | [つまもみ ～欲求不満の奥さんとなし崩しオイルマッサージ～　【体験版】](http://suezou.dyndns.org/dl2022/amuse_craft-erotica/tsumamomi/tsumamomi_try.zip) | 本編 | sena 0012 (装飾名の Pal.dll でも登録版として扱う、9:63 is_active) で注意書きの先の本文まで。保存は未確認 |
+| s2023_milimili_onaho_yokai | [巨乳オナホ妖怪と田舎ライフもHも満喫生活　【体験版】](http://suezou.dyndns.org/dl2023/milimili/onaho_yokai/onaho_yokai_try.zip) | 本編 | 本文まで。F9/F11 で保存と読み込み |
+| s2025_crystalia_crack_trick | [CRACK≡TRICK!](http://suezou.dyndns.org/dl2025/crystalia/crack_trick/cratri_try.zip) | 本編 | 本文まで。F9/F11 で保存と読み込み |
+| s2026_amuse_craft_erotica_youkashi | [養花師の背徳愛～純真天使は抱かれて色めく～ 【体験版】](http://suezou.dyndns.org/dl2026/amuse_craft-erotica/youkashi/youkashi_try.zip) | 本編 | sena 0012 (幅の狭い文章窓を text_set_base の位置に置く) で文章窓が直る。セーブとロード |
+| b2012_erectlip | [inrakuchikan_trial.zip](http://suezou.dyndns.org/dl2012/erectlip/inrakuchikan/inrakuchikan_trial.zip) | NG | 18:17 は exe の自己識別スタンプ (登録・コピー保護ではない、sena 0009 で実装)。配布 zip が途中で切れていて ev.pac などが欠ける |
 
 ### Artemis (art3m1s-core)
 
