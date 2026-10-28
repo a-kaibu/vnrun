@@ -47,13 +47,13 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Softpal (sena-rs) | 28 | 3 | 24 |  |  | 1 |  |  |
 | Artemis (art3m1s-core) | 6 | 1 | 5 |  |  |  |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
-| HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 3 | 17 | 9 | 3 | 1 |  |  |
+| HTML (TyranoScript、RPGツクール MV/MZ) | 35 | 3 | 17 | 9 | 3 | 1 |  | 2 |
 | 吉里吉里 (KiriKiri SDL2) | 135 | 5 | 129 |  |  |  | 1 |  |
 | YU-RIS (vnrun) | 29 | 4 | 20 |  |  | 4 | 1 |  |
 | NeXAS (vnrun) | 16 | 11 | 1 |  | 1 | 2 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
 | Tmr-Hiro (vnrun) | 22 | 22 |  |  |  |  |  |  |
-| LiveMaker (vnrun) | 4 | 4 |  |  |  |  |  |  |
+| LiveMaker (vnrun) | 5 | 4 |  |  |  |  |  | 1 |
 | CatSystem2 (vnrun) | 3 | 3 |  |  |  |  |  |  |
 | EntisGLS (vnrun) | 5 | 4 |  |  |  | 1 |  |  |
 | AliceSoft System4 (xsystem4) | 2 | 2 |  |  |  |  |  |  |
@@ -215,6 +215,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_VJ01001309 | [エッチなお姉ちゃんが、褐色巨乳の悪魔だった件2 ～新たな悪魔ミリス登場♪～](https://trial.dlsite.com/professional/VJ01002000/VJ01001309_trial.zip) | 要再確認 | NW.js のゲームが exe に埋め込まれている (package.nw が無い) |
 | r1_tyrano | [転生した世界で… 体験版](http://www.gocha-mix.com/gp/gxgp01/dl/gxgp001_trial.zip) | 要再確認 | NW.js のゲームが exe に埋め込まれている (package.nw が無い)。exe を zip として展開すれば読めるはず |
 | dl_RJ357058 | [Last12 - 勇者の恥ずかしい育児日記 -](https://trial.dlsite.com/doujin/RJ358000/RJ357058_trial.zip) | NG | 「Unexpected end of JSON input」のまま |
+| b2021_stick | [人妻LovelyMoment 体験版](http://suezou.dyndns.org/dl2021/stick/hitozuma_lovelymoment/hitozuma_lovelymoment-trial.zip) | 未確認 |  |
+| b2022_lunaprism | [羞恥隷嬢学園 体験版](http://suezou.dyndns.org/dl2022/lunaprism/reijyo_gakuen/Reijyo_trial.zip) | 未確認 |  |
 
 ### 吉里吉里 (KiriKiri SDL2)
 
@@ -481,6 +483,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_RJ129271 | [とししたハニー 体験版](https://trial.dlsite.com/doujin/RJ130000/RJ129271_trial.zip) | 本編 | タイトル→はじめから→名前入力→選択肢→本編の文章まで (livemaker-run とブラウザ) |
 | dl_RJ284038 | [彼女と俺と留学生 体験版](https://trial.dlsite.com/doujin/RJ285000/RJ284038_trial.zip) | 本編 | タイトル (背景つき、文字だけのメニューは体験版本来のもの)→はじめから→本編の文章まで (livemaker-run)。Chromium (3f99c53) で Enter のクラッシュ解消を確認 |
 | dl_RJ341209 | [スタイホリック 体験版](https://trial.dlsite.com/doujin/RJ342000/RJ341209_trial.zip) | 本編 | タイトル→Start→名前入力 (打ち替えも可)→本編の文章まで、セーブ画面も開く (livemaker-run)。.lcm の演出 (ロゴ・タイトル前のアニメ) も再生。Chromium (3f99c53) で Enter のクラッシュ解消を確認 |
+| b2006_pulltop | [PRINCESS WALTZ WEB体験版2](http://suezou.dyndns.org/dl2006/pulltop/princesswaltz/PrincessWaltz_WebTrial2.exe) | 未確認 |  |
 
 ### CatSystem2 (vnrun)
 
