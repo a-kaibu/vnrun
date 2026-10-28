@@ -60,7 +60,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | QLIE (vnrun) | 3 | 2 |  |  |  | 1 |  |  |
 | Escude (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | Majiro (vnrun) | 1 | 1 |  |  |  |  |  |  |
-| Kaguya (vnrun) | 5 | 5 |  |  |  |  |  |  |
+| Kaguya (vnrun) | 6 | 6 |  |  |  |  |  |  |
 | Interheart (vnrun) | 11 | 10 |  |  |  | 1 |  |  |
 
 ### SiglusEngine (siglus_rs)
@@ -542,6 +542,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2009_kaguya | [さらさらささら 体験版](http://suezou.dyndns.org/dl2009/kaguya/sasara/Srasrasasara_trial.exe) | 本編 | Kaguya (vnrun) の 2009 年世代 (GAME_SYS.exe + 大文字の .ARC) でロゴ→タイトル→はじめから→本編の背景・立ち絵 (stand.arc の胴体+表情)・名前・文章・アイキャッチまで、体験版の最後 (01_OP09) からタイトルに戻る (kaguya-run と Chromium) |
 | b2013_kaguya | [肉牝R30 ～肉欲に堕ちた牝たち～ 体験版](http://suezou.dyndns.org/dl2013/kaguya/r30/nikumesu_R30_trial.zip) | 本編 | Kaguya (vnrun) の 2013 年世代 (GAME_SYS.exe + ARC/) でロゴ→タイトル→初めから→導入→本編の背景・立ち絵・名前・文章・音声、場面選択の 6 項目 (5 人の場面と製品告知) まで (kaguya-run と Chromium)。場面の後のマップ (op 54 1 0) は未実装で選択に戻る |
 | b2015_kaguya | [ハラミタマ 体験版](http://suezou.dyndns.org/dl2015/kaguya/haramitama/haramitama_trial.zip) | 本編 | Kaguya (vnrun) の LINK 世代 (Start.exe + params.dat + message.dat) でタイトル→はじめから→プロローグ (A0000..A0070) の背景・立ち絵・名前・文章・音声→共通→マップ (文字の選択肢で代用)→各ルート①→体験版の終わりまで通る (kaguya-run と Chromium) |
+| b2018_kaguya | [LoveHolic ～魅惑の乙女と白濁カンケイ～ 体験版](http://suezou.dyndns.org/dl2018/kaguya/love_holic/LoveHolic_trial.zip) | 本編 | Kaguya (vnrun) の LINK 世代 (params v05.7) でタイトル→はじめから→オープニング (A0000..A0070) の背景・立ち絵・名前 (主人公名の置き換え)・文章・音声→共通→行き先 (文字の選択肢で代用)→紅音ルート→体験版の終わりまで通る (kaguya-run と Chromium) |
 
 ### Interheart (vnrun)
 

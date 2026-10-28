@@ -35,7 +35,7 @@ fn utf16(b: &[u8], at: &mut usize) -> Option<String> {
 /// 0x13 u32 width, u32 height; 0x1b a u8-long chunk, then (u16 length, UTF-16) the title,
 /// an empty string, the maker, a byte, the hero's given and family names; ...
 /// u32 width*height*4 and the key (the XOR of the encrypted pictures); ...
-/// the resources: u32 count, then [u16 length, UTF-16 name, u8] (index 0 empty)
+/// the resources: u32 count, then [u16 length, UTF-16 name, u8 (1: a group)] (index 0 empty)
 /// the pictures: u32 count, then [u8 n, n x u32 resource] (the layers of one picture, 0 none)
 /// ```
 pub struct Params {
@@ -118,15 +118,35 @@ impl Params {
     }
 }
 
+/// The resource names from `at`: each a name and a u8; 1 makes it a group (u32 n, then n
+/// names: the variants of one picture, "地下室点灯甲" = ["ＢＧ洋館地下室点灯_モ.bgd"], from
+/// v05.7), which stands for its first variant here.
 fn names_at(b: &[u8], mut at: usize, n: usize) -> Option<(Vec<String>, usize)> {
+    let ext_ok = |s: &str| {
+        s.rsplit_once('.')
+            .is_some_and(|(_, e)| (2..=5).contains(&e.len()) && e.is_ascii())
+    };
     let mut out = Vec::with_capacity(n);
     for i in 0..n {
-        let s = utf16(b, &mut at)?;
+        let mut s = utf16(b, &mut at)?;
+        let flag = *b.get(at)?;
         at += 1;
-        let ext_ok = s
-            .rsplit_once('.')
-            .is_some_and(|(_, e)| (2..=5).contains(&e.len()) && e.is_ascii());
-        if (i == 0) != s.is_empty() || (i > 0 && !ext_ok) {
+        if flag == 1 {
+            let k = u32le(b, at)? as usize;
+            at += 4;
+            if k == 0 || k > 64 {
+                return None;
+            }
+            for j in 0..k {
+                let v = utf16(b, &mut at)?;
+                if j == 0 {
+                    s = v;
+                }
+            }
+        } else if flag != 0 {
+            return None;
+        }
+        if (i == 0) != s.is_empty() || (i > 0 && !ext_ok(&s)) {
             return None;
         }
         out.push(s);
@@ -138,14 +158,14 @@ pub struct Line {
     pub text: String,
     /// "sei0038" (voice.arc's sei0038.ogg)
     pub voice: Option<String>,
-    /// the speaker (an index into `Messages::names`; 0 the hero), if any
+    /// the speaker (an index into `Messages::names`), if any
     pub speaker: Option<usize>,
 }
 
 /// message.dat ("[SCR-MESSAGE]ver4.0"), every byte of each string inverted:
 ///
 /// ```text
-/// 0x15 u32 count, [u16 length, cp932] the speakers (0: the hero, "\u{e000}")
+/// 0x15 u32 count, [u16 length, cp932] the speakers (the hero: "\u{e000}", cp932 F040)
 /// u32 count, [u16 length, cp932] the choices
 /// u32 count, [u32 size, then size bytes: i32 length, cp932 text, and 0x01 + a UTF-16
 ///   voice name ("sei0038.voice") or 0x00]

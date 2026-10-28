@@ -6,18 +6,18 @@
 //!
 //! | op | operands | |
 //! |----|----------|-|
-//! | 01 | u8 kinds, u8 op, u16 var, i32 a, i32 b | var = b (op 0), a + b, a - b, a * b, a / b |
+//! | 01 | u8 kinds, u8 op, u16 var, i32 a, i32 b | var = b (op 0), a + b, a - b, a * b, a / b, a % b (5, 7?); a a var, b too when kinds is 0x2_ |
 //! | 04 | | return (the end of a script) |
 //! | 05 | u8 flags, u16 frames | wait (flags 0x80: not) |
 //! | 06 | i32 scene, i32 -1, u8 kind, i32 parameter | change the scene: 0 at once, 1 fade, 4 rule (a resource) |
 //! | 07 | i32 line, i32 scene, i32 bgm, .., i32 looped sound, .. | a message |
-//! | 08 | u8, i32 n, .. | a choice of message.dat's choices; the answer goes to var 0 |
+//! | 08 | u8, u8 n, n x i32 choice, -1, .. | a choice of message.dat's choices; the answer (from 0) goes to var 0 |
 //! | 09 | u8 channel, i32 sound | 2 looped, 0xff stop all, else once; -1 stops |
 //! | 0a | i32 bgm | -1 stops |
 //! | 0b | i32 offset | goto |
 //! | 0c | u8 kind, i32 script | jump to a script (kind 4: the resource, else a var holds it) |
 //! | 0d | u8 kinds, u8 op, u16 var, i32 a, i32 b | var = a ==, !=, <, <=, >, >=, &&, || b (a a var; b a var when kinds is 0x2_) |
-//! | 0f | u8, u16 var, i32 offset | goto when var is 0 |
+//! | 0e / 0f | u8, u16 var, i32 offset | goto when var is not 0 / is 0 |
 //! | 14 | u8 1, u8 call | the program's screens: 2 the map (where to go, var 0x0c), 0x0e the map's second question (others: not known) |
 //! | 15 | u8 length, cp932 | the chapter's title |
 //! | 1a | u8 kind, i32 script | call a script |
@@ -440,13 +440,11 @@ impl Engine {
             self.warn(format!("no line {line}"));
             return;
         };
-        let name = l.speaker.and_then(|s| {
-            if s == 0 {
-                Some(self.p.hero.clone())
-            } else {
-                self.m.names.get(s).cloned()
-            }
-        });
+        // the hero's name is the private character U+E000 (cp932 F040), which the player names
+        let name = l
+            .speaker
+            .and_then(|s| self.m.names.get(s))
+            .map(|n| n.replace('\u{e000}', &self.p.hero));
         let text = l.text.clone();
         let voice = l.voice.clone();
         if self.log {
@@ -520,13 +518,19 @@ impl Engine {
         self.sound("se_loop", None, false, 300.0);
     }
 
-    /// The map: the routes, from the scripts named "X0000　name　マップルート①".
+    /// The map: the routes, from the first scripts of the heroines ("C0000　name　...",
+    /// "D0000　..."; A is the opening and B the common part).
     fn map_choices(&self) -> Vec<(String, i32)> {
         let mut out = Vec::new();
         for n in &self.p.names {
-            if n.contains("マップルート①") {
-                let who = n.split('　').nth(1).unwrap_or(n).to_string();
-                out.push((who, out.len() as i32));
+            let mut parts = n.split('　');
+            let (Some(head), Some(who), Some(_)) = (parts.next(), parts.next(), parts.next())
+            else {
+                continue;
+            };
+            let b = head.as_bytes();
+            if b.len() == 5 && (b'C'..=b'Z').contains(&b[0]) && &head[1..] == "0000" {
+                out.push((who.to_string(), out.len() as i32));
             }
         }
         if out.is_empty() {
@@ -553,7 +557,7 @@ impl Engine {
                 0x01 => {
                     let (kinds, op, dst) = (i.u8(0), i.u8(1), i.u16(2) as usize);
                     let a = self.var(i.i32(4));
-                    let b = if kinds & 0x0f == 1 {
+                    let b = if kinds >> 4 == 2 {
                         self.var(i.i32(8))
                     } else {
                         i.i32(8)
@@ -564,7 +568,7 @@ impl Engine {
                         2 => a.wrapping_sub(b),
                         3 => a.wrapping_mul(b),
                         4 => a.checked_div(b).unwrap_or(0),
-                        5 => a.checked_rem(b).unwrap_or(0),
+                        5 | 7 => a.checked_rem(b).unwrap_or(0),
                         _ => {
                             self.warn(format!("op 01 {op}"));
                             b
@@ -598,9 +602,13 @@ impl Engine {
                     }
                 }
                 0x08 => {
-                    let n = (i.i32(1).max(0) as usize).min(self.m.choices.len());
+                    let n = i.u8(1) as usize;
                     let c = (0..n)
-                        .map(|k| (self.m.choices[k].clone(), k as i32))
+                        .map(|k| {
+                            let id = i.i32(2 + 4 * k).max(0) as usize;
+                            let w = self.m.choices.get(id).cloned().unwrap_or_default();
+                            (w, k as i32)
+                        })
                         .collect();
                     self.ask(c, 0);
                 }
@@ -665,8 +673,8 @@ impl Engine {
                     };
                     self.set(dst, v as i32);
                 }
-                0x0f => {
-                    if self.var(i.u16(1) as i32) == 0 {
+                0x0e | 0x0f => {
+                    if (self.var(i.u16(1) as i32) == 0) == (i.op == 0x0f) {
                         self.pc = i.i32(3) as usize;
                     }
                 }
@@ -687,7 +695,7 @@ impl Engine {
                         eprintln!("kaguya: [{t}]");
                     }
                 }
-                0x16 | 0x18 | 0x19 | 0x1b => {}
+                0x16..=0x19 | 0x1b => {}
                 op => self.warn(format!("op {op:02x}")),
             }
         }
