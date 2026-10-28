@@ -119,6 +119,19 @@ pub fn parse(b: &[u8]) -> Vec<Stmt> {
             break;
         };
         at += 4 + n;
+        // the newer games (2023 on): 'T', u32 line number, u32 n, n UTF-16 letters whose low
+        // bytes are XORed with n
+        if body.first() == Some(&b'T') {
+            let n = u32at(body, 5).unwrap_or(0) as usize;
+            let units: Vec<u16> = body
+                .get(9..(9 + 2 * n).min(body.len()))
+                .unwrap_or(&[])
+                .chunks_exact(2)
+                .map(|c| u16::from_le_bytes([c[0] ^ n as u8, c[1]]))
+                .collect();
+            out.push(Stmt::Text(String::from_utf16_lossy(&units)));
+            continue;
+        }
         let t = tokens(body);
         let args = |from: usize| -> Vec<Arg> {
             t[from.min(t.len())..]

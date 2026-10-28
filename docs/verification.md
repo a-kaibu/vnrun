@@ -49,8 +49,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 35 | 34 | 1 |  |  |  |  |  |
 | 吉里吉里 (KiriKiri SDL2) | 135 | 83 | 51 |  |  |  | 1 |  |
-| YU-RIS (vnrun) | 29 | 27 |  |  |  | 1 | 1 |  |
-| NeXAS (vnrun) | 16 | 12 | 1 |  | 1 | 1 | 1 |  |
+| YU-RIS (vnrun) | 29 | 28 |  |  |  |  | 1 |  |
+| NeXAS (vnrun) | 16 | 13 |  |  | 1 |  | 2 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
 | Tmr-Hiro (vnrun) | 22 | 22 |  |  |  |  |  |  |
 | LiveMaker (vnrun) | 5 | 4 |  |  |  |  |  | 1 |
@@ -63,7 +63,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Kaguya (vnrun) | 6 | 6 |  |  |  |  |  |  |
 | Interheart (vnrun) | 11 | 10 |  |  |  | 1 |  |  |
 | Crowd/ANIM (vnrun) | 9 | 5 |  |  |  | 4 |  |  |
-| Cyberworks (vnrun) | 8 | 1 |  |  |  |  |  | 7 |
+| Cyberworks (vnrun) | 8 | 4 |  |  |  |  |  | 4 |
 | LiLiM (vnrun) | 7 | 7 |  |  |  |  |  |  |
 | ShiinaRio (vnrun) | 1 | 1 |  |  |  |  |  |  |
 
@@ -375,6 +375,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2014_whirlpool | [G.I.B. ガールズ・イン・ブラック  WEB体験版](http://suezou.dyndns.org/dl2014/whirlpool/gib/gib_webtrial.exe) | 本編 | Chromium (3f99c53) で START→体験版メニュー (本編/Hシーン) と説明文まで |
 | b2017_no_strike | [女装千年王国　体験版](http://suezou.dyndns.org/dl2017/no-strike/jyosoumille/jyosoumille_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | b2018_casket | [彼女が異種族だった場合～クールな先輩ダークエルフとの甘やかし同棲日誌～体験版](http://suezou.dyndns.org/dl2018/casket/dark_elf/dark_elf-trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
+| b2021_whirlpool | [けもの道☆ガーリッシュスクエア　体験版](http://suezou.dyndns.org/dl2021/whirlpool/kemonomichi-gs/kemonomichi-gs_trial.zip) | 本編 | d98165b で「short arguments」は出ない。Chromium で START→シナリオ選択 (scenario/0_tr.txt の文章と選択肢) まで、ネイティブでは「本編を始める」→ maho1_01 の本文まで (Chromium では devserver が途中で止められ本文の撮影はできず) |
 | b2022_casket | [あやかし遊郭～花魁道中～体験版](http://suezou.dyndns.org/dl2022/casket/ayakashi_pack/ayakashipack_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | dl_RJ01708454 | [こんな安楽椅子探偵は嫌だ！](https://trial.dlsite.com/doujin/RJ01709000/RJ01708454_trial.zip) | 本編 | Chromium で はじめから→本編の文章まで |
 | dl_RJ01721024 | [むかしグラビアアイドルだった団地妻](https://trial.dlsite.com/doujin/RJ01722000/RJ01721024_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
@@ -395,7 +396,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2021_casket_bellaca02 | [リンカーベル・アカデミア～龍族のフィアンセ～Hシーン体験版](http://suezou.dyndns.org/dl2021/casket/bellaca02/bellaca02_trial.zip) | 本編 | Chromium で Hシーン体験版→本編の文章まで |
 | s2023_casket_oshitona_vtuber02 | [画面から出てきた推しVtuberとHな同棲生活 ～庶民派吸血鬼お嬢様は契約したい～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber02/oshitona02_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | s2023_casket_oshitona_vtuber03 | [画面から出てきた推しVtuberとHな同棲生活 ～夢魔かわASMR配信者は地雷系？～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber03/oshitona03_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
-| b2021_whirlpool | [けもの道☆ガーリッシュスクエア　体験版](http://suezou.dyndns.org/dl2021/whirlpool/kemonomichi-gs/kemonomichi-gs_trial.zip) | NG | 3e4a888 で「yst00067.ybn: short arguments」 |
 | r1_yuris | [YU-RIS サンプル](https://yu-ris.net/download/yu-ris_0495_032.zip) | 対象外 | YU-RIS の SDK のサンプル (コンパイル前で ysbin.ypf が無い) |
 
 ### NeXAS (vnrun)
@@ -414,9 +414,9 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2009_giga_curefull | [キュアフル！ 体験版](http://suezou.dyndns.org/dl2009/giga/curefull/curefull_trial.zip) | 本編 | Chromium (21b28be 以降) で START→本編の文章まで。メッセージ枠は中央に表示 |
 | s2010_giga_bittersmile | [bitter smile. ～ビタースマイル～ 体験版２](http://suezou.dyndns.org/dl2010/giga/bittersmile/bittersmile_trial2.zip) | 本編 | Chromium (21b28be 以降) で START→本編の文章まで。メッセージ枠は中央に表示 |
 | s2011_giga_hinataterrace | [ひなたテラス -We don't abandon you.- web体験版２](http://suezou.dyndns.org/dl2011/giga/hinataterrace/hinata_webtrial02c.zip) | 本編 | Chromium (3f99c53) で START→本編の文章まで |
-| s2015_giga_renaiphase | [恋愛フェイズ 体験版](http://suezou.dyndns.org/dl2015/giga/renaiphase/RP_trial.zip) | タイトル | b425e77 でもタイトルまで |
-| s2006_giga_cheerfull | [チアフル！ ～cheerfull!～ 【 体験版 】](http://suezou.dyndns.org/dl2006/giga/cheerfull/cheerfull_trial.exe) | 要再確認 | 自己展開 exe のダウンロード/展開に失敗 |
-| b2009_crossover | [美乳淫妹 遥「私にイヤらしいコスプレさせるなんて……この変態！」](http://suezou.dyndns.org/dl2009/crossover/haruka/bnharuka_trial.zip) | NG | 64d6316 (2015 年版の表) で「no Script.pac」(DATA/ フォルダの形) |
+| s2015_giga_renaiphase | [恋愛フェイズ 体験版](http://suezou.dyndns.org/dl2015/giga/renaiphase/RP_trial.zip) | 本編 | d98165b で確認。タイトルの「Digest Story」→「Digest-1」から 共通00.bin のチャット画面と本文まで (Chromium) |
+| s2006_giga_cheerfull | [チアフル！ ～cheerfull!～ 【 体験版 】](http://suezou.dyndns.org/dl2006/giga/cheerfull/cheerfull_trial.exe) | 要再確認 | ダウンロードはできるが、自己展開 exe が GIGA 独自の暗号化形式 (GFL SecureCryptograph) で 7z・unar では展開できない |
+| b2009_crossover | [美乳淫妹 遥「私にイヤらしいコスプレさせるなんて……この変態！」](http://suezou.dyndns.org/dl2009/crossover/haruka/bnharuka_trial.zip) | 対象外 | NeXAS ではない (Adv.exe と DATA/ の .GR2・.VIC、SCRIPT.PAC は "PACK" 形式の .SCD。vnbox の NeXAS 判定が誤り) |
 | s2025_milimili_hanako | [ちょっとナマイキなトイレの花子さん ～えっちぃ学園のおばけとエロエロ搾精性活～ 【体験版】](http://suezou.dyndns.org/dl2025/milimili/hanako/hanako_try2.zip) | 対象外 | 中身は Unity 製 (vnbox の NeXAS 判定が誤り) |
 
 ### AdvHD (vnrun)
@@ -583,13 +583,13 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2018_tinkerbell | [グランギニョルの夜 体験版](http://suezou.dyndns.org/dl2018/tinkerbell/grand_guignol/gguignol_taiken001.zip) | 本編 | Cyberworks (vnrun) で警告→タイトル (e0 のボタン)→Game Start→プロローグの背景 (移動)・立ち絵 (表情差分)・名前・文章・回想のセピアまで (cyberworks-run と Chromium)。右クリックのメニューからセーブ→タイトルの Load Game からロードで本編に戻る (Chromium) |
+| b2023_wendybell | [モラトリアム 体験版1.1b](http://suezou.dyndns.org/dl2023/wendybell/moratorium/moratorium_taiken110b.zip) | 本編 | Cyberworks 新形式 (Resources/Data00.dat の索引と DataNNN.dat の絵、UTF-16 の文章) で警告→タイトル (初めから)→本編の背景・立ち絵・表情差分・文章・音声 (cyberworks-run と Chromium)。セーブ→タイトルの続きからロードで本編に戻る (Chromium) |
+| b2026_tinkerbell | [ムジナ・臭 体験版](http://suezou.dyndns.org/dl2026/tinkerbell/mujina_syu/mujina_syu_taiken100.zip) | 本編 | Cyberworks 新形式 (1920x1080) で警告→タイトル (NEW GAME)→本編の背景・立ち絵・顔窓 (サイズ付きの差分)・名前・文章 (cyberworks-run と Chromium)。下のバーの SAVE でセーブ→新しいセッションのタイトルの LOAD GAME からロードで同じ行に戻る (Chromium) |
+| b2026_wendybell | [友恵の探偵物語～のぞき魔な私の天職～ 体験版](http://suezou.dyndns.org/dl2026/wendybell/tomoe/tomoe_taiken100.zip) | 本編 | Cyberworks 新形式 (1920x1080、全画面の窓) で警告→タイトル (初めから)→本編の CG・背景・文章を数場面 (cyberworks-run と Chromium)。右のバーの Save でセーブ→新しいセッションのタイトルの続きからロードで同じ行に戻る (Chromium) |
 | b2012_tinkerbell | [籠女の繭 Web体験版1.1](http://suezou.dyndns.org/dl2012/tinkerbell/kagome/kagome_trial_1_1.zip) | 未確認 |  |
 | b2013_tinkerbell | [ぜったいマジラブ！あまイチャはぷにんぐ！ 体験版](http://suezou.dyndns.org/dl2013/tinkerbell/amaicha/amaicha_taiken100.zip) | 未確認 |  |
 | b2014_wendybell | [こすぷれえっち 体験版](http://suezou.dyndns.org/dl2014/wendybell/cosplay/cosplay_taiken100.zip) | 未確認 |  |
 | b2021_tinkerbell | [淫妖蟲穢 体験版](http://suezou.dyndns.org/dl2021/tinkerbell/inyou_wai/inyou_wai_taiken100.zip) | 未確認 |  |
-| b2023_wendybell | [モラトリアム 体験版1.1b](http://suezou.dyndns.org/dl2023/wendybell/moratorium/moratorium_taiken110b.zip) | 未確認 |  |
-| b2026_tinkerbell | [ムジナ・臭 体験版](http://suezou.dyndns.org/dl2026/tinkerbell/mujina_syu/mujina_syu_taiken100.zip) | 未確認 |  |
-| b2026_wendybell | [友恵の探偵物語～のぞき魔な私の天職～ 体験版](http://suezou.dyndns.org/dl2026/wendybell/tomoe/tomoe_taiken100.zip) | 未確認 |  |
 
 ### LiLiM (vnrun)
 

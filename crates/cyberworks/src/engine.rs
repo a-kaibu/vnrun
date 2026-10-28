@@ -37,7 +37,7 @@ use nexas::files::Files;
 use nexas::font::Font;
 use nexas::gfx::{Draw, Image, Place};
 
-use crate::arc::{Archives, Entry};
+use crate::arc::{Archives, DataStore, Entry};
 use crate::data::{ButtonSet, LayerTable};
 use crate::pic::{self, Raw, Scheme};
 use crate::script::{self, Arg, Stmt};
@@ -117,6 +117,12 @@ type TitleButton = (usize, i32, [i32; 4], Option<Rc<Image>>, Option<Rc<Image>>);
 pub struct Engine {
     files: Box<dyn Files>,
     arcs: Archives,
+    /// the newer games' pictures (Resources/Data0NN.dat), by the number the tables give
+    store: DataStore,
+    /// the 2023 generation (Resources/Data0NN.dat, ChakraCore beside the exe)
+    newer: bool,
+    /// where the title's answer goes (36: var 1, 28: its argument)
+    title_var: i32,
     scheme: Scheme,
     key: Vec<u8>,
     pics: Vec<Entry>,
@@ -200,15 +206,17 @@ impl Engine {
         if scripts.is_empty() {
             return Err("no scripts ('a' entries)".into());
         }
+        let store = DataStore::open(files.as_mut());
+        let newer = !store.is_empty();
         let mut tables = Vec::new();
         for e in list(b'f') {
             let b = arcs.read(files.as_mut(), &e).unwrap_or_default();
-            tables.push(LayerTable::parse(&b));
+            tables.push(LayerTable::parse(&b, newer));
         }
         let mut menus = Vec::new();
         for e in list(b'e') {
             let b = arcs.read(files.as_mut(), &e).unwrap_or_default();
-            menus.push(ButtonSet::parse(&b));
+            menus.push(ButtonSet::parse(&b, newer));
         }
         let mut key = Vec::new();
         for name in files.list() {
@@ -234,9 +242,26 @@ impl Engine {
         {
             (width, height) = (h[4] as u32, h[3] as u32);
         }
+        // the newer games: the size of the first picture (a full-screen background)
+        if newer
+            && let Some(b) = store.read(files.as_mut(), 10_000_000)
+            && let Some((w, h)) = match b.first() {
+                Some(b'c') | Some(b'b') => pic::png_of(&b)
+                    .and_then(|p| Image::decode(p).ok())
+                    .map(|i| (i.w as usize, i.h as usize)),
+                _ => pic::decode_a2023(&b, None).ok().map(|r| (r.w, r.h)),
+            }
+            && w >= 320
+            && h >= 240
+        {
+            (width, height) = (w as u32, h as u32);
+        }
         let mut e = Engine {
             files,
             arcs,
+            store,
+            newer,
+            title_var: 1,
             scheme,
             key,
             pics,
@@ -491,7 +516,26 @@ impl Engine {
                 self.layers.clear();
                 self.gathering = Some(n(0));
             }
+            // the newer games: menu, the variable for the answer, effect; every button
+            28 if self.newer => {
+                let menu = n(0).max(0) as usize;
+                if menu < self.menus.len() {
+                    self.title_var = Self::var_of(a.get(1)).unwrap_or(1);
+                    for k in 1..=self.menus[menu].buttons.len() {
+                        self.enabled.insert((menu, k));
+                    }
+                    self.flush();
+                    self.window = false;
+                    self.wait = Wait::Title(menu);
+                    let ms = effect_ms(n(2));
+                    if ms > 0.0 {
+                        self.freeze();
+                        self.present(ms);
+                    }
+                }
+            }
             36 => {
+                self.title_var = 1;
                 let menu = n(0).max(0) as usize;
                 if menu < self.menus.len() {
                     self.flush();
@@ -645,6 +689,31 @@ impl Engine {
         if let Some(r) = self.raw_cache.get(&i) {
             return Some(r.clone());
         }
+        if i >= 10_000_000 {
+            let d = self.store.read(self.files.as_mut(), i as u32)?;
+            let r = match d.first() {
+                Some(b'c') | Some(b'b') => Raw::from_image(&Image::decode(pic::png_of(&d)?).ok()?),
+                _ => {
+                    let base = match pic::base_id_2023(&d) {
+                        Some(b) if b as usize != i => self.raw(b as usize),
+                        _ => None,
+                    };
+                    match pic::decode_a2023(&d, base.as_deref()) {
+                        Ok(r) => r,
+                        Err(err) => {
+                            self.trace(&format!("picture {i}: {err}"));
+                            return None;
+                        }
+                    }
+                }
+            };
+            let r = Rc::new(r);
+            if self.raw_cache.len() > 24 {
+                self.raw_cache.clear();
+            }
+            self.raw_cache.insert(i, r.clone());
+            return Some(r);
+        }
         let e = self.pics.get(i)?.clone();
         let d = self.arcs.read(self.files.as_mut(), &e)?;
         let r = match d.first() {
@@ -699,6 +768,11 @@ impl Engine {
         short.packed = e.packed.min(256);
         short.size = short.packed;
         self.arcs.read(self.files.as_mut(), &short)
+    }
+
+    /// A picture by the number the layer tables use (for cyberworks-dump).
+    pub fn picture_by_number(&mut self, i: usize) -> Option<Rc<Image>> {
+        self.picture(i, false)
     }
 
     fn picture(&mut self, i: usize, sep: bool) -> Option<Rc<Image>> {
@@ -893,22 +967,25 @@ impl Engine {
                 out.push(draw(&img, x as f32, y as f32, 1.0));
             }
         }
-        let ty = top + (TEXT_Y - 500);
+        // the sizes are for a 1280-wide screen
+        let sc = |v: i32| v * ww / 1280;
+        let (size, step, tx) = (sc(TEXT_SIZE), sc(LINE_STEP), sc(TEXT_X));
+        let ty = top + sc(TEXT_Y - 500);
         if let Some(n) = self.name.clone() {
-            let img = self.text(&n, [255, 255, 255], TEXT_SIZE);
-            out.push(draw(&img, NAME_X as f32, ty as f32, 1.0));
+            let img = self.text(&n, [255, 255, 255], size);
+            out.push(draw(&img, sc(NAME_X) as f32, ty as f32, 1.0));
         }
-        let per_line = ((ww - TEXT_X - 120) / TEXT_SIZE).max(10) as usize;
+        let per_line = ((ww - tx - sc(120)) / size.max(1)).max(10) as usize;
         let mut y = ty;
         let lines = self.lines.clone();
         for l in &lines {
             for piece in wrap(l, per_line) {
-                if y > wh - 40 {
+                if y > wh - sc(40) {
                     break;
                 }
-                let img = self.text(&piece, [255, 255, 255], TEXT_SIZE);
-                out.push(draw(&img, TEXT_X as f32, y as f32, 1.0));
-                y += LINE_STEP;
+                let img = self.text(&piece, [255, 255, 255], size);
+                out.push(draw(&img, tx as f32, y as f32, 1.0));
+                y += step;
             }
         }
     }
@@ -1163,7 +1240,7 @@ impl Engine {
                     .into_iter()
                     .find(|b| inside(b.2, x, y));
                 if let Some((_, answer, ..)) = hit {
-                    self.vars.insert(1, answer);
+                    self.vars.insert(self.title_var, answer);
                     self.enabled.retain(|(mm, _)| *mm != m);
                     self.freeze();
                     self.wait = Wait::None;
@@ -1182,7 +1259,28 @@ impl Engine {
                 }
             }
             Wait::Click | Wait::ClickGoto(_) => {
-                if self.window && self.wait == Wait::Click {
+                if self.window && self.wait == Wait::Click && self.newer {
+                    // the newer bar: save, load, then buttons we do not have (the menu is a
+                    // right click); a click on any of them does not go on. Save and load are
+                    // the first two buttons of the same size (a close button may come first).
+                    let size = |e: &mut Self, l: usize| e.layer_pic(l, 0).map(|p| (p.0.w, p.0.h));
+                    let save = (1usize..=3)
+                        .find(|&l| size(self, l).is_some() && size(self, l) == size(self, l + 1))
+                        .unwrap_or(1);
+                    for layer in 1usize..=13 {
+                        if let Some((img, bx, by)) = self.layer_pic(layer, 0)
+                            && (img.w as i32) < self.width as i32 / 2
+                            && inside([bx, by, bx + img.w as i32, by + img.h as i32], x, y)
+                        {
+                            if layer == save {
+                                self.view = View::Slots { save: true };
+                            } else if layer == save + 1 {
+                                self.view = View::Slots { save: false };
+                            }
+                            return;
+                        }
+                    }
+                } else if self.window && self.wait == Wait::Click {
                     // the window's own buttons: skip, save, load and the system menu
                     for layer in [1usize, 2, 3, 7] {
                         if let Some((img, bx, by)) = self.layer_pic(layer, 0)

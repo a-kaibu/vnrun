@@ -89,7 +89,7 @@ fn u32at(b: &[u8], at: usize) -> Option<u32> {
 }
 
 /// The entries of an unpacked index. The games store id, size, then offset and packed size in
-/// either order; the order whose offsets follow on is taken.
+/// either order; the order whose offsets follow on (allowing small gaps) is taken.
 type RawEntry = (u32, u32, u32, u32, [u8; 2], u8);
 
 pub fn entries(t: &[u8]) -> Vec<Entry> {
@@ -111,8 +111,11 @@ pub fn entries(t: &[u8]) -> Vec<Entry> {
         raw.windows(2)
             .filter(|w| w[0].5 == w[1].5)
             .filter(|w| {
+                // the next one starts where this ends (or a little after: the newer games
+                // put a RIFF header between the sounds)
                 let (o, p) = off(&w[0]);
-                o.wrapping_add(p) == off(&w[1]).0
+                let (end, next) = (o.wrapping_add(p), off(&w[1]).0);
+                next >= end && next - end <= 64
             })
             .count()
     };
@@ -224,6 +227,122 @@ impl Archives {
         let raw = files.read_range(file, e.offset, e.packed)?;
         Some(if e.packed != e.size {
             lzss(&raw, e.size)
+        } else {
+            raw
+        })
+    }
+}
+
+/// The pictures of the newer games (2023 on): `Resources/Data000.dat` ... beside an index
+/// `Resources/Data00.dat`: u32 file count, then for each file three lists, each a u32 count
+/// and its items. The first list holds the pictures: (u32 unpacked, u32 stored, offset), the
+/// offset a u32 in 2023 and a u64 in 2026 (an item of 12 or 16 bytes; the one that reads the
+/// index to its end is taken). The second list is empty in the trials seen; the third holds
+/// (u32, u32 n, n x (u32, u32)) groups (not used). The scripts name a picture
+/// `(file + 1) * 10000000 + its place in the list`; items are LZSS packed when the sizes
+/// differ.
+#[derive(Default)]
+pub struct DataStore {
+    /// (file name, entries)
+    files: Vec<(String, Vec<StoreItem>)>,
+}
+
+/// A picture's (unpacked, stored, offset) in a data file.
+type StoreItem = (u32, u32, u64);
+
+/// The pictures' lists of the index with items of `item` bytes, if that reads it to its end.
+type DataLists = Vec<Vec<StoreItem>>;
+
+fn data_lists(b: &[u8], item: usize) -> Option<DataLists> {
+    let n = u32at(b, 0)? as usize;
+    if n > 1000 {
+        return None;
+    }
+    let mut at = 4;
+    let mut out = Vec::with_capacity(n);
+    for _ in 0..n {
+        let c = u32at(b, at)? as usize;
+        at += 4;
+        if c > 100_000 || at + c * item > b.len() {
+            return None;
+        }
+        let list = (0..c)
+            .map(|i| {
+                let r = at + i * item;
+                let off = if item == 16 {
+                    u32at(b, r + 8).unwrap_or(0) as u64
+                        | (u32at(b, r + 12).unwrap_or(0) as u64) << 32
+                } else {
+                    u32at(b, r + 8).unwrap_or(0) as u64
+                };
+                (u32at(b, r).unwrap_or(0), u32at(b, r + 4).unwrap_or(0), off)
+            })
+            .collect();
+        at += c * item;
+        if u32at(b, at)? != 0 {
+            return None;
+        }
+        at += 4;
+        let groups = u32at(b, at)? as usize;
+        at += 4;
+        for _ in 0..groups.min(100_000) {
+            let k = u32at(b, at + 4)? as usize;
+            at += 8 + 8 * k;
+        }
+        out.push(list);
+    }
+    (at == b.len()).then_some(out)
+}
+
+impl DataStore {
+    pub fn open(files: &mut dyn Files) -> DataStore {
+        let names: HashMap<String, String> = files
+            .list()
+            .into_iter()
+            .map(|n| (n.to_lowercase(), n))
+            .collect();
+        // the folder listing may hold only the top level (then the usual spelling is tried)
+        let path = |n: &str| {
+            names
+                .get(&format!("resources/{n}"))
+                .cloned()
+                .unwrap_or_else(|| {
+                    let mut c = n.chars();
+                    let first = c.next().map(|x| x.to_ascii_uppercase());
+                    format!("Resources/{}{}", first.unwrap_or('D'), c.as_str())
+                })
+        };
+        let Some(b) = files.read(&path("data00.dat")) else {
+            return DataStore::default();
+        };
+        let Some(lists) = data_lists(&b, 16).or_else(|| data_lists(&b, 12)) else {
+            return DataStore::default();
+        };
+        let files = lists
+            .into_iter()
+            .enumerate()
+            .map(|(f, l)| (path(&format!("data{f:03}.dat")), l))
+            .collect();
+        DataStore { files }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.files.is_empty()
+    }
+
+    /// A picture by the number the scripts give it.
+    pub fn read(&self, files: &mut dyn Files, id: u32) -> Option<Vec<u8>> {
+        let f = (id / 10_000_000).checked_sub(1)? as usize;
+        let k = (id % 10_000_000) as usize;
+        let (name, list) = self.files.get(f)?;
+        let &(u, p, o) = list.get(k)?;
+        if p == 0 {
+            return None;
+        }
+        let raw = files.read_range(name, o, p as usize)?;
+        // an unpacked size of 0: stored as it is (the JPEG 'b' pictures)
+        Some(if p != u && u != 0 {
+            lzss(&raw, u as usize)
         } else {
             raw
         })

@@ -142,6 +142,11 @@ fn bit(m: &[u8], k: usize) -> bool {
 /// 1) is drawn over.
 pub fn decode_a(b: &[u8], s: &Scheme, base: Option<&Raw>) -> Result<Raw, String> {
     let (h, at) = header(b, s)?;
+    decode_body(b, h, at, base)
+}
+
+/// The pixels of an 'a' or 'd' picture from its header numbers (see [`header`]).
+fn decode_body(b: &[u8], h: [usize; 8], at: usize, base: Option<&Raw>) -> Result<Raw, String> {
     let (flags, height, width, unp, asz, bits) = (h[0], h[3], h[4], h[5], h[6], h[7]);
     if b[0] != b'd' && width == 0 || width >= 0x8000 || height == 0 || height >= 0x8000 {
         return Err(format!("picture: size {width}x{height}"));
@@ -311,4 +316,101 @@ pub fn wants_base(b: &[u8], s: &Scheme) -> bool {
         Some(b'a') => header(b, s).is_ok_and(|(h, _)| h[0] == 1),
         _ => false,
     }
+}
+
+/// An 'a' or 'd' picture of the newer games (2023 on): the type letter, u32 number (for 'd'
+/// and flags 1: the picture it is drawn over), u32 0, u32 width, u32 height, u32 flags; then
+/// with flags 7 u32 alpha size and the data, else u32 alpha size, u32 bits size, u32 size and
+/// the data. The data is as in the older pictures ([`decode_a`]).
+pub fn decode_a2023(b: &[u8], base: Option<&Raw>) -> Result<Raw, String> {
+    let u = |at: usize| -> usize {
+        b.get(at..at + 4)
+            .map_or(0, |s| u32::from_le_bytes(s.try_into().unwrap()) as usize)
+    };
+    if b.len() < 33 {
+        return Err("picture: cut short".into());
+    }
+    let (mut w, mut ht, flags) = (u(9), u(13), u(17));
+    if b[0] == b'd'
+        && let Some(x) = base
+    {
+        (w, ht) = (x.w, x.h);
+    }
+    // the 2026 games: alpha bytes, then the bitmap and the colours, each after its size
+    if b[0] == b'd'
+        && flags & 6 == 6
+        && let Some(x) = base
+    {
+        let asz = u(21);
+        let bits = (w * ht).div_ceil(8);
+        if u(25 + asz) == bits {
+            return diff_sized(b, x, asz, bits);
+        }
+    }
+    // [flags, -, -, height, width, unpacked, alpha, bits]
+    let (h, at) = if flags & 6 == 6 {
+        let bits = if b[0] == b'd' {
+            (w * ht).div_ceil(8)
+        } else {
+            0
+        };
+        ([flags, 0, 0, ht, w, 1, u(21), bits], 25)
+    } else {
+        ([flags, 0, 0, ht, w, u(29), u(21), u(25)], 33)
+    };
+    decode_body(b, h, at, base)
+}
+
+/// A 2026 'd' picture: `asz` alpha bytes, u32 size + bitmap, u32 size + 3 bytes per set bit.
+fn diff_sized(b: &[u8], base: &Raw, asz: usize, bits: usize) -> Result<Raw, String> {
+    let alpha = b.get(25..25 + asz).ok_or("picture: cut short")?;
+    let map = b
+        .get(29 + asz..29 + asz + bits)
+        .ok_or("picture: cut short")?;
+    let rgb = b.get(33 + asz + bits..).ok_or("picture: cut short")?;
+    let mut out: Vec<u8> = if base.bpp == 4 {
+        base.px.clone()
+    } else {
+        base.px
+            .chunks_exact(base.bpp)
+            .flat_map(|p| {
+                let c = if p.len() >= 3 {
+                    [p[0], p[1], p[2]]
+                } else {
+                    [p[0]; 3]
+                };
+                [c[0], c[1], c[2], 255]
+            })
+            .collect()
+    };
+    let mut n = 0;
+    for k in 0..(base.w * base.h).min(bits * 8) {
+        if bit(map, k) {
+            let Some(px) = rgb.get(n * 3..n * 3 + 3) else {
+                break;
+            };
+            out[k * 4..k * 4 + 3].copy_from_slice(px);
+            out[k * 4 + 3] = alpha.get(n).copied().unwrap_or(255);
+            n += 1;
+        }
+    }
+    Ok(Raw {
+        w: base.w,
+        h: base.h,
+        bpp: 4,
+        px: out,
+    })
+}
+
+/// The picture an 'a' (flags 1) or 'd' picture of the newer games is drawn over.
+pub fn base_id_2023(b: &[u8]) -> Option<u32> {
+    let wants = match b.first() {
+        Some(b'd') => true,
+        Some(b'a') => b.get(17).is_some_and(|f| f & 1 == 1 && f & 6 != 6),
+        _ => false,
+    };
+    if !wants {
+        return None;
+    }
+    Some(u32::from_le_bytes(b.get(1..5)?.try_into().ok()?))
 }

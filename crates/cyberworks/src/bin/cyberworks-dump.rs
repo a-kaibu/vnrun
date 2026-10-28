@@ -3,6 +3,7 @@
 //!     cyberworks-dump <game folder> list
 //!     cyberworks-dump <game folder> pics <out dir> [first id] [last id]
 //!     cyberworks-dump <game folder> raw <kind letter> <out dir>
+//!     cyberworks-dump <game folder> num <out dir> <number> ...   pictures by the tables' number
 
 use std::path::Path;
 
@@ -17,6 +18,34 @@ fn main() -> Result<(), String> {
         root: dir.to_path_buf(),
         saves: dir.join("vnrun-saves"),
     };
+    if a[2] == "num" {
+        let mut e = cyberworks::engine::Engine::open(Box::new(Disk {
+            root: dir.to_path_buf(),
+            saves: dir.join("vnrun-saves"),
+        }))?;
+        e.log = true;
+        for n in &a[4..] {
+            let n: usize = n.parse().map_err(|_| "not a number")?;
+            if let Some(i) = e.picture_by_number(n) {
+                println!("{n} {}x{}", i.w, i.h);
+                let p = Path::new(&a[3]).join(format!("{n}.png"));
+                image::save_buffer(&p, &i.px, i.w, i.h, image::ColorType::Rgba8)
+                    .map_err(|x| x.to_string())?;
+            }
+        }
+        return Ok(());
+    }
+    if a[2] == "storeraw" {
+        let store = cyberworks::arc::DataStore::open(&mut disk);
+        for n in &a[4..] {
+            let n: u32 = n.parse().map_err(|_| "not a number")?;
+            if let Some(d) = store.read(&mut disk, n) {
+                std::fs::write(Path::new(&a[3]).join(format!("{n}.bin")), d)
+                    .map_err(|x| x.to_string())?;
+            }
+        }
+        return Ok(());
+    }
     let arcs = Archives::open(&mut disk)?;
     println!("title {}", arcs.title);
     match a[2].as_str() {
@@ -87,7 +116,7 @@ fn main() -> Result<(), String> {
                 }
             }
         }
-        _ => return Err("list, pics or raw".into()),
+        _ => return Err("list, pics, raw or num".into()),
     }
     Ok(())
 }
