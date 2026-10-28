@@ -25,6 +25,11 @@ if (typeof(global.Window.startMouseHook) === "undefined") {
 if (typeof(global.ExtractMojimoGameFont) === "undefined")
 	global.ExtractMojimoGameFont = function() { return false; };
 
+// The extrans.dll stand-in's Layer.beginTransition, off until a game links the plugin.
+global.vnrunExtransInstall = true;
+Scripts.execStorage(global.KirikiriPolyfillRoot + "plugins/extrans.tjs");
+global.vnrunExtransInstall = false;
+
 // KiriKiri's text input box (KAG's [input], name entry): the browser's prompt() stands in for it.
 // Like the original, it gives void when cancelled. vnrunPrompt is in patches/krkrsdl2 0017.
 if (typeof(global.System.inputString) === "undefined" && typeof(global.vnrunPrompt) !== "undefined")

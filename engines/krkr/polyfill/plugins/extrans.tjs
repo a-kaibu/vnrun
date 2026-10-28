@@ -1,11 +1,16 @@
 // vnrun: extrans.dll and extNagano.dll. Their transitions (ripple, wave, mosaic, turn, rotate*,
 // 3duniversal, ...) run as crossfades: every method but the engine's own.
+// Compat.tjs runs this at startup with vnrunExtransInstall set: layers copy their methods when
+// they are made, so the override must be in place before the game makes any (花鐘カナデ*グラム
+// links extrans.dll after its base layers exist). Linking the plugin only turns it on.
 if (typeof(global.vnrunExtrans) === "undefined") {
-	global.vnrunExtrans = %[ begin: global.Layer.beginTransition,
+	global.vnrunExtrans = %[ begin: global.Layer.beginTransition, linked: false,
 		builtin: %[ crossfade: 1, universal: 1, scroll: 1 ] ];
 	global.Layer.beginTransition = function(method, withchildren = true, transsource = null, options = %[]) {
 		var x = global.vnrunExtrans;
-		if (!x.builtin[method]) method = "crossfade";
+		if (x.linked && !x.builtin[method]) method = "crossfade";
 		return (x.begin incontextof this)(method, withchildren, transsource, options);
 	} incontextof null;
 }
+if (typeof(global.vnrunExtransInstall) === "undefined" || !global.vnrunExtransInstall)
+	global.vnrunExtrans.linked = true;
