@@ -90,7 +90,9 @@ export class GameFS {
   // Whole files, least recently used first.
   private readonly cache = new Map<string, Uint8Array>();
   private cached = 0;
+  // Every request sent so far, and the last one for each path.
   private pending: Promise<void> = Promise.resolve();
+  private readonly lastFor = new Map<string, Promise<void>>();
   private readonly failed = new Map<string, unknown>();
 
   constructor(base: string, manifest: Manifest) {
@@ -238,10 +240,14 @@ export class GameFS {
     this.send("DELETE", p);
   }
 
-  // Requests go out one at a time so a later write never lands before an earlier one.
+  // Requests for one path go out one at a time, so a later write never lands before an earlier
+  // one. Different paths go out together: when the tab closes, the page only gets to start the
+  // requests it starts right away, and a game that writes two files then (KiriKiri's system
+  // variables) lost the second when every request waited for the one before it.
   private send(method: "PUT" | "DELETE", path: string, body?: Uint8Array): void {
     const url = `${this.base}saves/${encodePath(path)}`;
-    this.pending = this.pending.then(async () => {
+    const previous = this.lastFor.get(path) ?? Promise.resolve();
+    const request = previous.then(async () => {
       try {
         // keepalive lets a save finish after the page closes, but Chromium allows only 64 KiB
         // of keepalive bodies in flight, and the previous request still counts for a moment
@@ -263,6 +269,11 @@ export class GameFS {
         window.dispatchEvent(new CustomEvent("vnrun-save-error", { detail }));
       }
     });
+    this.lastFor.set(path, request);
+    void request.then(() => {
+      if (this.lastFor.get(path) === request) this.lastFor.delete(path);
+    });
+    this.pending = Promise.all([this.pending, request]).then(() => {});
   }
 
   /** Resolves when every save sent so far has reached the server. */

@@ -36,6 +36,22 @@ Scripts.execStorage(global.KirikiriPolyfillRoot + "plugins/layerExImage.tjs");
 // layerExBTOA (Layer.clipAlphaRect, shrinkCopy), also part of PackinOne.dll.
 Scripts.execStorage(global.KirikiriPolyfillRoot + "plugins/layerExBTOA.tjs");
 
+// KiriKiri 2's Layer.pileRect and blendRect, which KiriKiri Z dropped for operateRect (its
+// k2compat.tjs puts them back the same way). Defined here, before KAGLayer and the games' own
+// Layer classes, so that they inherit them.
+if (typeof(global.Layer.pileRect) === "undefined") {
+	// pileRect: src over this layer by src's alpha, this layer's alpha kept.
+	global.Layer.pileRect = function(dleft, dtop, src, sleft, stop, swidth, sheight, opa = 255) {
+		operateRect(dleft, dtop, src, sleft, stop, swidth, sheight, omAlpha, opa);
+	} incontextof null;
+}
+if (typeof(global.Layer.blendRect) === "undefined") {
+	// blendRect: src over this layer at a constant opacity, src's alpha ignored.
+	global.Layer.blendRect = function(dleft, dtop, src, sleft, stop, swidth, sheight, opa = 255) {
+		operateRect(dleft, dtop, src, sleft, stop, swidth, sheight, omOpaque, opa);
+	} incontextof null;
+}
+
 // KiriKiri's text input box (KAG's [input], name entry): the browser's prompt() stands in for it.
 // Like the original, it gives void when cancelled. vnrunPrompt is in patches/krkrsdl2 0017.
 if (typeof(global.System.inputString) === "undefined" && typeof(global.vnrunPrompt) !== "undefined")
@@ -152,10 +168,20 @@ Scripts.execStorage(global.KirikiriPolyfillRoot + "plugins/motionPlayer.tjs");
 // closed tab never does; a game that saved them half-way through its first-start setup then
 // failed on every later start (madosoft 2013: sf.voiceVisible missing).
 global.vnrunSaveState = function() {
-	try {
-		if (typeof(global.kag) !== "undefined" && isvalid global.kag && typeof(global.kag.saveSystemVariables) !== "undefined")
-			global.kag.saveSystemVariables();
-	} catch (e) {
-		Debug.message("(vnrun) saveSystemVariables: " + e.message);
+	// KAG's window is global.kag. Games with their own system (parasol's MainWindow) keep the same
+	// on their main window under another name, and also write it only when the window closes.
+	var w = void;
+	if (typeof(global.kag) !== "undefined" && isvalid global.kag) w = global.kag;
+	else if (Window.mainWindow !== null && isvalid Window.mainWindow) w = Window.mainWindow;
+	if (w === void) return;
+	var names = [ "saveSystemVariables", "SystemSave" ];
+	for (var i = 0; i < names.count; i++) {
+		if (typeof(w[names[i]]) !== "Object") continue;
+		try {
+			w[names[i]]();
+		} catch (e) {
+			Debug.message("(vnrun) " + names[i] + ": " + e.message);
+		}
+		break;
 	}
 } incontextof global;

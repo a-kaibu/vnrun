@@ -8,12 +8,14 @@
 //   shot:<name>           screenshot to <out prefix>_<name>.png
 //   at:<x>;<y>            click at page pixels (the page is 1280x800)
 //   hold:<x>;<y>[;<ms>]   like at, hovering and holding the button for ms (default 1000)
+//   rclick:<x>;<y>        right-click at page pixels (opens the menu in many KAG games)
 //   key:<Key>             press a key (Playwright names: Enter, Space, ArrowDown, ...)
 //   wheel:<x>;<y>;<dy>    turn the mouse wheel over page pixels (dy < 0 is up)
 //   type:<text>           type text into the focused element
 //   files:<sel>=<path>    put a file or folder into an <input type=file> (upstream launcher pages)
 //   eval:<js>             log the JSON of a page expression (no commas)
 //   dialog:yes|no         how later alert/confirm dialogs are answered (no by default)
+//   reload                reload the page (to check that saves come back)
 // The console log (page and workers) goes to <out prefix>.log.
 const { chromium } = require("playwright");
 const fs = require("fs");
@@ -86,6 +88,13 @@ if (!url || !out) {
       await page.mouse.down();
       await page.waitForTimeout(ms);
       await page.mouse.up();
+    } else if (cmd === "rclick") {
+      const [x, y] = arg.split(";").map(Number);
+      await page.mouse.move(x, y);
+      await page.waitForTimeout(500);
+      await page.mouse.down({ button: "right" });
+      await page.waitForTimeout(150);
+      await page.mouse.up({ button: "right" });
     } else if (cmd === "key") {
       await page.keyboard.press(arg);
     } else if (cmd === "wheel") {
@@ -99,6 +108,9 @@ if (!url || !out) {
       await page.setInputFiles(sel, path);
     } else if (cmd === "dialog") {
       answerYes = arg === "yes";
+    } else if (cmd === "reload") {
+      await page.reload();
+      log.push(`[reload @${at()}]`);
     } else if (cmd === "eval") {
       log.push(`[eval] ${JSON.stringify(await page.evaluate(arg))}`);
     } else {
