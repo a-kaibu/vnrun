@@ -19,7 +19,7 @@ fn main() -> Result<(), String> {
         saves: dir.join("vnrun-saves"),
         root: dir,
     };
-    if args[2] == "--scripts" || args[2] == "--abmp" {
+    if args[2] == "--scripts" || args[2] == "--abmp" || args[2] == "--cat" {
         return look(disk, &args[2], args.get(3));
     }
     let key = qlie::game::key_file(&mut disk);
@@ -66,6 +66,16 @@ fn main() -> Result<(), String> {
 fn look(disk: Disk, what: &str, name: Option<&String>) -> Result<(), String> {
     use qlie::script::{Kind, Unit};
     let mut g = qlie::game::Game::open(Box::new(disk))?;
+    if what == "--cat" {
+        // a script's text
+        let name = name.ok_or("--cat <name>")?;
+        let b = g.read(name).ok_or("no such file")?;
+        if let Ok(out) = std::env::var("QLIE_RAW") {
+            return std::fs::write(out, &b).map_err(|e| e.to_string());
+        }
+        print!("{}", qlie::script::decode(&b));
+        return Ok(());
+    }
     if what == "--abmp" {
         let name = name.ok_or("--abmp <name>")?;
         let b = g.read(name).ok_or("no such file")?;

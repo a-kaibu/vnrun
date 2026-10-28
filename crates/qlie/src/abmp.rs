@@ -64,6 +64,8 @@ pub struct Motion {
 pub struct Abmp {
     /// the files of the pictures (PNG, BMP, JPEG, ...), by number
     pub images: Vec<Vec<u8>>,
+    /// the pictures' names (`*MesSurface`: where a message window's text goes)
+    pub names: Vec<String>,
     pub sounds: Vec<Vec<u8>>,
     pub motions: Vec<Motion>,
 }
@@ -124,10 +126,17 @@ impl Abmp {
                 let count = r.u8().ok_or("truncated")?;
                 for _ in 0..count {
                     let t = r.tag().ok_or("truncated")?;
+                    let mut name = String::new();
                     if t == "abimgdat15" {
                         let ver = r.u32().ok_or("truncated")?;
                         let n = r.u16().ok_or("truncated")? as usize;
-                        r.take(n * 2).ok_or("truncated")?;
+                        let u: Vec<u16> = r
+                            .take(n * 2)
+                            .ok_or("truncated")?
+                            .chunks(2)
+                            .map(|c| u16::from_le_bytes([c[0], c[1]]))
+                            .collect();
+                        name = String::from_utf16_lossy(&u);
                         let n = r.u16().ok_or("truncated")? as usize;
                         r.take(n).ok_or("truncated")?;
                         r.u8().ok_or("truncated")?;
@@ -143,7 +152,7 @@ impl Abmp {
                         r.take(7).ok_or("truncated")?;
                     } else {
                         let n = r.u16().ok_or("truncated")? as usize;
-                        r.take(n).ok_or("truncated")?;
+                        name = sjis(r.take(n).ok_or("truncated")?);
                         if t != "abimgdat10" && t != "absnddat10" {
                             let n = r.u16().ok_or("truncated")? as usize;
                             r.take(n).ok_or("truncated")?;
@@ -164,6 +173,7 @@ impl Abmp {
                     };
                     if tag == "abimage10" {
                         a.images.push(data);
+                        a.names.push(name);
                     } else {
                         a.sounds.push(data);
                     }

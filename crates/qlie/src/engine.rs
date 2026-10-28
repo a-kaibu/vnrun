@@ -37,6 +37,9 @@ pub enum VKind {
 pub struct Var {
     pub kind: VKind,
     pub vals: Vec<Value>,
+    /// the objects its declaration made, which go with it (an object assigned to it later
+    /// is only referred to)
+    pub own: Vec<usize>,
 }
 
 pub struct Frame {
@@ -74,6 +77,8 @@ pub struct Thread {
     /// the call depth below the running handler
     pub handler: Option<usize>,
     pub played: bool,
+    /// `\stop,label,ms`: when the wait ends by itself
+    pub stop_end: Option<f64>,
     /// `^name` -> commands; story text and empty lines
     pub rep: HashMap<String, String>,
     pub et: String,
@@ -91,6 +96,7 @@ impl Thread {
             stop: None,
             handler: None,
             played: false,
+            stop_end: None,
             rep: HashMap::new(),
             et: String::new(),
             nt: String::new(),
@@ -174,8 +180,17 @@ pub struct Engine {
     pub fast: bool,
     /// the story line the game thread showed last: its script and op
     pub last_text: Option<(String, usize)>,
+    /// the game thread's variables as they were when that story line began
+    pub(crate) line_vars: Option<Vec<(String, Var)>>,
     /// skipping to a saved line
     pub loading: Option<crate::save::Loading>,
+    /// `mdat` saves
+    pub(crate) mem_saves: HashMap<String, Vec<u8>>,
+    /// the in-memory saves, oldest first
+    pub(crate) mem_order: Vec<String>,
+    pub(crate) tdat_limit: usize,
+    /// the game screen when each save was made (`$$$SaveImage,name`), this session's only
+    pub(crate) thumbs: HashMap<String, Rc<Image>>,
     /// now, for the dates of saves: year, month, day, hour, minute, second
     pub today: [i64; 6],
     pub savetext: [String; 4],
@@ -186,6 +201,8 @@ pub struct Engine {
     pub frame_no: u64,
     /// templates of `rep` parsed: text -> commands
     templates: HashMap<String, Rc<Template>>,
+    /// the script each template was set in: its labels are the template's
+    pub(crate) tpl_units: HashMap<String, Rc<Unit>>,
 }
 
 fn decl_name(raw: &str) -> (String, Option<&str>) {
@@ -207,6 +224,26 @@ fn dir_of(path: &str) -> String {
 }
 
 /// Literal arguments (story lines): quotes taken off, nothing evaluated.
+/// A template with a story line's arguments put in, as one command text.
+pub(crate) fn expand(tpl: &str, rest: &str) -> String {
+    let mut t = tpl.trim_end().to_string();
+    if let Some(s) = t.strip_suffix(',') {
+        t = s.to_string();
+        let last = script::split_cmds(&t).pop();
+        if let Some((n, a)) = last
+            && a.len() == 1
+            && matches!(n.as_str(), "sub" | "subp" | "jmp")
+        {
+            t.push(',');
+        }
+    }
+    if rest.is_empty() {
+        t
+    } else {
+        format!("{t},{rest}")
+    }
+}
+
 fn literal_args(s: &str) -> Vec<Arg> {
     script::split_top(s, ',')
         .into_iter()
@@ -273,7 +310,12 @@ impl Engine {
             warned: HashSet::new(),
             fast: false,
             last_text: None,
+            line_vars: None,
             loading: None,
+            mem_saves: HashMap::new(),
+            mem_order: Vec::new(),
+            tdat_limit: 0,
+            thumbs: HashMap::new(),
             today: [2000, 1, 1, 0, 0, 0],
             savetext: Default::default(),
             play_mode: 0,
@@ -281,6 +323,7 @@ impl Engine {
             overlay: None,
             frame_no: 0,
             templates: HashMap::new(),
+            tpl_units: HashMap::new(),
         };
         e.screen_size();
         e.load_system_vars();
@@ -298,6 +341,8 @@ impl Engine {
             ("llog", OKind::Flags),
             ("flog", OKind::Flags),
             ("dat", OKind::Dat),
+            ("mdat", OKind::MDat),
+            ("tdat", OKind::TDat),
             ("math", OKind::Math),
             ("show", OKind::Movie),
             ("csr", OKind::Other),
@@ -309,6 +354,7 @@ impl Engine {
                 Var {
                     kind: VKind::Obj,
                     vals: vec![Value::Obj(id)],
+                    own: Vec::new(),
                 },
             );
         }
@@ -320,6 +366,7 @@ impl Engine {
             Var {
                 kind: VKind::Obj,
                 vals: snd,
+                own: Vec::new(),
             },
         );
         e.start(GAME, "startup.s", "@@TOP")?;
@@ -589,7 +636,11 @@ impl Engine {
                 let p = f.params.get(i as usize).cloned();
                 return Some(match name {
                     "paramint" => Value::Int(p.map_or(0, |v| v.int())),
-                    "paramstr" => Value::Str(p.map_or(String::new(), |v| v.str())),
+                    // an object passed on stays one (`\cal,o=ParamStr[0]`)
+                    "paramstr" => match p {
+                        Some(Value::Obj(o)) => Value::Obj(o),
+                        p => Value::Str(p.map_or(String::new(), |v| v.str())),
+                    },
                     _ => Value::Int(f.params.len() as i64),
                 });
             }
@@ -713,6 +764,7 @@ impl Engine {
                 let mut var = Var {
                     kind,
                     vals: Vec::new(),
+                    own: Vec::new(),
                 };
                 put(&mut var, v);
                 if name.starts_with('#') {
@@ -754,18 +806,14 @@ impl Engine {
     }
 
     fn free_var(&mut self, v: Var) {
-        if v.kind == VKind::Obj {
-            for x in v.vals {
-                if let Value::Obj(id) = x {
-                    // a built-in object (snd swapped in) stays
-                    let builtin = self
-                        .builtins
-                        .values()
-                        .any(|b| b.vals.contains(&Value::Obj(id)));
-                    if !builtin {
-                        self.free_obj(id);
-                    }
-                }
+        for id in v.own {
+            // a built-in object (snd swapped in) stays
+            let builtin = self
+                .builtins
+                .values()
+                .any(|b| b.vals.contains(&Value::Obj(id)));
+            if !builtin {
+                self.free_obj(id);
             }
         }
     }
@@ -799,7 +847,14 @@ impl Engine {
                     .map(|_| Value::Obj(self.new_obj(Obj::new(okind, self.refer))))
                     .collect(),
             };
-            let var = Var { kind, vals };
+            let own = vals
+                .iter()
+                .filter_map(|v| match v {
+                    Value::Obj(id) => Some(*id),
+                    _ => None,
+                })
+                .collect();
+            let var = Var { kind, vals, own };
             let old = match scope {
                 0 => self.top().and_then(|f| f.locals.insert(name.clone(), var)),
                 1 => self.threads[self.refer].globals.insert(name.clone(), var),
@@ -872,7 +927,14 @@ impl Engine {
                 })
                 .collect();
             let kind = if k == "i" { VKind::Int } else { VKind::Str };
-            self.sysvars.insert(n.to_string(), Var { kind, vals });
+            self.sysvars.insert(
+                n.to_string(),
+                Var {
+                    kind,
+                    vals,
+                    own: Vec::new(),
+                },
+            );
         }
     }
 
@@ -940,6 +1002,12 @@ impl Engine {
                 continue;
             }
             o.advance(dt as f32);
+            if let Some((gx, gy)) = &o.glide {
+                (o.x, o.y) = (gx.at(now), gy.at(now));
+                if now >= gx.start + gx.ms {
+                    o.glide = None;
+                }
+            }
             if o.hiding && o.settled() {
                 o.hiding = false;
                 o.shown = false;
@@ -1127,10 +1195,13 @@ impl Engine {
                     None => return Ok(()),
                 },
                 Wait::Stop => {
-                    if th.played {
+                    let timed_out = th.stop_end.is_some_and(|end| self.now >= end || self.fast);
+                    if th.played || timed_out {
                         th.wait = Wait::None;
                         th.stop = None;
                         th.played = false;
+                        th.stop_end = None;
+                        self.set_result("resultstopint", 0, Value::Int(timed_out as i64));
                         continue;
                     }
                     let Some((u, pc)) = th.stop.clone() else {
@@ -1190,6 +1261,9 @@ impl Engine {
                         let file = unit.files[0].clone();
                         if self.loading.is_some() {
                             self.load_reached(&file, pc);
+                        }
+                        if self.loading.is_none() {
+                            self.line_vars = Some(self.game_vars());
                         }
                         self.last_text = Some((file, pc));
                     }
@@ -1265,6 +1339,10 @@ impl Engine {
                         // "\sub,label,self," ends with an empty argument for the rest
                         if a.last().is_some_and(|s| s.is_empty()) {
                             a.pop();
+                            // "\sub,label," still has the (empty) file before the rest
+                            if a.len() == 1 && matches!(n.as_str(), "sub" | "subp" | "jmp") {
+                                a.push(String::new());
+                            }
                         }
                         (n, script::make_args(a))
                     })
@@ -1275,6 +1353,17 @@ impl Engine {
             }
         };
         let n = cmds.len();
+        let home;
+        let at = match self.tpl_units.get(tpl) {
+            Some(u) if !Rc::ptr_eq(u, &at.unit) => {
+                home = At {
+                    unit: u.clone(),
+                    op: at.op.min(u.ops.len().saturating_sub(1)),
+                };
+                &home
+            }
+            _ => at,
+        };
         for (k, (name, args)) in cmds.iter().enumerate() {
             if k + 1 == n {
                 let mut all = args.clone();
@@ -1301,10 +1390,19 @@ impl Engine {
             }
             _ => at.unit.clone(),
         };
-        let pc = unit
-            .label(&label)
-            .ok_or(format!("no label {label} in {}", unit.files[0]))?;
-        Ok((unit, pc))
+        if let Some(pc) = unit.label(&label) {
+            return Ok((unit, pc));
+        }
+        // a label of a script another frame is in (`\tsub` from a menu to the game's)
+        if file.is_none_or(|f| f.str().is_empty()) {
+            let frames = self.threads.iter().flat_map(|t| t.frames.iter().rev());
+            for f in frames {
+                if let Some(pc) = f.unit.label(&label) {
+                    return Ok((f.unit.clone(), pc));
+                }
+            }
+        }
+        Err(format!("no label {label} in {}", unit.files[0]))
     }
 
     fn button_results(&mut self, id: usize) {
@@ -1489,13 +1587,19 @@ impl Engine {
                 let out = crate::cmds::regex_replace(&text, &pat, &rep, all).unwrap_or(text);
                 self.res_str(0, out);
             }
-            "sub" | "bsub" | "jmp" | "go" => {
+            "sub" | "tsub" | "bsub" | "subp" | "jmp" | "go" => {
                 let v = self.eval_args(args);
                 let Some(label) = v.first() else {
                     return Err(format!("\\{name} without a label"));
                 };
                 let (unit, pc) = self.jump_target(at, label, v.get(1))?;
-                let params: Vec<Value> = v.iter().skip(2).cloned().collect();
+                let params: Vec<Value> = if name == "subp" {
+                    // one parameter: the rest of the line as it is, commas and all
+                    let rest: Vec<String> = v.iter().skip(2).map(|v| v.str()).collect();
+                    vec![Value::Str(rest.join(","))]
+                } else {
+                    v.iter().skip(2).cloned().collect()
+                };
                 match name {
                     "jmp" => {
                         let f = self.top().unwrap();
@@ -1568,11 +1672,20 @@ impl Engine {
             }
             "stop" => {
                 let v = self.eval_args(args);
+                // `\stop,label,ms,skip ms`: a number after the label is a time limit
+                let time = v.get(1).and_then(|x| match x {
+                    Value::Int(n) => Some(*n),
+                    Value::Str(s) => s.trim().parse::<i64>().ok(),
+                    _ => None,
+                });
+                let file = if time.is_some() { None } else { v.get(1) };
                 let handler = match v.first() {
-                    Some(l) if !l.str().is_empty() => Some(self.jump_target(at, l, v.get(1))?),
+                    Some(l) if !l.str().is_empty() => Some(self.jump_target(at, l, file)?),
                     _ => None,
                 };
+                let now = self.now;
                 let th = &mut self.threads[t];
+                th.stop_end = time.map(|ms| now + ms as f64);
                 th.played = false;
                 th.stop = handler;
                 // the handler starts next frame
@@ -1614,9 +1727,25 @@ impl Engine {
                 self.refer = if n == 1 { GAME } else { self.cur };
             }
             "thrd" => {
-                // back to the game: the system thread ends
-                if t == SYS {
-                    self.end_system();
+                let v = self.eval_args(args);
+                match v.get(1).map(|l| l.str()).filter(|l| !l.is_empty()) {
+                    // `\thrd,1,label`: the system thread runs a label of sysstartup.s (a
+                    // menu) and this thread waits for it, from the next frame
+                    Some(label) if t == GAME => {
+                        self.system_label(&label);
+                        let now = self.now;
+                        self.threads[t].wait = Wait::Until {
+                            end: now,
+                            click: false,
+                        };
+                    }
+                    Some(_) => {}
+                    // back to the game: the system thread ends
+                    None => {
+                        if t == SYS {
+                            self.end_system();
+                        }
+                    }
                 }
             }
             "swap" => {
@@ -1695,15 +1824,28 @@ impl Engine {
                 self.res_int(0, p);
             }
             "rep" => {
-                if args.len() >= 3
-                    && let Some((n, i)) = self.lvalue(&args[0])
-                {
-                    let s = self.get_var(&n, i).map(|v| v.str()).unwrap_or_default();
+                // the text with every `from` made `to`, in ResultStr[0] (and a variable
+                // named first changes too)
+                if args.len() >= 2 {
+                    let s = self.eval(&args[0].expr).str();
                     let from = self.eval(&args[1].expr).str();
-                    let to = self.eval(&args[2].expr).str();
-                    if !from.is_empty() {
-                        self.set_var(&n, i, Value::Str(s.replace(&from, &to)));
+                    // no `to`: `from` is taken out
+                    let to = args
+                        .get(2)
+                        .map(|a| self.eval(&a.expr).str())
+                        .unwrap_or_default();
+                    let out = if from.is_empty() {
+                        s
+                    } else {
+                        s.replace(&from, &to)
+                    };
+                    if let Some((n, i)) = self.lvalue(&args[0])
+                        && !n.starts_with("param")
+                        && !n.starts_with("result")
+                    {
+                        self.set_var(&n, i, Value::Str(out.clone()));
                     }
+                    self.res_str(0, out);
                 }
             }
             "fmt" => {
@@ -1761,6 +1903,34 @@ impl Engine {
                     }
                 }
                 self.res_str(0, out);
+            }
+            "trim" => {
+                let s = args
+                    .first()
+                    .map(|a| self.eval(&a.expr).str())
+                    .unwrap_or_default();
+                self.res_str(0, s.trim().to_string());
+            }
+            "stid" => {
+                // a number from text, or the default
+                let v = self.eval_args(args);
+                let s = v.first().map(|v| v.str()).unwrap_or_default();
+                let n = s.trim().parse::<i64>().ok().or_else(|| {
+                    let t = s.trim();
+                    t.strip_prefix('$')
+                        .and_then(|h| i64::from_str_radix(h, 16).ok())
+                });
+                self.res_int(0, n.unwrap_or_else(|| v.get(1).map_or(0, |v| v.int())));
+            }
+            "exop" => {
+                // runs a command line given as text
+                let s = args
+                    .first()
+                    .map(|a| self.eval(&a.expr).str())
+                    .unwrap_or_default();
+                if !s.trim().is_empty() {
+                    self.template(at, s.trim(), Vec::new())?;
+                }
             }
             "lowc" => {
                 let s = args
@@ -2030,7 +2200,38 @@ impl Engine {
                 .flatten()
                 .any(|o| o.thread == SYS && o.shown && o.kind.shows() && o.pic.is_some())
     }
+}
 
+/// A picture made smaller (or larger) to `w` by `h`, each pixel the average of what it covers.
+pub(crate) fn resample(src: &Image, w: u32, h: u32) -> Image {
+    let mut out = Image::new(w.max(1), h.max(1));
+    let (sw, sh) = (src.w as usize, src.h as usize);
+    for y in 0..out.h as usize {
+        let y0 = y * sh / out.h as usize;
+        let y1 = ((y + 1) * sh / out.h as usize).max(y0 + 1).min(sh);
+        for x in 0..out.w as usize {
+            let x0 = x * sw / out.w as usize;
+            let x1 = ((x + 1) * sw / out.w as usize).max(x0 + 1).min(sw);
+            let mut acc = [0u32; 4];
+            for sy in y0..y1 {
+                for sx in x0..x1 {
+                    let p = (sy * sw + sx) * 4;
+                    for (a, v) in acc.iter_mut().zip(&src.px[p..p + 4]) {
+                        *a += *v as u32;
+                    }
+                }
+            }
+            let n = ((y1 - y0) * (x1 - x0)).max(1) as u32;
+            let o = (y * out.w as usize + x) * 4;
+            for (d, a) in out.px[o..o + 4].iter_mut().zip(acc) {
+                *d = (a / n) as u8;
+            }
+        }
+    }
+    out
+}
+
+impl Engine {
     /// `$$$GameThreadImage,z`: the game thread's screen below z (all when 0).
     pub fn game_image(&mut self, zmax: i32) -> Image {
         let zmax = if zmax <= 0 { i32::MAX } else { zmax };

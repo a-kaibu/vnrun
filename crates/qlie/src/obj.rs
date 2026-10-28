@@ -32,6 +32,10 @@ pub enum OKind {
     Log,
     Flags,
     Dat,
+    /// saves in memory (`mdat`: the scene-replay return point)
+    MDat,
+    /// saves in memory (`tdat`: the backlog's jump points)
+    TDat,
     Math,
     Other,
 }
@@ -161,8 +165,8 @@ pub struct Obj {
     pub text: Option<TextBox>,
     // sounds
     pub snd: Sound,
-    // lists
-    pub list: Vec<(String, String)>,
+    /// a list's lines (a table's are `name=value`)
+    pub list: Vec<String>,
     // a picture's sounds (by number) to play
     pub cues: Vec<u8>,
     /// `\ds,left,top,right,bottom`: the button is there only while the pointer is in this area
@@ -171,6 +175,12 @@ pub struct Obj {
     pub bar: (i64, i64),
     /// sounds `\ls` put in place of the picture's own, by number
     pub sounds: Vec<Option<Rc<Vec<u8>>>>,
+    /// `\p4` with a time: where x and y are going
+    pub glide: Option<(Tween, Tween)>,
+    /// `\p4`'s scale, percent
+    pub scale: (Tween, Tween),
+    /// `\alg2`: the point of the picture at x, y (0..1 of its width and height)
+    pub align: (f32, f32),
 }
 
 impl Obj {
@@ -202,6 +212,9 @@ impl Obj {
             sense: None,
             bar: (0, 0),
             sounds: Vec::new(),
+            glide: None,
+            scale: (Tween::new(100.0), Tween::new(100.0)),
+            align: (0.0, 0.0),
         }
     }
 
@@ -391,6 +404,43 @@ pub fn draws(
     if alpha <= 0.0 {
         return;
     }
+    let first = out.len();
+    own_draws(o, now, alpha, (sw, sh), fill, out);
+    // the object's own scale (about x, y) and alignment
+    let (sx, sy) = (o.scale.0.at(now) / 100.0, o.scale.1.at(now) / 100.0);
+    let (ax, ay) = o.align;
+    if sx == 1.0 && sy == 1.0 && ax == 0.0 && ay == 0.0 {
+        return;
+    }
+    let (w, h) = match &o.pic {
+        Some(Pic::Still(im)) => (im.w as f32, im.h as f32),
+        _ => out[first..]
+            .iter()
+            .fold((0.0f32, 0.0f32), |(w, h), (_, d)| {
+                (w.max(d.dst[2] - o.x), h.max(d.dst[3] - o.y))
+            }),
+    };
+    let (ox, oy) = (o.x - w * ax * sx, o.y - h * ay * sy);
+    for (_, d) in &mut out[first..] {
+        let tx = |x: f32| ox + (x - o.x) * sx;
+        let ty = |y: f32| oy + (y - o.y) * sy;
+        d.dst = [tx(d.dst[0]), ty(d.dst[1]), tx(d.dst[2]), ty(d.dst[3])];
+        d.place.cx = tx(d.place.cx);
+        d.place.cy = ty(d.place.cy);
+    }
+}
+
+fn own_draws(
+    o: &Obj,
+    now: f64,
+    alpha: f32,
+    (sw, sh): (f32, f32),
+    fill: &mut dyn FnMut([u8; 3]) -> Rc<Image>,
+    out: &mut Vec<(i32, Draw)>,
+) {
+    let _ = now;
+    // a message window's text goes where its `*MesSurface` picture is
+    let mut surface: Option<(f32, f32)> = None;
     match &o.pic {
         Some(Pic::Still(im)) => {
             out.push((
@@ -427,6 +477,16 @@ pub fn draws(
                             let Some(Some(im)) = images.get(s.image as usize) else {
                                 continue;
                             };
+                            if abmp
+                                .names
+                                .get(s.image as usize)
+                                .is_some_and(|n| n.starts_with("*MesSurface"))
+                            {
+                                let (ax, ay) = s.anchor;
+                                let (w, h) = (im.w as f32, im.h as f32);
+                                surface = Some((o.x + s.x - w * ax, o.y + s.y - h * ay));
+                                continue;
+                            }
                             (im.clone(), im.w as f32, im.h as f32)
                         }
                         _ => continue,
@@ -475,7 +535,8 @@ pub fn draws(
     if let Some(t) = &o.text
         && let Some((_, im)) = &t.image
     {
-        let (x, y) = (o.x + t.rect[0] as f32, o.y + t.rect[1] as f32);
+        let (bx, by) = surface.unwrap_or((o.x, o.y));
+        let (x, y) = (bx + t.rect[0] as f32, by + t.rect[1] as f32);
         out.push((
             1000,
             Draw {

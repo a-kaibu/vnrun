@@ -4,8 +4,17 @@ use std::rc::Rc;
 
 use crate::engine::{At, Engine, SoundEvent};
 use crate::expr::Value;
-use crate::obj::{OKind, Pic, TextBox};
+use crate::obj::{OKind, Pic, TextBox, Tween};
 use crate::script::Arg;
+
+/// The name of a list line (`name=value`; a line without `=` is all name).
+fn line_key(l: &str) -> &str {
+    l.split_once('=').map_or(l, |(k, _)| k).trim()
+}
+
+fn line_value(l: &str) -> &str {
+    l.split_once('=').map_or("", |(_, v)| v).trim()
+}
 
 fn file_name(p: &str) -> String {
     p.rsplit(['\\', '/']).next().unwrap_or(p).to_string()
@@ -59,7 +68,7 @@ impl Engine {
                 OKind::Sys => self.sys_cmd(at, name, &v)?,
                 OKind::Eff => self.eff_cmd(at, name, &v),
                 OKind::Cam => self.cam_cmd(name, &v),
-                OKind::Rep => self.rep_cmd(name, &v),
+                OKind::Rep => self.rep_cmd(at, name, &v),
                 OKind::SKey => self.skey_cmd(name, &v),
                 OKind::Inp => self.inp_cmd(name, &v),
                 OKind::Misc => self.misc_cmd(name, &v),
@@ -71,7 +80,9 @@ impl Engine {
                         self.res_int(0, self.loading.is_some() as i64);
                     }
                 }
-                OKind::Dat => self.dat_cmd(name, &v),
+                OKind::Dat => self.dat_cmd(None, name, &v),
+                OKind::MDat => self.dat_cmd(Some('m'), name, &v),
+                OKind::TDat => self.dat_cmd(Some('t'), name, &v),
                 OKind::Math => {
                     let n = |i: usize| v.get(i).map_or(0, |v| v.int());
                     let r = match name {
@@ -115,8 +126,52 @@ impl Engine {
                 let files: Vec<String> = v.iter().map(|v| v.str()).collect();
                 self.load_pic(at, id, &files);
             }
+            "p4" => {
+                // x, y, z, scale x, y, z, turn x, y, z, priority, time, loop
+                if let Some(o) = self.obj(id) {
+                    let (x, y) = (int(0) as f32, int(1) as f32);
+                    let ms = int(10).max(0) as f64;
+                    if ms > 0.0 {
+                        let mut gx = Tween::new(o.x);
+                        let mut gy = Tween::new(o.y);
+                        gx.set(x, ms, now);
+                        gy.set(y, ms, now);
+                        o.glide = Some((gx, gy));
+                    } else {
+                        o.glide = None;
+                        (o.x, o.y) = (x, y);
+                    }
+                    let sx = if given(3) { int(3) as f32 } else { 100.0 };
+                    let sy = if given(4) { int(4) as f32 } else { 100.0 };
+                    o.scale.0.set(sx, ms, now);
+                    o.scale.1.set(sy, ms, now);
+                    if given(9) {
+                        o.z = int(9) as i32;
+                    }
+                }
+            }
+            "col" => {
+                // opacity, multiplied colour, added colour, time, loop
+                if let Some(o) = self.obj(id)
+                    && given(0)
+                {
+                    o.alpha
+                        .set(int(0).clamp(0, 255) as f32, int(3).max(0) as f64, now);
+                }
+            }
+            "alg2" => {
+                if let Some(o) = self.obj(id) {
+                    o.align = (int(0) as f32 / 100.0, int(1) as f32 / 100.0);
+                }
+            }
+            "pri" => {
+                if let Some(o) = self.obj(id) {
+                    o.z = int(0) as i32;
+                }
+            }
             "p" => {
                 if let Some(o) = self.obj(id) {
+                    o.glide = None;
                     if given(0) {
                         o.x = int(0) as f32;
                     }
@@ -215,6 +270,26 @@ impl Engine {
             "li" | "ls" => {
                 // a picture (sound) of the .b put in place: number, file
                 let (n, f) = (int(0).max(0) as usize, s(1));
+                if let Some(rest) = f.to_lowercase().strip_prefix("$$$saveimage,") {
+                    // a save's picture, the size of the one it replaces
+                    let name = rest.trim_end_matches(".bmp").to_string();
+                    let Some(thumb) = self.thumbs.get(&name).cloned() else {
+                        return;
+                    };
+                    if let Some(Pic::Anim { images, .. }) =
+                        self.obj(id).and_then(|o| o.pic.as_mut())
+                    {
+                        let (w, h) = images
+                            .get(n)
+                            .and_then(|i| i.as_ref())
+                            .map_or((thumb.w, thumb.h), |i| (i.w, i.h));
+                        if images.len() <= n {
+                            images.resize(n + 1, None);
+                        }
+                        images[n] = Some(Rc::new(crate::engine::resample(&thumb, w, h)));
+                    }
+                    return;
+                }
                 let Some(path) = self.resolve(at, &f) else {
                     self.warn(format!("{}: no file {f}", at.file()));
                     return;
@@ -527,12 +602,21 @@ impl Engine {
 
     fn list_cmd(&mut self, at: &At, id: usize, name: &str, v: &[Value]) {
         let s = |i: usize| v.get(i).map(|v| v.str()).unwrap_or_default();
-        match name {
-            "i" => {
-                if let Some(o) = self.obj(id) {
-                    o.list.clear();
-                }
+        let other = |e: &mut Engine, i: usize| -> Vec<String> {
+            match v.get(i) {
+                Some(Value::Obj(o)) => e.obj(*o).map(|o| o.list.clone()).unwrap_or_default(),
+                _ => Vec::new(),
             }
+        };
+        let list = match self.obj(id) {
+            Some(o) => std::mem::take(&mut o.list),
+            None => return,
+        };
+        let mut list = list;
+        let find =
+            |l: &[String], k: &str| l.iter().position(|x| line_key(x).eq_ignore_ascii_case(k));
+        match name {
+            "i" => list.clear(),
             "l" => {
                 let f = s(0);
                 let text = self
@@ -540,42 +624,147 @@ impl Engine {
                     .and_then(|p| self.g.read(&p))
                     .map(|b| crate::script::decode(&b))
                     .unwrap_or_default();
-                let list: Vec<(String, String)> = text
+                list = text
                     .lines()
                     .map(|l| l.trim())
                     .filter(|l| !l.is_empty())
-                    .map(|l| match l.split_once('=') {
-                        Some((k, v)) => (k.trim().to_string(), v.trim().to_string()),
-                        None => (l.to_string(), String::new()),
-                    })
+                    .map(String::from)
                     .collect();
-                if let Some(o) = self.obj(id) {
-                    o.list = list;
+            }
+            "a" => list.push(s(0)),
+            "ad" => {
+                let (sep, text) = (s(0), s(1));
+                if sep.is_empty() {
+                    list.push(text);
+                } else {
+                    list.extend(text.split(sep.as_str()).map(String::from));
                 }
             }
-            "?v" => {
-                let key = s(0).to_lowercase();
-                let val = self
-                    .obj(id)
-                    .and_then(|o| o.list.iter().find(|(k, _)| k.to_lowercase() == key))
-                    .map(|(_, v)| v.clone())
+            "v" if s(0).trim().is_empty() => {}
+            "v" => {
+                let line = format!("{}={}", s(0), s(1));
+                match find(&list, &s(0)) {
+                    Some(i) => list[i] = line,
+                    None => list.push(line),
+                }
+            }
+            "s" => match v.first() {
+                Some(Value::Int(i)) if *i >= 0 => {
+                    let i = *i as usize;
+                    if list.len() <= i {
+                        list.resize(i + 1, String::new());
+                    }
+                    list[i] = s(1);
+                }
+                _ => {
+                    let line = format!("{}={}", s(0), s(1));
+                    match find(&list, &s(0)) {
+                        Some(i) => list[i] = line,
+                        None => list.push(line),
+                    }
+                }
+            },
+            "d" => {
+                let at = match v.first() {
+                    Some(Value::Int(i)) => Some(*i as usize),
+                    _ => find(&list, &s(0)),
+                };
+                if let Some(i) = at.filter(|i| *i < list.len()) {
+                    list.remove(i);
+                }
+            }
+            "dd" => {
+                let i = v.first().map_or(0, |v| v.int());
+                if i >= 0 && (i as usize) < list.len() {
+                    list.remove(i as usize);
+                }
+            }
+            "comb" => {
+                for line in other(self, 0) {
+                    match find(&list, line_key(&line)) {
+                        Some(i) => list[i] = line,
+                        None => list.push(line),
+                    }
+                }
+            }
+            "asn" => list = other(self, 0),
+            "sort" => list.sort_by_key(|l| line_key(l).to_lowercase()),
+            "?c" => self.res_int(0, list.len() as i64),
+            "?s" | "?n" => {
+                let i = v.first().map_or(0, |v| v.int());
+                let line = usize::try_from(i)
+                    .ok()
+                    .and_then(|i| list.get(i))
+                    .cloned()
                     .unwrap_or_default();
+                let out = if name == "?n" {
+                    line_key(&line).to_string()
+                } else {
+                    line
+                };
+                self.res_int(0, crate::expr::str_int(&out));
+                self.res_str(0, out);
+            }
+            "?i" => {
+                let i = find(&list, &s(0)).map_or(-1, |i| i as i64);
+                self.res_int(0, i);
+            }
+            "?v" => {
+                let val = match find(&list, &s(0)) {
+                    Some(i) => line_value(&list[i]).to_string(),
+                    None => s(1),
+                };
                 self.res_int(0, crate::expr::str_int(&val));
                 self.res_str(0, val);
             }
-            "?c" => {
-                let n = self.obj(id).map_or(0, |o| o.list.len());
-                self.res_int(0, n as i64);
+            "bpos" => {
+                // the first of the names found in the text: the name, where (from 1)
+                let text = s(0);
+                let best = list
+                    .iter()
+                    .map(|l| line_key(l))
+                    .filter(|k| !k.is_empty())
+                    .filter_map(|k| text.find(k).map(|i| (i, k)))
+                    .min_by_key(|(i, k)| (*i, std::cmp::Reverse(k.len())));
+                let (pos, key) = best.map_or((0, String::new()), |(i, k)| {
+                    (text[..i].chars().count() as i64 + 1, k.to_string())
+                });
+                self.res_int(0, pos);
+                self.res_str(0, key);
             }
-            "?n" => {
-                let i = v.first().map_or(0, |v| v.int()) as usize;
-                let k = self
-                    .obj(id)
-                    .and_then(|o| o.list.get(i).map(|x| x.0.clone()))
-                    .unwrap_or_default();
-                self.res_str(0, k);
+            "brep" => {
+                // every name in the text becomes its value, the longest names first
+                let mut pairs: Vec<(&str, &str)> = list
+                    .iter()
+                    .map(|l| (line_key(l), line_value(l)))
+                    .filter(|(k, _)| !k.is_empty())
+                    .collect();
+                pairs.sort_by_key(|(k, _)| std::cmp::Reverse(k.chars().count()));
+                let text = s(0);
+                let mut out = String::new();
+                let mut rest = text.as_str();
+                'next: while let Some(c) = rest.chars().next() {
+                    for (k, val) in &pairs {
+                        if rest.starts_with(k) {
+                            out += val;
+                            rest = &rest[k.len()..];
+                            continue 'next;
+                        }
+                    }
+                    out.push(c);
+                    rest = &rest[c.len_utf8()..];
+                }
+                self.res_str(0, out);
             }
-            _ => {}
+            _ => {
+                if name.starts_with('?') {
+                    self.res_int(0, 0);
+                    self.res_str(0, String::new());
+                }
+            }
+        }
+        if let Some(o) = self.obj(id) {
+            o.list = list;
         }
     }
 
@@ -732,15 +921,37 @@ impl Engine {
         }
     }
 
-    fn rep_cmd(&mut self, name: &str, v: &[Value]) {
+    fn rep_cmd(&mut self, at: &At, name: &str, v: &[Value]) {
         let s = |i: usize| v.get(i).map(|v| v.str()).unwrap_or_default();
         let t = self.cur;
+        let tpl = match name {
+            "a" => s(1),
+            "et" | "nt" => s(0),
+            _ => String::new(),
+        };
+        if !tpl.is_empty() {
+            self.tpl_units.insert(tpl, at.unit.clone());
+        }
         match name {
             "a" => {
                 self.threads[t].rep.insert(s(0).to_lowercase(), s(1));
             }
             "d" => {
                 self.threads[t].rep.remove(&s(0).to_lowercase());
+            }
+            "?r" => {
+                // a story line's commands: its template with the line's arguments
+                let line = s(0);
+                let out = line
+                    .strip_prefix('^')
+                    .and_then(|l| {
+                        let (n, rest) = l.split_once(',').unwrap_or((l, ""));
+                        let key = format!("^{}", n.trim().to_lowercase());
+                        let tpl = self.threads[t].rep.get(&key)?.clone();
+                        Some(crate::engine::expand(&tpl, rest))
+                    })
+                    .unwrap_or(line);
+                self.res_str(0, out);
             }
             "et" => self.threads[t].et = s(0),
             "nt" => self.threads[t].nt = s(0),
@@ -784,7 +995,7 @@ impl Engine {
                     None => self.set_result("resultobj", 0, Value::Null),
                 }
             }
-            "sc" => {
+            "sc" | "?sc" => {
                 let c = self.system_click();
                 self.res_int(0, c as i64);
             }

@@ -4,6 +4,7 @@
 //! game's own skip mode, nothing waiting) up to that line, then sets the saved variables back.
 
 use std::collections::HashMap;
+use std::rc::Rc;
 
 use crate::engine::{Engine, GAME, SoundEvent, VKind, Var, Wait};
 use crate::expr::Value;
@@ -94,7 +95,14 @@ impl Save {
                         })
                         .collect();
                     let kind = if int { VKind::Int } else { VKind::Str };
-                    s.vars.push((n.to_string(), Var { kind, vals }));
+                    s.vars.push((
+                        n.to_string(),
+                        Var {
+                            kind,
+                            vals,
+                            own: Vec::new(),
+                        },
+                    ));
                 }
                 _ => {}
             }
@@ -104,21 +112,57 @@ impl Save {
 }
 
 impl Engine {
-    fn read_save(&mut self, name: &str) -> Option<Save> {
-        let b = self.g.files.read_save(&save_name(name))?;
+    fn read_save(&mut self, mem: Option<char>, name: &str) -> Option<Save> {
+        let b = if let Some(c) = mem {
+            self.mem_saves.get(&format!("{c}:{name}"))?.clone()
+        } else {
+            self.g.files.read_save(&save_name(name))?
+        };
         Save::read(&b)
     }
 
-    /// `\scp,dat` commands.
-    pub(crate) fn dat_cmd(&mut self, name: &str, v: &[Value]) {
+    fn write_save(&mut self, mem: Option<char>, name: &str, b: Vec<u8>) {
+        if let Some(c) = mem {
+            let key = format!("{c}:{name}");
+            self.mem_order.retain(|k| *k != key);
+            if b.is_empty() {
+                self.mem_saves.remove(&key);
+            } else {
+                self.mem_saves.insert(key.clone(), b);
+                self.mem_order.push(key);
+                // `\lim`: only so many of a store's newest saves are kept
+                let limit = if c == 't' { self.tdat_limit } else { 0 };
+                let prefix = format!("{c}:");
+                while limit > 0
+                    && self
+                        .mem_order
+                        .iter()
+                        .filter(|k| k.starts_with(&prefix))
+                        .count()
+                        > limit
+                {
+                    let at = self.mem_order.iter().position(|k| k.starts_with(&prefix));
+                    if let Some(at) = at {
+                        let k = self.mem_order.remove(at);
+                        self.mem_saves.remove(&k);
+                    }
+                }
+            }
+        } else {
+            self.g.files.write_save(&save_name(name), &b);
+        }
+    }
+
+    /// `\scp,dat` commands (`mem`: the in-memory store, `m` for `mdat` and `t` for `tdat`).
+    pub(crate) fn dat_cmd(&mut self, mem: Option<char>, name: &str, v: &[Value]) {
         let file = v.first().map(|v| v.str()).unwrap_or_default();
         match name {
             "g" | "?g" => {
-                let there = self.read_save(&file).is_some();
+                let there = self.read_save(mem, &file).is_some();
                 self.res_int(0, there as i64);
             }
-            "gd" => {
-                let s = self.read_save(&file).unwrap_or_default();
+            "gd" | "?gd" => {
+                let s = self.read_save(mem, &file).unwrap_or_default();
                 for (i, n) in s.date.iter().enumerate() {
                     self.res_int(i as i64, *n);
                 }
@@ -127,15 +171,25 @@ impl Engine {
                 }
             }
             "s" => {
-                let ok = self.save(&file);
+                let ok = self.save(mem, &file);
                 self.res_int(0, ok as i64);
             }
             "l" => {
-                let ok = self.load(&file);
+                let ok = self.load(mem, &file);
                 self.res_int(0, ok as i64);
             }
-            "d" => {
-                self.g.files.write_save(&save_name(&file), b"");
+            "d" => self.write_save(mem, &file, Vec::new()),
+            "i" => {
+                if let Some(c) = mem {
+                    let prefix = format!("{c}:");
+                    self.mem_saves.retain(|k, _| !k.starts_with(&prefix));
+                    self.mem_order.retain(|k| !k.starts_with(&prefix));
+                }
+            }
+            "lim" => {
+                if mem == Some('t') {
+                    self.tdat_limit = v.first().map_or(0, |v| v.int()).max(0) as usize;
+                }
             }
             _ => {
                 if name.starts_with('?') {
@@ -145,18 +199,20 @@ impl Engine {
         }
     }
 
-    fn save(&mut self, name: &str) -> bool {
-        let Some((file, op)) = self.last_text.clone() else {
-            self.warn(format!("save {name}: no story line yet"));
+    fn save(&mut self, mem: Option<char>, name: &str) -> bool {
+        // before the first story line: the scenario's start (op 0)
+        let Some((file, op)) = self.last_text.clone().or_else(|| {
+            let f = self.threads[GAME].frames.first()?;
+            Some((f.unit.files[0].clone(), 0))
+        }) else {
+            self.warn(format!("save {name}: no scenario"));
             return false;
         };
-        let mut vars: Vec<(String, Var)> = self.threads[GAME]
-            .globals
-            .iter()
-            .filter(|(_, v)| v.kind != VKind::Obj)
-            .map(|(n, v)| (n.clone(), v.clone()))
-            .collect();
-        vars.sort_by(|a, b| a.0.cmp(&b.0));
+        // the variables from before the line: the load runs it again
+        let vars = match (&self.last_text, &self.line_vars) {
+            (Some(_), Some(v)) => v.clone(),
+            _ => self.game_vars(),
+        };
         let s = Save {
             file,
             op,
@@ -164,15 +220,18 @@ impl Engine {
             text: self.savetext.to_vec(),
             vars,
         };
-        self.g
-            .files
-            .write_save(&save_name(name), s.write().as_bytes());
+        self.write_save(mem, name, s.write().into_bytes());
+        if mem.is_none() {
+            let im = self.game_image(0);
+            let thumb = crate::engine::resample(&im, im.w / 4, im.h / 4);
+            self.thumbs.insert(name.to_lowercase(), Rc::new(thumb));
+        }
         true
     }
 
     /// Starts the saved scenario over and skips to the saved line, now.
-    fn load(&mut self, name: &str) -> bool {
-        let Some(s) = self.read_save(name) else {
+    fn load(&mut self, mem: Option<char>, name: &str) -> bool {
+        let Some(s) = self.read_save(mem, name) else {
             return false;
         };
         let (cur, refer) = (self.cur, self.refer);
@@ -214,9 +273,16 @@ impl Engine {
         }
         self.fx = Default::default();
         self.last_text = None;
+        self.line_vars = None;
         if let Err(e) = self.start(GAME, &s.file, "@@TOP") {
             self.warn(e);
             return false;
+        }
+        if s.op == 0 {
+            self.restore_vars(s.vars);
+            self.cur = cur;
+            self.refer = refer;
+            return true;
         }
         self.loading = Some(crate::save::Loading {
             file: s.file,
@@ -266,6 +332,18 @@ impl Engine {
         self.cur = cur;
         self.refer = refer;
         true
+    }
+
+    /// The game thread's numbers and texts, by name.
+    pub(crate) fn game_vars(&self) -> Vec<(String, Var)> {
+        let mut vars: Vec<(String, Var)> = self.threads[GAME]
+            .globals
+            .iter()
+            .filter(|(_, v)| v.kind != VKind::Obj)
+            .map(|(n, v)| (n.clone(), v.clone()))
+            .collect();
+        vars.sort_by(|a, b| a.0.cmp(&b.0));
+        vars
     }
 
     /// Reached the saved line: the skip ends, the saved variables come back.
