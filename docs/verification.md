@@ -64,7 +64,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Interheart (vnrun) | 11 | 10 |  |  |  | 1 |  |  |
 | Crowd/ANIM (vnrun) | 9 | 5 |  |  |  | 4 |  |  |
 | Cyberworks (vnrun) | 8 | 1 |  |  |  |  |  | 7 |
-| LiLiM (vnrun) | 7 | 2 |  |  |  |  |  | 5 |
+| LiLiM (vnrun) | 7 | 7 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -595,10 +595,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2006_lilim | [とらぶるっ！ 序章体験版](http://suezou.dyndns.org/dl2006/lilim/toraburu/toraburu_trial_pre.lzh) | 本編 | LiLiM (vnrun) の AOS 版 1 (sfa9.exe、800x600、音は bgm/・se/ のファイル) でタイトル→START→0001..0008 の背景・立ち絵・イベント CG・名前・文章・音声を最後まで通り、タイトルに戻る (lilim-run)。Chromium でタイトル→本編の文章まで |
+| b2007_lilim | [看護戦隊ナースレンジャー 体験版](http://suezou.dyndns.org/dl2007/lilim/nasuren/nasu_taiken.lzh) | 本編 | LiLiM (vnrun) でタイトル→START→体験版の場面 (22_04 から s22_21r/b/g、バッドエンド) の背景・立ち絵・名前・文章・音声を最後まで通り、タイトルに戻る (lilim-run) |
+| b2007_lilim_darkness | [とらいあんぐるＢＬＵＥ 体験版](http://suezou.dyndns.org/dl2007/lilim-darkness/toraiangurublue/toraianguru_blue_taiken.lzh) | 本編 | LiLiM (vnrun) の AOS 版 1 でタイトル→START→0001..0008 の背景・立ち絵・顔窓・イベント CG・名前・文章・音声・アイキャッチを最後まで通り、タイトルに戻る (lilim-run) |
+| b2009_lilim | [あい☆きゃん 体験版](http://suezou.dyndns.org/dl2009/lilim/ai-kyan/ican_trial.zip) | 本編 | LiLiM (vnrun) でタイトル→START→美夕の挨拶 (文字の選択肢 /...//)→体験版メニュー→プロローグ (00pro01, 00pro02, 010101) の背景・立ち絵・顔窓・名前・文章・音声→「体験版は、ここで終了です」→メニューに戻る (lilim-run)。OP ムービーは飛ばす |
+| b2011_princess_sugar | [姫様限定！～PrincessLimited～ web体験版ver1.0](http://suezou.dyndns.org/dl2011/princess-sugar/princess/hime_trial_1.zip) | 本編 | LiLiM (vnrun) でタイトル (1024x600)→START→体験版メニュー (slctwnd のボタン)→プロローグ (00_01..00_10) の背景・立ち絵・名前 (窓の名札)・文章・音声を最後まで通り、メニューに戻る (lilim-run)。OP ムービーは飛ばす |
 | b2019_lilim_darkness | [WhiteBlue web体験版ver2.0](http://suezou.dyndns.org/dl2019/lilim-darkness/whiteblue/WhiteBlue_trial_2.zip) | 本編 | LiLiM (vnrun) でタイトル (btn_play などの画像ボタン)→START→注意書き→体験版メニュー (slctwnd の選択肢)→旭ルートのダイジェスト (D_07..D_09) の背景・立ち絵・イベント CG・名前・文章・音声・回想のセピアを最後まで通り、メニューに戻る (lilim-run)。Chromium でタイトル→本編、右クリックのメニューからセーブ→タイトルの LOAD からロードで本編に戻る |
-| b2007_lilim | [看護戦隊ナースレンジャー 体験版](http://suezou.dyndns.org/dl2007/lilim/nasuren/nasu_taiken.lzh) | 未確認 |  |
-| b2007_lilim_darkness | [トライアングル・ブルー 体験版](http://suezou.dyndns.org/dl2007/lilim-darkness/toraiangurublue/toraianguru_blue_taiken.lzh) | 未確認 |  |
-| b2009_lilim | [あい☆きゃん 体験版](http://suezou.dyndns.org/dl2009/lilim/ai-kyan/ican_trial.zip) | 未確認 |  |
-| b2011_princess_sugar | [姫様限定！～PrincessLimited～ web体験版ver1.0](http://suezou.dyndns.org/dl2011/princess-sugar/princess/hime_trial_1.zip) | 未確認 |  |
-| b2021_princess_sugar | [プリンセス☆シスターズ！～四姉妹は全員あなたの許嫁～ web体験版ver1.0](http://suezou.dyndns.org/dl2021/princess-sugar/prista/PriSta_trial_1.zip) | 未確認 |  |
+| b2021_princess_sugar | [プリンセス☆シスターズ！～四姉妹は全員あなたの許嫁～ web体験版ver1.0](http://suezou.dyndns.org/dl2021/princess-sugar/prista/PriSta_trial_1.zip) | 本編 | LiLiM (vnrun) でタイトル→START→注意書き→体験版メニュー (slctwnd のボタン)→共通パート (01_01..02_08、途中のボタンの選択肢を含む) の背景・立ち絵・イベント CG・名前・文章・音声を通る (lilim-run)。Chromium でタイトル→メニュー→本編の文章まで |
 <!-- /matrix -->

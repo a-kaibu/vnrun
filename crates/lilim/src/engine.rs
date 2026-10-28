@@ -74,6 +74,8 @@ enum Wait {
     Until(f64),
     Fade,
     Buttons,
+    /// the options gathered from `/` lines
+    Choice,
     Load,
 }
 
@@ -118,6 +120,7 @@ pub struct Engine {
     window: bool,
     name: Option<String>,
     text: Option<String>,
+    choices: Vec<String>,
     wait: Wait,
     view: View,
     frozen: Option<Vec<Draw>>,
@@ -206,6 +209,7 @@ impl Engine {
             window: false,
             name: None,
             text: None,
+            choices: Vec::new(),
             wait: Wait::None,
             view: View::Game,
             frozen: None,
@@ -372,6 +376,13 @@ impl Engine {
                 self.vars.insert(v.to_lowercase(), x);
             }
             Line::Text(name, t) => self.say(name, t),
+            Line::Choice(t, last) => {
+                self.choices.push(t);
+                if last {
+                    self.present(0.0);
+                    self.wait = Wait::Choice;
+                }
+            }
             Line::Ctl(c, a) => self.control(&c, &a),
             Line::Cmd(c, a) => self.command(&c, &a),
         }
@@ -522,7 +533,7 @@ impl Engine {
         if first == "CENTER" {
             return ((sw - w) / 2, (sh - h) / 2);
         }
-        if first == "NON" || a.len() < 4 {
+        if first == "NON" || a.len() < 3 {
             if let Some(s) = self.sprites.get(&n) {
                 // the same place for a picture of the same size
                 return (s.x, s.y);
@@ -928,6 +939,12 @@ impl Engine {
         if self.window && self.fade.is_none() && self.frozen.is_none() {
             self.window_draws(&mut out);
         }
+        if self.wait == Wait::Choice {
+            let boxes = self.choice_boxes();
+            for (t, r) in self.choices.clone().iter().zip(boxes) {
+                self.button(t, r, &mut out);
+            }
+        }
         match self.view {
             View::Menu => self.menu_draws(&mut out),
             View::Slots { save } => self.slot_draws(save, &mut out),
@@ -1007,14 +1024,14 @@ impl Engine {
         let step = size + self.look.spacing.max(4);
         if let Some(n) = self.name.clone() {
             let img = self.text(&n, size);
-            if self.look.text_x >= img.w as i32 + 60 {
+            if self.look.text_x >= 200 && self.look.text_x >= img.w as i32 + 60 {
                 // left of the text
                 let nx = (tx - 24 - img.w as i32).max(wx + 40);
                 out.push(draw(&img, nx as f32, ty as f32, 1.0));
             } else {
                 // a line above it
                 let ni = self.text(&format!("【{n}】"), size);
-                out.push(draw(&ni, tx as f32, (ty - step) as f32, 1.0));
+                out.push(draw(&ni, tx as f32, (ty - step - size / 2) as f32, 1.0));
             }
         }
         if let Some(t) = self.text.clone() {
@@ -1065,10 +1082,25 @@ impl Engine {
         });
         d.dst = [r[0] as f32, r[1] as f32, r[2] as f32, r[3] as f32];
         out.push(d);
-        let img = self.text(t, 26);
+        let size = (self.look.size + 2).clamp(18, 26);
+        let img = self.text(t, size);
         let x = (r[0] + r[2]) as f32 / 2.0 - img.w as f32 / 2.0;
         let y = (r[1] + r[3]) as f32 / 2.0 - img.h as f32 / 2.0;
         out.push(draw(&img, x, y, 1.0));
+    }
+
+    fn choice_boxes(&self) -> Vec<[i32; 4]> {
+        let (w, h) = (self.width as i32, self.height as i32);
+        let n = self.choices.len() as i32;
+        let (bw, bh, gap) = (w * 3 / 4, 44, 14);
+        let total = n * bh + (n - 1).max(0) * gap;
+        let top = ((self.look.y.min(h) - total) / 2).max(8);
+        (0..n)
+            .map(|i| {
+                let y = top + i * (bh + gap);
+                [(w - bw) / 2, y, (w + bw) / 2, y + bh]
+            })
+            .collect()
     }
 
     fn menu_items(&self) -> Vec<(&'static str, [i32; 4])> {
@@ -1246,6 +1278,13 @@ impl Engine {
             return;
         }
         match self.wait {
+            Wait::Choice => {
+                if let Some(i) = self.choice_boxes().iter().position(|r| inside(*r, x, y)) {
+                    self.vars.insert("%reg".into(), Val::Int(i as i64));
+                    self.choices.clear();
+                    self.wait = Wait::None;
+                }
+            }
             Wait::Buttons => {
                 if let Some((id, _)) = self
                     .button_rects()
@@ -1324,7 +1363,7 @@ impl Engine {
     }
 
     pub fn choosing(&self) -> bool {
-        self.wait == Wait::Buttons
+        matches!(self.wait, Wait::Buttons | Wait::Choice)
     }
 
     pub fn ended(&self) -> bool {
@@ -1341,6 +1380,7 @@ impl Engine {
         self.window = false;
         self.text = None;
         self.name = None;
+        self.choices.clear();
         self.wait = Wait::None;
         self.view = View::Game;
         self.frozen = None;
@@ -1501,13 +1541,27 @@ impl Slot {
     }
 }
 
-/// Breaks a line into pieces of at most `n` characters.
+/// Breaks a line into pieces of about `n` characters; closing marks stay on the line before.
 fn wrap(s: &str, n: usize) -> Vec<String> {
+    const CLOSING: &str = "」』）】〉》、。，．・ー…！？!?)ぁぃぅぇぉっゃゅょァィゥェォッャュョ";
     let chars: Vec<char> = s.chars().collect();
-    if chars.len() <= n {
-        return vec![s.to_string()];
+    let mut out: Vec<String> = Vec::new();
+    let mut i = 0;
+    while i < chars.len() {
+        let mut end = (i + n.max(1)).min(chars.len());
+        // up to two closing marks hang on the end of the line
+        let mut k = 0;
+        while end < chars.len() && k < 2 && CLOSING.contains(chars[end]) {
+            end += 1;
+            k += 1;
+        }
+        out.push(chars[i..end].iter().collect());
+        i = end;
     }
-    chars.chunks(n).map(|c| c.iter().collect()).collect()
+    if out.is_empty() {
+        out.push(String::new());
+    }
+    out
 }
 
 fn inside(r: [i32; 4], x: i32, y: i32) -> bool {
@@ -1533,5 +1587,14 @@ fn draw(image: &Rc<Image>, x: f32, y: f32, alpha: f32) -> Draw {
             flip: (false, false),
             clip: [0.0, 0.0, 1e6, 1e6],
         },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn wrap_keeps_closing_marks() {
+        assert_eq!(super::wrap("あいう」", 3), vec!["あいう」"]);
+        assert_eq!(super::wrap("あいうえお", 3), vec!["あいう", "えお"]);
     }
 }

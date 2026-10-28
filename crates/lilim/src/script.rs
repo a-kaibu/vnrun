@@ -6,6 +6,7 @@
 //! - `%n = expr`, `$s = expr`: numbers and strings
 //! - `word(args)` or `word`: a command (`bgon("bg001a1")`, `ud(1, 200)`, `wndoff`, ...)
 //! - `[name]text` a line someone says, anything else a line of narration
+//! - `/option` a choice's option; the last one ends with `//` (the answer, from 0, in `%reg`)
 
 use std::collections::HashMap;
 
@@ -16,6 +17,8 @@ pub enum Line {
     Assign(String, String),
     Cmd(String, Vec<String>),
     Text(Option<String>, String),
+    /// an option, and whether it is the last
+    Choice(String, bool),
     End,
 }
 
@@ -111,6 +114,14 @@ pub fn parse(bytes: &[u8]) -> Script {
         if let Some(rest) = t.strip_prefix('^') {
             let (name, args) = call(strip_comment(rest));
             lines.push(Line::Ctl(name.to_lowercase(), args));
+            continue;
+        }
+        if let Some(rest) = t.strip_prefix('/') {
+            let o = strip_comment(rest).trim_end();
+            match o.strip_suffix("//") {
+                Some(o) => lines.push(Line::Choice(o.to_string(), true)),
+                None => lines.push(Line::Choice(o.to_string(), false)),
+            }
             continue;
         }
         if t.starts_with('%') || t.starts_with('$') {
@@ -360,6 +371,14 @@ mod tests {
 
     #[test]
     fn lines() {
+        let s2 = parse(b"/a\r\n/b//\r\n");
+        assert_eq!(
+            s2.lines,
+            vec![
+                Line::Choice("a".into(), false),
+                Line::Choice("b".into(), true)
+            ]
+        );
         let src = "::START\r\n# c\r\nbgon(\"bg001a1\")\t# bg\r\n[ひばり]「a」\r\n　b\r\n^if(%x == 1)\r\n%x = 2\r\n:L1\r\nwndoff\r\n::END\r\n";
         let s = parse(&encoding_rs::SHIFT_JIS.encode(src).0);
         assert_eq!(
