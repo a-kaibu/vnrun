@@ -2,16 +2,29 @@
 //!
 //!     cargo run --release -p interheart --example fpkls <game folder> [name [out]]
 //!
-//! With `--title <program.exe>` it prints the title buttons the program's table holds.
+//! With `--title <program.exe>` it prints the title buttons the program's table holds, and with
+//! `--window <program.exe>` its message window, choices and the buttons on the window.
 
+use interheart::exe;
 use interheart::fpk::Archives;
 use nexas::files::Disk;
 
 fn main() {
     let a: Vec<String> = std::env::args().collect();
-    if a[1] == "--title" {
+    if a[1] == "--title" || a[1] == "--window" {
         let b = std::fs::read(&a[2]).unwrap();
-        for b in interheart::exe::buttons(&b, "Title").unwrap_or_default() {
+        if a[1] == "--window" {
+            println!("{:?}", exe::message_window(&b));
+            for c in exe::choices(&b).unwrap_or_default() {
+                println!("choice {c:?}");
+            }
+        }
+        let group = if a[1] == "--title" {
+            "Title"
+        } else {
+            "Message"
+        };
+        for b in exe::buttons(&b, group).unwrap_or_default() {
             println!("{b:?}");
         }
         return;

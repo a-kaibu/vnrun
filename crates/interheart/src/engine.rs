@@ -4,7 +4,8 @@
 //! The game's menus live in its program, so the title screen, the message window and the
 //! save screen are drawn here: the title from the title picture, titlechip.kg and the hover
 //! map TitleTM1.hmp/TitleM1.hmp (button n is drawn from row n of the chip sheet), the message
-//! window from MesChip.kg, the choices and the save screen plainly.
+//! window and the choices from MesChip.kg (from 2018 where the program's tables put them,
+//! exe.rs), the save screen plainly.
 //!
 //! Commands, as the scripts' own comments name them:
 //!
@@ -125,6 +126,15 @@ struct Title {
 /// Our own title buttons: what each does (as the hover map numbers them) and its label.
 const PLAIN_TITLE: [(u8, &str); 3] = [(1, "はじめから"), (2, "つづきから"), (6, "ゲーム終了")];
 
+/// 2018 on: the message window and the choices as the program draws them from MesChip.kg
+/// (exe.rs).
+struct ExeUi {
+    chip: Rc<Image>,
+    window: crate::exe::Window,
+    /// a place for each choice from the top, with the bar plain and lit
+    choices: Vec<crate::exe::Button>,
+}
+
 /// The message on show, drawn.
 struct Message {
     name: Option<Rc<Image>>,
@@ -178,6 +188,7 @@ pub struct Engine {
     font: Option<Rc<fontdue::Font>>,
     title: Option<Title>,
     meschip: Option<Option<Rc<Image>>>,
+    exe_ui: Option<Option<Rc<ExeUi>>>,
     select_map: Option<Option<HoverMap>>,
     pointer: (i32, i32),
     cache: HashMap<String, Rc<Image>>,
@@ -247,6 +258,7 @@ impl Engine {
             font: None,
             title: None,
             meschip: None,
+            exe_ui: None,
             select_map: None,
             pointer: (-1, -1),
             cache: HashMap::new(),
@@ -422,19 +434,7 @@ impl Engine {
     /// 3 the last save, then the settings, the extras and so on; quitting is the last one
     /// (6 in 2018, 7 from 2019 when 6 is clearing the data).
     fn exe_title(&mut self) -> Vec<(u8, crate::exe::Button)> {
-        let names: Vec<String> = self
-            .files
-            .list()
-            .into_iter()
-            .filter(|n| {
-                let l = n.to_lowercase();
-                l.ends_with(".exe")
-                    && !["uninst", "setup", "syscfg", "getpin"]
-                        .iter()
-                        .any(|k| l.starts_with(k))
-            })
-            .collect();
-        for n in names {
+        for n in self.programs() {
             let Some(b) = self.files.read(&n) else {
                 continue;
             };
@@ -457,6 +457,69 @@ impl Engine {
                 .collect();
         }
         Vec::new()
+    }
+
+    /// The game's programs, without the installer and the tools beside it.
+    fn programs(&mut self) -> Vec<String> {
+        self.files
+            .list()
+            .into_iter()
+            .filter(|n| {
+                let l = n.to_lowercase();
+                l.ends_with(".exe")
+                    && !["uninst", "setup", "syscfg", "getpin"]
+                        .iter()
+                        .any(|k| l.starts_with(k))
+            })
+            .collect()
+    }
+
+    /// MesChip.kg when it is the usual sheet (before 2018), drawn as `classic_window_chip` says.
+    fn classic_chip(&mut self) -> Option<Rc<Image>> {
+        if self.meschip.is_none() {
+            let chip = self.find_pic("MesChip").filter(|c| classic_window_chip(c));
+            self.meschip = Some(chip);
+        }
+        self.meschip.clone().flatten()
+    }
+
+    /// 2018 on: the message window and the choices of the program. Its sheet can pass for the
+    /// usual one (2018's has the window at the top too), so the program comes first.
+    fn exe_ui(&mut self) -> Option<Rc<ExeUi>> {
+        if self.exe_ui.is_none() {
+            let mut ui = None;
+            if let Some(chip) = self.find_pic("MesChip") {
+                for n in self.programs() {
+                    let Some(b) = self.files.read(&n) else {
+                        continue;
+                    };
+                    let Some(window) = crate::exe::message_window(&b) else {
+                        continue;
+                    };
+                    let inside = |r: [i32; 4]| r[2] <= chip.w as i32 && r[3] <= chip.h as i32;
+                    if window
+                        .parts
+                        .iter()
+                        .chain([&window.plate])
+                        .all(|p| inside(p.src))
+                    {
+                        let choices = crate::exe::choices(&b)
+                            .unwrap_or_default()
+                            .into_iter()
+                            .filter(|c| c.src[..2].iter().all(|r| inside(*r)))
+                            .collect();
+                        ui = Some(Rc::new(ExeUi {
+                            chip,
+                            window,
+                            choices,
+                        }));
+                        break;
+                    }
+                }
+            }
+            self.exe_ui = Some(ui);
+        }
+        self.exe_ui.clone().flatten()
     }
 
     fn title_bg(&mut self) -> Option<Rc<Image>> {
@@ -987,23 +1050,45 @@ impl Engine {
     fn window_draws(&mut self, out: &mut Vec<Draw>) {
         let (w, h) = (self.screen.0 as f32, self.screen.1 as f32);
         let top = h - 160.0;
-        if self.meschip.is_none() {
-            let chip = self.find_pic("MesChip").filter(|c| classic_window_chip(c));
-            self.meschip = Some(chip);
-        }
-        match self.meschip.clone().flatten() {
-            Some(chip) if chip.w >= 1024 => {
+        let named = self.message.as_ref().is_some_and(|m| m.name.is_some());
+        // the name's left (or its middle, `centred`), the text's top left and the window's
+        // bottom
+        let mut name_at = (24.0, top - 36.0);
+        let mut centred = false;
+        let mut text_at = (120.0, top + 18.0);
+        let mut bottom = h;
+        let ui = self.exe_ui();
+        let classic = if ui.is_none() {
+            self.classic_chip()
+        } else {
+            None
+        };
+        match (ui.as_ref().map(|u| (&u.chip, &u.window)), classic) {
+            // 2018 on: the parts where the program puts them (exe.rs)
+            (Some((chip, win)), _) => {
+                for p in &win.parts {
+                    out.push(scaled(chip, xywh(p.src), rect_f(p.dst)));
+                }
+                if named {
+                    out.push(scaled(chip, xywh(win.plate.src), rect_f(win.plate.dst)));
+                }
+                name_at = (win.name[0] as f32, win.name[1] as f32);
+                centred = true;
+                text_at = (win.text[0] as f32, win.text[1] as f32);
+                bottom = win.parts[0].dst[3] as f32;
+            }
+            (None, Some(chip)) => {
                 out.push(scaled(&chip, [0, 0, 1024, 160], [0.0, top, w, h]));
-                if self.message.as_ref().is_some_and(|m| m.name.is_some()) {
+                if named {
                     out.push(part(&chip, [256, 160, 262, 46], 0.0, top - 40.0));
                 }
             }
-            _ => {
+            (None, None) => {
                 let img = white(1, 1, [0, 0, 32, 180]);
                 let mut d = draw(&img, 0.0, 0.0, 1.0);
                 d.dst = [0.0, top, w, h];
                 out.push(d.clone());
-                if self.message.as_ref().is_some_and(|m| m.name.is_some()) {
+                if named {
                     d.dst = [0.0, top - 44.0, 300.0, top];
                     out.push(d);
                 }
@@ -1012,23 +1097,39 @@ impl Engine {
         if let Some((_, face)) = &self.face {
             out.push(draw(face, 0.0, h - face.h as f32, 1.0));
         }
-        let left = if self.face.is_some() { 220.0 } else { 120.0 };
+        let left = if self.face.is_some() {
+            text_at.0.max(220.0)
+        } else {
+            text_at.0
+        };
         if let Some(m) = &self.message {
             if let Some(n) = &m.name {
-                out.push(draw(n, 24.0, top - 36.0, 1.0));
+                let x = if centred {
+                    name_at.0 - n.w as f32 / 2.0
+                } else {
+                    name_at.0
+                };
+                out.push(draw(n, x, name_at.1, 1.0));
             }
-            for (i, l) in m.lines.iter().enumerate() {
-                out.push(draw(
-                    l,
-                    left,
-                    top + 18.0 + (i as i32 * LINE_STEP) as f32,
-                    1.0,
-                ));
+            // as many lines as the window holds, one at least
+            let room = ((bottom - text_at.1 - TEXT_SIZE as f32) / LINE_STEP as f32).max(0.0);
+            for (i, l) in m.lines.iter().take(room as usize + 1).enumerate() {
+                let y = text_at.1 + (i as i32 * LINE_STEP) as f32;
+                out.push(draw(l, left, y, 1.0));
             }
         }
     }
 
+    /// The bars of the program's own table (2018 on), when it has a place for `n` choices.
+    fn exe_choices(&mut self, n: usize) -> Option<(Rc<Image>, Vec<crate::exe::Button>)> {
+        let ui = self.exe_ui()?;
+        (n <= ui.choices.len()).then(|| (ui.chip.clone(), ui.choices[..n].to_vec()))
+    }
+
     fn choice_boxes(&mut self, n: usize) -> Vec<[i32; 4]> {
+        if let Some((_, list)) = self.exe_choices(n) {
+            return list.iter().map(|b| b.dst).collect();
+        }
         if self.select_map.is_none() {
             let m = self
                 .arc
@@ -1060,17 +1161,22 @@ impl Engine {
 
     fn choice_draws(&mut self, answers: &[(String, SceneId)], out: &mut Vec<Draw>) {
         let boxes = self.choice_boxes(answers.len());
-        let chip = self.meschip.clone().flatten();
-        for (r, (text, _)) in boxes.iter().zip(answers) {
+        let exe = self.exe_choices(answers.len());
+        let chip = self.classic_chip();
+        for (i, (r, (text, _))) in boxes.iter().zip(answers).enumerate() {
             let lit = inside(*r, self.pointer.0, self.pointer.1);
-            let dst = [r[0] as f32, r[1] as f32, r[2] as f32, r[3] as f32];
-            match &chip {
+            let dst = rect_f(*r);
+            match (&exe, &chip) {
+                // 2018 on: the bars of the program's table, plain and lit
+                (Some((c, list)), _) => {
+                    out.push(scaled(c, xywh(list[i].src[lit as usize]), dst));
+                }
                 // the bars of MesChip.kg: plain, then lit
-                Some(c) => {
+                (None, Some(c)) => {
                     let y = if lit { 485 } else { 437 };
                     out.push(scaled(c, [0, y, 844, 47], dst));
                 }
-                None => {
+                (None, None) => {
                     let img = white(
                         1,
                         1,
@@ -1717,6 +1823,15 @@ fn classic_title_chip(c: &Image) -> bool {
 fn classic_window_chip(c: &Image) -> bool {
     let a = |x: u32, y: u32| c.px[((y * c.w + x) * 4 + 3) as usize];
     c.w >= 1024 && c.h >= 580 && a(4, 80) > 0 && a(4, 150) > 0 && a(1000, 150) > 0 && a(10, 460) > 0
+}
+
+/// A rect (x0, y0, x1, y1) as x, y, w, h.
+fn xywh(r: [i32; 4]) -> [i32; 4] {
+    [r[0], r[1], r[2] - r[0], r[3] - r[1]]
+}
+
+fn rect_f(r: [i32; 4]) -> [f32; 4] {
+    r.map(|v| v as f32)
 }
 
 /// Breaks a line into pieces of at most `n` characters.
