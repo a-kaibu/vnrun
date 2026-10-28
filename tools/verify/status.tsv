@@ -88,7 +88,7 @@ dl_VJ01002655	タイトル	93bee9c 以降もタイトルまで
 s2023_casket_oshitona_vtuber02	タイトル	
 s2023_casket_oshitona_vtuber03	タイトル	
 s2020_casket_ayakashi03	タイトル	
-s2011_whirlpool_maikaze	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
+s2011_whirlpool_maikaze	本編	Chromium (3f99c53) で START→本編の文章まで (クリック位置ずれで LOAD 画面も開く)
 s2023_milimili_onaho_yokai	タイトル	93bee9c 以降は panic せずタイトルまで
 r1_tyrano	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)。exe を zip として展開すれば読めるはず
 dl_VJ01000810	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)
@@ -98,7 +98,7 @@ dl_RJ01698597	本編	0df7c53 でタイトル→ニューゲーム→本編の文
 dl_RJ01730521	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
 dl_RJ01741863	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
 dl_RJ01642779	タイトル	RPGツクール。画面が拡大されない
-s2019_no_strike_jyosou_jinjya	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
+s2019_no_strike_jyosou_jinjya	本編	Chromium (3f99c53) で START→本編の場面 (背景・立ち絵) は進むが、台湾版の Big5 文章が描画されない
 s2014_whirlpool_tearstilla	タイトル	6b6e16b / 3e4a888 (YU-RIS 554) でタイトルまで。初期化に40秒ほどかかる
 dl_VJ01001386	タイトル	5224635 (YU-RIS 482) でタイトルまで
 dl_VJ01004582	タイトル	5224635 (YU-RIS 482) でタイトルまで
@@ -156,8 +156,8 @@ dl_RJ01708454	タイトル	3e4a888 のビルドでタイトルまで
 b2007_whirlpool	NG	pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」
 b2006_whirlpool	NG	pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」
 dl_VJ01002338	NG	pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」
-b2010_whirlpool	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
-b2014_whirlpool	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
+b2010_whirlpool	本編	Chromium (3f99c53) で START→本編の文章→体験版終了の選択肢まで
+b2014_whirlpool	本編	Chromium (3f99c53) で START→体験版メニュー (本編/Hシーン) と説明文まで
 b2021_whirlpool	NG	3e4a888 で「yst00067.ybn: short arguments」
 b2022_at_sakura	タイトル	591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動)
 b2024_at_sakura	タイトル	591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動)
@@ -185,12 +185,12 @@ b2023_lump_of_sugar_all	タイトル	dc42573 でタイトル画面まで表示
 b2012_alcot	タイトル	bd7853c でタイトル表示 (GAME START 等のメニュー描画まで)
 b2012_kai	タイトル	bd7853c でタイトル表示 (START/LOAD 等の看板メニュー描画まで)
 b2010_giga	本編	ネイティブと Chromium でタイトル、最初の台詞とボイスの再生開始を確認。背景演出、続き、セーブ等は未完成
-s2010_giga_bittersmile	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
-s2007_giga_himesama	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
-s2009_giga_curefull	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
+s2010_giga_bittersmile	本編	Chromium (3f99c53) で START→本編の文章まで。メッセージ枠が右端で切れて見える
+s2007_giga_himesama	本編	Chromium (3f99c53) で START→本編の文章まで
+s2009_giga_curefull	本編	Chromium (3f99c53) で START→本編の文章まで。メッセージ枠が右端で切れて見える
 s2006_giga_ab	NG	64d6316 (2015 年版の表) で「table is cut short」
-s2008_giga_sakahari	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
-s2011_giga_hinataterrace	タイトル	cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから
+s2008_giga_sakahari	本編	Chromium (3f99c53) で START→本編の文章まで
+s2011_giga_hinataterrace	本編	Chromium (3f99c53) で START→本編の文章まで
 b2019_giga	本編	6875c68 でタイトルから本編テキストまで。メッセージウィンドウ画像は未表示 (既知)
 b2016_giga	本編	6875c68 でタイトルから New Game で本編テキストまで
 b2009_crossover	NG	64d6316 (2015 年版の表) で「no Script.pac」(DATA/ フォルダの形)
@@ -353,9 +353,9 @@ b2008_marine	本編	961c800 (Marble) で START から本編の文章・立ち絵
 s2008_lune_inmu	本編	961c800 (Marble) で START から本編の文章・立ち絵まで (Chromium)
 dl_RJ129271	本編	タイトル→はじめから→名前入力→選択肢→本編の文章まで (livemaker-run とブラウザ)
 b2014_windmill_oasis	本編	360b26c (CatSystem2) で注意書き→タイトル→START→本編の文章・名前まで (Chromium)
-dl_RJ125204	本編	タイトル (バイナリ .lpm のメニュー)→初めから→本編の文章まで (livemaker-run)
-dl_RJ284038	本編	タイトル (背景つき、文字だけのメニューは体験版本来のもの)→はじめから→本編の文章まで (livemaker-run)
-dl_RJ341209	本編	タイトル→Start→名前入力 (打ち替えも可)→本編の文章まで、セーブ画面も開く (livemaker-run)。.lcm の演出 (ロゴ・タイトル前のアニメ) も再生
+dl_RJ125204	本編	タイトル (バイナリ .lpm のメニュー)→初めから→本編の文章まで (livemaker-run)。Chromium (3f99c53) で Enter のクラッシュ解消を確認
+dl_RJ284038	本編	タイトル (背景つき、文字だけのメニューは体験版本来のもの)→はじめから→本編の文章まで (livemaker-run)。Chromium (3f99c53) で Enter のクラッシュ解消を確認
+dl_RJ341209	本編	タイトル→Start→名前入力 (打ち替えも可)→本編の文章まで、セーブ画面も開く (livemaker-run)。.lcm の演出 (ロゴ・タイトル前のアニメ) も再生。Chromium (3f99c53) で Enter のクラッシュ解消を確認
 b2014_azarashi_soft	本編	360b26c (CatSystem2) でタイトル→はじめから→本編の文章とマップ画面まで (Chromium)
 b2017_laplacian	本編	360b26c (CatSystem2) でタイトル→はじめから→体験版メニュー (体験版本編 / えっちしーん) まで (Chromium、完全なダウンロードで確認)
 b2010_undermoon	本編	ロゴ→タイトル→START→本編の文章 (entis-run とブラウザ)。検証スレッドでは cbb2054 の Chromium でタイトルまで確認

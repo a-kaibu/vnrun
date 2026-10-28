@@ -49,8 +49,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 33 | 3 | 17 | 9 | 3 | 1 |  |  |
 | 吉里吉里 (KiriKiri SDL2) | 135 | 5 | 129 |  |  |  | 1 |  |
-| YU-RIS (vnrun) | 29 |  | 24 |  |  | 4 | 1 |  |
-| NeXAS (vnrun) | 16 | 6 | 6 |  | 1 | 2 | 1 |  |
+| YU-RIS (vnrun) | 29 | 4 | 20 |  |  | 4 | 1 |  |
+| NeXAS (vnrun) | 16 | 11 | 1 |  | 1 | 2 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
 | Tmr-Hiro (vnrun) | 22 | 22 |  |  |  |  |  |  |
 | LiveMaker (vnrun) | 4 | 4 |  |  |  |  |  |  |
@@ -358,9 +358,11 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2010_whirlpool | [涼風のメルト -Where wishes are drawn to each other- WEB体験版](http://suezou.dyndns.org/dl2010/whirlpool/melt/webtrial_melt.exe) | タイトル | cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから |
+| b2010_whirlpool | [涼風のメルト -Where wishes are drawn to each other- WEB体験版](http://suezou.dyndns.org/dl2010/whirlpool/melt/webtrial_melt.exe) | 本編 | Chromium (3f99c53) で START→本編の文章→体験版終了の選択肢まで |
+| b2014_whirlpool | [G.I.B. ガールズ・イン・ブラック  WEB体験版](http://suezou.dyndns.org/dl2014/whirlpool/gib/gib_webtrial.exe) | 本編 | Chromium (3f99c53) で START→体験版メニュー (本編/Hシーン) と説明文まで |
+| s2011_whirlpool_maikaze | [舞風のメルト -Where leads to feeling destination- WEB体験版 (ver1.01)](http://suezou.dyndns.org/dl2011/whirlpool/maikaze/webtrial_maikaze_ver101.exe) | 本編 | Chromium (3f99c53) で START→本編の文章まで (クリック位置ずれで LOAD 画面も開く) |
+| s2019_no_strike_jyosou_jinjya | [josou jinjya_trial](http://suezou.dyndns.org/dl2019/no-strike/jyosou_jinjya/josou_jinjya_trial_TW.zip) | 本編 | Chromium (3f99c53) で START→本編の場面 (背景・立ち絵) は進むが、台湾版の Big5 文章が描画されない |
 | b2013_anim | [息子の友達に堕とされて　体験版](http://suezou.dyndns.org/dl2013/anim/musuko2/musuko2_trial.zip) | タイトル | 3e4a888 のビルドでタイトルまで |
-| b2014_whirlpool | [G.I.B. ガールズ・イン・ブラック  WEB体験版](http://suezou.dyndns.org/dl2014/whirlpool/gib/gib_webtrial.exe) | タイトル | cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから |
 | b2017_no_strike | [女装千年王国　体験版](http://suezou.dyndns.org/dl2017/no-strike/jyosoumille/jyosoumille_trial.zip) | タイトル | 3e4a888 のビルドでタイトルまで |
 | b2018_casket | [彼女が異種族だった場合～クールな先輩ダークエルフとの甘やかし同棲日誌～体験版](http://suezou.dyndns.org/dl2018/casket/dark_elf/dark_elf-trial.zip) | タイトル | 3e4a888 のビルドでタイトルまで |
 | b2022_casket | [あやかし遊郭～花魁道中～体験版](http://suezou.dyndns.org/dl2022/casket/ayakashi_pack/ayakashipack_trial.zip) | タイトル | 3e4a888 のビルドでタイトルまで |
@@ -373,10 +375,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_VJ01002327 | [竜翼のメロディア −Diva with the blessed dragonol−](https://trial.dlsite.com/professional/VJ01003000/VJ01002327_trial.zip) | タイトル | c03eae9 (YU-RIS 551 のシステム変数) でタイトルまで |
 | dl_VJ01002863 | [【限定版】巨乳軍人支配催眠「私の任務は貴方にご奉仕する事です。色んな穴をご自由にお使い下さい」](https://trial.dlsite.com/professional/VJ01003000/VJ01002863_trial.zip) | タイトル | 3e4a888 のビルドでタイトルまで |
 | dl_VJ01004582 | [【豪華版】家族は（俺以外）サキュバスでした ～二人の姉と母との性活で精液を搾り取られます～](https://trial.dlsite.com/professional/VJ01005000/VJ01004582_trial.zip) | タイトル | 5224635 (YU-RIS 482) でタイトルまで |
-| s2011_whirlpool_maikaze | [舞風のメルト -Where leads to feeling destination- WEB体験版 (ver1.01)](http://suezou.dyndns.org/dl2011/whirlpool/maikaze/webtrial_maikaze_ver101.exe) | タイトル | cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから |
 | s2014_whirlpool_tearstilla | [鯨神のティアスティラ 体験版](http://suezou.dyndns.org/dl2014/whirlpool/tearstilla/kujira_trial_web.zip) | タイトル | 6b6e16b / 3e4a888 (YU-RIS 554) でタイトルまで。初期化に40秒ほどかかる |
 | s2016_no_strike_jyogaku | [女装学園（孕）　体験版](http://suezou.dyndns.org/dl2016/no-strike/jyogaku/jyogaku_trial.zip) | タイトル | 5224635 (YU-RIS 482) でタイトルまで |
-| s2019_no_strike_jyosou_jinjya | [josou jinjya_trial](http://suezou.dyndns.org/dl2019/no-strike/jyosou_jinjya/josou_jinjya_trial_TW.zip) | タイトル | cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから |
 | s2020_casket_ayakashi03 | [あやかし遊郭～花魁アマビエ民譚集～体験版](http://suezou.dyndns.org/dl2020/casket/ayakashi03/ayakashi03_trial.zip) | タイトル |  |
 | s2021_casket_bellaca | [リンカーベル・アカデミア～落第魔女とヒミツの儀式～体験版](http://suezou.dyndns.org/dl2021/casket/bellaca/bellaca01_trial.zip) | タイトル |  |
 | s2021_casket_bellaca02 | [リンカーベル・アカデミア～龍族のフィアンセ～Hシーン体験版](http://suezou.dyndns.org/dl2021/casket/bellaca02/bellaca02_trial.zip) | タイトル | 3e4a888 のビルドでタイトルまで |
@@ -398,11 +398,11 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2013_giga | [キスアト体験版](http://suezou.dyndns.org/dl2013/giga/kissato/kissato_trial.zip) | 本編 | 6875c68 でタイトルから new game で本編テキストまで (冒頭は白背景+メッセージウィンドウ) |
 | b2016_giga | [リプキス　体験版](http://suezou.dyndns.org/dl2016/giga/repkiss/repkiss_trial.zip) | 本編 | 6875c68 でタイトルから New Game で本編テキストまで |
 | b2019_giga | [アイキス 豪華体験版](http://suezou.dyndns.org/dl2019/giga/aikiss/aikiss_premium_trial.zip) | 本編 | 6875c68 でタイトルから本編テキストまで。メッセージウィンドウ画像は未表示 (既知) |
-| s2007_giga_himesama | [姫さまっ、お手やわらかに！ -体験版-](http://suezou.dyndns.org/dl2007/giga/himesama/hime_trialc.zip) | タイトル | cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから |
-| s2008_giga_sakahari | [さかあがりハリケーン 体験版 Ver.2](http://suezou.dyndns.org/dl2008/giga/sakahari/sakahari_trial2.zip) | タイトル | cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから |
-| s2009_giga_curefull | [キュアフル！ 体験版](http://suezou.dyndns.org/dl2009/giga/curefull/curefull_trial.zip) | タイトル | cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから |
-| s2010_giga_bittersmile | [bitter smile. ～ビタースマイル～ 体験版２](http://suezou.dyndns.org/dl2010/giga/bittersmile/bittersmile_trial2.zip) | タイトル | cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから |
-| s2011_giga_hinataterrace | [ひなたテラス -We don't abandon you.- web体験版２](http://suezou.dyndns.org/dl2011/giga/hinataterrace/hinata_webtrial02c.zip) | タイトル | cbb2054 の Chromium でタイトル画面まで表示。START からの確認はこれから |
+| s2007_giga_himesama | [姫さまっ、お手やわらかに！ -体験版-](http://suezou.dyndns.org/dl2007/giga/himesama/hime_trialc.zip) | 本編 | Chromium (3f99c53) で START→本編の文章まで |
+| s2008_giga_sakahari | [さかあがりハリケーン 体験版 Ver.2](http://suezou.dyndns.org/dl2008/giga/sakahari/sakahari_trial2.zip) | 本編 | Chromium (3f99c53) で START→本編の文章まで |
+| s2009_giga_curefull | [キュアフル！ 体験版](http://suezou.dyndns.org/dl2009/giga/curefull/curefull_trial.zip) | 本編 | Chromium (3f99c53) で START→本編の文章まで。メッセージ枠が右端で切れて見える |
+| s2010_giga_bittersmile | [bitter smile. ～ビタースマイル～ 体験版２](http://suezou.dyndns.org/dl2010/giga/bittersmile/bittersmile_trial2.zip) | 本編 | Chromium (3f99c53) で START→本編の文章まで。メッセージ枠が右端で切れて見える |
+| s2011_giga_hinataterrace | [ひなたテラス -We don't abandon you.- web体験版２](http://suezou.dyndns.org/dl2011/giga/hinataterrace/hinata_webtrial02c.zip) | 本編 | Chromium (3f99c53) で START→本編の文章まで |
 | s2015_giga_renaiphase | [恋愛フェイズ 体験版](http://suezou.dyndns.org/dl2015/giga/renaiphase/RP_trial.zip) | タイトル | b425e77 でもタイトルまで |
 | s2006_giga_cheerfull | [チアフル！ ～cheerfull!～ 【 体験版 】](http://suezou.dyndns.org/dl2006/giga/cheerfull/cheerfull_trial.exe) | 要再確認 | 自己展開 exe のダウンロード/展開に失敗 |
 | b2009_crossover | [美乳淫妹 遥「私にイヤらしいコスプレさせるなんて……この変態！」](http://suezou.dyndns.org/dl2009/crossover/haruka/bnharuka_trial.zip) | NG | 64d6316 (2015 年版の表) で「no Script.pac」(DATA/ フォルダの形) |
@@ -475,10 +475,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| dl_RJ125204 | [保健室の女神 体験版](https://trial.dlsite.com/doujin/RJ126000/RJ125204_trial.zip) | 本編 | タイトル (バイナリ .lpm のメニュー)→初めから→本編の文章まで (livemaker-run) |
+| dl_RJ125204 | [保健室の女神 体験版](https://trial.dlsite.com/doujin/RJ126000/RJ125204_trial.zip) | 本編 | タイトル (バイナリ .lpm のメニュー)→初めから→本編の文章まで (livemaker-run)。Chromium (3f99c53) で Enter のクラッシュ解消を確認 |
 | dl_RJ129271 | [とししたハニー 体験版](https://trial.dlsite.com/doujin/RJ130000/RJ129271_trial.zip) | 本編 | タイトル→はじめから→名前入力→選択肢→本編の文章まで (livemaker-run とブラウザ) |
-| dl_RJ284038 | [彼女と俺と留学生 体験版](https://trial.dlsite.com/doujin/RJ285000/RJ284038_trial.zip) | 本編 | タイトル (背景つき、文字だけのメニューは体験版本来のもの)→はじめから→本編の文章まで (livemaker-run) |
-| dl_RJ341209 | [スタイホリック 体験版](https://trial.dlsite.com/doujin/RJ342000/RJ341209_trial.zip) | 本編 | タイトル→Start→名前入力 (打ち替えも可)→本編の文章まで、セーブ画面も開く (livemaker-run)。.lcm の演出 (ロゴ・タイトル前のアニメ) も再生 |
+| dl_RJ284038 | [彼女と俺と留学生 体験版](https://trial.dlsite.com/doujin/RJ285000/RJ284038_trial.zip) | 本編 | タイトル (背景つき、文字だけのメニューは体験版本来のもの)→はじめから→本編の文章まで (livemaker-run)。Chromium (3f99c53) で Enter のクラッシュ解消を確認 |
+| dl_RJ341209 | [スタイホリック 体験版](https://trial.dlsite.com/doujin/RJ342000/RJ341209_trial.zip) | 本編 | タイトル→Start→名前入力 (打ち替えも可)→本編の文章まで、セーブ画面も開く (livemaker-run)。.lcm の演出 (ロゴ・タイトル前のアニメ) も再生。Chromium (3f99c53) で Enter のクラッシュ解消を確認 |
 
 ### CatSystem2 (vnrun)
 
