@@ -66,7 +66,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Yuka (vnrun) | 7 | 7 |  |  |  |  |  |  |
 | System-NNN (vnrun) | 6 | 6 |  |  |  |  |  |  |
 | Bishop (vnrun) | 6 | 6 |  |  |  |  |  |  |
-| Eushully AGE (vnrun) | 1 | 1 |  |  |  |  |  |  |
+| Eushully AGE (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | Cyberworks (vnrun) | 8 | 4 |  |  |  |  |  | 4 |
 | LiLiM (vnrun) | 7 | 7 |  |  |  |  |  |  |
 | Silky's (vnrun) | 2 | 2 |  |  |  |  |  |  |
@@ -630,6 +630,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2009_eushully | [姫狩りダンジョンマイスター 体験版](http://suezou.dyndns.org/dl2009/eushully/himegari/Himegari_Trial.zip) | 本編 | Eushully AGE (vnrun、SYS4 スクリプトを自前で実行) でタイトル→Game Start→引継ぎ設定→ゲームスタート→プロローグの CG・背景・立ち絵・メッセージ窓・名前・文章まで (age-run と Chromium)。InstallShield の setup は tools/verify/isx.py → 7z (MSI) → Data1.cab で展開 |
+| s2010_eushully_ikusa_verita | [戦女神VERITA 体験版](http://suezou.dyndns.org/dl2010/eushully/ikusa-verita/100225Verita_Trial.zip) | 本編 | Eushully AGE (vnrun) でタイトル→Game Start→序章の地図・CG・立ち絵・メッセージ窓・文章まで (age-run と Chromium)。setup は InstallShield (PE の後に NB10 の記録、MSI は zlib で包まれている) を展開してから |
 
 ### Cyberworks (vnrun)
 

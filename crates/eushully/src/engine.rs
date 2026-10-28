@@ -137,6 +137,10 @@ struct Window {
     ty: i32,
     right: i32,
     lines: Vec<String>,
+    /// the letters as they were when the text came: size, colour, shadow
+    size: f32,
+    rgb: [u8; 3],
+    shadow: [u8; 3],
 }
 
 pub struct Engine {
@@ -155,7 +159,7 @@ pub struct Engine {
     font_size: f32,
     text_rgb: [u8; 3],
     shadow_rgb: [u8; 3],
-    text_cache: HashMap<(String, u32, [u8; 3]), Rc<Image>>,
+    text_cache: HashMap<TextKey, Rc<Image>>,
     tinted: HashMap<(u32, i32), Rc<Image>>,
     now: f64,
     wait: Wait,
@@ -174,6 +178,9 @@ pub struct Engine {
     pub unknown: BTreeMap<u32, u32>,
     pub text_log: Vec<String>,
 }
+
+/// A rendered line: text, size, colour and shadow colour.
+type TextKey = (String, u32, [u8; 3], [u8; 3]);
 
 fn rgb(c: i32) -> [u8; 3] {
     [(c >> 16) as u8, (c >> 8) as u8, c as u8]
@@ -1043,9 +1050,15 @@ impl Engine {
         if self.log {
             eprintln!("TEXT {s}");
         }
+        let (size, rgb, shadow) = (self.font_size, self.text_rgb, self.shadow_rgb);
         let w = self.windows.entry(self.window).or_default();
-        let width = (w.right - w.tx).max(200);
-        let per_line = (width as f32 / self.font_size).floor().max(4.0) as usize;
+        if w.lines.iter().all(String::is_empty) {
+            (w.size, w.rgb, w.shadow) = (size, rgb, shadow);
+        }
+        // the right edge, kept on the screen (some games give one past it)
+        let right = if w.right > w.tx { w.right } else { w.tx + 600 };
+        let width = right.min(self.screen.0 as i32 - 24 - w.x) - w.tx;
+        let per_line = (width as f32 / w.size.max(8.0)).floor().max(4.0) as usize;
         let mut line = w.lines.pop().unwrap_or_default();
         for c in s.chars() {
             if c == '\n' {
@@ -1064,19 +1077,19 @@ impl Engine {
         w.lines.push(line);
     }
 
-    fn line_image(&mut self, s: &str, rgb: [u8; 3]) -> Option<Rc<Image>> {
+    fn line_image(
+        &mut self,
+        s: &str,
+        size: f32,
+        rgb: [u8; 3],
+        shadow: [u8; 3],
+    ) -> Option<Rc<Image>> {
         let font = self.font.clone()?;
-        let key = (s.to_string(), self.font_size as u32, rgb);
+        let key = (s.to_string(), size as u32, rgb, shadow);
         if let Some(i) = self.text_cache.get(&key) {
             return Some(i.clone());
         }
-        let img = Rc::new(crate::text::render(
-            &font,
-            s,
-            self.font_size,
-            rgb,
-            self.shadow_rgb,
-        ));
+        let img = Rc::new(crate::text::render(&font, s, size, rgb, shadow));
         if self.text_cache.len() > 256 {
             self.text_cache.clear();
         }
@@ -1085,8 +1098,8 @@ impl Engine {
     }
 
     fn draw_string(&mut self, id: i32, x: i32, y: i32, s: &str) {
-        let rgb = self.text_rgb;
-        let Some(line) = self.line_image(s, rgb) else {
+        let (size, rgb, shadow) = (self.font_size, self.text_rgb, self.shadow_rgb);
+        let Some(line) = self.line_image(s, size, rgb, shadow) else {
             return;
         };
         if let Some(t) = self.textures.get_mut(&id) {
@@ -1233,14 +1246,13 @@ impl Engine {
         }
         // the text of the message window, over the pictures
         let wins: Vec<(i32, Window)> = self.windows.iter().map(|(k, w)| (*k, w.clone())).collect();
-        let lh = (self.font_size * 1.25).round();
-        let rgb = self.text_rgb;
         for (_, w) in wins {
+            let lh = (w.size * 1.25).round();
             for (i, line) in w.lines.iter().enumerate() {
                 if line.is_empty() {
                     continue;
                 }
-                let Some(img) = self.line_image(line, rgb) else {
+                let Some(img) = self.line_image(line, w.size, w.rgb, w.shadow) else {
                     continue;
                 };
                 let x = (w.x + w.tx) as f32 - crate::text::PAD as f32;
