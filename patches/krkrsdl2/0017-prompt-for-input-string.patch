@@ -1,0 +1,40 @@
+--- a/src/core/sdl2/SDLApplication.cpp
++++ b/src/core/sdl2/SDLApplication.cpp
+@@ -3120,6 +3120,37 @@
+ 	return TJSCreateNativeClassMethod(vnrun_confirm);
+ }
+ static tTVPAtInstallClass vnrun_install_confirm(TJS_W("vnrunConfirm"), vnrun_create_confirm, TJS_W(""));
++// vnrun: vnrunPrompt(text, initial) asks the browser's prompt() for System.inputString
++// (polyfill/Compat.tjs) and returns the answer, or void when cancelled.
++EM_JS_DEPS(vnrun_prompt_deps, "$stringToNewUTF8");
++EM_JS(char *, vnrun_prompt_js, (const char *text, const char *initial), {
++    var answer = prompt(UTF8ToString(text), UTF8ToString(initial));
++    return answer === null ? 0 : stringToNewUTF8(answer);
++});
++static tjs_error TJS_INTF_METHOD vnrun_prompt(tTJSVariant *result, tjs_int numparams,
++    tTJSVariant **param, iTJSDispatch2 *objthis)
++{
++    std::string values[2];
++    for(tjs_int i = 0; i < numparams && i < 2; i++)
++        if(param[i]->Type() != tvtVoid) TVPUtf16ToUtf8(values[i], ttstr(*param[i]).AsStdString());
++    char *answer = vnrun_prompt_js(values[0].c_str(), values[1].c_str());
++    if(result) {
++        if(answer) {
++            tjs_string text;
++            TVPUtf8ToUtf16(text, std::string(answer));
++            *result = ttstr(text);
++        } else {
++            result->Clear();
++        }
++    }
++    free(answer);
++    return TJS_S_OK;
++}
++static iTJSDispatch2 *vnrun_create_prompt(iTJSDispatch2 *)
++{
++    return TJSCreateNativeClassMethod(vnrun_prompt);
++}
++static tTVPAtInstallClass vnrun_install_prompt(TJS_W("vnrunPrompt"), vnrun_create_prompt, TJS_W(""));
+ // Browser-backed Pad text editor. The JS host owns each editor's text and lifetime.
+ EM_JS_DEPS(vnrun_pad_deps, "$stringToNewUTF8");
+ EM_JS(char *, vnrun_pad_js, (int id, const char *action, const char *value, const char *title, const char *filename), {

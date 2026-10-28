@@ -25,6 +25,14 @@ if (typeof(global.Window.startMouseHook) === "undefined") {
 if (typeof(global.ExtractMojimoGameFont) === "undefined")
 	global.ExtractMojimoGameFont = function() { return false; };
 
+// KiriKiri's text input box (KAG's [input], name entry): the browser's prompt() stands in for it.
+// Like the original, it gives void when cancelled. vnrunPrompt is in patches/krkrsdl2 0017.
+if (typeof(global.System.inputString) === "undefined" && typeof(global.vnrunPrompt) !== "undefined")
+	global.System.inputString = function(caption, prompt, initial) {
+		var text = prompt != "" ? prompt : caption;
+		return global.vnrunPrompt(text, initial === void ? "" : string(initial));
+	} incontextof null;
+
 // Games written for KiriKiri 2 build some menus only there (@if (!kirikiriz)) and use them
 // anyway, e.g. lass_pixy's dispDoubleBufferMenu: windows have a menu nobody sees for them.
 {
