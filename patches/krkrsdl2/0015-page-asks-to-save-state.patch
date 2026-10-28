@@ -1,0 +1,25 @@
+--- a/src/core/sdl2/SDLApplication.cpp
++++ b/src/core/sdl2/SDLApplication.cpp
+@@ -3481,4 +3481,22 @@
+ 	event.wheel.y = dy;
+ 	SDL_PushEvent(&event);
+ }
++
++// The page is about to close or be hidden: the polyfill's vnrunSaveState (Compat.tjs) saves
++// what a game keeps only when it quits normally, such as KAG's system variables.
++extern "C" EMSCRIPTEN_KEEPALIVE void vnrun_save_state()
++{
++	try
++	{
++		TVPExecuteScript(ttstr(TJS_W("if (typeof global.vnrunSaveState != \"undefined\") global.vnrunSaveState();")));
++	}
++	catch (eTJS &e)
++	{
++		TVPAddLog(ttstr("(vnrun) script from the page: ") + e.GetMessage());
++	}
++	catch (...)
++	{
++		TVPAddLog(ttstr("(vnrun) script from the page failed"));
++	}
++}
+ #endif

@@ -36,7 +36,7 @@ embuilder build sdl2
 
 LDFLAGS=(
   -sEXPORT_ES6=1 -sEXPORT_NAME=createKrkr -sENVIRONMENT=web -sINVOKE_RUN=0 -sEXIT_RUNTIME=0
-  "-sEXPORTED_FUNCTIONS=_main,_vnrun_mouse,_vnrun_wheel,_emscripten_syncfs_is_finished"
+  "-sEXPORTED_FUNCTIONS=_main,_vnrun_mouse,_vnrun_wheel,_vnrun_save_state,_emscripten_syncfs_is_finished"
   -sEXPORTED_RUNTIME_METHODS=callMain,FS,HEAPU8
   "--js-library=$ROOT/engines/krkr/library.js"
 )

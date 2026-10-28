@@ -127,3 +127,16 @@ Storages.addAutoPath = function(path) {
 
 // Some Windows engines expose Motion as a built-in rather than linking a DLL.
 Scripts.execStorage(global.KirikiriPolyfillRoot + "plugins/motionPlayer.tjs");
+
+// The page calls this (vnrun_save_state) when the tab is hidden or the player leaves. KAG keeps
+// system variables (read text, settings, unlocked CG) until the game quits normally, which a
+// closed tab never does; a game that saved them half-way through its first-start setup then
+// failed on every later start (madosoft 2013: sf.voiceVisible missing).
+global.vnrunSaveState = function() {
+	try {
+		if (typeof(global.kag) !== "undefined" && isvalid global.kag && typeof(global.kag.saveSystemVariables) !== "undefined")
+			global.kag.saveSystemVariables();
+	} catch (e) {
+		Debug.message("(vnrun) saveSystemVariables: " + e.message);
+	}
+} incontextof global;

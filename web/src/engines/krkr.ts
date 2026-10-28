@@ -17,6 +17,7 @@ interface KrkrModule {
   callMain(args: string[]): void;
   _vnrun_mouse(x: number, y: number, button: number, down: number): void;
   _vnrun_wheel(dy: number): void;
+  _vnrun_save_state(): void;
   _emscripten_syncfs_is_finished(): void;
 }
 type CreateKrkr = (options: object) => Promise<KrkrModule>;
@@ -192,6 +193,20 @@ export async function start({ fs, manifest, ui, fonts }: EngineContext): Promise
     saves.scan();
     done(null);
   };
+  // What KAG keeps until a normal quit (system variables) is saved when the tab is hidden and
+  // before the player's exit sends the saves (polyfill/Compat.tjs vnrunSaveState).
+  const saveState = () => {
+    try {
+      Module._vnrun_save_state();
+      saves.scan();
+    } catch (error) {
+      console.error("krkr: saving state", error);
+    }
+  };
+  window.addEventListener("vnrun-before-exit", saveState);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") saveState();
+  });
 
   const { canvas } = ui;
   const mouse = (e: PointerEvent, button: number, down: boolean) => {

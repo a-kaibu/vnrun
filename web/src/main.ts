@@ -95,6 +95,8 @@ async function main(): Promise<void> {
       overlay.hidden = true;
     },
     exit: async () => {
+      // Engines write what they keep until a normal quit (krkr: system variables).
+      window.dispatchEvent(new Event("vnrun-before-exit"));
       const previousMessage = $("message").textContent ?? "";
       show("セーブを送信中…");
       try {
