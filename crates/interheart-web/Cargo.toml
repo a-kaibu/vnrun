@@ -1,0 +1,15 @@
+[package]
+name = "interheart-web"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "The Interheart engine for the browser: wasm-bindgen exports for web/src/engines/interheart.ts"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+interheart = { path = "../interheart" }
+nexas = { path = "../nexas" }
+wasm-bindgen = "=0.2.129"
+js-sys = "0.3"

@@ -501,6 +501,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "interheart"
+version = "0.1.0"
+dependencies = [
+ "fontdue",
+ "image 0.25.10",
+ "nexas",
+]
+
+[[package]]
+name = "interheart-web"
+version = "0.1.0"
+dependencies = [
+ "interheart",
+ "js-sys",
+ "nexas",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"

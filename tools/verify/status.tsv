@@ -372,3 +372,5 @@ b2014_escude	本編	Escu:de でロゴ→タイトル→はじめから→プロ�
 b2009_purplesoftware	NG	QLIE (vnrun) では FilePackVer3.0 + DLL/key.fkey の暗号が解けず「startup.s: no @@TOP」(GARbro の 3.0 鍵ファイル方式・アイコン鍵を試しても 1PC にならない)
 b2015_empress	本編	Majiro (vnrun) でロゴ→タイトル→New Game→本編の背景・立ち絵・名前・文章まで (majiro-run と Chromium)
 b2006_kaguya	本編	Kaguya (vnrun) でロゴ→タイトル→最初から→プロローグ→本編の背景・立ち絵・名前・文章・カットインまで、体験版の最後まで通る (kaguya-run と Chromium)
+b2013_inter_heart	本編	Interheart (ACT_*.TXT を自前で実行) でタイトル→はじめから→キャラ選択→本編のイベント CG・文章・ボイスまで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (両方)
+b2017_sweet_heart	本編	Interheart でタイトル→はじめから→本編の背景・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium)

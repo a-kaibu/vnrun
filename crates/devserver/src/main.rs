@@ -266,6 +266,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if esc_arc(game, &names) {
         // Escu:de: ESC-ARC archives (script.bin, gfx.bin, ...) beside the exe
         Some("escude".into())
+    } else if has("data.fpk") {
+        // Interheart / Candy Soft: data.fpk (the scenario) beside the other .fpk archives
+        Some("interheart".into())
     } else if has("script.pac") {
         Some("nexas".into())
     } else if has("data.pac") {

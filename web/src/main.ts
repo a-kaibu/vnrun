@@ -29,6 +29,7 @@ const ENGINES: Record<string, () => Promise<EngineModule>> = {
   kaguya: () => import("./engines/kaguya"),
   system4: () => import("./engines/system4"),
   escude: () => import("./engines/escude"),
+  interheart: () => import("./engines/interheart"),
   html: () => import("./engines/html"),
 };
 
