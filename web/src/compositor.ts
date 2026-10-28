@@ -2,6 +2,8 @@
 // WebGPU: each picture is a quad from its four corners, sampling a rectangle of its texture,
 // laid over or added, clipped to a rectangle of the screen.
 
+import { TextureCache } from "./texture-cache";
+
 /** What the compositor needs from an engine. */
 export interface Pictures {
   draws(): Float32Array;
@@ -55,7 +57,7 @@ const FIELDS = 21;
 const SLOT = 256;
 
 export class Compositor {
-  private readonly textures = new Map<number, { texture: GPUTexture; used: number }>();
+  private readonly textures = new TextureCache<{ texture: GPUTexture }>();
   private readonly normal: GPURenderPipeline;
   private readonly added: GPURenderPipeline;
   private readonly layout: GPUBindGroupLayout;
@@ -118,7 +120,7 @@ export class Compositor {
 
   // The GPU copy of a picture; pictures never change, so it is uploaded once.
   private texture(game: Pictures, id: number, w: number, h: number): GPUTexture | null {
-    let t = this.textures.get(id);
+    let t = this.textures.get(id, this.frame);
     if (!t) {
       const pixels = game.texture(id);
       if (!w || !h || pixels.length < w * h * 4) return null;
@@ -131,10 +133,9 @@ export class Compositor {
         w,
         h,
       ]);
-      t = { texture, used: this.frame };
-      this.textures.set(id, t);
+      t = { texture };
+      this.textures.set(id, t, this.frame);
     }
-    t.used = this.frame;
     return t.texture;
   }
 
@@ -193,13 +194,8 @@ export class Compositor {
     pass.end();
     this.device.queue.writeBuffer(this.uniforms, 0, data);
     this.device.queue.submit([encoder.finish()]);
-    // Pictures not drawn for a while give their memory back.
-    for (const [id, t] of this.textures) {
-      if (this.frame - t.used > 600) {
-        t.texture.destroy();
-        this.textures.delete(id);
-      }
-    }
+    // Over budget, the pictures drawn longest ago give their memory back.
+    this.textures.trim(this.frame);
     return this.screen;
   }
 }

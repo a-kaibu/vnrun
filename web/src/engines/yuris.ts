@@ -5,6 +5,7 @@
 import { importEngine, type EngineContext } from "../engine";
 import type { GameFS } from "../gamefs";
 import { Presenter } from "../present";
+import { TextureCache } from "../texture-cache";
 
 interface Game {
   width(): number;
@@ -184,11 +185,10 @@ const SLOT = 256;
 interface Texture {
   texture: GPUTexture;
   version: number;
-  used: number;
 }
 
 class Compositor {
-  private readonly textures = new Map<number, Texture>();
+  private readonly textures = new TextureCache<Texture>();
   private readonly pipeline: GPURenderPipeline;
   private readonly layout: GPUBindGroupLayout;
   private readonly none: GPUTexture;
@@ -250,20 +250,19 @@ class Compositor {
 
   // The GPU copy of a layer's pixels, uploaded again when the engine changed them.
   private texture(game: Game, tex: number, version: number): GPUTexture | null {
-    let t = this.textures.get(tex);
+    let t = this.textures.get(tex, this.frame);
     if (!t || t.version !== version) {
       const w = game.texture_width(tex);
       const h = game.texture_height(tex);
       if (!w || !h) return null;
       if (!t || t.texture.width !== w || t.texture.height !== h) {
-        t?.texture.destroy();
         const texture = this.device.createTexture({
           size: [w, h],
           format: "rgba8unorm",
           usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
         });
-        t = { texture, version, used: this.frame };
-        this.textures.set(tex, t);
+        t = { texture, version };
+        this.textures.set(tex, t, this.frame);
       }
       const pixels = game.texture(tex);
       this.device.queue.writeTexture(
@@ -274,7 +273,6 @@ class Compositor {
       );
       t.version = version;
     }
-    t.used = this.frame;
     return t.texture;
   }
 
@@ -345,13 +343,8 @@ class Compositor {
     }
     this.device.queue.writeBuffer(this.uniforms, 0, data);
     this.device.queue.submit([encoder.finish()]);
-    // Layers not drawn for a while give their memory back.
-    for (const [tex, t] of this.textures) {
-      if (this.frame - t.used > 600) {
-        t.texture.destroy();
-        this.textures.delete(tex);
-      }
-    }
+    // Over budget, the layers drawn longest ago give their memory back.
+    this.textures.trim(this.frame);
     return this.screen;
   }
 }
