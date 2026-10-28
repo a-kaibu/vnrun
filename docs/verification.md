@@ -76,6 +76,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ShiinaRio (vnrun) | 3 | 1 |  |  |  |  |  | 2 |
 | NekoSDK / Waffle (vnrun) | 5 | 5 |  |  |  |  |  |  |
 | DxLib MED (vnrun) | 3 | 3 |  |  |  |  |  |  |
+| Liar-soft XFL (vnrun) | 2 | 2 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -705,4 +706,11 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2012_fudegaki_soft | [つぼい君のスイッチ！ 体験版](http://suezou.dyndns.org/dl2012/fudegaki-soft/tsuboi/TSUBOIKUN_NO_SWITCH_trial.zip) | 本編 | DxLib MED (vnrun) で 1024x768 のロゴ→タイトル (CBLMAP_TITLE_MENU)→はじめから→体験版メニュー (CBLMAP_TRIAL_MENU)→P_001→R_001 の背景・CG・名前・文章 (med-run 6000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
 | b2012_trois | [モンスターパーク２ ～神々を宿した乙女～ 体験版](http://suezou.dyndns.org/dl2012/trois/mop2/MOP2_TRIAL.zip) | 本編 | DxLib MED (vnrun) でロゴ→タイトル (TITLE のクリックマップ)→START→M2TMAIN→MOP2-T のプロローグ (md_jpg の絵、立ち絵・名前・文章)→選択肢→MA02XX (med-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
 | b2018_fudegaki_soft | [催眠学園１年生 体験版](http://suezou.dyndns.org/dl2018/fudegaki-soft/saimin1nen/SG1nensei_trial.zip) | 本編 | DxLib MED (vnrun) で注意書き→ロゴ・ブランドコール→タイトル (STITLE のクリックマップ、MENU03_N/F)→NEW GAME→SMAIN から 000_PRO000A..E の背景・立ち絵 (体 + 顔)・名前・文章・選択肢・ボイス・BGM (med-run 20000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
+
+### Liar-soft XFL (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2019_channel_ubai | [アイドル裏営業～汚されたステージ衣装～ 体験版](http://suezou.dyndns.org/dl2019/channel-ubai/idol_ura/idol_ura-trial.zip) | 本編 | Liar-soft XFL (vnrun) でタイトル (0001.gsc のボタン)→はじめから→操作説明の絵→0500→1010..1030 の背景・イベント CG・立ち絵・名前・文章・ボイス・BGM (liar-run 9000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
+| b2022_evoll | [南国プリズン 体験版](http://suezou.dyndns.org/dl2022/evoll/nangoku_prison/Nangoku_Trial.zip) | 本編 | Liar-soft XFL (vnrun) でタイトル (0001.gsc のボタン、ホバー絵)→はじめから→注意書き 9901..9903→0500→1010..1040 の背景・イベント CG・立ち絵 (体 + 顔、サブルーチン)・名前・文章・ボイス・BGM・選択肢→3010 (liar-run 9000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
 <!-- /matrix -->

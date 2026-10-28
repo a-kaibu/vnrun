@@ -77,6 +77,7 @@ game_root() {
     cyberworks) m=(-iname arc01.dat) ;;
     neko) m=(-iname scr.pak) ;;
     med) m=(-iname md_scr.med) ;;
+    liar) m=(-iname scr.xfl) ;;
     lilim) m=(-iname scr.aos) ;;
     silkys) m=(-iname layer.arc) ;;
     ivory) m=(-ipath '*/misc/script.pk') ;;

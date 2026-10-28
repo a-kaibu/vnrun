@@ -687,6 +687,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "liar"
+version = "0.1.0"
+dependencies = [
+ "encoding_rs",
+ "fontdue",
+ "image 0.25.10",
+ "nexas",
+]
+
+[[package]]
+name = "liar-web"
+version = "0.1.0"
+dependencies = [
+ "js-sys",
+ "liar",
+ "nexas",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.191"
 source = "registry+https://github.com/rust-lang/crates.io-index"
