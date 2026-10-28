@@ -851,12 +851,61 @@ impl Engine {
     // ---- the title ----
 
     /// The title's buttons: (label, column of the button sheet, rectangle).
+    /// The title's button sheet (5 rows: normal, pointed, ...) and its columns: 2017 has
+    /// obj\\d006_000 with 8 (はじめから 0, つづきから 1, ゲーム終了 6), 2016 obj\\d007_000 with 10
+    /// (Start 0, Load 1, Quit 9), 2012 obj\\d001_000 with 6 round ones (ゲーム終了 4), 2010
+    /// obj\\c001_000 with 5 (ゲーム終了 4).
+    fn title_sheet(&mut self) -> Option<(Rc<Image>, i32, i32)> {
+        if let Some(s) = self.image("obj\\d007_000.bmp")
+            && s.w % 10 == 0
+            && s.h % 5 == 0
+            && s.w >= 1000
+        {
+            return Some((s, 10, 9));
+        }
+        if let Some(s) = self.image("obj\\d006_000.bmp")
+            && s.w % 8 == 0
+            && s.h % 5 == 0
+            && s.h >= 100
+        {
+            return Some((s, 8, 6));
+        }
+        if let Some(s) = self.image("obj\\d001_000.bmp")
+            && s.w % 6 == 0
+            && s.h % 5 == 0
+            && s.w / 6 == s.h / 5
+        {
+            return Some((s, 6, 4));
+        }
+        match self.image("obj\\c001_000.bmp") {
+            Some(s) if s.w % 5 == 0 && s.h % 5 == 0 && s.w > 1000 => Some((s, 5, 4)),
+            _ => None,
+        }
+    }
+
+    /// (label, column of the sheet, rectangle); the columns 0 and 1 start and load, the last
+    /// quits.
     fn title_buttons(&mut self) -> Vec<(&'static str, i32, [i32; 4])> {
-        let items = [("はじめから", 0), ("つづきから", 1), ("ゲーム終了", 6)];
-        let (bw, bh) = match self.image("obj\\d006_000.bmp") {
-            Some(s) if s.w % 8 == 0 && s.h % 5 == 0 => (s.w as i32 / 8, s.h as i32 / 5),
-            _ => (300, 48),
+        let sheet = self.title_sheet();
+        let quit = sheet.as_ref().map_or(6, |s| s.2);
+        let items = [("はじめから", 0), ("つづきから", 1), ("ゲーム終了", quit)];
+        let (bw, bh) = match &sheet {
+            Some((s, cols, _)) => (s.w as i32 / cols, s.h as i32 / 5),
+            None => (300, 48),
         };
+        if bw == bh {
+            // round buttons (2012): a row at the bottom right
+            let (gap, y) = (12, self.height as i32 - bh - 30);
+            let left = self.width as i32 - 3 * bw - 2 * gap - 40;
+            return items
+                .iter()
+                .enumerate()
+                .map(|(i, &(t, col))| {
+                    let x = left + i as i32 * (bw + gap);
+                    (t, col, [x, y, x + bw, y + bh])
+                })
+                .collect();
+        }
         let (x, top, gap) = (40, self.height as i32 - 250, 12);
         items
             .iter()
@@ -870,7 +919,13 @@ impl Engine {
 
     fn title_draws(&mut self, out: &mut Vec<Draw>) {
         let (w, h) = (self.width as f32, self.height as f32);
-        if let Some(bg) = self.image("obj\\d000_000.bmp") {
+        let sheet = self.title_sheet();
+        if sheet.as_ref().is_some_and(|s| s.1 == 5) {
+            // 2010: the desk (a000)
+            if let Some(bg) = self.image("obj\\a000_000.bmp") {
+                out.push(draw(&bg, 0.0, 0.0, 1.0));
+            }
+        } else if let Some(bg) = self.image("obj\\d000_000.bmp") {
             out.push(draw(&bg, 0.0, 0.0, 1.0));
         } else if let Some(bg) = self.image("anime\\d000_000.bmp") {
             // 2014: the title's background is the first frame of an animation (half size),
@@ -884,10 +939,28 @@ impl Engine {
         } else {
             out.push(self.solid([20, 20, 40, 255]));
         }
-        if let Some(logo) = self.image("obj\\d002_000.bmp") {
+        if sheet.as_ref().is_some_and(|s| s.1 == 10) {
+            // 2016: the girls (d003) at the right, the logo (d005), the copyright line (d006)
+            if let Some(girls) = self.image("obj\\d003_000.bmp") {
+                out.push(draw(&girls, w - girls.w as f32, 0.0, 1.0));
+            }
+            if let Some(logo) = self.image("obj\\d005_000.bmp") {
+                out.push(draw(&logo, 20.0, 40.0, 1.0));
+            }
+            if let Some(c) = self.image("obj\\d006_000.bmp") {
+                out.push(draw(&c, 20.0, h - c.h as f32 - 4.0, 1.0));
+            }
+        } else if sheet.as_ref().is_some_and(|s| s.1 == 6) {
+            // 2012: the trial's logo at the top right
+            if let Some(logo) = self.image("obj\\d000_101.bmp") {
+                out.push(draw(&logo, w - logo.w as f32 - 20.0, 20.0, 1.0));
+            }
+        } else if sheet.is_some()
+            && let Some(logo) = self.image("obj\\d002_000.bmp")
+        {
             out.push(draw(&logo, 0.0, 0.0, 1.0));
         }
-        let sheet = self.image("obj\\d006_000.bmp");
+        let sheet = sheet.map(|s| s.0);
         let (px, py) = self.pointer;
         for (t, col, r) in self.title_buttons() {
             let over = inside(r, px, py);
@@ -946,8 +1019,10 @@ impl Engine {
 
     fn slot_rects(&self) -> Vec<[i32; 4]> {
         let (w, h) = (self.width as i32, self.height as i32);
-        let (bw, bh, gap) = (w - 240, 48, 10);
-        let top = (h - (bh + gap) * (SLOTS as i32 + 1)) / 2;
+        // 58 pixels a row, less on a short screen (800x600 in 2010)
+        let step = ((h - 60) / (SLOTS as i32 + 1)).min(58);
+        let (bw, bh, gap) = (w - 240, step - 10, 10);
+        let top = (h - (bh + gap) * (SLOTS as i32 + 1)) / 2 + 16;
         (0..=SLOTS as i32)
             .map(|i| {
                 let y = top + i * (bh + gap);
@@ -1105,8 +1180,8 @@ impl Engine {
                         self.start(first);
                     }
                     Some(1) => self.view = View::Slots { save: false },
-                    Some(6) => self.ended = true,
-                    _ => {}
+                    Some(_) => self.ended = true,
+                    None => {}
                 }
             }
             Wait::Click => {

@@ -134,6 +134,7 @@ impl Archives {
                 "bgm",
                 "cfg",
                 "cg",
+                "cgl",
                 "effect",
                 "flow",
                 "gt",

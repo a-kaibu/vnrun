@@ -71,7 +71,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Ivory (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | NonColor (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | ShiinaRio (vnrun) | 3 | 1 |  |  |  |  |  | 2 |
-| NekoSDK / Waffle (vnrun) | 2 | 2 |  |  |  |  |  |  |
+| NekoSDK / Waffle (vnrun) | 5 | 5 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -665,6 +665,9 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| b2010_waffle | [裸の王様 体験版](http://suezou.dyndns.org/dl2010/waffle/hadaka/hadaka_taiken.zip) | 本編 | zip の中のセットアップ.EXE は LHa の SFX で、7z で展開すると .pak が直に出る (800x600)。NekoSDK (vnrun) でタイトル (obj\a000 の机、c001 の 5 列のボタン)→始めから→scr.pak の ep_00_00_* を名前順に本編の背景・立ち絵・名前・文章 (neko-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
+| b2012_waffle | [すくみず食べ放題 体験版](http://suezou.dyndns.org/dl2012/waffle/sukumizu/sukumizu_taiken.exe) | 本編 | NekoSDK (vnrun) でタイトル (d001 の丸いボタン、d000_101 のロゴ)→はじめから→cfg\chapter_file.ini の最初の脚本の背景・CG・名前・文章 (neko-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
 | b2014_waffle | [巨乳ファンタジー２if 体験版](http://suezou.dyndns.org/dl2014/waffle/kyonyu2if/kyonyu2if_taiken.exe) | 本編 | NekoSDK (vnrun) でタイトル (anime の背景・ロゴ)→はじめから→scr.pak の ep_* を名前順に本編の背景・立ち絵・顔窓・名前・文章 (neko-run 15000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
+| b2016_waffle | [巨乳ファンタジー外伝２after -オスタシアの野望- 体験版](http://suezou.dyndns.org/dl2016/waffle/kyonyu_if2/kyonyu_gaiden2after_taiken.exe) | 本編 | NekoSDK (vnrun) でタイトル (d007 の 10 列のボタン、d003 の絵、d005 のロゴ)→Start→flow00_000 の順に本編の背景・立ち絵・名前・文章 (neko-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
 | b2017_waffle | [隣人に壊されていく俺の妻 体験版](http://suezou.dyndns.org/dl2017/waffle/rinzin/rinjin_taiken.exe) | 本編 | NekoSDK (vnrun) で文字の序章→タイトル (obj の背景・ロゴ・ボタン)→はじめから→flow00_000 の順に本編の背景・立ち絵・CG (拡大・移動)・名前・文章 (neko-run 6000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
 <!-- /matrix -->
