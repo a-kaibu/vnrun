@@ -11,6 +11,31 @@ use crate::c::compile::{Exports, compile};
 use crate::gfx::{Mode, Planes, Rect, empty, intersect, read_bmp};
 use crate::vm::{Host, Native, Stop, Vm};
 
+/// The save file that keeps when each save file was written.
+const TIMES: &str = "vnrun-times.txt";
+
+/// Writes a SYSTEMTIME (year, month, weekday, day, hour, minute, second, ms; WORDs).
+fn write_systemtime(vm: &mut Vm, p: u32, t: i64) -> Result<(), String> {
+    let (days, s) = (t.div_euclid(86400), t.rem_euclid(86400));
+    let z = days + 719468;
+    let era = z.div_euclid(146097);
+    let doe = z - era * 146097;
+    let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let d = doy - (153 * mp + 2) / 5 + 1;
+    let m = if mp < 10 { mp + 3 } else { mp - 9 };
+    let y = yoe + era * 400 + i64::from(m <= 2);
+    let week = (days + 4).rem_euclid(7);
+    for (k, v) in [y, m, week, d, s / 3600, s / 60 % 60, s % 60, 0]
+        .iter()
+        .enumerate()
+    {
+        vm.w16(p + 2 * k as u32, *v as u16)?;
+    }
+    Ok(())
+}
+
 /// Where `dir_get` says the documents folder is; files under it are saves.
 const DOCS: &str = "C:\\Documents\\";
 
@@ -106,6 +131,8 @@ pub struct State {
     updated: bool,
     /// local time, seconds since 1970
     wall: i64,
+    /// when each save file was written (local seconds), kept in the save file `TIMES`
+    times: Option<HashMap<String, i64>>,
     // input
     mouse: (i32, i32),
     buttons: u32,
@@ -131,6 +158,8 @@ pub struct State {
     pub ended: bool,
     /// time spent in each built-in (calls, seconds), when profiling
     pub profile: Option<HashMap<String, (u64, f64)>>,
+    /// log every built-in called, with its arguments and where (for debugging)
+    pub trace: bool,
 }
 
 pub struct Engine {
@@ -295,6 +324,7 @@ impl Engine {
             counters: HashMap::new(),
             updated: false,
             wall: 0,
+            times: None,
             mouse: (0, 0),
             buttons: 0,
             latched_buttons: 0,
@@ -315,6 +345,7 @@ impl Engine {
             log: Vec::new(),
             ended: false,
             profile: None,
+            trace: false,
         };
         st.planes.alloc(&mut vm, 0, width, height, 24);
         let start = st.load_program(&mut vm, &exec)?;
@@ -457,8 +488,33 @@ impl State {
     }
 
     fn write_file(&mut self, path: &str, data: &[u8]) {
-        let rest = path.strip_prefix(DOCS).unwrap_or(path);
-        self.files.write_save(&rest.replace('\\', "/"), data);
+        let rest = path.strip_prefix(DOCS).unwrap_or(path).replace('\\', "/");
+        self.files.write_save(&rest, data);
+        let wall = self.wall;
+        let times = self.times();
+        if data.is_empty() {
+            times.remove(&rest);
+        } else {
+            times.insert(rest, wall);
+        }
+        let mut list: Vec<_> = times.iter().map(|(k, v)| format!("{k}\t{v}\n")).collect();
+        list.sort();
+        self.files.write_save(TIMES, list.concat().as_bytes());
+    }
+
+    fn times(&mut self) -> &mut HashMap<String, i64> {
+        if self.times.is_none() {
+            let text = self.files.read_save(TIMES).unwrap_or_default();
+            let map = String::from_utf8_lossy(&text)
+                .lines()
+                .filter_map(|l| {
+                    let (k, v) = l.split_once('\t')?;
+                    Some((k.to_string(), v.parse().ok()?))
+                })
+                .collect();
+            self.times = Some(map);
+        }
+        self.times.as_mut().unwrap()
     }
 
     /// Compiles a program (once) and gives its start.
@@ -589,7 +645,7 @@ impl State {
         let parent = vm.r32(sp + l.at("parent"))?;
         if parent != 0 && depth < 16 && self.sprites.contains(&parent) {
             let (px, py, pzx, pzy, prot) = self.sprite_world(vm, parent, depth + 1)?;
-            let t = prot * std::f32::consts::TAU / 1024.0;
+            let t = prot * std::f32::consts::TAU / 2048.0;
             let (s, c) = t.sin_cos();
             let (lx, ly) = (x * pzx, y * pzy);
             return Ok((
@@ -629,7 +685,7 @@ impl State {
         if zx <= 0.0 || zy <= 0.0 || w <= 0.0 || h <= 0.0 {
             return Ok(());
         }
-        let rot_m = (rot as i32).rem_euclid(1024);
+        let rot_m = (rot as i32).rem_euclid(2048);
         if rot_m == 0
             && zx == 1.0
             && zy == 1.0
@@ -645,7 +701,7 @@ impl State {
             self.planes.copy(vm, target, dx, dy, page, Some(rc), &m);
             return Ok(());
         }
-        let t = rot_m as f32 * std::f32::consts::TAU / 1024.0;
+        let t = rot_m as f32 * std::f32::consts::TAU / 2048.0;
         let (s, c) = t.sin_cos();
         // corners of the picture on the screen
         let fwd = |u: f32, v: f32| {
@@ -1038,6 +1094,10 @@ impl State {
                 } else {
                     file
                 };
+                #[cfg(not(target_arch = "wasm32"))]
+                if std::env::var_os("ESCUDE_CALLS").is_some() {
+                    self.log.push(format!("{name} {path}"));
+                }
                 let start = self.load_program(vm, &path)?;
                 return Ok(Native::Call(start));
             }
@@ -1070,25 +1130,7 @@ impl State {
                 b(true)
             }
             "gettime" => {
-                let t = self.wall;
-                let (days, s) = (t.div_euclid(86400), t.rem_euclid(86400));
-                let z = days + 719468;
-                let era = z.div_euclid(146097);
-                let doe = z - era * 146097;
-                let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
-                let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-                let mp = (5 * doy + 2) / 153;
-                let d = doy - (153 * mp + 2) / 5 + 1;
-                let m = if mp < 10 { mp + 3 } else { mp - 9 };
-                let y = yoe + era * 400 + i64::from(m <= 2);
-                let week = (days + 4).rem_euclid(7);
-                let p = arg(0);
-                for (k, v) in [y, m, week, d, s / 3600, s / 60 % 60, s % 60, 0]
-                    .iter()
-                    .enumerate()
-                {
-                    vm.w16(p + 2 * k as u32, *v as u16)?;
-                }
+                write_systemtime(vm, arg(0), self.wall)?;
                 b(true)
             }
             "fps" => Native::Value(60),
@@ -1123,8 +1165,9 @@ impl State {
                 b(true)
             }
             "gfree" => {
+                // the screen stays (games free handles they never allocated, which are 0)
                 let n = i(0);
-                b(self.planes.free(vm, n))
+                b(n != 0 && self.planes.free(vm, n))
             }
             "gload" => {
                 let n = self.plane_arg(vm, arg(0))?;
@@ -1256,14 +1299,14 @@ impl State {
                     (sr[3] - sr[1]) as f32 / (dr[3] - dr[1]) as f32,
                 );
                 let (cx, cy) = ((dr[0] + dr[2]) as f32 / 2.0, (dr[1] + dr[3]) as f32 / 2.0);
-                let t = (rot.rem_euclid(1024)) as f32 * std::f32::consts::TAU / 1024.0;
+                let t = (rot.rem_euclid(2048)) as f32 * std::f32::consts::TAU / 2048.0;
                 let (s, c) = t.sin_cos();
                 let scx = (sr[0] + sr[2]) as f32 / 2.0;
                 let scy = (sr[1] + sr[3]) as f32 / 2.0;
                 let mut inv = [c * sx, -s * sx, 0.0, s * sy, c * sy, 0.0];
                 inv[2] = scx - (inv[0] * cx + inv[1] * cy);
                 inv[5] = scy - (inv[3] * cx + inv[4] * cy);
-                let area = if rot.rem_euclid(1024) == 0 {
+                let area = if rot.rem_euclid(2048) == 0 {
                     dr
                 } else {
                     let rr =
@@ -1919,8 +1962,18 @@ impl State {
             }
             "file_gettime" => {
                 let path = self.path(vm, arg(0))?;
-                let exists = self.read_game_file(&path).is_some_and(|d| !d.is_empty());
-                b(exists)
+                if self.read_game_file(&path).is_none() {
+                    return Ok(b(false));
+                }
+                let rest = path.strip_prefix(DOCS).unwrap_or(&path).replace('\\', "/");
+                let wall = self.wall;
+                let t = self.times().get(&rest).copied().unwrap_or(wall);
+                for k in 1..4 {
+                    if arg(k) != 0 {
+                        write_systemtime(vm, arg(k), t)?;
+                    }
+                }
+                b(true)
             }
             "file_getattr" => Native::Value(0x80),
             "file_setattr" | "file_settime" => b(true),
@@ -2184,14 +2237,14 @@ impl State {
             "abs" => Native::Value(i(0).unsigned_abs()),
             "sgn" => Native::Value(i(0).signum() as u32),
             "_sin" | "_cos" => {
-                let t = i(0) as f64 * std::f64::consts::TAU / 1024.0;
+                let t = i(0) as f64 * std::f64::consts::TAU / 2048.0;
                 let v = if name == "_sin" { t.sin() } else { t.cos() };
                 Native::Value((v * 65536.0).round() as i32 as u32)
             }
             "_atan" => {
                 let t = (i(1) as f64).atan2(i(0) as f64);
                 Native::Value(
-                    ((t * 1024.0 / std::f64::consts::TAU).round() as i32).rem_euclid(1024) as u32,
+                    ((t * 2048.0 / std::f64::consts::TAU).round() as i32).rem_euclid(2048) as u32,
                 )
             }
             "fabs" => fv(f(arg(0)).abs()),
@@ -2413,6 +2466,16 @@ impl Host for State {
             k.1 += e;
             let _ = steps;
             return r;
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        if self.trace {
+            let name = vm.natives[id as usize].clone();
+            if !matches!(
+                name.as_str(),
+                "getcount" | "rc_in" | "rc_copy" | "rc_union" | "rc_box" | "rc_empty"
+            ) {
+                self.log.push(format!("{name}{a:x?} in {}", vm.backtrace()));
+            }
         }
         self.call_native(vm, id, a)
     }

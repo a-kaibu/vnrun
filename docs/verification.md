@@ -518,6 +518,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2008_escude | [ヴェルディア幻奏曲体験版](http://suezou.dyndns.org/dl2008/escude/verdia/verdia_trial.zip) | 本編 | Escu:de (ACPX の C を自前 VM で実行) でタイトル→NEW GAME→本編の背景・文章まで (escude-run と Chromium) |
-| b2014_escude | [Re;Lord ～ヘルフォルトの魔女とぬいぐるみ～ 体験版](http://suezou.dyndns.org/dl2014/escude/relord/ReLord_Trial.zip) | 本編 | Escu:de でロゴ→タイトル→はじめから→プロローグの文章まで (Chromium)、CG と文章ウィンドウの場面まで (escude-run) |
+| b2008_escude | [ヴェルディア幻奏曲体験版](http://suezou.dyndns.org/dl2008/escude/verdia/verdia_trial.zip) | 本編 | Escu:de (ACPX の C を自前 VM で実行) でタイトル→NEW GAME→本編の背景・文章まで (escude-run と Chromium)。セーブ (スロットの日時・サムネイル)→タイトルからロードで本編に戻る (escude-run) |
+| b2014_escude | [Re;Lord ～ヘルフォルトの魔女とぬいぐるみ～ 体験版](http://suezou.dyndns.org/dl2014/escude/relord/ReLord_Trial.zip) | 本編 | Escu:de でロゴ→タイトル→はじめから→プロローグの文章まで (Chromium)、CG と文章ウィンドウの場面まで (escude-run)。セーブ→タイトルからロードでプロローグに戻る (Chromium と escude-run) |
 <!-- /matrix -->

@@ -310,12 +310,14 @@ fn store_op(t: &Ty) -> Op {
 }
 
 /// The type of an arithmetic result. Unsigned types stay unsigned when promoted (as in K&R C:
-/// Verdia's ISKANJI(x), ((x ^ 0x20) - 0xa1) <= 0x3b, needs a BYTE to promote to unsigned).
+/// Verdia's ISKANJI(x), ((x ^ 0x20) - 0xa1) <= 0x3b, needs a BYTE to promote to unsigned), but
+/// only the left operand decides: Re;Lord's overlap() divides a negative int by a uint zoom and
+/// needs a signed result.
 fn arith(a: &Ty, b: &Ty) -> Ty {
     let uns = |t: &Ty| matches!(t, Ty::U8 | Ty::U16 | Ty::U32);
     if a.is_float() || b.is_float() {
         Ty::F32
-    } else if uns(a) || uns(b) {
+    } else if uns(a) {
         Ty::U32
     } else {
         Ty::I32

@@ -318,10 +318,6 @@ impl Planes {
             self.write(vm, dst, dr, s_px, true);
             return;
         }
-        // the pattern wipes are not drawn yet
-        if m.mode == 11 || m.mode == 12 {
-            return;
-        }
         let d_alpha = self.alpha_of(d);
         let level = m.level as u32;
         let col = bgr(m.color);
@@ -410,15 +406,31 @@ impl Planes {
                             d[3],
                         ])
                     }
-                    // pattern wipes: the source is the pattern, the colour comes from ...
+                    // pattern wipes: the source's value (its alpha plane, or an 8-bit source)
+                    // is the pattern; where it is under the level the source shows, with a
+                    // soft edge `range` wide
                     11 | 12 => {
-                        let t = level as i32 * (256 + m.range as i32) / 255 - m.range as i32;
-                        let a = if m.range == 0 {
-                            if (v as i32) < t { 255 } else { 0 }
+                        let range = m.range as i32;
+                        let a = if range == 0 {
+                            if (v as u32) < level || level == 255 {
+                                255
+                            } else {
+                                0
+                            }
                         } else {
-                            ((t - v as i32) * 255 / m.range as i32).clamp(0, 255)
-                        };
-                        Some([d[0], d[1], d[2], a as u8])
+                            let t = level as i32 * (255 + range) / 255;
+                            ((t - v as i32) * 255 / range).clamp(0, 255)
+                        } as u32;
+                        if a == 0 {
+                            None
+                        } else {
+                            Some([
+                                mix(d[0], s[0], a),
+                                mix(d[1], s[1], a),
+                                mix(d[2], s[2], a),
+                                d[3],
+                            ])
+                        }
                     }
                     13 => Some(op3(s, d, level, |s, d| (d + s).min(255))),
                     14 => Some(op3(s, d, level, |s, d| d.saturating_sub(s))),
@@ -496,7 +508,12 @@ impl Planes {
                     })),
                     _ => Some(s),
                 };
-                if let Some(o) = out {
+                if let Some(mut o) = out {
+                    // on a picture with alpha the drawn part also becomes visible
+                    if d32 && matches!(m.mode, 13..=21 | 25..=35) {
+                        let a = s[3] as u32 * level / 255;
+                        o[3] = (a + d[3] as u32 * (255 - a) / 255).min(255) as u8;
+                    }
                     *dp = o;
                 }
             }
@@ -733,5 +750,55 @@ pub fn write_row(mem: &mut [u8], p: &Plane, y: i32, x0: i32, px: &[Px], alpha: b
                 *d = c[2];
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A pattern wipe shows the source where the pattern is under the level.
+    #[test]
+    fn pattern_wipe() {
+        let mut vm = Vm::new();
+        let mut planes = Planes::default();
+        planes.alloc(&mut vm, 1, 4, 1, 24);
+        planes.alloc(&mut vm, 2, 4, 1, 24);
+        planes.alloc(&mut vm, 3, 4, 1, 8);
+        planes.fill(&mut vm, 1, None, 0x000000);
+        planes.fill(&mut vm, 2, None, 0xffffff);
+        let p = planes.map[&3].clone();
+        let row = p.row(0);
+        vm.mem[row..row + 4].copy_from_slice(&[0, 100, 200, 255]);
+        planes.map.get_mut(&2).unwrap().alpha = Some(3);
+        let wipe = |mode, level, range| Mode {
+            mode,
+            level,
+            range,
+            ..Mode::NORMAL
+        };
+        planes.copy(&mut vm, 1, 0, 0, 2, None, &wipe(11, 150, 0));
+        let got: Vec<u8> = planes
+            .read(&vm, 1, [0, 0, 4, 1])
+            .iter()
+            .map(|c| c[0])
+            .collect();
+        assert_eq!(got, [255, 255, 0, 0]);
+        planes.fill(&mut vm, 1, None, 0x000000);
+        planes.copy(&mut vm, 1, 0, 0, 2, None, &wipe(12, 128, 32));
+        let got: Vec<u8> = planes
+            .read(&vm, 1, [0, 0, 4, 1])
+            .iter()
+            .map(|c| c[0])
+            .collect();
+        // t = 128 * 287 / 255 = 144: 0 and 100 are past the edge, 200 and 255 not reached
+        assert_eq!(got, [255, 255, 0, 0]);
+        planes.copy(&mut vm, 1, 0, 0, 2, None, &wipe(12, 255, 32));
+        let got: Vec<u8> = planes
+            .read(&vm, 1, [0, 0, 4, 1])
+            .iter()
+            .map(|c| c[0])
+            .collect();
+        assert_eq!(got, [255, 255, 255, 255]);
     }
 }

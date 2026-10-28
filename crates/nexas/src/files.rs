@@ -120,7 +120,10 @@ impl Files for Disk {
         std::fs::read(self.saves.join(name)).ok()
     }
     fn write_save(&mut self, name: &str, bytes: &[u8]) {
-        let _ = std::fs::create_dir_all(&self.saves);
-        let _ = std::fs::write(self.saves.join(name), bytes);
+        let path = self.saves.join(name);
+        if let Some(dir) = path.parent() {
+            let _ = std::fs::create_dir_all(dir);
+        }
+        let _ = std::fs::write(path, bytes);
     }
 }

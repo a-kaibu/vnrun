@@ -25,6 +25,9 @@ fn main() -> Result<(), String> {
     } else if let Some(p) = std::env::var_os("ESCUDE_FONT") {
         e.set_font(&std::fs::read(p).map_err(|e| e.to_string())?)?;
     }
+    if let Ok(d) = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
+        e.set_clock(d.as_secs() as i64);
+    }
     let mut frame = 0u64;
     let started = std::time::Instant::now();
     let run = |e: &mut Engine, n: u64, frame: &mut u64| -> Result<(), String> {
@@ -65,6 +68,12 @@ fn main() -> Result<(), String> {
                     eprintln!("  {n:<14} {c:>8} {s:.3}s");
                 }
             }
+            // trace:<frames>: log the built-ins called over some frames
+            "trace" => {
+                e.st.trace = true;
+                run(&mut e, v.parse().unwrap_or(1), &mut frame)?;
+                e.st.trace = false;
+            }
             "check" => {
                 for err in e.compile_all() {
                     eprintln!("{err}");
@@ -77,6 +86,18 @@ fn main() -> Result<(), String> {
                 let path = format!("{}_{v}.png", args[2]);
                 img.save(&path).map_err(|e| e.to_string())?;
                 eprintln!("[{frame}] {path} ({:.1}s)", started.elapsed().as_secs_f32());
+            }
+            // plane:<n>: save a plane (as the game drew it) as PNG
+            "plane" => {
+                let n = nums[0];
+                let p = e.st.planes.get(n).cloned().ok_or("no such plane")?;
+                let px = e.st.planes.read(&e.vm, n, [0, 0, p.w, p.h]);
+                let rgba: Vec<u8> = px.iter().flat_map(|c| [c[2], c[1], c[0], 255]).collect();
+                let img =
+                    image::RgbaImage::from_raw(p.w as u32, p.h as u32, rgba).ok_or("plane size")?;
+                let path = format!("{}_plane{n}.png", args[2]);
+                img.save(&path).map_err(|e| e.to_string())?;
+                eprintln!("[{frame}] {path} ({}x{} {} bit)", p.w, p.h, p.depth);
             }
             "move" => e.point(nums[0], nums[1]),
             "click" => {
