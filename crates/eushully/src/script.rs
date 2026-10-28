@@ -2,7 +2,9 @@
 //! whose smallest offset ends the code), then instructions of 32-bit words: the opcode and per
 //! argument a type and a value. Offsets (jumps, strings, arrays) count words after the header.
 //! A string argument (type 2) points at bytes XORed with 0xff and ended by 0xff; the arrays of
-//! `copy-local-array` are a word count and the words.
+//! `copy-local-array` are a word count and the words. SYS5 scripts ("SYS5501 " in UTF-16, 2024)
+//! have the same header after a 16-byte signature (0x44 bytes) and UTF-16 strings, each unit
+//! XORed with 0xffff and ended by 0xffff; the instructions are the same.
 
 use std::collections::HashMap;
 
@@ -590,34 +592,35 @@ pub struct Script {
     pub arrays: HashMap<u32, Vec<u32>>,
 }
 
-const HEAD: usize = 0x3c;
-
 fn u32_at(b: &[u8], o: usize) -> Option<u32> {
     Some(u32::from_le_bytes(b.get(o..o + 4)?.try_into().ok()?))
 }
 
 impl Script {
     pub fn parse(name: &str, b: &[u8]) -> Result<Script, String> {
-        if !b.starts_with(b"SYS4") {
-            return Err(format!("{name}: not a SYS4 script"));
+        let v5 = b.starts_with(b"S\0Y\0S\x005\0");
+        if !v5 && !b.starts_with(b"SYS4") {
+            return Err(format!("{name}: not a SYS4 or SYS5 script"));
         }
+        // the header fields after the signature (8 bytes, or 16 in UTF-16)
+        let (sig, head) = if v5 { (16, 0x44) } else { (8, 0x3c) };
         let word = |o: usize| u32_at(b, o).ok_or_else(|| format!("{name}: short"));
-        let t1 = word(0x28)? as usize;
-        let t2 = word(0x30)? as usize;
-        let t3 = word(0x38)? as usize;
-        let mut end = HEAD + t1.min(t2).min(t3) * 4;
+        let t1 = word(sig + 0x20)? as usize;
+        let t2 = word(sig + 0x28)? as usize;
+        let t3 = word(sig + 0x30)? as usize;
+        let mut end = head + t1.min(t2).min(t3) * 4;
         end = end.min(b.len());
         let mut insns = Vec::new();
         let mut index = HashMap::new();
         let mut strings = HashMap::new();
         let mut arrays = HashMap::new();
-        let mut p = HEAD;
+        let mut p = head;
         while p + 4 <= end {
             let op = word(p)?;
             let Some(n) = arg_count(op) else {
-                return Err(format!("{name}: opcode {op:#x} at {:#x}", (p - HEAD) / 4));
+                return Err(format!("{name}: opcode {op:#x} at {:#x}", (p - head) / 4));
             };
-            let at = ((p - HEAD) / 4) as u32;
+            let at = ((p - head) / 4) as u32;
             let mut args = Vec::with_capacity(n);
             let mut q = p + 4;
             for i in 0..n {
@@ -626,18 +629,27 @@ impl Script {
                     v: word(q + 4)?,
                 };
                 q += 8;
-                let o = HEAD + a.v as usize * 4;
+                let o = head + a.v as usize * 4;
                 if a.t == 2 {
                     end = end.min(o);
                     if let std::collections::hash_map::Entry::Vacant(e) = strings.entry(a.v) {
-                        let s: Vec<u8> = b
-                            .get(o..)
-                            .unwrap_or(&[])
-                            .iter()
-                            .take_while(|&&c| c != 0xff)
-                            .map(|c| c ^ 0xff)
-                            .collect();
-                        e.insert(nexas::sjis::decode(&s));
+                        let rest = b.get(o..).unwrap_or(&[]);
+                        e.insert(if v5 {
+                            let units: Vec<u16> = rest
+                                .chunks_exact(2)
+                                .map(|c| u16::from_le_bytes([c[0], c[1]]))
+                                .take_while(|&c| c != 0xffff)
+                                .map(|c| c ^ 0xffff)
+                                .collect();
+                            String::from_utf16_lossy(&units)
+                        } else {
+                            let s: Vec<u8> = rest
+                                .iter()
+                                .take_while(|&&c| c != 0xff)
+                                .map(|c| c ^ 0xff)
+                                .collect();
+                            nexas::sjis::decode(&s)
+                        });
                     }
                 } else if op == 0x64 && i == 1 {
                     end = end.min(o);
@@ -660,5 +672,47 @@ impl Script {
             strings,
             arrays,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A script with one instruction, show-text (0x6e: a string and a number), its string
+    /// after the code, and the three tables pointing past the end.
+    fn script(v5: bool) -> Vec<u8> {
+        let mut b = Vec::new();
+        if v5 {
+            for c in "SYS5501 ".encode_utf16() {
+                b.extend(c.to_le_bytes());
+            }
+        } else {
+            b.extend(b"SYS4421 ");
+        }
+        let words = |b: &mut Vec<u8>, w: &[u32]| w.iter().for_each(|x| b.extend(x.to_le_bytes()));
+        // counts, then the sub-header length and the tables (length, offset)
+        words(&mut b, &[0, 0, 0, 0, 0, 0, 0x1c, 0, 9, 0, 9, 0, 9]);
+        words(&mut b, &[0x6e, 2, 5, 0, 7]);
+        if v5 {
+            for c in "あa".encode_utf16() {
+                b.extend((c ^ 0xffff).to_le_bytes());
+            }
+            b.extend([0xff, 0xff]);
+        } else {
+            b.extend([0x82 ^ 0xff, 0xa0 ^ 0xff, b'a' ^ 0xff, 0xff]);
+        }
+        b
+    }
+
+    #[test]
+    fn sys4_and_sys5_scripts() {
+        for v5 in [false, true] {
+            let s = Script::parse("t", &script(v5)).unwrap();
+            assert_eq!(s.insns.len(), 1, "v5={v5}");
+            assert_eq!(s.insns[0].op, 0x6e);
+            assert_eq!(s.insns[0].args[1], Arg { t: 0, v: 7 });
+            assert_eq!(s.strings[&5], "あa", "v5={v5}");
+        }
     }
 }

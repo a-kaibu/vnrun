@@ -159,6 +159,7 @@ pub struct Engine {
     windows: HashMap<i32, Window>,
     window: i32,
     font: Option<Rc<fontdue::Font>>,
+    extra_font: Option<Rc<fontdue::Font>>,
     font_size: f32,
     text_rgb: [u8; 3],
     shadow_rgb: [u8; 3],
@@ -177,6 +178,8 @@ pub struct Engine {
     switch: Vec<(i32, u32)>,
     ended: bool,
     pub screen: (u32, u32),
+    /// a SYS5 game (sys5ini.bin, UTF-16 scripts)
+    sys5: bool,
     pub log: bool,
     pub unknown: BTreeMap<u32, u32>,
     pub text_log: Vec<String>,
@@ -189,13 +192,45 @@ fn rgb(c: i32) -> [u8; 3] {
     [(c >> 16) as u8, (c >> 8) as u8, c as u8]
 }
 
+/// Draws `src` (x, y, w, h of it) over `dst` at (dx, dy), by the source's alpha.
+fn blit(dst: &mut Image, src: &Image, r: [i32; 4], dx: i32, dy: i32) {
+    dst.renew();
+    let [sx, sy, w, h] = r;
+    for y in 0..h {
+        let (ys, yd) = (sy + y, dy + y);
+        if ys < 0 || yd < 0 || ys >= src.h as i32 || yd >= dst.h as i32 {
+            continue;
+        }
+        for x in 0..w {
+            let (xs, xd) = (sx + x, dx + x);
+            if xs < 0 || xd < 0 || xs >= src.w as i32 || xd >= dst.w as i32 {
+                continue;
+            }
+            let i = ((ys as u32 * src.w + xs as u32) * 4) as usize;
+            let o = ((yd as u32 * dst.w + xd as u32) * 4) as usize;
+            let a = src.px[i + 3] as u32;
+            if a == 0 {
+                continue;
+            }
+            let b = dst.px[o + 3] as u32 * (255 - a) / 255;
+            let out = a + b;
+            for k in 0..3 {
+                dst.px[o + k] = ((src.px[i + k] as u32 * a + dst.px[o + k] as u32 * b) / out) as u8;
+            }
+            dst.px[o + 3] = out.min(255) as u8;
+        }
+    }
+}
+
 impl Engine {
     pub fn new(mut files: Box<dyn Files>) -> Result<Engine, String> {
         let names = files.list();
         let ini = names
             .iter()
-            .find(|n| n.eq_ignore_ascii_case("sys4ini.bin"))
-            .ok_or("no sys4ini.bin")?
+            .find(|n| {
+                n.eq_ignore_ascii_case("sys4ini.bin") || n.eq_ignore_ascii_case("sys5ini.bin")
+            })
+            .ok_or("no sys4ini.bin or sys5ini.bin")?
             .clone();
         let mut index = Index::default();
         index.add(&files.read(&ini).ok_or("sys4ini.bin: unreadable")?)?;
@@ -228,6 +263,7 @@ impl Engine {
             windows: HashMap::new(),
             window: 1,
             font: None,
+            extra_font: None,
             font_size: 24.0,
             text_rgb: [255; 3],
             shadow_rgb: [0x60; 3],
@@ -245,6 +281,7 @@ impl Engine {
             switch: Vec::new(),
             ended: false,
             screen: (800, 600),
+            sys5: ini.eq_ignore_ascii_case("sys5ini.bin"),
             log: false,
             unknown: BTreeMap::new(),
             text_log: Vec::new(),
@@ -256,7 +293,17 @@ impl Engine {
                 e.persist.insert(k, v);
             }
         }
-        let start = e.index.find("SYSTEM4.BIN").ok_or("no SYSTEM4.BIN")?;
+        // SYS5 games carry the letters their own fonts lack (U+E000 a dash, ...)
+        if let Some(b) = e.index.find("AGE-EXTEND.TTF").and_then(|n| e.read_file(n)) {
+            e.extra_font = fontdue::Font::from_bytes(b, fontdue::FontSettings::default())
+                .ok()
+                .map(Rc::new);
+        }
+        let start = e
+            .index
+            .find("SYSTEM4.BIN")
+            .or_else(|| e.index.find("SYSTEM5.BIN"))
+            .ok_or("no SYSTEM4.BIN or SYSTEM5.BIN")?;
         e.push_script(start)?;
         // the screen is as large as the largest window SYSTEM4 opens at the top left
         // (800x600 in the older games, 1280x720 in Sankaio)
@@ -818,12 +865,30 @@ impl Engine {
             0x76 => self.text_rgb = rgb(v(self, 0)),
             0x77 => self.shadow_rgb = rgb(v(self, 0)),
             0x1b5 => self.window = v(self, 0).max(1),
-            0x6e | 0x196 => {
-                // display-furigana: window, base text, reading (the reading is not shown)
-                let s = self.text(a[1]);
-                self.say(&s);
+            // SYS5's window for text: hyakusen's NOVEL.BIN picks the full-screen 3 and goes back
+            // to 1, and the page it leaves goes away
+            0x80 => {
+                let n = v(self, 0).max(1);
+                if n != self.window {
+                    self.windows.entry(self.window).or_default().lines.clear();
+                }
+                self.window = n;
             }
-            0x6f => {}
+            0x6e | 0x196 => {
+                // display-furigana: window, base text, reading (the reading is not shown); a
+                // window of 0 is the current one (SYS5 writes the speaker's name to 2)
+                let n = v(self, 0);
+                let win = if n > 0 { n } else { self.window };
+                let s = self.text(a[1]);
+                self.say(win, &s);
+            }
+            // end-text-line: the next text starts a new line (SYS5 breaks its lines this way)
+            0x6f => {
+                let w = self.windows.entry(self.window).or_default();
+                if w.lines.last().is_some_and(|l| !l.is_empty()) {
+                    w.lines.push(String::new());
+                }
+            }
             0x72 => {
                 self.wait = Wait::Click;
                 self.clicked = false;
@@ -839,8 +904,12 @@ impl Engine {
                 self.load_texture(file, id);
             }
             0x1fa => {
+                // SYS5 frees a texture a sprite still shows only with the sprite (the old
+                // background stays up until the next one is built from its size)
                 let id = v(self, 0);
-                self.textures.remove(&id);
+                if !(self.sys5 && self.sprites.values().any(|s| s.tex == id)) {
+                    self.textures.remove(&id);
+                }
             }
             0x1fb => {
                 let id = v(self, 0);
@@ -979,6 +1048,18 @@ impl Engine {
                     }
                 }
             }
+            // draw a texture onto another: src, dst, sx, sy, w, h, dx, dy (SYS5 builds its
+            // backgrounds from layers this way)
+            0x207 => {
+                let (src, dst) = (v(self, 0), v(self, 1));
+                let r = [v(self, 2), v(self, 3), v(self, 4), v(self, 5)];
+                let (dx, dy) = (v(self, 6), v(self, 7));
+                if let Some(s) = self.textures.get(&src).cloned()
+                    && let Some(t) = self.textures.get_mut(&dst)
+                {
+                    blit(Rc::make_mut(t), &s, r, dx, dy);
+                }
+            }
             0x204 => {
                 let id = v(self, 0);
                 let (x, y) = (v(self, 1), v(self, 2));
@@ -1095,18 +1176,25 @@ impl Engine {
         });
     }
 
-    fn say(&mut self, s: &str) {
+    fn say(&mut self, win: i32, s: &str) {
         self.text_log.push(s.to_string());
         if self.log {
             eprintln!("TEXT {s}");
         }
         let (size, rgb, shadow) = (self.font_size, self.text_rgb, self.shadow_rgb);
-        let w = self.windows.entry(self.window).or_default();
+        let w = self.windows.entry(win).or_default();
         if w.lines.iter().all(String::is_empty) {
             (w.size, w.rgb, w.shadow) = (size, rgb, shadow);
         }
         // the right edge, kept on the screen (some games give one past it)
-        let right = if w.right > w.tx { w.right } else { w.tx + 600 };
+        // (a full-screen window without one keeps the margin of its left one)
+        let right = if w.right > w.tx {
+            w.right
+        } else if w.w >= self.screen.0 as i32 && w.w > 2 * w.tx {
+            w.w - w.tx
+        } else {
+            w.tx + 600
+        };
         let width = right.min(self.screen.0 as i32 - 24 - w.x) - w.tx;
         let per_line = (width as f32 / w.size.max(8.0)).floor().max(4.0) as usize;
         let mut line = w.lines.pop().unwrap_or_default();
@@ -1139,7 +1227,15 @@ impl Engine {
         if let Some(i) = self.text_cache.get(&key) {
             return Some(i.clone());
         }
-        let img = Rc::new(crate::text::render(&font, s, size, rgb, shadow));
+        let extra = self.extra_font.clone();
+        let img = Rc::new(crate::text::render(
+            &font,
+            extra.as_deref(),
+            s,
+            size,
+            rgb,
+            shadow,
+        ));
         if self.text_cache.len() > 256 {
             self.text_cache.clear();
         }
@@ -1376,5 +1472,19 @@ impl Engine {
 
     pub fn ended(&self) -> bool {
         self.ended
+    }
+
+    /// The sprites, one per line (id, texture and its size, source, place, alpha, tint), for
+    /// age-run's AGE_SPRITES.
+    pub fn sprite_list(&self) -> String {
+        let mut out = String::new();
+        for (id, s) in &self.sprites {
+            let size = self.textures.get(&s.tex).map(|t| (t.w, t.h));
+            out += &format!(
+                "{id} tex {} {size:?} src {:?} at {} {} alpha {} tint {:x}\n",
+                s.tex, s.src, s.x, s.y, s.alpha, s.tint
+            );
+        }
+        out
     }
 }

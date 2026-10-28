@@ -3,7 +3,10 @@
 //! index: the archive count, their 0x100-byte names, the file count, and per file a 0x40-byte
 //! name, the archive number, a number, the offset and the size. A file's place in that list is
 //! its number in the scripts (`call-script 0x25d`, `set-texture 0x22c ...`); "@" marks a free
-//! number.
+//! number. SYS5 (`sys5ini.bin`, 2024) writes the same index in UTF-16: "S5IC" (or "S5AC" for an
+//! append index) in UTF-16, the unpacked sizes and packed size at 0x21c (0x214), archive names
+//! of 0x200 bytes and per file 0x90 bytes (a 0x80-byte name, then the four numbers). "S5IN"
+//! (trials) is the same index unpacked, from 0x21c.
 
 use std::collections::HashMap;
 
@@ -56,6 +59,15 @@ fn cstr(b: &[u8]) -> String {
     nexas::sjis::decode(&b[..end])
 }
 
+fn wstr(b: &[u8]) -> String {
+    let units: Vec<u16> = b
+        .chunks_exact(2)
+        .map(|c| u16::from_le_bytes([c[0], c[1]]))
+        .take_while(|&c| c != 0)
+        .collect();
+    String::from_utf16_lossy(&units)
+}
+
 #[derive(Clone, Debug)]
 pub struct Entry {
     pub name: String,
@@ -74,36 +86,50 @@ pub struct Index {
 impl Index {
     /// Adds the files of an index (`sys4ini.bin`, or an append index after it).
     pub fn add(&mut self, ini: &[u8]) -> Result<(), String> {
-        let off = match ini.get(..4) {
-            Some(b"S4AC") => 0x114,
-            Some(b"S4IC") | Some(b"S3IC") => 0x134,
+        // where the packed size is, where the packed index starts, and the name and record sizes
+        let (size_at, data_at, v5) = match ini.get(..8) {
+            Some(b) if b.starts_with(b"S4AC") => (0x114, 0x118, false),
+            Some(b) if b.starts_with(b"S4IC") || b.starts_with(b"S3IC") => (0x134, 0x138, false),
+            Some(b"S\x005\0A\0C\0") => (0x21c, 0x220, true),
+            Some(b"S\x005\0I\0C\0") => (0x224, 0x228, true),
+            Some(b"S\x005\0I\0N\0") => (0, 0x21c, true),
             _ => return Err("sys4ini: not an index".into()),
         };
-        let packed = u32_at(ini, off).ok_or("sys4ini: short")? as usize;
-        let src = ini.get(off + 4..off + 4 + packed).ok_or("sys4ini: short")?;
-        let idx = lzss(src, usize::MAX);
+        let idx = if size_at == 0 {
+            ini.get(data_at..).ok_or("sys5ini: short")?.to_vec()
+        } else {
+            let packed = u32_at(ini, size_at).ok_or("sys4ini: short")? as usize;
+            let src = ini.get(data_at..data_at + packed).ok_or("sys4ini: short")?;
+            lzss(src, usize::MAX)
+        };
+        let (arc_len, name_len, rec_len) = if v5 {
+            (0x200, 0x80, 0x90)
+        } else {
+            (0x100, 0x40, 0x50)
+        };
+        let name = |b: &[u8]| if v5 { wstr(b) } else { cstr(b) };
         let arcs_n = u32_at(&idx, 0).ok_or("index: short")? as usize;
         let mut p = 4;
         let mut arcs = Vec::new();
         for _ in 0..arcs_n {
-            arcs.push(cstr(idx.get(p..p + 0x100).ok_or("index: short")?));
-            p += 0x100;
+            arcs.push(name(idx.get(p..p + arc_len).ok_or("index: short")?));
+            p += arc_len;
         }
         let n = u32_at(&idx, p).ok_or("index: short")? as usize;
         p += 4;
         for i in 0..n {
-            let rec = idx.get(p..p + 0x50).ok_or("index: short")?;
-            p += 0x50;
-            let name = cstr(&rec[..0x40]);
-            let arc = u32_at(rec, 0x40).unwrap_or(0) as usize;
+            let rec = idx.get(p..p + rec_len).ok_or("index: short")?;
+            p += rec_len;
+            let name = name(&rec[..name_len]);
+            let arc = u32_at(rec, name_len).unwrap_or(0) as usize;
             let entry = if name == "@" || arc >= arcs.len() {
                 None
             } else {
                 Some(Entry {
                     name: name.clone(),
                     arc: arcs[arc].clone(),
-                    offset: u32_at(rec, 0x48).unwrap_or(0) as u64,
-                    size: u32_at(rec, 0x4c).unwrap_or(0) as usize,
+                    offset: u32_at(rec, name_len + 8).unwrap_or(0) as u64,
+                    size: u32_at(rec, name_len + 12).unwrap_or(0) as usize,
                 })
             };
             if i >= self.files.len() {

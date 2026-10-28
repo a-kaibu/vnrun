@@ -7,7 +7,16 @@ use nexas::gfx::Image;
 pub const PAD: i32 = 2;
 const SHADOW: i32 = 2;
 
-pub fn render(font: &fontdue::Font, text: &str, size: f32, rgb: [u8; 3], shadow: [u8; 3]) -> Image {
+/// `extra` (the game's AGE-EXTEND.TTF in SYS5) draws the letters `font` lacks, such as the
+/// private-use dashes and dots of the scripts.
+pub fn render(
+    font: &fontdue::Font,
+    extra: Option<&fontdue::Font>,
+    text: &str,
+    size: f32,
+    rgb: [u8; 3],
+    shadow: [u8; 3],
+) -> Image {
     let ascent = font
         .horizontal_line_metrics(size)
         .map_or(size * 0.88, |m| m.ascent);
@@ -27,7 +36,11 @@ pub fn render(font: &fontdue::Font, text: &str, size: f32, rgb: [u8; 3], shadow:
     let mut cover = vec![0u8; (w * h) as usize];
     let mut pen = PAD as f32;
     for &c in &chars {
-        let (m, bm) = font.rasterize(c, size);
+        let f = match extra {
+            Some(x) if font.lookup_glyph_index(c) == 0 && x.lookup_glyph_index(c) != 0 => x,
+            _ => font,
+        };
+        let (m, bm) = f.rasterize(c, size);
         let ox =
             pen.round() as i32 + m.xmin + ((advance(c) - m.advance_width) / 2.0).round() as i32;
         let oy = PAD + (ascent.round() as i32) - m.height as i32 - m.ymin;

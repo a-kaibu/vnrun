@@ -5,7 +5,8 @@
 //! A bare `frame` is saved as `<out prefix><frame>.png`; `frame:x:y` clicks there on that frame
 //! (`:x:y:r` a right click, `:x:y:m` only moves the pointer, `:k:n` presses pad key n). The
 //! last frame is always saved. AGE_FONT names a TrueType font, AGE_TRACE=1 prints each
-//! instruction; the text shown and the instructions not carried out are printed at the end.
+//! instruction (and each frame's number), AGE_SPRITES=1 lists the sprites with every saved
+//! frame; the text shown and the instructions not carried out are printed at the end.
 
 use std::path::Path;
 
@@ -52,6 +53,9 @@ fn main() -> Result<(), String> {
                 _ => e.click(x, y),
             }
         }
+        if e.log {
+            eprintln!("FRAME {f}");
+        }
         e.frame()?;
         e.take_sounds();
         while shown < e.text_log.len() {
@@ -60,6 +64,9 @@ fn main() -> Result<(), String> {
         }
         if f == frames || marks.iter().any(|m| m.0 == f && m.1.is_empty()) {
             let out = format!("{prefix}{f}.png");
+            if std::env::var_os("AGE_SPRITES").is_some() {
+                eprint!("sprites at {f}:\n{}", e.sprite_list());
+            }
             let frame = e.render();
             image::save_buffer(&out, &frame.px, frame.w, frame.h, image::ColorType::Rgba8)
                 .map_err(|err| format!("{out}: {err}"))?;

@@ -66,7 +66,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Yuka (vnrun) | 8 | 7 |  |  |  |  |  | 1 |
 | System-NNN (vnrun) | 6 | 6 |  |  |  |  |  |  |
 | Bishop (vnrun) | 6 | 6 |  |  |  |  |  |  |
-| Eushully AGE (vnrun) | 4 | 4 |  |  |  |  |  |  |
+| Eushully AGE (vnrun) | 5 | 5 |  |  |  |  |  |  |
 | Atelier G/H (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | DebonosuWorks (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | Cyberworks (vnrun) | 9 | 4 |  |  |  |  |  | 5 |
@@ -682,6 +682,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2010_eushully_ikusa_verita | [戦女神VERITA 体験版](http://suezou.dyndns.org/dl2010/eushully/ikusa-verita/100225Verita_Trial.zip) | 本編 | Eushully AGE (vnrun) でタイトル→Game Start→序章の地図・CG・立ち絵・メッセージ窓・文章まで (age-run と Chromium)。setup は InstallShield (PE の後に NB10 の記録、MSI は zlib で包まれている) を展開してから |
 | s2016_eushully_sankaio | [珊海王の円環 体験版](http://suezou.dyndns.org/dl2016/eushully/sankaio/sankai_trial.zip) | 本編 | Eushully AGE (vnrun) でタイトル→Game Start→シナリオ選択 (チュートリアル)→開始→アナスタシアの CG・名前・文章まで、クリックで文章が進む (age-run と Chromium)。画面は 1280x720 (SYSTEM4 が左上に開く最大の窓から)。setup は InstallShield (ISSetupStream、型 3 は属性 24 バイト)。メッセージ窓の下地 (sprite 204000) は 202 の到達値 -1 の扱いを直して天冥のコンキスタで出ることを確認 (同じ処理、珊海王では未再確認) |
 | s2020_eushully_tenmei | [天冥のコンキスタ 体験版](http://suezou.dyndns.org/dl2020/eushully/tenmei/tenmei_trial.zip) | 本編 | Eushully AGE (vnrun) でタイトル→GAME START→体験版開始→ヘルミィナの CG・背景・メッセージ窓・名前・文章まで、クリックで文章が進む (age-run と Chromium)。画面は 1600x900。setup は InstallShield (MSI の中の Data1.cab) |
+| s2024_eushully_hyakusen | [百千の定にかわたれし剋 体験版](http://suezou.dyndns.org/dl2024/eushully/hyakusen/hyakusen_trial.zip) | 本編 | Eushully AGE (vnrun、SYS5: sys5ini.bin は S5IN の展開済み索引、スクリプトは UTF-16) でタイトル→GAME START→初期設定→ゲームを開始する→プロローグ (全画面の窓 3 に中央寄せの文章)→森の背景・立ち絵・顔・名前の札・文章、重ねて組み立てる CG (0x207) と表情の差し替えまで (age-run と Chromium)。U+E000 などの私用文字は同梱の AGE-EXTEND.TTF で描く。setup は InstallShield の MSI の中の Data1.cab と Data11.cab にまたがる data.alf (1.3 GB、BGM の WAV 17 本は展開せず)。セーブ・ロードは未対応 |
 
 ### Atelier G/H (vnrun)
 
