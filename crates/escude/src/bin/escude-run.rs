@@ -27,7 +27,7 @@ fn main() -> Result<(), String> {
     }
     let mut frame = 0u64;
     let started = std::time::Instant::now();
-    let mut run = |e: &mut Engine, n: u64, frame: &mut u64| -> Result<(), String> {
+    let run = |e: &mut Engine, n: u64, frame: &mut u64| -> Result<(), String> {
         for _ in 0..n {
             *frame += 1;
             let r = e.frame(*frame as f64 * 1000.0 / 60.0);

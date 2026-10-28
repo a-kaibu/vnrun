@@ -68,6 +68,7 @@ game_root() {
     entis) m=(-iname '*.csx' -o -iname '*.noa') ;;
     system4) m=(-iname '*.ain') ;;
     qlie) m=(-ipath '*/gamedata/data0.pack') ;;
+    escude) m=(-iname script.bin) ;;
     nscripter) m=(-iname nscript.dat -o -iname 0.txt -o -iname 00.txt -o -iname '*.nsa' -o -iname '*.sar') ;;
     html) m=(-iname package.json -o -iname index.html -o -iname package.nw -o -iname nw.pak) ;;
   esac

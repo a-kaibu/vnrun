@@ -425,7 +425,11 @@ impl State {
 
     fn read_game_file(&mut self, path: &str) -> Option<Vec<u8>> {
         if let Some(rest) = path.strip_prefix(DOCS) {
-            return self.files.read_save(&rest.replace('\\', "/"));
+            // a deleted save is written empty
+            return self
+                .files
+                .read_save(&rest.replace('\\', "/"))
+                .filter(|d| !d.is_empty());
         }
         let p = path.trim_start_matches(".\\");
         if let Some(d) = self.arc.read(self.files.as_mut(), p) {

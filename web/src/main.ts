@@ -26,6 +26,7 @@ const ENGINES: Record<string, () => Promise<EngineModule>> = {
   qlie: () => import("./engines/qlie"),
   entis: () => import("./engines/entis"),
   system4: () => import("./engines/system4"),
+  escude: () => import("./engines/escude"),
   html: () => import("./engines/html"),
 };
 

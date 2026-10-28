@@ -172,6 +172,28 @@ fn noa_in_data(game: &Path) -> bool {
         })
 }
 
+/// Whether a .bin file at the top of the game folder is an ESC-ARC archive.
+fn esc_arc(game: &Path, names: &[String]) -> bool {
+    if !names.iter().any(|n| n.ends_with(".bin")) {
+        return false;
+    }
+    fs::read_dir(game).into_iter().flatten().flatten().any(|e| {
+        if !e
+            .file_name()
+            .to_string_lossy()
+            .to_lowercase()
+            .ends_with(".bin")
+        {
+            return false;
+        }
+        let mut head = [0u8; 7];
+        fs::File::open(e.path())
+            .and_then(|mut f| std::io::Read::read_exact(&mut f, &mut head))
+            .is_ok()
+            && &head == b"ESC-ARC"
+    })
+}
+
 /// Guesses the engine from the files at the top of the game folder.
 fn detect(game: &Path) -> Option<String> {
     let names: Vec<String> = fs::read_dir(game)
@@ -214,6 +236,9 @@ fn detect(game: &Path) -> Option<String> {
     {
         // Entis GLS: the .csx script or NOA archives at the top, or NOA archives in Data/
         Some("entis".into())
+    } else if esc_arc(game, &names) {
+        // Escu:de: ESC-ARC archives (script.bin, gfx.bin, ...) beside the exe
+        Some("escude".into())
     } else if has("script.pac") {
         Some("nexas".into())
     } else if has("data.pac") {
