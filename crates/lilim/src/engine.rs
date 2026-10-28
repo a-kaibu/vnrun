@@ -23,7 +23,6 @@ use crate::script::{self, Line, Script, Val};
 
 const FRAME_MS: f64 = 1000.0 / 60.0;
 const SLOTS: usize = 10;
-const SYSTEM_SPRITE: i32 = 26;
 
 pub struct SoundEvent {
     pub channel: String,
@@ -55,9 +54,13 @@ struct WindowLook {
     frame: Option<String>,
     x: i32,
     y: i32,
+    w: i32,
     text_x: i32,
     text_y: i32,
+    /// the font size (`fnt`), the space between lines and the letters per line (`wnd TXT`)
     size: i32,
+    spacing: i32,
+    per_line: i32,
     prompt: Option<(String, i32, i32)>,
     /// (picture, macro, x, y)
     buttons: Vec<(String, String, i32, i32)>,
@@ -106,6 +109,8 @@ pub struct Engine {
     bg: Option<String>,
     sprites: BTreeMap<i32, Sprite>,
     centred: HashMap<i32, bool>,
+    /// `ch(n, SYS, k)`: 1 a part of the message window (shown with it), 2 above the buttons
+    system: HashMap<i32, i64>,
     buttons: BTreeMap<i32, Button>,
     buttons_on: bool,
     mono: bool,
@@ -181,6 +186,7 @@ impl Engine {
             bg: None,
             sprites: BTreeMap::new(),
             centred: HashMap::new(),
+            system: HashMap::new(),
             buttons: BTreeMap::new(),
             buttons_on: false,
             mono: false,
@@ -188,9 +194,12 @@ impl Engine {
                 frame: None,
                 x: 0,
                 y: 504,
+                w: 1280,
                 text_x: 220,
                 text_y: 84,
-                size: 27,
+                size: 26,
+                spacing: 8,
+                per_line: 0,
                 prompt: None,
                 buttons: Vec::new(),
             },
@@ -552,15 +561,23 @@ impl Engine {
                 let n = self.num(a, 0) as i32;
                 self.freeze();
                 if n < 0 {
-                    self.sprites.retain(|k, _| *k >= SYSTEM_SPRITE);
+                    let system = self.system.clone();
+                    self.sprites
+                        .retain(|k, _| system.get(k).copied().unwrap_or(0) > 0);
                 } else {
                     self.sprites.remove(&n);
                 }
             }
             "ch" => {
                 let n = self.num(a, 0) as i32;
-                if self.word(a, 1).eq_ignore_ascii_case("PNT") {
-                    self.centred.insert(n, self.num(a, 2) == 1);
+                match self.word(a, 1).to_uppercase().as_str() {
+                    "PNT" => {
+                        self.centred.insert(n, self.num(a, 2) == 1);
+                    }
+                    "SYS" => {
+                        self.system.insert(n, self.num(a, 2));
+                    }
+                    _ => {}
                 }
             }
             "ud" => {
@@ -704,6 +721,13 @@ impl Engine {
                 }
             }
             "wnd" => self.window_setting(a),
+            "fnt" => {
+                let size = self.num(a, 0) as i32;
+                if (10..=64).contains(&size) {
+                    self.look.size = size;
+                    self.text_cache.clear();
+                }
+            }
             _ => {}
         }
     }
@@ -716,13 +740,13 @@ impl Engine {
         }
         match self.word(a, 1).to_uppercase().as_str() {
             "POS" => (self.look.x, self.look.y) = (self.num(a, 2) as i32, self.num(a, 3) as i32),
+            "SIZE" => self.look.w = self.num(a, 2) as i32,
             "TXT" => {
+                // x, y, lines, -, spacing, letters per line
                 (self.look.text_x, self.look.text_y) =
                     (self.num(a, 2) as i32, self.num(a, 3) as i32);
-                let size = self.num(a, 7) as i32;
-                if (12..=60).contains(&size) {
-                    self.look.size = size;
-                }
+                self.look.spacing = self.num(a, 6).clamp(0, 40) as i32;
+                self.look.per_line = self.num(a, 7).clamp(0, 200) as i32;
             }
             "FRM" => self.look.frame = Some(self.word(a, 2)).filter(|s| !s.is_empty()),
             "FP" => {
@@ -848,7 +872,7 @@ impl Engine {
         let sprites: Vec<(i32, Sprite)> =
             self.sprites.iter().map(|(k, s)| (*k, s.clone())).collect();
         for (k, s) in &sprites {
-            if *k >= SYSTEM_SPRITE {
+            if self.system.get(k).copied().unwrap_or(0) != 0 {
                 continue;
             }
             if let Some(img) = self.picture(&s.name, mono) {
@@ -878,7 +902,7 @@ impl Engine {
             }
         }
         for (k, s) in &sprites {
-            if *k < SYSTEM_SPRITE {
+            if self.system.get(k).copied().unwrap_or(0) < 2 {
                 continue;
             }
             if let Some(img) = self.picture(&s.name, false) {
@@ -948,6 +972,18 @@ impl Engine {
 
     fn window_draws(&mut self, out: &mut Vec<Draw>) {
         let (wx, wy) = (self.look.x, self.look.y);
+        // the sprites that are parts of the window
+        let parts: Vec<Sprite> = self
+            .sprites
+            .iter()
+            .filter(|(k, _)| self.system.get(k) == Some(&1))
+            .map(|(_, s)| s.clone())
+            .collect();
+        for s in parts {
+            if let Some(img) = self.picture(&s.name, false) {
+                out.push(draw(&img, s.x as f32, s.y as f32, 1.0));
+            }
+        }
         match self
             .look
             .frame
@@ -968,18 +1004,31 @@ impl Engine {
         }
         let size = self.look.size;
         let (tx, ty) = (wx + self.look.text_x, wy + self.look.text_y);
+        let step = size + self.look.spacing.max(4);
         if let Some(n) = self.name.clone() {
             let img = self.text(&n, size);
-            let nx = (tx - 24 - img.w as i32).max(wx + 40);
-            out.push(draw(&img, nx as f32, ty as f32, 1.0));
+            if self.look.text_x >= img.w as i32 + 60 {
+                // left of the text
+                let nx = (tx - 24 - img.w as i32).max(wx + 40);
+                out.push(draw(&img, nx as f32, ty as f32, 1.0));
+            } else {
+                // a line above it
+                let ni = self.text(&format!("【{n}】"), size);
+                out.push(draw(&ni, tx as f32, (ty - step) as f32, 1.0));
+            }
         }
         if let Some(t) = self.text.clone() {
-            let per_line = ((self.width as i32 - tx - 150) / size).max(10) as usize;
+            let fit = (wx + self.look.w - tx - 24) / size.max(1);
+            let per_line = match self.look.per_line {
+                0 => fit,
+                n => n.min(fit + 2),
+            }
+            .max(10) as usize;
             let mut y = ty;
             for piece in wrap(&t, per_line) {
                 let img = self.text(&piece, size);
                 out.push(draw(&img, tx as f32, y as f32, 1.0));
-                y += size + 12;
+                y += step;
             }
         }
         if self.wait == Wait::Click
@@ -1086,9 +1135,20 @@ impl Engine {
 
     // ---- sounds ----
 
+    /// A sound from the archives, or (older games) a loose file in bgm/, se/ or the top folder.
     fn sound(&mut self, name: &str) -> Option<Vec<u8>> {
-        let e = self.arcs.find(name, &[".ogg", ".wav"])?.clone();
-        self.arcs.read(self.files.as_mut(), &e)
+        if let Some(e) = self.arcs.find(name, &[".ogg", ".wav"]).cloned() {
+            return self.arcs.read(self.files.as_mut(), &e);
+        }
+        for dir in ["bgm/", "se/", "cv/", ""] {
+            for ext in [".ogg", ".wav"] {
+                let path = format!("{dir}{name}{ext}");
+                if let Some(b) = self.files.read(&path) {
+                    return Some(b);
+                }
+            }
+        }
+        None
     }
 
     fn push_sound(

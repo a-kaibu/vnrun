@@ -399,3 +399,4 @@ b2022_anim	NG	シナリオが Enigma Protector で包まれた exe の中にあ�
 b2026_anim	NG	シナリオが Enigma Protector で包まれた exe の中にあり (cg/psbpack.dat と E-mote)、<game>_sce.dat が無い
 b2018_tinkerbell	本編	Cyberworks (vnrun) で警告→タイトル (e0 のボタン)→Game Start→プロローグの背景 (移動)・立ち絵 (表情差分)・名前・文章・回想のセピアまで (cyberworks-run と Chromium)。右クリックのメニューからセーブ→タイトルの Load Game からロードで本編に戻る (Chromium)
 b2019_lilim_darkness	本編	LiLiM (vnrun) でタイトル (btn_play などの画像ボタン)→START→注意書き→体験版メニュー (slctwnd の選択肢)→旭ルートのダイジェスト (D_07..D_09) の背景・立ち絵・イベント CG・名前・文章・音声・回想のセピアを最後まで通り、メニューに戻る (lilim-run)。Chromium でタイトル→本編、右クリックのメニューからセーブ→タイトルの LOAD からロードで本編に戻る
+b2006_lilim	本編	LiLiM (vnrun) の AOS 版 1 (sfa9.exe、800x600、音は bgm/・se/ のファイル) でタイトル→START→0001..0008 の背景・立ち絵・イベント CG・名前・文章・音声を最後まで通り、タイトルに戻る (lilim-run)。Chromium でタイトル→本編の文章まで

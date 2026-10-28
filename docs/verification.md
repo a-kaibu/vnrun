@@ -64,7 +64,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Interheart (vnrun) | 11 | 10 |  |  |  | 1 |  |  |
 | Crowd/ANIM (vnrun) | 9 | 3 |  |  |  | 6 |  |  |
 | Cyberworks (vnrun) | 8 | 1 |  |  |  |  |  | 7 |
-| LiLiM (vnrun) | 7 | 1 |  |  |  |  |  | 6 |
+| LiLiM (vnrun) | 7 | 2 |  |  |  |  |  | 5 |
 
 ### SiglusEngine (siglus_rs)
 
@@ -594,8 +594,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| b2006_lilim | [とらぶるっ！ 序章体験版](http://suezou.dyndns.org/dl2006/lilim/toraburu/toraburu_trial_pre.lzh) | 本編 | LiLiM (vnrun) の AOS 版 1 (sfa9.exe、800x600、音は bgm/・se/ のファイル) でタイトル→START→0001..0008 の背景・立ち絵・イベント CG・名前・文章・音声を最後まで通り、タイトルに戻る (lilim-run)。Chromium でタイトル→本編の文章まで |
 | b2019_lilim_darkness | [WhiteBlue web体験版ver2.0](http://suezou.dyndns.org/dl2019/lilim-darkness/whiteblue/WhiteBlue_trial_2.zip) | 本編 | LiLiM (vnrun) でタイトル (btn_play などの画像ボタン)→START→注意書き→体験版メニュー (slctwnd の選択肢)→旭ルートのダイジェスト (D_07..D_09) の背景・立ち絵・イベント CG・名前・文章・音声・回想のセピアを最後まで通り、メニューに戻る (lilim-run)。Chromium でタイトル→本編、右クリックのメニューからセーブ→タイトルの LOAD からロードで本編に戻る |
-| b2006_lilim | [とらぶるっ！ 序章体験版](http://suezou.dyndns.org/dl2006/lilim/toraburu/toraburu_trial_pre.lzh) | 未確認 |  |
 | b2007_lilim | [看護戦隊ナースレンジャー 体験版](http://suezou.dyndns.org/dl2007/lilim/nasuren/nasu_taiken.lzh) | 未確認 |  |
 | b2007_lilim_darkness | [トライアングル・ブルー 体験版](http://suezou.dyndns.org/dl2007/lilim-darkness/toraiangurublue/toraianguru_blue_taiken.lzh) | 未確認 |  |
 | b2009_lilim | [あい☆きゃん 体験版](http://suezou.dyndns.org/dl2009/lilim/ai-kyan/ican_trial.zip) | 未確認 |  |
