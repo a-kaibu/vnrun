@@ -27,7 +27,7 @@
 //! 1.09 S S S B name brackets and separator   1.0a V V line width (full-width characters)
 //! and ?   1.0c B V dialog labels   1.0d V S S scene title   1.17 S S archive prefix, file
 //! 2.00 V id S picture (empty: remove)   2.01 V id V x V y   2.02 V id B shown
-//! 2.03 V id V V V V rectangle (l t r b)   2.04 V id V degrees   2.05 V id V V scale (%)
+//! 2.03 V id V V V V the part shown (l t r b), drawn at the sprite's place   2.04 V id V degrees   2.05 V id V V scale (%)
 //! 2.06 V id V curve   2.07 V id V ease (%: + speeds up, - slows down)
 //! 2.08 V id V x V y V ms: move   2.09 V id V V V V V ms: rectangle to
 //! 2.0a V id V deg V ms   2.0b V id V V V ms: scale to   2.0c V id V from V to V ms B loop:
@@ -57,9 +57,10 @@ use crate::mpk::Mpk;
 use crate::msc::{Arg, Ins, Script, Val};
 
 const FRAME_MS: f64 = 1000.0 / 60.0;
-/// The screen size.
-pub const W: u32 = 800;
-pub const H: u32 = 600;
+/// The screen size of BB.exe (2007); sukima_trial2.exe (2011, the wide script layout) has
+/// 1024x576. Both are constants in the exe.
+const SCREEN_V1: (u32, u32) = (800, 600);
+const SCREEN_V2: (u32, u32) = (1024, 576);
 const SPRITES: usize = 257;
 const THREADS: usize = 9;
 const SLOTS: usize = 10;
@@ -241,6 +242,11 @@ struct Snapshot {
 }
 
 pub struct Engine {
+    /// the screen size
+    pub width: u32,
+    pub height: u32,
+    /// the 2011 script layout (wide fields), told by which way system.msc decodes
+    v2: bool,
     files: Box<dyn Files>,
     pub log: bool,
     listing: Option<Vec<String>>,
@@ -248,7 +254,7 @@ pub struct Engine {
     archives: HashMap<String, String>,
     mpks: HashMap<String, Option<Rc<Mpk>>>,
     scripts: HashMap<String, Rc<Script>>,
-    globals: HashMap<u16, (Rc<Script>, usize)>,
+    globals: HashMap<u32, (Rc<Script>, usize)>,
     pictures: HashMap<String, Rc<Vec<Rc<Image>>>>,
     mode_scripts: [String; 8],
     mode: u8,
@@ -391,6 +397,9 @@ fn find(h: &[u8], n: &[u8]) -> Option<usize> {
 impl Engine {
     pub fn open(files: Box<dyn Files>) -> Result<Engine, String> {
         let mut e = Engine {
+            width: SCREEN_V1.0,
+            height: SCREEN_V1.1,
+            v2: false,
             files,
             log: false,
             listing: None,
@@ -455,11 +464,32 @@ impl Engine {
             nexas::sjis::encode("】"),
             b"/".to_vec(),
         );
-        let sys = e.find_file("system.mpk").ok_or("no System.mpk")?;
-        e.archives.insert("system".into(), sys);
-        let s = e
-            .script("System\\system.msc")
-            .ok_or("no System\\system.msc")?;
+        // BB.exe starts System\\system.msc from System.mpk, sukima_trial2.exe
+        // Scenario\\system.msc from Scenario.mpk.
+        let mut start = None;
+        for (prefix, file) in [("system", "system.mpk"), ("scenario", "scenario.mpk")] {
+            let Some(f) = e.find_file(file) else {
+                continue;
+            };
+            e.archives.insert(prefix.into(), f);
+            let path = format!("{prefix}\\system.msc");
+            let Some(b) = e.read(&path) else {
+                continue;
+            };
+            for v2 in [false, true] {
+                if Script::parse(&path, &b, v2).is_some_and(|s| s.decodes()) {
+                    start = Some((path.clone(), v2));
+                    break;
+                }
+            }
+            if start.is_some() {
+                break;
+            }
+        }
+        let (path, v2) = start.ok_or("no System\\system.msc or Scenario\\system.msc")?;
+        e.v2 = v2;
+        (e.width, e.height) = if v2 { SCREEN_V2 } else { SCREEN_V1 };
+        let s = e.script(&path).ok_or("system.msc")?;
         e.run_now(Key::Init, Thread::new(s, 0));
         if let Some(d) = e.script(&e.mode_scripts[3].clone()) {
             e.run_now(Key::Dialog, Thread::new(d, 0));
@@ -541,7 +571,7 @@ impl Engine {
             return Some(s);
         }
         let b = self.read(path)?;
-        let s = Rc::new(Script::parse(path, &b)?);
+        let s = Rc::new(Script::parse(path, &b, self.v2)?);
         self.scripts.insert(key, s.clone());
         self.register(&s);
         Some(s)
@@ -602,6 +632,9 @@ impl Engine {
                 .unwrap_or(0),
             Val::Rand(n) => self.random(n),
             Val::Base => self.base,
+            Val::Special(7) => self.pointer.0,
+            Val::Special(8) => self.pointer.1,
+            Val::Special(_) => 0,
         }
     }
 
@@ -709,7 +742,7 @@ impl Engine {
         let Some(t) = self.cur_thread() else {
             return;
         };
-        match u16::try_from(label)
+        match u32::try_from(label)
             .ok()
             .and_then(|l| t.script.labels.get(&l))
         {
@@ -813,7 +846,7 @@ impl Engine {
         match (ins.cat, ins.op) {
             (0, 0x00) => {
                 let idx = match a.get(1) {
-                    Some(Arg::W(w)) => *w as i32 - 1,
+                    Some(Arg::W(w)) => *w - 1,
                     _ => -1,
                 };
                 let x = v(self, 3);
@@ -923,7 +956,7 @@ impl Engine {
                     return;
                 }
                 let k = Key::Sub(slot as usize);
-                match u16::try_from(label)
+                match u32::try_from(label)
                     .ok()
                     .and_then(|l| self.globals.get(&l))
                     .cloned()
@@ -982,7 +1015,7 @@ impl Engine {
                 let Some((k, t)) = self.cur.as_ref() else {
                     return;
                 };
-                let Some(&off) = u16::try_from(label)
+                let Some(&off) = u32::try_from(label)
                     .ok()
                     .and_then(|l| t.script.labels.get(&l))
                 else {
@@ -1049,7 +1082,7 @@ impl Engine {
                 };
                 let sc = t.script.clone();
                 let at = |l: i32| {
-                    u16::try_from(l)
+                    u32::try_from(l)
                         .ok()
                         .and_then(|l| sc.labels.get(&l))
                         .map(|&o| (sc.clone(), o))
@@ -1160,7 +1193,7 @@ impl Engine {
             vals.push(match x {
                 Arg::V(v) => self.val(v),
                 Arg::B(b) => *b as i32,
-                Arg::W(w) => *w as i32,
+                Arg::W(w) => *w,
                 Arg::S(_) => 0,
             });
         }
@@ -1629,19 +1662,22 @@ impl Engine {
             x += q.x;
             y += q.y;
         }
+        // 2.03's rectangle is the part of the picture shown, drawn at the sprite's place and
+        // scaled about its own centre (BB co007's split screens, sukima's cut-in windows).
         let (w, h) = (img.w as f64, img.h as f64);
         let r = s.rect.unwrap_or([0.0, 0.0, w, h]);
         let r = [r[0].max(0.0), r[1].max(0.0), r[2].min(w), r[3].min(h)];
         if r[2] <= r[0] || r[3] <= r[1] {
             return;
         }
+        let (rw, rh) = (r[2] - r[0], r[3] - r[1]);
         let place = Place {
             x: x as f32,
             y: y as f32,
             sx: s.sx as f32,
             sy: s.sy as f32,
-            cx: (x + w / 2.0) as f32,
-            cy: (y + h / 2.0) as f32,
+            cx: (x + rw / 2.0) as f32,
+            cy: (y + rh / 2.0) as f32,
             rot: s.rot.to_radians() as f32,
             alpha: s.alpha.clamp(0.0, 1.0) as f32,
             add: false,
@@ -1651,12 +1687,7 @@ impl Engine {
         let d = Draw {
             image: img.clone(),
             src: [r[0] as i32, r[1] as i32, r[2] as i32, r[3] as i32],
-            dst: [
-                (x + r[0]) as f32,
-                (y + r[1]) as f32,
-                (x + r[2]) as f32,
-                (y + r[3]) as f32,
-            ],
+            dst: [x as f32, y as f32, (x + rw) as f32, (y + rh) as f32],
             place,
         };
         out.push(d.clone());
@@ -1713,7 +1744,7 @@ impl Engine {
 
     pub fn draws(&mut self) -> Vec<Draw> {
         let mut out = vec![draw(&solid_image([0, 0, 0, 255]), 0.0, 0.0, 1.0)];
-        out[0].dst = [0.0, 0.0, W as f32, H as f32];
+        out[0].dst = [0.0, 0.0, self.width as f32, self.height as f32];
         for p in [1u8, 2] {
             if !self.plane_shown(p) {
                 continue;
@@ -1741,7 +1772,7 @@ impl Engine {
     }
 
     fn render_draws(&self, ds: &[Draw]) -> Image {
-        let mut img = Image::new(W, H);
+        let mut img = Image::new(self.width, self.height);
         img.fill([0, 0, 0, 255]);
         for d in ds {
             nexas::gfx::draw(&mut img, &d.image, d.src, d.dst, &d.place);
@@ -1776,10 +1807,10 @@ impl Engine {
         let (w, h) = self.size(id);
         let r = rect.unwrap_or([0.0, 0.0, w as f64, h as f64]);
         Some([
-            (x + r[0]) as i32,
-            (y + r[1]) as i32,
-            (x + r[2]) as i32,
-            (y + r[3]) as i32,
+            x as i32,
+            y as i32,
+            (x + r[2] - r[0]) as i32,
+            (y + r[3] - r[1]) as i32,
         ])
     }
 
@@ -2035,19 +2066,30 @@ impl Engine {
     fn menu_items(&self) -> Vec<(&'static str, [i32; 4])> {
         let names = ["セーブ", "ロード", "タイトルへ戻る", "ゲームに戻る"];
         let (bw, bh, gap) = (320, 50, 18);
-        let top = (H as i32 - (bh * 4 + gap * 3)) / 2;
+        let top = (self.height as i32 - (bh * 4 + gap * 3)) / 2;
         names
             .iter()
             .enumerate()
             .map(|(i, n)| {
                 let y = top + i as i32 * (bh + gap);
-                (*n, [(W as i32 - bw) / 2, y, (W as i32 + bw) / 2, y + bh])
+                (
+                    *n,
+                    [
+                        (self.width as i32 - bw) / 2,
+                        y,
+                        (self.width as i32 + bw) / 2,
+                        y + bh,
+                    ],
+                )
             })
             .collect()
     }
 
     fn menu_draws(&mut self, out: &mut Vec<Draw>) {
-        out.push(self.solid([0, 0, 0, 150], [0, 0, W as i32, H as i32]));
+        out.push(self.solid(
+            [0, 0, 0, 150],
+            [0, 0, self.width as i32, self.height as i32],
+        ));
         for (t, r) in self.menu_items() {
             self.button(t, r, out);
         }
@@ -2055,8 +2097,8 @@ impl Engine {
 
     fn slot_rects(&self) -> Vec<[i32; 4]> {
         let step = 46;
-        let (bw, bh) = (W as i32 - 160, step - 8);
-        let top = (H as i32 - step * (SLOTS as i32 + 1)) / 2 + 16;
+        let (bw, bh) = (self.width as i32 - 160, step - 8);
+        let top = (self.height as i32 - step * (SLOTS as i32 + 1)) / 2 + 16;
         (0..=SLOTS as i32)
             .map(|i| {
                 let y = top + i * step;
@@ -2066,7 +2108,10 @@ impl Engine {
     }
 
     fn slot_draws(&mut self, save: bool, out: &mut Vec<Draw>) {
-        out.push(self.solid([0, 0, 0, 200], [0, 0, W as i32, H as i32]));
+        out.push(self.solid(
+            [0, 0, 0, 200],
+            [0, 0, self.width as i32, self.height as i32],
+        ));
         let rects = self.slot_rects();
         for (i, r) in rects.iter().enumerate() {
             let label = if i == SLOTS {

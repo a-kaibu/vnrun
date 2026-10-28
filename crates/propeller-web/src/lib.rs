@@ -5,7 +5,7 @@
 use js_sys::{Array, Float32Array, Object, Reflect, Uint8Array};
 use nexas::files::Files;
 use nexas::gfx::Draw;
-use propeller::engine::{Engine, H, W};
+use propeller::engine::Engine;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -71,11 +71,11 @@ impl Game {
     }
 
     pub fn width(&self) -> u32 {
-        W
+        self.e.width
     }
 
     pub fn height(&self) -> u32 {
-        H
+        self.e.height
     }
 
     /// The pointer moved.
@@ -139,7 +139,7 @@ impl Game {
     pub fn draws(&mut self) -> Float32Array {
         self.draws = self.e.draws();
         let mut out = Vec::with_capacity(self.draws.len() * DRAW_FIELDS);
-        let (w, h) = (W as f32, H as f32);
+        let (w, h) = (self.e.width as f32, self.e.height as f32);
         for d in &self.draws {
             out.extend([d.image.id as f32, d.image.w as f32, d.image.h as f32]);
             out.extend(d.corners().into_iter().flatten());
