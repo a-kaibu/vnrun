@@ -1,0 +1,166 @@
+diff --git a/crates/ethornell-app/src/lib.rs b/crates/ethornell-app/src/lib.rs
+index 7dc8afa..456cb11 100644
+--- a/crates/ethornell-app/src/lib.rs
++++ b/crates/ethornell-app/src/lib.rs
+@@ -7357,6 +7357,7 @@ impl RuntimeTraceApi {
+         }
+         for layer in stale {
+             self.graph_layers.remove(&layer);
++            self.display_tree.remove(layer);
+             self.release_screen_text_node(layer);
+         }
+ 
+@@ -7476,6 +7477,7 @@ impl RuntimeTraceApi {
+             .replace(owner, surface, descriptor.clone(), layer_ids)
+         {
+             self.graph_layers.remove(&stale);
++            self.display_tree.remove(stale);
+             self.release_screen_text_node(stale);
+         }
+         count
+@@ -7513,6 +7515,7 @@ impl RuntimeTraceApi {
+             .remove_owner(SurfaceControlOwner::InputObject(object))
+         {
+             self.graph_layers.remove(&layer);
++            self.display_tree.remove(layer);
+             self.release_screen_text_node(layer);
+         }
+     }
+@@ -7520,6 +7523,7 @@ impl RuntimeTraceApi {
+     fn remove_surface_control_layers(&mut self, surface: i32) {
+         for layer in self.surface_controls.remove_surface(surface) {
+             self.graph_layers.remove(&layer);
++            self.display_tree.remove(layer);
+             self.release_screen_text_node(layer);
+         }
+     }
+diff --git a/crates/ethornell-app/src/display_tree.rs b/crates/ethornell-app/src/display_tree.rs
+index f0ba589..b5b8951 100644
+--- a/crates/ethornell-app/src/display_tree.rs
++++ b/crates/ethornell-app/src/display_tree.rs
+@@ -112,55 +112,50 @@ impl NativeDisplayObjectState {
+ #[derive(Debug, Default)]
+ struct NativeDisplayChain {
+     handles: Vec<i32>,
++    /// (chain depth, manager sort key) of each entry of `handles`, as the objects had them
++    /// when inserted (the tree reinserts an object whenever either changes). Kept beside
++    /// the handles so an insertion does not look every chained object up again: scripts
++    /// make and drop input objects many times a frame.
++    keys: Vec<(i32, Option<u32>)>,
+ }
+ 
+ impl NativeDisplayChain {
+-    fn insert_after_equal_depth(
+-        &mut self,
+-        objects: &BTreeMap<i32, NativeDisplayObjectState>,
+-        handle: i32,
+-        depth: i32,
+-    ) {
+-        self.handles.retain(|candidate| *candidate != handle);
++    fn push(&mut self, handle: i32, depth: i32) {
++        self.handles.push(handle);
++        self.keys.push((depth, None));
++    }
++
++    fn insert_after_equal_depth(&mut self, handle: i32, depth: i32) {
++        self.remove(handle);
+         let insertion = self
+-            .handles
++            .keys
+             .iter()
+-            .position(|candidate| {
+-                objects
+-                    .get(candidate)
+-                    .is_some_and(|object| object.chain_depth > depth)
+-            })
++            .position(|(candidate_depth, _)| *candidate_depth > depth)
+             .unwrap_or(self.handles.len());
+         self.handles.insert(insertion, handle);
++        self.keys.insert(insertion, (depth, None));
+     }
+ 
+-    fn insert_after_equal_native_sort_key(
+-        &mut self,
+-        objects: &BTreeMap<i32, NativeDisplayObjectState>,
+-        handle: i32,
+-        depth: i32,
+-        sort_key: u32,
+-    ) {
+-        self.handles.retain(|candidate| *candidate != handle);
++    fn insert_after_equal_native_sort_key(&mut self, handle: i32, depth: i32, sort_key: u32) {
++        self.remove(handle);
+         let insertion = self
+-            .handles
++            .keys
+             .iter()
+-            .position(|candidate| {
+-                let Some(candidate) = objects.get(candidate) else {
+-                    return false;
+-                };
+-                candidate.chain_depth > depth
+-                    || (candidate.chain_depth == depth
+-                        && candidate
+-                            .manager_sort_key
+-                            .is_some_and(|candidate_key| candidate_key > sort_key))
++            .position(|(candidate_depth, candidate_key)| {
++                *candidate_depth > depth
++                    || (*candidate_depth == depth
++                        && candidate_key.is_some_and(|candidate_key| candidate_key > sort_key))
+             })
+             .unwrap_or(self.handles.len());
+         self.handles.insert(insertion, handle);
++        self.keys.insert(insertion, (depth, Some(sort_key)));
+     }
+ 
+     fn remove(&mut self, handle: i32) {
+-        self.handles.retain(|candidate| *candidate != handle);
++        if let Some(at) = self.handles.iter().position(|candidate| *candidate == handle) {
++            self.handles.remove(at);
++            self.keys.remove(at);
++        }
+     }
+ 
+     fn position(&self, handle: i32) -> Option<u64> {
+@@ -198,7 +193,7 @@ impl Default for NativeDisplayTree {
+         };
+         tree.objects
+             .insert(0, NativeDisplayObjectState::new(NativeDisplayKind::Root, 0));
+-        tree.display_chain.handles.push(0);
++        tree.display_chain.push(0, 0);
+         tree
+     }
+ }
+@@ -382,15 +377,10 @@ impl NativeDisplayTree {
+         if let Some(sort_key) = native_sort_key {
+             // Once a target manager key is known, priority/depth changes must
+             // preserve the target's secondary ordering inside the new band.
+-            self.display_chain.insert_after_equal_native_sort_key(
+-                &self.objects,
+-                handle,
+-                depth,
+-                sort_key,
+-            );
+-        } else {
+             self.display_chain
+-                .insert_after_equal_depth(&self.objects, handle, depth);
++                .insert_after_equal_native_sort_key(handle, depth, sort_key);
++        } else {
++            self.display_chain.insert_after_equal_depth(handle, depth);
+         }
+         if let Some(object) = self.objects.get_mut(&handle) {
+             object.chain_depth = depth;
+@@ -435,12 +425,8 @@ impl NativeDisplayTree {
+         if let Some(object) = self.objects.get_mut(&handle) {
+             object.manager_sort_key = Some(sort_key);
+         }
+-        self.display_chain.insert_after_equal_native_sort_key(
+-            &self.objects,
+-            handle,
+-            depth,
+-            sort_key,
+-        );
++        self.display_chain
++            .insert_after_equal_native_sort_key(handle, depth, sort_key);
+     }
+ 
+     pub(crate) fn native_sort_key(&self, handle: i32) -> Option<u32> {

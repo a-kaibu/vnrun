@@ -1,0 +1,76 @@
+diff --git a/crates/ethornell-app/src/lib.rs b/crates/ethornell-app/src/lib.rs
+index 7dc8afa..456cb11 100644
+--- a/crates/ethornell-app/src/lib.rs
++++ b/crates/ethornell-app/src/lib.rs
+@@ -29807,13 +29811,14 @@ fn run_headless(
+         })
+         .unwrap_or_default();
+     let mut frame_snapshot_written = false;
+-    let mut latest_framebuffer = None;
+     let mut previous_native_calls = runtime
+         .as_ref()
+         .map(|runtime| runtime.api.total_native_calls)
+         .unwrap_or_default();
+     let mut next_frame = Instant::now();
+     let mut last_composition: Option<snapshot::RuntimeFrameComposition> = None;
++    let compose_all = std::env::var_os("ETHORNELL_HEADLESS_COMPOSE_ALL").is_some();
++    let mut present_pending = false;
+     let mut runtime_failure = None;
+     for frame in 0..max_frames {
+         if let Some(runtime) = runtime.as_mut() {
+@@ -29845,17 +29850,23 @@ fn run_headless(
+             // presentation: every logical frame still traverses the shared
+             // render tree and produces a complete offscreen framebuffer.
+             // sub_462100: a frame that is not due shows the last one again.
+-            let frame_composition = if runtime.api.take_present_due() || last_composition.is_none()
+-            {
++            // Composing a 1920x1080 frame on the CPU is most of a headless frame's time, and
++            // nothing reads it back but the snapshots and the frame log, so (unless
++            // ETHORNELL_HEADLESS_COMPOSE_ALL is set) only those frames are composed.
++            present_pending |= runtime.api.take_present_due();
++            let wanted = compose_all
++                || snapshot_frames.contains(&frame)
++                || frame % 60 == 0
++                || frame + 1 == max_frames;
++            if wanted && (present_pending || last_composition.is_none()) {
++                present_pending = false;
+                 runtime.api.performance_profile.begin();
+                 let composition =
+                     snapshot::compose_runtime_frame_with_diagnostics(&runtime.api, true);
+                 runtime.api.performance_profile.end(true);
+-                last_composition = Some(composition.clone());
+-                composition
+-            } else {
+-                last_composition.clone().expect("checked above")
+-            };
++                last_composition = Some(composition);
++            }
++            let frame_composition = last_composition.as_ref().expect("composed above");
+             if snapshot_frames.contains(&frame)
+                 && let Some(base_path) = snapshot_path.as_ref()
+             {
+@@ -29927,7 +29938,15 @@ fn run_headless(
+                     );
+                 }
+             }
+-            latest_framebuffer = Some(frame_composition.framebuffer);
++            if present_pending
++                && (runtime.api.quit_requested || runtime.vm.halted)
++                && runtime.api.native_system.restart.is_none()
++            {
++                // the loop ends here: the final snapshot shows the frame as it is now
++                present_pending = false;
++                last_composition =
++                    Some(snapshot::compose_runtime_frame_with_diagnostics(&runtime.api, true));
++            }
+             if runtime.options.fail_on_stub
+                 && last_report
+                     .as_ref()
+@@ -29968,6 +29987,7 @@ fn run_headless(
+             }
+         }
+     }
++    let latest_framebuffer = last_composition.map(|c| c.framebuffer);
+     if !frame_snapshot_written
+         && let (Some(path), Some(runtime)) = (snapshot_path, runtime.as_ref())
+     {
