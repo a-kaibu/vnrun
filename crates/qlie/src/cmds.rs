@@ -478,7 +478,16 @@ impl Engine {
                             };
                             images.push(im);
                         }
-                        pic = Some(Pic::Anim { abmp: a, images });
+                        let subs = a
+                            .subs
+                            .iter()
+                            .map(|s| s.clone().map(|s| Rc::new(crate::obj::Sub::load(s))))
+                            .collect();
+                        pic = Some(Pic::Anim {
+                            abmp: a,
+                            images,
+                            subs,
+                        });
                     }
                 }
                 Some(path) => {
@@ -564,6 +573,7 @@ impl Engine {
                 let ev = self.obj(id).and_then(|o| {
                     o.snd.repeat = repeat;
                     o.snd.playing = o.snd.data.is_some();
+                    o.snd.started = now;
                     let vol = o.snd.volume.at(now);
                     o.snd
                         .data
@@ -596,6 +606,14 @@ impl Engine {
                 self.res_int(0, p as i64);
             }
             "tt" | "?tt" => self.res_int(0, 0),
+            // how long it has played (ms): 2009 scripts wait for the music to start
+            "?nt" => {
+                let t = self
+                    .obj(id)
+                    .filter(|o| o.snd.playing)
+                    .map_or(0, |o| (now - o.snd.started) as i64);
+                self.res_int(0, t);
+            }
             _ => {}
         }
     }

@@ -72,7 +72,131 @@ pub enum Pic {
         abmp: Rc<Abmp>,
         /// by number: the `\l` files after the .b, else the .b's own pictures
         images: Vec<Option<Rc<Image>>>,
+        /// the pictures that are animations themselves
+        subs: Vec<Option<Rc<Sub>>>,
     },
+}
+
+/// An animation inside an animation's pictures, with its pictures decoded. It plays its
+/// first motion, timed by the layer that shows it.
+pub struct Sub {
+    pub abmp: Rc<Abmp>,
+    pub images: Vec<Option<Rc<Image>>>,
+    pub subs: Vec<Option<Rc<Sub>>>,
+}
+
+impl Sub {
+    pub fn load(abmp: Rc<Abmp>) -> Sub {
+        let images = abmp
+            .images
+            .iter()
+            .map(|b| crate::engine::decode_image(b).map(Rc::new))
+            .collect();
+        let subs = abmp
+            .subs
+            .iter()
+            .map(|s| s.clone().map(|a| Rc::new(Sub::load(a))))
+            .collect();
+        Sub { abmp, images, subs }
+    }
+
+    /// Where its stage's top left goes when its point `anchor` is at x, y.
+    fn origin(&self, x: f32, y: f32, (ax, ay): (f32, f32)) -> (f32, f32) {
+        let (w, h) = self.abmp.canvas.unwrap_or((0.0, 0.0));
+        (x - w * ax, y - h * ay)
+    }
+}
+
+/// The draws of an inside animation at `t` ms, its origin at `ox`, `oy`.
+#[allow(clippy::too_many_arguments)]
+fn sub_draws(
+    sub: &Sub,
+    t: f32,
+    (ox, oy): (f32, f32),
+    alpha: f32,
+    z: i32,
+    (sw, sh): (f32, f32),
+    fill: &mut dyn FnMut([u8; 3]) -> Rc<Image>,
+    out: &mut Vec<(i32, Draw)>,
+    depth: u32,
+) {
+    let Some(m) = sub.abmp.motions.first() else {
+        if let Some(Some(im)) = sub.images.first() {
+            let mut p = place(alpha, sw, sh);
+            p.cx = ox;
+            p.cy = oy;
+            out.push((
+                z,
+                Draw {
+                    image: im.clone(),
+                    src: [0, 0, im.w as i32, im.h as i32],
+                    dst: [ox, oy, ox + im.w as f32, oy + im.h as f32],
+                    place: p,
+                },
+            ));
+        }
+        return;
+    };
+    for l in &m.layers {
+        let mut h = Head::default();
+        l.advance(&mut h, t, &mut Vec::new());
+        let Some(s) = l.state(&h) else { continue };
+        let (px, py) = (ox + s.x, oy + s.y);
+        let (image, w, hh) = match s.show {
+            Show::Fill => (fill(s.color), s.sx, s.sy),
+            Show::Image | Show::Other(_) => match sub.images.get(s.image as usize) {
+                Some(Some(im)) => (im.clone(), im.w as f32, im.h as f32),
+                _ => {
+                    if let Some(Some(inner)) = sub.subs.get(s.image as usize)
+                        && depth < 4
+                    {
+                        let a = alpha * s.alpha;
+                        if a > 0.0 {
+                            let at = inner.origin(px, py, s.anchor);
+                            sub_draws(inner, s.sub_t, at, a, z, (sw, sh), fill, out, depth + 1);
+                        }
+                    }
+                    continue;
+                }
+            },
+            _ => continue,
+        };
+        if s.alpha <= 0.0 || w <= 0.0 || hh <= 0.0 {
+            continue;
+        }
+        let (ax, ay) = s.anchor;
+        let dst = [
+            px - w * ax,
+            py - hh * ay,
+            px - w * ax + w,
+            py - hh * ay + hh,
+        ];
+        let (scx, scy) = if s.show == Show::Fill {
+            (1.0, 1.0)
+        } else {
+            (s.sx / 100.0, s.sy / 100.0)
+        };
+        if scx == 0.0 || scy == 0.0 {
+            continue;
+        }
+        let (iw, ih) = (image.w as i32, image.h as i32);
+        let mut p = place(alpha * s.alpha, sw, sh);
+        p.sx = scx.abs();
+        p.sy = scy.abs();
+        p.flip = (scx < 0.0, scy < 0.0);
+        p.cx = px;
+        p.cy = py;
+        p.rot = s.rot.to_radians();
+        out.push((
+            z,
+            Draw {
+                image,
+                src: [0, 0, iw, ih],
+                dst,
+                place: p,
+            },
+        ));
+    }
 }
 
 /// A value moving to a target over time.
@@ -127,6 +251,8 @@ pub struct Sound {
     pub volume: Tween,
     pub playing: bool,
     pub repeat: bool,
+    /// when `\p` started it (ms)
+    pub started: f64,
 }
 
 impl Default for Tween {
@@ -315,7 +441,7 @@ impl Obj {
             Some(Pic::Still(im)) => {
                 out.push([self.x, self.y, self.x + im.w as f32, self.y + im.h as f32])
             }
-            Some(Pic::Anim { abmp, images }) => {
+            Some(Pic::Anim { abmp, images, .. }) => {
                 let Some(m) = self.motion.and_then(|m| abmp.motions.get(m)) else {
                     return out;
                 };
@@ -453,7 +579,7 @@ fn own_draws(
                 },
             ));
         }
-        Some(Pic::Anim { abmp, images }) if abmp.motions.is_empty() => {
+        Some(Pic::Anim { abmp, images, .. }) if abmp.motions.is_empty() => {
             // no motions read: the first picture, as a still one
             if let Some(Some(im)) = images.first() {
                 out.push((
@@ -467,7 +593,7 @@ fn own_draws(
                 ));
             }
         }
-        Some(Pic::Anim { abmp, images }) => {
+        Some(Pic::Anim { abmp, images, subs }) => {
             if let Some(m) = o.motion.and_then(|m| abmp.motions.get(m)) {
                 for (l, h) in m.layers.iter().zip(&o.heads) {
                     let Some(s) = l.state(h) else { continue };
@@ -475,6 +601,23 @@ fn own_draws(
                         Show::Fill => (fill(s.color), s.sx, s.sy),
                         Show::Image | Show::Other(_) => {
                             let Some(Some(im)) = images.get(s.image as usize) else {
+                                if let Some(Some(sub)) = subs.get(s.image as usize) {
+                                    let a = alpha * s.alpha;
+                                    if a > 0.0 {
+                                        let at = sub.origin(o.x + s.x, o.y + s.y, s.anchor);
+                                        sub_draws(
+                                            sub,
+                                            s.sub_t,
+                                            at,
+                                            a,
+                                            s.z as i32,
+                                            (sw, sh),
+                                            fill,
+                                            out,
+                                            0,
+                                        );
+                                    }
+                                }
                                 continue;
                             };
                             if abmp

@@ -36,6 +36,8 @@ pub struct Pack {
     game_key: Option<Vec<u8>>,
     /// 2.0 data in a 1.0 archive
     v2_data: bool,
+    /// 3.0 of the 2009 games ([`decrypt_v3_09`]): its key and which bytes feed the key
+    v09: Option<(Vec<u8>, bool)>,
 }
 
 // ---- MMX lane arithmetic
@@ -227,6 +229,103 @@ fn decrypt_v3_key(
     let hash64 = mt.rand64();
     let t0 = (mt.rand() & 0xF) as usize;
     mix(data, hash64, |i| table[(t0 + i) & 0xF]);
+}
+
+/// The twister of the 2009 3.0 games (Signal Heart): the same 64-word shape with other
+/// constants, which the exe writes into the twister before each file.
+struct Mt09 {
+    mt: [u32; 64],
+    left: usize,
+    next: usize,
+}
+
+impl Mt09 {
+    const M: usize = 39;
+
+    fn new(seed: u32, key: &[u8]) -> Mt09 {
+        let mut mt = [0u32; 64];
+        mt[0] = seed;
+        for i in 1..64 {
+            mt[i] = 0x6622_810Du32
+                .wrapping_mul(mt[i - 1] ^ (mt[i - 1] >> 30))
+                .wrapping_add(i as u32);
+        }
+        for (k, c) in key.chunks_exact(4).take(64).enumerate() {
+            mt[k] ^= u32::from_le_bytes(c.try_into().unwrap());
+        }
+        Mt09 {
+            mt,
+            left: 1,
+            next: 0,
+        }
+    }
+
+    fn regen(&mut self) {
+        let f = |a: u32, b: u32| {
+            ((a & 0x8000_0000) | ((b & 0x7FFF_FFFF) >> 1))
+                ^ if b & 1 != 0 { 0x9908_B0DF } else { 0 }
+        };
+        let (n, m) = (64, Self::M);
+        let mt = &mut self.mt;
+        for k in 0..n - m {
+            mt[k] = f(mt[k], mt[k + 1]) ^ mt[k + m];
+        }
+        for k in n - m..n - 1 {
+            mt[k] = f(mt[k], mt[k + 1]) ^ mt[k + m - n];
+        }
+        mt[n - 1] = f(mt[n - 1], mt[0]) ^ mt[m - 1];
+        self.left = n;
+        self.next = 0;
+    }
+
+    fn rand(&mut self) -> u32 {
+        self.left -= 1;
+        if self.left == 0 {
+            self.regen();
+        }
+        let mut y = self.mt[self.next];
+        self.next += 1;
+        y ^= y >> 11;
+        y ^= (y << 7) & 0x9C3F_87E3;
+        y ^= (y << 15) & 0xECF7_0000;
+        y ^= y >> 18;
+        y
+    }
+}
+
+/// 3.0 data of the 2009 games: a 41-word table from the twister, read 8 bytes at a time
+/// from byte offsets 4 apart; `plain_feed` chooses which bytes go back into the key (the
+/// decrypted ones, or the ones read).
+fn decrypt_v3_09(data: &mut [u8], raw_name: &[u8], arc_key: u32, key: &[u8], plain_feed: bool) {
+    let len = data.len() as u32;
+    let (mut hash, mut seed) = (0x84_F582u32, 0x32_F842u32);
+    for (i, &b) in raw_name.iter().enumerate() {
+        hash = hash.wrapping_add((i as u32 & 0xFF) * b as u32);
+        seed ^= hash;
+    }
+    let x = (len ^ 0x8F_32DC ^ hash)
+        .wrapping_add(hash)
+        .wrapping_add(len)
+        .wrapping_add(7u32.wrapping_mul(len & 0xFF_FFFF));
+    let seed = 9u32.wrapping_mul((x ^ arc_key).wrapping_add(seed) & 0xFF_FFFF);
+    let mut mt = Mt09::new(seed, key);
+    let mut table = [0u8; 41 * 4];
+    for c in table.chunks_exact_mut(4) {
+        c.copy_from_slice(&mt.rand().to_le_bytes());
+    }
+    let lo = mt.rand() as u64;
+    let mut h = lo | (mt.rand() as u64) << 32;
+    let mut at = (mt.rand() & 0x7F) as usize;
+    for c in data.chunks_exact_mut(8) {
+        let t = u64::from_le_bytes(table[at..at + 8].try_into().unwrap());
+        h = padd_d(h ^ t, t);
+        let read = u64::from_le_bytes((&*c).try_into().unwrap());
+        let out = read ^ h;
+        c.copy_from_slice(&out.to_le_bytes());
+        let feed = if plain_feed { out } else { read };
+        h = h.wrapping_add(feed) ^ feed;
+        at = (at + 4) & 0x7F;
+    }
 }
 
 fn table_v31(n: usize, mut seed: u32, key: u32) -> Vec<u32> {
@@ -456,6 +555,7 @@ impl Pack {
                 None
             },
             v2_data: version != Version::V1,
+            v09: None,
         };
         // 1.0 archives may have any of three layouts: try them in turn
         let layouts: &[(bool, bool)] = if version == Version::V1 {
@@ -473,6 +573,7 @@ impl Pack {
         if pack.entries.is_empty() && count > 0 {
             return Err(format!("{path}: unreadable index"));
         }
+        let key_file_raw = key_file.clone();
         if let Some(kf) = key_file
             && matches!(version, Version::V3 | Version::V31)
         {
@@ -488,7 +589,44 @@ impl Pack {
                 pack.key_file = Some(k);
             }
         }
+        if version == Version::V3 && pack.game_key.is_none() {
+            pack.v09 = pack.probe_v09(files, key_file_raw.as_deref());
+        }
         Ok(pack)
+    }
+
+    /// Whether the archive is of the 2009 kind: an entry packed with "1PC" decrypts to one
+    /// with the 2009 scheme, keyed by the key file or by the archive's own key (`pack_keyfile`
+    /// decrypted with the key file).
+    fn probe_v09(&self, files: &mut dyn Files, key_file: Option<&[u8]>) -> Option<(Vec<u8>, bool)> {
+        let kf = key_file?;
+        let test = self
+            .entries
+            .iter()
+            .filter(|e| e.packed && e.method != 0 && e.size >= 16)
+            .min_by_key(|e| e.size)?;
+        let raw = files.read_range(&self.path, test.offset, test.size as usize)?;
+        let own = self
+            .entries
+            .iter()
+            .find(|e| e.name.contains("pack_keyfile"));
+        let own_raw = own.and_then(|e| files.read_range(&self.path, e.offset, e.size as usize));
+        for plain in [true, false] {
+            let mut keys = vec![kf.to_vec()];
+            if let (Some(e), Some(r)) = (own, &own_raw) {
+                let mut k = r.clone();
+                decrypt_v3_09(&mut k, &e.raw_name, self.arc_key, kf, plain);
+                keys.push(k);
+            }
+            for key in keys.into_iter().rev() {
+                let mut d = raw.clone();
+                decrypt_v3_09(&mut d, &test.raw_name, self.arc_key, &key, plain);
+                if d.starts_with(b"1PC\xFF") {
+                    return Some((key, plain));
+                }
+            }
+        }
+        None
     }
 
     fn read_index(
@@ -579,6 +717,10 @@ impl Pack {
             match self.version {
                 Version::V1 => decrypt_v2(&mut data, 0, self.v2_data),
                 Version::V2 => decrypt_v2(&mut data, 0, true),
+                Version::V3 if self.v09.is_some() => {
+                    let (k, plain) = self.v09.as_ref().unwrap();
+                    decrypt_v3_09(&mut data, &e.raw_name, self.arc_key, k, *plain)
+                }
                 Version::V3 => match &self.key_file {
                     Some(k) => decrypt_v3_key(
                         &mut data,

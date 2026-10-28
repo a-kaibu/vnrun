@@ -57,7 +57,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | CatSystem2 (vnrun) | 8 | 3 |  |  |  |  |  | 5 |
 | EntisGLS (vnrun) | 9 | 4 |  |  |  | 1 |  | 4 |
 | AliceSoft System4 (xsystem4) | 2 | 2 |  |  |  |  |  |  |
-| QLIE (vnrun) | 5 | 2 |  |  |  | 1 |  | 2 |
+| QLIE (vnrun) | 5 | 3 |  |  |  |  |  | 2 |
 | Escude (vnrun) | 8 | 2 |  |  |  |  |  | 6 |
 | Majiro (vnrun) | 4 | 1 |  |  |  |  |  | 3 |
 | Kaguya (vnrun) | 12 | 6 |  |  |  |  |  | 6 |
@@ -563,8 +563,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2007_clochette | [かみぱに！体験版](http://suezou.dyndns.org/dl2007/clochette/kamipani/kamipani_trial.zip) | 本編 | QLIE (vnrun) でロゴ→タイトル→Start→本編の文章・名前・背景・立ち絵まで。セーブ→タイトルからロード、バックログも (Chromium)。検証スレッドでもタイトル画面まで確認 |
+| b2009_purplesoftware | [シグナルハート 体験版 Ver.01](http://suezou.dyndns.org/dl2009/purplesoftware/signalheart/SignalHeart_Trial01.exe) | 本編 | QLIE (vnrun) の 2009 年版 3.0 暗号 (exe の 0x8F32DC のシードと 64 語の twister、鍵は key.fkey) で解け、注意・ロゴ・タイトル (.b の中の .b、ablayer17) から NEW GAME で本編、Chromium で Q-save → 別セッションで Q-load → はい で同じ行に戻る |
 | b2020_barista_lab | [アナベル・メイドガーデン体験版](http://suezou.dyndns.org/dl2020/barista-lab/annabel/annabel_trial.zip) | 本編 | QLIE (vnrun) で注意書き→タイトル→はじめから→本編の文章・名前・背景・立ち絵まで (ImoScripter の ^ 命令)。セーブ→タイトルの「つづきから」でロードも (Chromium)。検証スレッドでもタイトル画面まで確認 |
-| b2009_purplesoftware | [シグナルハート 体験版 Ver.01](http://suezou.dyndns.org/dl2009/purplesoftware/signalheart/SignalHeart_Trial01.exe) | NG | QLIE (vnrun) では FilePackVer3.0 + DLL/key.fkey の暗号が解けず「startup.s: no @@TOP」(GARbro の 3.0 鍵ファイル方式・アイコン鍵を試しても 1PC にならない) |
 | r1_qlie | [天翼のアスクレイン 体験版](https://www.route2.co.jp/Triangle/Products/Asklein/download/Asklein_trial.zip) | 未確認 |  |
 | s2026_lump_of_sugar_tayutama_zero | [tayutamazero_trial.zip](http://suezou.dyndns.org/dl2026/lump-of-sugar/tayutama_zero/tayutamazero_trial.zip) | 未確認 |  |
 

@@ -19,6 +19,12 @@ fn main() -> Result<(), String> {
         saves: dir.join("vnrun-saves"),
         root: dir,
     };
+    if args[1] == "--unpack" {
+        // a "1PC" packed file: qlie-dump --unpack <in> <out>
+        let b = std::fs::read(&args[2]).map_err(|e| e.to_string())?;
+        let d = qlie::pack::decompress(&b).ok_or("not 1PC")?;
+        return std::fs::write(args.get(3).ok_or("no out")?, d).map_err(|e| e.to_string());
+    }
     if args[2] == "--scripts" || args[2] == "--abmp" || args[2] == "--cat" {
         return look(disk, &args[2], args.get(3));
     }
@@ -94,6 +100,27 @@ fn look(disk: Disk, what: &str, name: Option<&String>) -> Result<(), String> {
         for (i, im) in a.images.iter().enumerate() {
             let size = nexas::gfx::Image::decode(im).map(|m| (m.w, m.h));
             println!("image {i}: {} bytes {:?}", im.len(), size.ok());
+            if let Some(Some(sub)) = a.subs.get(i) {
+                let sizes: Vec<_> = sub
+                    .images
+                    .iter()
+                    .map(|b| nexas::gfx::Image::decode(b).map(|m| (m.w, m.h)).ok())
+                    .collect();
+                println!(
+                    "  an animation: pictures {sizes:?}, {} motions",
+                    sub.motions.len()
+                );
+                for m in &sub.motions {
+                    for l in &m.layers {
+                        let k: Vec<_> = l
+                            .keys
+                            .iter()
+                            .map(|k| (k.time, k.show, k.image, k.x, k.y, k.alpha))
+                            .collect();
+                        println!("    {:?} {:?}", l.name, k);
+                    }
+                }
+            }
         }
         for m in &a.motions {
             println!("motion {:?}", m.name);

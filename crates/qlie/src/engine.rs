@@ -361,14 +361,18 @@ impl Engine {
         let snd: Vec<Value> = (0..32)
             .map(|_| Value::Obj(e.new_obj(Obj::new(OKind::Snd, GAME))))
             .collect();
-        e.builtins.insert(
-            "snd".into(),
-            Var {
-                kind: VKind::Obj,
-                vals: snd,
-                own: Vec::new(),
-            },
-        );
+        // the 2009 scripts (Signal Heart) call them dsnd[] too; the same objects, so the
+        // object numbers in other games' saves stay as they were
+        for name in ["snd", "dsnd"] {
+            e.builtins.insert(
+                name.into(),
+                Var {
+                    kind: VKind::Obj,
+                    vals: snd.clone(),
+                    own: Vec::new(),
+                },
+            );
+        }
         e.start(GAME, "startup.s", "@@TOP")?;
         Ok(e)
     }
@@ -1422,7 +1426,14 @@ impl Engine {
     fn command(&mut self, at: &At, name: &str, args: &[Arg]) -> Result<(), String> {
         let t = self.cur;
         match name {
-            "then" | "draw" | "zero" | "tmp" => {}
+            "then" | "zero" | "tmp" => {}
+            // `\draw`: show the frame, so a loop with it goes on next frame
+            "draw" => {
+                self.threads[t].wait = Wait::Until {
+                    end: self.now + 1.0,
+                    click: false,
+                };
+            }
             "if" => {
                 let c = args
                     .first()

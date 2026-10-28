@@ -46,6 +46,8 @@ pub struct Key {
     /// 1: go to key `arg`; 7: stop; 8: play sound `arg`
     pub cmd: u8,
     pub arg: u8,
+    /// a scene's own time at this key (ms), for an animation shown as a picture
+    pub sub_t: f32,
 }
 
 #[derive(Debug, Clone)]
@@ -68,6 +70,11 @@ pub struct Abmp {
     pub names: Vec<String>,
     pub sounds: Vec<Vec<u8>>,
     pub motions: Vec<Motion>,
+    /// pictures that are animations themselves ("abmp" files in the picture list, as in
+    /// Signal Heart's title), by number
+    pub subs: Vec<Option<std::rc::Rc<Abmp>>>,
+    /// the size of its stage ("abdata12" says, after the first name), when known
+    pub canvas: Option<(f32, f32)>,
 }
 
 struct Rd<'a> {
@@ -122,6 +129,19 @@ impl Abmp {
                     data.to_vec()
                 };
                 a.motions = parse_motions(&data);
+                if tag == "abdata12" && data.len() >= 2 {
+                    let n = u16::from_le_bytes([data[0], data[1]]) as usize;
+                    let rd = |o: usize| {
+                        data.get(o..o + 4)
+                            .map(|b| u32::from_le_bytes(b.try_into().unwrap()))
+                    };
+                    if let (Some(w), Some(h)) = (rd(2 + n), rd(6 + n))
+                        && (1..=8192).contains(&w)
+                        && (1..=8192).contains(&h)
+                    {
+                        a.canvas = Some((w as f32, h as f32));
+                    }
+                }
             } else if tag == "abimage10" || tag == "absound10" {
                 let count = r.u8().ok_or("truncated")?;
                 for _ in 0..count {
@@ -172,6 +192,11 @@ impl Abmp {
                         data.to_vec()
                     };
                     if tag == "abimage10" {
+                        a.subs.push(
+                            data.starts_with(b"abmp")
+                                .then(|| Abmp::parse(&data).ok().map(std::rc::Rc::new))
+                                .flatten(),
+                        );
                         a.images.push(data);
                         a.names.push(name);
                     } else {
@@ -333,6 +358,7 @@ fn parse_key12(k: &[u8]) -> Option<Key> {
         anchor: (i(112) as f32 / 100.0, i(116) as f32 / 100.0),
         cmd: i(208) as u8,
         arg: i(212) as u8,
+        sub_t: 0.0,
     })
 }
 
@@ -354,11 +380,24 @@ fn parse_motions(d: &[u8]) -> Vec<Motion> {
             if d.get(r.p..r.p + 7) != Some(b"ablayer") {
                 break;
             }
+            let ver = d.get(r.p + 7..r.p + 16).map(|t| {
+                String::from_utf8_lossy(t)
+                    .trim_end_matches('\0')
+                    .to_string()
+            });
             r.p += 16;
             let Some(lname) = r.u16().and_then(|n| r.take(n as usize)).map(sjis) else {
                 break;
             };
-            let Some(count) = r.u16() else { break };
+            // "ablayer17" (2009, Signal Heart): a byte, the key count in a byte, a byte
+            let count = if ver.as_deref() == Some("17") {
+                let c = r.u8().and_then(|_| r.u8()).map(u16::from);
+                r.u8();
+                c
+            } else {
+                r.u16()
+            };
+            let Some(count) = count else { break };
             // the size of a key: the room up to the next block, shared out
             let next = [
                 find(d, b"ablayer", r.p),
@@ -377,9 +416,18 @@ fn parse_motions(d: &[u8]) -> Vec<Motion> {
             let mut keys = Vec::new();
             for _ in 0..count {
                 let Some(k) = r.take(size) else { break };
-                if let Some(k) = parse_key(k) {
+                let k = if ver.as_deref() == Some("17") {
+                    parse_key17(k)
+                } else {
+                    parse_key(k)
+                };
+                if let Some(k) = k {
                     keys.push(k);
                 }
+            }
+            // "Name---" and "--Name" layers are the designer's switched-off copies
+            if ver.as_deref() == Some("17") && (lname.ends_with("---") || lname.starts_with("--")) {
+                keys.clear();
             }
             layers.push(Layer { name: lname, keys });
         }
@@ -420,6 +468,49 @@ fn parse_key(k: &[u8]) -> Option<Key> {
         anchor: crate::obj::anchor(j(46)),
         cmd: j(48),
         arg: j(49),
+        sub_t: 0.0,
+    })
+}
+
+/// A key of "ablayer17" (2009, Signal Heart), 162 bytes: the same fields up to the opacity,
+/// then how the place moves on (48) and how the opacity does (51), and the point of the
+/// picture at x, y in percent of its width (133) and height (135).
+fn parse_key17(k: &[u8]) -> Option<Key> {
+    if k.len() < 136 {
+        return None;
+    }
+    let i16at = |j: usize| i16::from_le_bytes([k[j], k[j + 1]]);
+    let show = match k[4] {
+        0 => Show::None,
+        1 => Show::Fill,
+        4 => Show::Image,
+        6 => Show::Hit,
+        n => Show::Other(n),
+    };
+    let ease = if k[48] != 0 { k[48] } else { k[51] };
+    Some(Key {
+        time: u32::from_le_bytes(k[0..4].try_into().ok()?),
+        show,
+        image: u16::from_le_bytes([k[6], k[7]]),
+        x: i16at(24) as f32,
+        y: i16at(26) as f32,
+        sx: i16at(28) as f32,
+        sy: i16at(30) as f32,
+        z: i16at(32),
+        rot: i16at(34) as f32,
+        add: [k[36], k[37], k[38]],
+        color: [k[40], k[41], k[42]],
+        alpha: k[44] as f32 / 255.0,
+        ease,
+        tween: ease != 0,
+        anchor: (
+            k[133].min(100) as f32 / 100.0,
+            k[135].min(100) as f32 / 100.0,
+        ),
+        // 1: go to key `arg`; 8: play sound `arg`
+        cmd: k[52],
+        arg: k[137],
+        sub_t: u32::from_le_bytes(k[16..20].try_into().ok()?) as f32,
     })
 }
 
@@ -451,6 +542,8 @@ pub struct State {
     pub color: [u8; 3],
     pub alpha: f32,
     pub anchor: (f32, f32),
+    /// the time of the scene it shows (see [`Key::sub_t`])
+    pub sub_t: f32,
 }
 
 fn ease(e: u8, f: f32) -> f32 {
@@ -538,7 +631,17 @@ impl Layer {
             color: k.color,
             alpha: k.alpha,
             anchor: k.anchor,
+            sub_t: k.sub_t,
         };
+        // a scene goes on to the next key's scene time when that key shows it too
+        if let Some(n) = self.keys.get(h.key + 1)
+            && n.show == k.show
+            && n.time > k.time
+            && n.sub_t > k.sub_t
+        {
+            let f = ((h.t - k.time as f32) / (n.time - k.time) as f32).clamp(0.0, 1.0);
+            s.sub_t = k.sub_t + (n.sub_t - k.sub_t) * f;
+        }
         if k.tween
             && !h.stopped
             && let Some(n) = self.keys.get(h.key + 1)
