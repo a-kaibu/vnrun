@@ -67,6 +67,7 @@ game_root() {
     catsystem2) m=(-iname scene.int) ;;
     entis) m=(-iname '*.csx' -o -iname '*.noa') ;;
     system4) m=(-iname '*.ain') ;;
+    qlie) m=(-ipath '*/gamedata/data0.pack') ;;
     nscripter) m=(-iname nscript.dat -o -iname 0.txt -o -iname 00.txt -o -iname '*.nsa' -o -iname '*.sar') ;;
     html) m=(-iname package.json -o -iname index.html -o -iname package.nw -o -iname nw.pak) ;;
   esac
@@ -74,6 +75,7 @@ game_root() {
   # Entis GLS keeps its archives in Data/ beside the exe and the .csx script.
   local up='/pac$'
   [[ $2 == entis ]] && up='/data$'
+  [[ $2 == qlie ]] && up='/gamedata$'
   find "$1" -type f \( "${m[@]}" \) -printf '%d %h\n' 2> /dev/null | sort -n | head -1 | cut -d' ' -f2- | sed "s#$up##I"
 }
 

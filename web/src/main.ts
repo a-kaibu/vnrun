@@ -23,6 +23,7 @@ const ENGINES: Record<string, () => Promise<EngineModule>> = {
   tmrhiro: () => import("./engines/tmrhiro"),
   livemaker: () => import("./engines/livemaker"),
   catsystem2: () => import("./engines/catsystem2"),
+  qlie: () => import("./engines/qlie"),
   entis: () => import("./engines/entis"),
   system4: () => import("./engines/system4"),
   html: () => import("./engines/html"),

@@ -204,6 +204,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("cs2.exe") || names.iter().any(|n| n == "scene.int") {
         // CatSystem2: cs2.exe beside the .int archives
         Some("catsystem2".into())
+    } else if has("gamedata") && has_qlie_pack(game) {
+        // QLIE: GameData/data0.pack beside the exe
+        Some("qlie".into())
     } else if names
         .iter()
         .any(|n| n.ends_with(".noa") || n.ends_with(".csx"))
@@ -238,6 +241,27 @@ fn detect(game: &Path) -> Option<String> {
     } else {
         None
     }
+}
+
+/// Whether GameData (any case) holds QLIE .pack archives.
+fn has_qlie_pack(game: &Path) -> bool {
+    fs::read_dir(game)
+        .into_iter()
+        .flatten()
+        .flatten()
+        .filter(|e| {
+            e.file_name()
+                .to_string_lossy()
+                .eq_ignore_ascii_case("gamedata")
+        })
+        .filter_map(|e| fs::read_dir(e.path()).ok())
+        .flat_map(|d| d.flatten())
+        .any(|e| {
+            e.file_name()
+                .to_string_lossy()
+                .to_lowercase()
+                .ends_with(".pack")
+        })
 }
 
 // Some KiriKiri releases call the main XP3 archive data.bin.
