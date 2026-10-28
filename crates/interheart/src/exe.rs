@@ -122,7 +122,7 @@ pub fn buttons(exe: &[u8], name: &str) -> Option<Vec<Button>> {
             if !names.contains(&v) {
                 continue;
             }
-            if let Some(list) = table_after(&pe, &code[at + 5..(at + 5 + 64).min(code.len())]) {
+            if let Some(list) = table_after(&pe, &code[at + 5..(at + 5 + 0xa0).min(code.len())]) {
                 return Some(list);
             }
         }

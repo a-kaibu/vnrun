@@ -56,6 +56,10 @@ const FRAME_MS: f64 = 1000.0 / 60.0;
 const SLOTS: usize = 10;
 const TEXT_SIZE: i32 = 28;
 const LINE_STEP: i32 = 38;
+/// How many messages the log keeps.
+const LOG_MAX: usize = 200;
+/// The quick save's file (2018 on, the button on the window).
+const QUICK: &str = "quick.txt";
 
 struct Chara {
     slot: i32,
@@ -107,7 +111,13 @@ enum Screen {
     Title,
     Game,
     Menu,
-    Slots { save: bool, from_title: bool },
+    Slots {
+        save: bool,
+        from_title: bool,
+    },
+    /// the messages so far, the newest at the bottom (`usize`: how many of the newest are
+    /// scrolled past)
+    Log(usize),
 }
 
 struct Title {
@@ -133,6 +143,44 @@ struct ExeUi {
     window: crate::exe::Window,
     /// a place for each choice from the top, with the bar plain and lit
     choices: Vec<crate::exe::Button>,
+    /// the buttons on the window (the "Message" table), what each does by its id (`Action`)
+    buttons: Vec<crate::exe::Button>,
+}
+
+/// What a button on the 2018+ window does. The programs number them alike (the tables of
+/// hachimitsu 2018, shiba 2020 and marshmallow 2020 against their sheets and the tool tips
+/// marshmallow draws): 1 log, 2 auto, 3 skip, 4 hide the window, 5 quick save, 6 quick
+/// load, 7 tool tips, 8 settings, 9 the voice again, 13 save, 14 load, 15 keep the buttons
+/// shown, 16 on to the next unread, 17 back to the last choice, 18 share (back to the last
+/// choice in 2018). The ones we have no screen for do nothing.
+#[derive(Clone, Copy, PartialEq, Debug)]
+enum Action {
+    Log,
+    Auto,
+    Skip,
+    Hide,
+    QuickSave,
+    QuickLoad,
+    Voice,
+    Save,
+    Load,
+}
+
+impl Action {
+    fn of(id: i32) -> Option<Action> {
+        Some(match id {
+            1 => Action::Log,
+            2 => Action::Auto,
+            3 => Action::Skip,
+            4 => Action::Hide,
+            5 => Action::QuickSave,
+            6 => Action::QuickLoad,
+            9 => Action::Voice,
+            13 => Action::Save,
+            14 => Action::Load,
+            _ => return None,
+        })
+    }
 }
 
 /// The message on show, drawn.
@@ -195,6 +243,16 @@ pub struct Engine {
     text_cache: HashMap<(String, [u8; 3], i32), Rc<Image>>,
     slots: Vec<Option<Slot>>,
     ended: bool,
+    /// 2018 on, from the buttons under the window: reading on by itself, skipping, the window
+    /// hidden until a click
+    auto: bool,
+    skip: bool,
+    hidden: bool,
+    /// when `auto` reads on from the message on show
+    auto_at: u64,
+    /// the messages so far (name, text) for the log, and the last voice (name, number)
+    history: Vec<(Option<String>, Vec<String>)>,
+    last_voice: Option<(String, u32)>,
 }
 
 fn white(w: u32, h: u32, rgba: [u8; 4]) -> Rc<Image> {
@@ -265,6 +323,12 @@ impl Engine {
             text_cache: HashMap::new(),
             slots: Vec::new(),
             ended: false,
+            auto: false,
+            skip: false,
+            hidden: false,
+            auto_at: 0,
+            history: Vec::new(),
+            last_voice: None,
         };
         e.slots = (0..SLOTS).map(|i| e.read_slot(i)).collect();
         e.load_act('A')?;
@@ -342,7 +406,8 @@ impl Engine {
         }
         let done = match &self.wait {
             Wait::None => true,
-            Wait::Click | Wait::Choice(_) => false,
+            Wait::Click => self.skip || (self.auto && self.now >= self.auto_at),
+            Wait::Choice(_) => false,
             Wait::Until(t) => self.now >= *t,
             Wait::Fade => self.fade.is_none(),
             Wait::Moves => !self.charas.iter().any(|c| c.moving(self.now)) && self.fade.is_none(),
@@ -508,10 +573,20 @@ impl Engine {
                             .into_iter()
                             .filter(|c| c.src[..2].iter().all(|r| inside(*r)))
                             .collect();
+                        // a button can follow with another look (shiba's 15): the first counts
+                        let mut buttons: Vec<crate::exe::Button> = Vec::new();
+                        for c in crate::exe::buttons(&b, "Message").unwrap_or_default() {
+                            if c.src[..2].iter().all(|r| inside(*r))
+                                && !buttons.iter().any(|o| o.id == c.id)
+                            {
+                                buttons.push(c);
+                            }
+                        }
                         ui = Some(Rc::new(ExeUi {
                             chip,
                             window,
                             choices,
+                            buttons,
                         }));
                         break;
                     }
@@ -550,6 +625,11 @@ impl Engine {
         self.window = false;
         self.message = None;
         self.wait = Wait::None;
+        self.auto = false;
+        self.skip = false;
+        self.hidden = false;
+        self.history.clear();
+        self.last_voice = None;
     }
 
     // ---- running the scenario ----
@@ -617,6 +697,7 @@ impl Engine {
                     self.message_enters = true;
                     self.show_message(None, &question);
                     self.window = true;
+                    self.skip = false;
                     self.wait = Wait::Choice(answers);
                 }
                 Line::Command(c) => {
@@ -638,6 +719,9 @@ impl Engine {
                         && let Some(n) = &voiced
                     {
                         self.play_voice(n, voice);
+                        self.last_voice = Some((n.clone(), voice));
+                    } else {
+                        self.last_voice = None;
                     }
                     self.show_message(name.as_deref(), &text);
                     self.window = true;
@@ -957,7 +1041,7 @@ impl Engine {
             | Screen::Slots {
                 from_title: false, ..
             } => {
-                if self.window && self.fade.is_none() {
+                if self.window && self.fade.is_none() && !self.hidden {
                     self.window_draws(&mut out);
                 }
                 if let Wait::Choice(answers) = &self.wait {
@@ -970,9 +1054,90 @@ impl Engine {
         match self.view {
             Screen::Menu => self.menu_draws(&mut out),
             Screen::Slots { save, .. } => self.slot_draws(save, &mut out),
+            Screen::Log(back) => self.log_draws(back, &mut out),
             _ => {}
         }
         out
+    }
+
+    /// The log: the messages so far over the darkened game, the newest (less `back`) at the
+    /// bottom.
+    fn log_draws(&mut self, back: usize, out: &mut Vec<Draw>) {
+        out.push(self.solid([0, 0, 0, 200]));
+        let (w, h) = (self.screen.0 as i32, self.screen.1 as i32);
+        let chars = ((w - 260) / TEXT_SIZE).max(10) as usize;
+        let mut y = h - 30;
+        let end = self.history.len().saturating_sub(back);
+        for k in (0..end).rev() {
+            let (name, text) = self.history[k].clone();
+            let lines: Vec<String> = text.iter().flat_map(|l| wrap(l, chars)).collect();
+            let height = (lines.len() as i32 + name.is_some() as i32) * LINE_STEP + 16;
+            if y - height < 20 {
+                break;
+            }
+            y -= height;
+            let mut ly = y;
+            if let Some(n) = &name {
+                let t = self.text(n, [255, 220, 150], TEXT_SIZE);
+                out.push(draw(&t, 100.0, ly as f32, 1.0));
+                ly += LINE_STEP;
+            }
+            for l in &lines {
+                let t = self.text(l, [255, 255, 255], TEXT_SIZE);
+                out.push(draw(&t, 140.0, ly as f32, 1.0));
+                ly += LINE_STEP;
+            }
+        }
+    }
+
+    /// The button of the 2018+ window at (x, y), when the window is up: `Some(None)` for one
+    /// that does nothing here.
+    fn window_button(&mut self, x: i32, y: i32) -> Option<Option<Action>> {
+        if !self.window || self.hidden || self.message.is_none() {
+            return None;
+        }
+        let ui = self.exe_ui()?;
+        let b = ui.buttons.iter().find(|b| inside(b.dst, x, y))?;
+        Some(Action::of(b.id))
+    }
+
+    fn act(&mut self, a: Action) {
+        match a {
+            Action::Log => {
+                if !self.history.is_empty() {
+                    self.view = Screen::Log(0);
+                }
+            }
+            Action::Auto => {
+                self.auto = !self.auto;
+                self.skip = false;
+                self.auto_at = self.auto_at.max(self.now + 500);
+            }
+            Action::Skip => {
+                self.skip = !self.skip;
+                self.auto = false;
+            }
+            Action::Hide => self.hidden = true,
+            Action::QuickSave => {
+                self.save_as(QUICK);
+            }
+            Action::QuickLoad => {
+                if self.files.read_save(QUICK).is_some() {
+                    self.load_from(QUICK);
+                }
+            }
+            Action::Voice => {
+                if let Some((n, v)) = self.last_voice.clone() {
+                    self.play_voice(&n, v);
+                }
+            }
+            Action::Save | Action::Load => {
+                self.view = Screen::Slots {
+                    save: a == Action::Save,
+                    from_title: false,
+                }
+            }
+        }
     }
 
     /// The title button at (x, y), as the hover map numbers them (0: none).
@@ -1071,6 +1236,17 @@ impl Engine {
                 }
                 if named {
                     out.push(scaled(chip, xywh(win.plate.src), rect_f(win.plate.dst)));
+                }
+                // the buttons: lit under the pointer, and auto and skip while they run
+                let (px, py) = self.pointer;
+                for b in ui.iter().flat_map(|u| u.buttons.iter()) {
+                    let on = match Action::of(b.id) {
+                        Some(Action::Auto) => self.auto,
+                        Some(Action::Skip) => self.skip,
+                        _ => false,
+                    };
+                    let lit = on || inside(b.dst, px, py);
+                    out.push(scaled(chip, xywh(b.src[lit as usize]), rect_f(b.dst)));
                 }
                 name_at = (win.name[0] as f32, win.name[1] as f32);
                 centred = true;
@@ -1327,6 +1503,12 @@ impl Engine {
             lines,
             first: first.trim().to_string(),
         });
+        let chars: usize = text.iter().map(|l| l.chars().count()).sum();
+        self.auto_at = self.now + 1500 + 80 * chars as u64;
+        self.history.push((name.map(str::to_string), text.to_vec()));
+        if self.history.len() > LOG_MAX {
+            self.history.remove(0);
+        }
     }
 
     // ---- pictures and sounds ----
@@ -1558,6 +1740,7 @@ impl Engine {
                     // nothing there
                 }
             }
+            Screen::Log(_) => self.view = Screen::Game,
             Screen::Game => self.game_click(x, y),
         }
     }
@@ -1594,6 +1777,22 @@ impl Engine {
     }
 
     fn game_click(&mut self, x: i32, y: i32) {
+        if self.hidden {
+            self.hidden = false;
+            return;
+        }
+        if let Some(a) = self.window_button(x, y) {
+            if let Some(a) = a {
+                self.act(a);
+            }
+            return;
+        }
+        // a click stops reading on by itself (and is not taken as one more)
+        if self.auto || self.skip {
+            self.auto = false;
+            self.skip = false;
+            return;
+        }
         match &self.wait {
             Wait::Click => {
                 self.wait = Wait::None;
@@ -1629,12 +1828,23 @@ impl Engine {
             Screen::Slots {
                 from_title: true, ..
             } => self.view = Screen::Title,
-            Screen::Slots { .. } => self.view = Screen::Game,
+            Screen::Slots { .. } | Screen::Log(_) => self.view = Screen::Game,
             _ => {}
         }
     }
 
-    pub fn wheel(&mut self, _up: bool) {}
+    /// The wheel: up opens the log in the game and goes back in it, down comes forward.
+    pub fn wheel(&mut self, up: bool) {
+        match self.view {
+            Screen::Game if up && !self.history.is_empty() => self.view = Screen::Log(0),
+            Screen::Log(back) if up => {
+                self.view = Screen::Log((back + 1).min(self.history.len().saturating_sub(1)))
+            }
+            Screen::Log(0) => self.view = Screen::Game,
+            Screen::Log(back) => self.view = Screen::Log(back - 1),
+            _ => {}
+        }
+    }
 
     pub fn ended(&self) -> bool {
         self.ended
@@ -1664,6 +1874,14 @@ impl Engine {
     }
 
     fn save(&mut self, i: usize) {
+        let text = self.save_as(&Self::slot_name(i));
+        self.files
+            .write_save("latest.txt", i.to_string().as_bytes());
+        self.slots[i] = Some(Slot { text });
+    }
+
+    /// Saves to `file`; the first line of the message on show.
+    fn save_as(&mut self, file: &str) -> String {
         let mut s = String::new();
         let id = |v: SceneId| format!("{},{},{}", v.0, v.1, v.2);
         s += &format!(
@@ -1689,14 +1907,16 @@ impl Engine {
             .as_ref()
             .map_or(String::new(), |m| m.first.clone());
         s += &format!("text={text}\n");
-        self.files.write_save(&Self::slot_name(i), s.as_bytes());
-        self.files
-            .write_save("latest.txt", i.to_string().as_bytes());
-        self.slots[i] = Some(Slot { text });
+        self.files.write_save(file, s.as_bytes());
+        text
     }
 
     fn load(&mut self, i: usize) {
-        let Some(b) = self.files.read_save(&Self::slot_name(i)) else {
+        self.load_from(&Self::slot_name(i));
+    }
+
+    fn load_from(&mut self, file: &str) {
+        let Some(b) = self.files.read_save(file) else {
             return;
         };
         let t = String::from_utf8_lossy(&b).to_string();
