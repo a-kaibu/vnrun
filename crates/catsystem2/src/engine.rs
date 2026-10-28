@@ -320,7 +320,22 @@ impl Env for Ctx<'_> {
                 };
                 return expr::eval(&m, &mut c).unwrap_or(0);
             }
-            let name = n.replace("[@]", &format!("[{}]", e.at));
+            let mut name = n.replace("[@]", &format!("[{}]", e.at));
+            // an index by macro or expression: btn_def[BTN_START]
+            if let Some((b, idx)) = name.split_once('[')
+                && idx.trim_end_matches(']').parse::<i64>().is_err()
+                && self.depth < 8
+            {
+                let idx = idx.trim_end_matches(']').to_string();
+                let b = b.to_string();
+                let mut c = Ctx {
+                    e,
+                    run: self.run,
+                    depth: self.depth + 1,
+                };
+                let v = expr::eval(&idx, &mut c).unwrap_or(0);
+                name = format!("{b}[{v}]");
+            }
             if let Some(&i) = run.names.get(&name) {
                 return i as i64 + 1;
             }
@@ -864,6 +879,23 @@ impl Engine {
             "endif" | "keyskip" | "dbgstr" | "deletebgbutton" | "setconf" | "lockactive"
             | "resetactive" | "decode" => {}
             "next" => self.goto(r, arg(1)),
+            "break" => {
+                // leaves the called block (果つることなき未来ヨリ's SYSVOICE), or this block
+                let run = &mut self.runs[r];
+                match run.calls.pop() {
+                    Some(pc) => run.pc = pc,
+                    None => {
+                        while run
+                            .fes
+                            .lines
+                            .get(run.pc)
+                            .is_some_and(|l| !l.starts_with('#'))
+                        {
+                            run.pc += 1;
+                        }
+                    }
+                }
+            }
             "call" => {
                 let run = &mut self.runs[r];
                 if let Some(&pc) = run.fes.labels.get(arg(1)) {
@@ -900,13 +932,20 @@ impl Engine {
             }
             "execfes"
                 if arg(1).eq_ignore_ascii_case("saveload")
-                    || arg(1).eq_ignore_ascii_case("titleload") =>
+                    || arg(1).eq_ignore_ascii_case("titleload")
+                    || arg(1).eq_ignore_ascii_case("load") =>
             {
-                // the game's save screen (SAVEPANEL objects; titleload the title's, 2008): ours
+                // the game's save screen (SAVEPANEL objects; titleload / load the title's): ours
                 // instead, answering the script with 1000 + slot, or -2 for back
                 self.end_children(r);
                 self.runs[r].exit_code = -1;
                 self.open_menu(crate::menu::Mode::Load, Some(r));
+                // 果つることなき未来ヨリ: load.fes puts the slot in $512 and answers 2
+                if arg(1).eq_ignore_ascii_case("load")
+                    && let Some(m) = self.menu.as_mut()
+                {
+                    m.load_answer = Some(2);
+                }
             }
             "execfes" => {
                 self.end_children(r);

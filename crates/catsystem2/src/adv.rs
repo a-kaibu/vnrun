@@ -391,6 +391,10 @@ impl Engine {
             if a.wait != Wait::Select {
                 a.wait = Wait::None;
             }
+            // the window's fades end at once too, so the loaded page's text shows it again
+            if let Some((_, to, _, _)) = a.window_move.take() {
+                a.window = to;
+            }
             let owner = a.owner;
             for o in self.objs.iter_mut().flatten().filter(|o| o.owner == owner) {
                 finish(o);
@@ -687,6 +691,12 @@ impl Engine {
                 self.runs[r].story = true;
                 let var = arg(3).parse().unwrap_or(-1);
                 self.adv.as_mut().unwrap().wait = Wait::Fes(r, var);
+            }
+            "frameon" | "frameoff" if self.skip_to.is_some() => {
+                // skipping to a loaded page: the window is there or not at once
+                let a = self.adv.as_mut().unwrap();
+                a.window = if cmd == "frameon" { 1.0 } else { 0.0 };
+                a.window_move = None;
             }
             "frameon" | "frameoff" => {
                 let a = self.adv.as_mut().unwrap();

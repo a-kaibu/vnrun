@@ -25,6 +25,9 @@ pub struct Menu {
     pub mode: Mode,
     /// the screen script that opened it (`execfes saveload`), answered when it closes
     from_fes: Option<usize>,
+    /// the answer to it for a loaded slot, the slot in $512 (`execfes load`, 2015: 2), or
+    /// none for 1000 + slot
+    pub(crate) load_answer: Option<i64>,
     /// what each slot holds, read when the menu opens or a slot is saved
     slots: Vec<Option<SaveData>>,
     /// backlog: pages back from the newest
@@ -84,6 +87,7 @@ impl Engine {
         self.menu = Some(Menu {
             mode,
             from_fes,
+            load_answer: None,
             slots,
             scroll: 0,
             labels: Vec::new(),
@@ -226,7 +230,13 @@ impl Engine {
                     return true;
                 }
                 if m.from_fes.is_some() {
-                    self.close_menu(1000 + k as i64);
+                    match m.load_answer {
+                        Some(code) => {
+                            self.flags.insert(512, 1000 + k as i64);
+                            self.close_menu(code);
+                        }
+                        None => self.close_menu(1000 + k as i64),
+                    }
                 } else if let Some(d) = self.menu.as_mut().unwrap().slots[k].take() {
                     self.menu = None;
                     let parent = self.adv.as_ref().map_or(0, |a| a.parent);
