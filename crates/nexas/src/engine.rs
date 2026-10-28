@@ -699,17 +699,22 @@ impl Engine {
         };
         let (wx, wy) = self.window_at();
         let text_x = wx as i32 + TEXT.0 - WINDOW.0 as i32;
-        let text_y = wy as i32 + TEXT.1 - WINDOW.1 as i32;
+        // a 800x600 window is about 157 high: a name and four lines fit closer together
+        let (text_y, line) = if self.screen.w == WIDTH {
+            (wy as i32 + TEXT.1 - WINDOW.1 as i32, LINE)
+        } else {
+            (wy as i32 + 40, 28)
+        };
         let name = message_lines(name, &self.names).concat();
         if !name.is_empty() {
             let img = font.render(&name, [255, 255, 255], PAD);
             self.message
-                .push((Rc::new(img), text_x - PAD, text_y - LINE - PAD));
+                .push((Rc::new(img), text_x - PAD, text_y - line - PAD));
         }
-        for (k, line) in message_lines(text, &self.names).iter().enumerate() {
-            let img = font.render(line, [255, 255, 255], PAD);
+        for (k, l) in message_lines(text, &self.names).iter().enumerate() {
+            let img = font.render(l, [255, 255, 255], PAD);
             self.message
-                .push((Rc::new(img), text_x - PAD, text_y + LINE * k as i32 - PAD));
+                .push((Rc::new(img), text_x - PAD, text_y + line * k as i32 - PAD));
         }
     }
 
