@@ -92,46 +92,46 @@ s2011_whirlpool_maikaze	本編	Chromium (3f99c53) で START→本編の文章ま
 s2023_milimili_onaho_yokai	本編	本文まで。F9/F11 で保存と読み込み
 r1_tyrano	本編	dadce4b (exe 末尾の app を vnrun-prep が展開) でタイトル→はじめから→本編の背景・文章まで (Chromium、タイトルまで約 200 秒)
 dl_VJ01000810	本編	exe 末尾の app を vnrun-prep が展開。タイトル→はじめから→本編の CG・文章まで (Chromium)
-dl_RJ01731048	本編	タイトル→ニューゲーム→本編の会話まで。「Cannot find module ./js/libs/greenworks」は出るが続行する (Chromium)
-dl_RJ01604592	本編	タイトル→ニューゲーム→本編の会話まで (Chromium)
-dl_RJ01698597	本編	0df7c53 でタイトル→ニューゲーム→本編の文章 (名前入力の案内) まで (Chromium、タイトルまで約 240 秒)
-dl_RJ01730521	本編	タイトル→ニューゲーム→本編の会話まで (Chromium)
+dl_RJ01731048	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編の会話まで。「Cannot find module ./js/libs/greenworks」は出るが続行する (Chromium)
+dl_RJ01604592	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編の会話まで (Chromium)
+dl_RJ01698597	本編	検証スレッドでも Chromium でタイトル画面まで確認。0df7c53 でタイトル→ニューゲーム→本編の文章 (名前入力の案内) まで (Chromium、タイトルまで約 240 秒)
+dl_RJ01730521	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編の会話まで (Chromium)
 dl_RJ01741863	タイトル	タイトルは出る。はじめから後は黒画面のまま (VisuMZ EventTitleScene→Map011 の場所移動待ちで止まる、要調査)
-dl_RJ01642779	本編	f41e050 (フレームに合わせて拡大) でタイトル→ニューゲーム→本編のマップ・会話まで (Chromium)
+dl_RJ01642779	本編	検証スレッドでも Chromium でタイトル画面まで確認。f41e050 (フレームに合わせて拡大) でタイトル→ニューゲーム→本編のマップ・会話まで (Chromium)
 s2019_no_strike_jyosou_jinjya	本編	Chromium (675fd0a 以降) で START→本編の文章まで、台湾版の Big5 文章も表示
 s2014_whirlpool_tearstilla	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_VJ01001386	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_VJ01004582	本編	Chromium で START→本編の文章まで (名前入力 DIALOG は既定名で進む)
 dl_VJ01000315	本編	Chromium で START→本編の文章まで (名前入力 DIALOG は既定名で進む)
 dl_VJ01002327	本編	Chromium (3f99c53+) で START→本編の文章まで
-dl_RJ01648691	本編	416970b (IndexedDB) 以降。クリックでマップ画面まで進む
-dl_RJ01618221	本編	タイトル→ニューゲーム→オープニング選択→本編の文章まで (Chromium、タイトルまで約 200 秒)
-dl_RJ357058	本編	a11563d (読み込み中のプラグイン例外は警告だけ) でタイトル→ニューゲーム→序章のマップまで (Chromium)
-dl_RJ01720493	本編	782563a (studio_api.path、.tpatch は無いものとする) でタイトル→はじめから→本編の 3D 立ち絵・文章まで (Electron 版 Tyrano、Chromium)
-dl_RJ01722380	本編	タイトル→ニューゲーム→名前入力→本編まで (Chromium)
-dl_RJ01727123	本編	タイトル→ニューゲーム→本編のマップまで (Chromium)
+dl_RJ01648691	本編	検証スレッドでも Chromium でタイトル画面まで確認。416970b (IndexedDB) 以降。クリックでマップ画面まで進む
+dl_RJ01618221	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→オープニング選択→本編の文章まで (Chromium、タイトルまで約 200 秒)
+dl_RJ357058	本編	検証スレッドでも Chromium でタイトル画面まで確認。a11563d (読み込み中のプラグイン例外は警告だけ) でタイトル→ニューゲーム→序章のマップまで (Chromium)
+dl_RJ01720493	本編	検証スレッドでも Chromium でタイトル画面まで確認。782563a (studio_api.path、.tpatch は無いものとする) でタイトル→はじめから→本編の 3D 立ち絵・文章まで (Electron 版 Tyrano、Chromium)
+dl_RJ01722380	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→名前入力→本編まで (Chromium)
+dl_RJ01727123	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編のマップまで (Chromium)
 s2016_no_strike_jyogaku	本編	Chromium (3f99c53+) で START→本編の文章まで
-dl_RJ01612664	本編	f41e050 (フレームに合わせて拡大) でタイトル→ニューゲーム→難易度選択→本編まで (Chromium)
+dl_RJ01612664	本編	検証スレッドでも Chromium でタイトル画面まで確認。f41e050 (フレームに合わせて拡大) でタイトル→ニューゲーム→難易度選択→本編まで (Chromium)
 dl_RJ01721024	本編	Chromium (3f99c53+) で START→本編の文章まで
-dl_RJ01686418	本編	タイトル→ニューゲーム→本編の会話まで (Chromium)
-dl_RJ01706991	本編	タイトル→ニューゲーム→名前入力→本編まで (Chromium)
+dl_RJ01686418	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編の会話まで (Chromium)
+dl_RJ01706991	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→名前入力→本編まで (Chromium)
 s2021_casket_bellaca	本編	Chromium (3f99c53+) で START→本編の文章まで
-dl_RJ01699765	本編	タイトル→ニューゲーム→本編の会話まで (Chromium)
-dl_RJ01702392	本編	f41e050 (RPGツクールを NW.js と同じくフレームに合わせて拡大) でタイトル→ニューゲーム→色選択→本編の背景・文章まで (クリックで進む)
-dl_RJ01618747	本編	タイトル→ニューゲーム→本編の会話まで (Chromium)
+dl_RJ01699765	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編の会話まで (Chromium)
+dl_RJ01702392	本編	検証スレッドでも Chromium でタイトル画面まで確認。f41e050 (RPGツクールを NW.js と同じくフレームに合わせて拡大) でタイトル→ニューゲーム→色選択→本編の背景・文章まで (クリックで進む)
+dl_RJ01618747	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編の会話まで (Chromium)
 dl_VJ01001309	本編	e7626d4 (EXE 基準オフセットの app zip、.tpatch を vnrun-prep が適用) でタイトル→はじめから→本編の立ち絵・文章まで (Chromium)
-dl_RJ01720958	本編	タイトル→ニューゲーム→本編のマップまで (Chromium)
-dl_RJ01703802	本編	タイトル→ニューゲーム→本編のマップ・会話まで (Chromium、タイトルまで約 200 秒)
-dl_RJ01699647	本編	タイトル→はじめから→導入の立ち絵・文章まで。「reading 'unlockInfo'」は実績プラグインがセーブ無しを読んだときのもので、プラグイン自身が拾って続行する
-dl_RJ01701172	本編	タイトル→挑戦する→導入の文章まで (Chromium)
-dl_RJ01696742	本編	タイトル→ニューゲーム→本編の会話まで (Chromium)
-dl_RJ01529614	本編	タイトル→ニューゲーム→本編のマップ・会話まで (Chromium)
-dl_RJ01746541	本編	タイトル→ニューゲーム→本編のマップ・立ち絵・会話まで (Chromium)
-dl_RJ01701742	本編	タイトル→ニューゲーム→導入の文章まで (Chromium)
-dl_RJ01623688	本編	cb9b86f (MZ もフレームに合わせて拡大) でタイトル→はじめから→体験版の案内→あらすじの言語選択まで (Chromium)
-dl_RJ01650072	本編	fcaacff (nw.gui などは代役) でタイトル→本編まで。既定の言語は中国語 (GameCreator、Chromium)
-dl_RJ01702800	本編	タイトル→本編の放置ゲーム画面で操作できる (Chromium)
-dl_RJ01720685	本編	クリックで最初の会話まで
+dl_RJ01720958	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編のマップまで (Chromium)
+dl_RJ01703802	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編のマップ・会話まで (Chromium、タイトルまで約 200 秒)
+dl_RJ01699647	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→はじめから→導入の立ち絵・文章まで。「reading 'unlockInfo'」は実績プラグインがセーブ無しを読んだときのもので、プラグイン自身が拾って続行する
+dl_RJ01701172	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→挑戦する→導入の文章まで (Chromium)
+dl_RJ01696742	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編の会話まで (Chromium)
+dl_RJ01529614	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編のマップ・会話まで (Chromium)
+dl_RJ01746541	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編のマップ・立ち絵・会話まで (Chromium)
+dl_RJ01701742	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→導入の文章まで (Chromium)
+dl_RJ01623688	本編	検証スレッドでも Chromium でタイトル画面まで確認。cb9b86f (MZ もフレームに合わせて拡大) でタイトル→はじめから→体験版の案内→あらすじの言語選択まで (Chromium)
+dl_RJ01650072	本編	検証スレッドでも Chromium でタイトル画面まで確認。fcaacff (nw.gui などは代役) でタイトル→本編まで。既定の言語は中国語 (GameCreator、Chromium)
+dl_RJ01702800	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→本編の放置ゲーム画面で操作できる (Chromium)
+dl_RJ01720685	本編	検証スレッドでも Chromium でタイトル画面まで確認。クリックで最初の会話まで
 r1_kag3	本編	2026-10-26: 公式 syoukai デモ。Pad で Config を編集・保存し、再起動後に読み込み、紹介本文まで確認
 b2006_ninetail	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 b2016_cube	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 0c62865 で白画面からクリック 2 回でタイトル画面まで表示
@@ -158,7 +158,7 @@ b2006_whirlpool	本編	Chromium で はじめから→本編の文章まで (222
 dl_VJ01002338	本編	Chromium で はじめから→本編の文章まで (b2006_whirlpool と同じ 222 形式)
 b2010_whirlpool	本編	Chromium (3f99c53) で START→本編の文章→体験版終了の選択肢まで
 b2014_whirlpool	本編	Chromium (3f99c53) で START→体験版メニュー (本編/Hシーン) と説明文まで
-b2021_whirlpool	本編	d98165b で「short arguments」は出ない。Chromium で START→シナリオ選択 (scenario/0_tr.txt の文章と選択肢) まで、ネイティブでは「本編を始める」→ maho1_01 の本文まで (Chromium では devserver が途中で止められ本文の撮影はできず)
+b2021_whirlpool	本編	検証スレッドでも Chromium でタイトル画面まで確認。d98165b で「short arguments」は出ない。Chromium で START→シナリオ選択 (scenario/0_tr.txt の文章と選択肢) まで、ネイティブでは「本編を始める」→ maho1_01 の本文まで (Chromium では devserver が途中で止められ本文の撮影はできず)
 b2022_at_sakura	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動)
 b2024_at_sakura	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動)
 b2013_cross_over	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 でタイトルまで
@@ -188,7 +188,7 @@ b2010_giga	本編	ネイティブと Chromium でタイトル、最初の台詞�
 s2010_giga_bittersmile	本編	Chromium (21b28be 以降) で START→本編の文章まで。メッセージ枠は中央に表示
 s2007_giga_himesama	本編	Chromium (3f99c53) で START→本編の文章まで
 s2009_giga_curefull	本編	Chromium (21b28be 以降) で START→本編の文章まで。メッセージ枠は中央に表示
-s2006_giga_ab	本編	2006 年版の VM (演算子 0xD 以降が 1 つずれる、ヘッダの無い .dat、.ani ボタン) に対応。タイトルの Start から体験版01.bin の本文まで (Chromium)
+s2006_giga_ab	本編	検証スレッドでも Chromium でタイトル画面まで確認。2006 年版の VM (演算子 0xD 以降が 1 つずれる、ヘッダの無い .dat、.ani ボタン) に対応。タイトルの Start から体験版01.bin の本文まで (Chromium)
 s2008_giga_sakahari	本編	Chromium (3f99c53) で START→本編の文章まで
 s2011_giga_hinataterrace	本編	Chromium (3f99c53) で START→本編の文章まで
 b2019_giga	本編	6875c68 でタイトルから本編テキストまで。メッセージウィンドウ画像は未表示 (既知)
@@ -212,7 +212,7 @@ s2019_lune_dogeza_saimin	本編	6eba683 (Tmr-Hiro) で START から本編の文�
 s2016_marine_cospure_harem	本編	6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium)
 s2011_marine_marching	本編	6eba683 (Tmr-Hiro) で START から本編の文章・名前・立ち絵/CG まで (Chromium)
 s2025_milimili_hanako	対象外	中身は Unity 製 (vnbox の NeXAS 判定が誤り)
-s2015_giga_renaiphase	本編	d98165b で確認。タイトルの「Digest Story」→「Digest-1」から 共通00.bin のチャット画面と本文まで (Chromium)
+s2015_giga_renaiphase	本編	検証スレッドでも Chromium でタイトル画面まで確認。d98165b で確認。タイトルの「Digest Story」→「Digest-1」から 共通00.bin のチャット画面と本文まで (Chromium)
 s2006_giga_cheerfull	要再確認	ダウンロードはできるが、自己展開 exe が GIGA 独自の暗号化形式 (GFL SecureCryptograph) で 7z・unar では展開できない
 b2018_appetite	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 b2019_appetite	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
