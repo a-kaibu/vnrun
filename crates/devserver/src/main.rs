@@ -238,9 +238,11 @@ fn detect(game: &Path) -> Option<String> {
     } else if (has("scr.arc") && has("tblstr.arc"))
         || (has("arc") && game.join("ARC").join("scr.arc").is_file())
         || (has("arc") && game.join("arc").join("scr.arc").is_file())
+        || (has("scr.arc") && has("params.dat") && has("message.dat"))
     {
         // Kaguya (2006 era): WFL1 archives with .ari indexes, the scripts in scr.arc
-        // (beside the exe, or in ARC/ from about 2013)
+        // (beside the exe, or in ARC/ from about 2013); the LINK generation (2010s):
+        // LINK archives beside params.dat and message.dat
         Some("kaguya".into())
     } else if majiro_arc(game, &names) {
         // Majiro: MajiroArc archives (scenario.arc, data.arc, ...) beside the exe

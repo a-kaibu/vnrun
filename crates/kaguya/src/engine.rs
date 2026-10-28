@@ -249,7 +249,7 @@ fn black_screen(w: u32, h: u32) -> Rc<Image> {
 type Placed = (Rc<Image>, i32, i32);
 
 /// Lays `src` over `dst` with its top left at (x, y).
-fn over(dst: &mut Image, src: &Image, x: i32, y: i32, tint: Option<[u8; 3]>) {
+pub(crate) fn over(dst: &mut Image, src: &Image, x: i32, y: i32, tint: Option<[u8; 3]>) {
     let x0 = x.max(0);
     let x1 = (x + src.w as i32).min(dst.w as i32);
     if x1 <= x0 {
@@ -1761,7 +1761,15 @@ impl Engine {
 }
 
 /// Writes `s` (its first `n` letters) in white with a dark shadow; '\n' starts a line.
-fn text(img: &mut Image, font: &fontdue::Font, s: &str, x: f32, y: f32, size: f32, n: usize) {
+pub(crate) fn text(
+    img: &mut Image,
+    font: &fontdue::Font,
+    s: &str,
+    x: f32,
+    y: f32,
+    size: f32,
+    n: usize,
+) {
     let ascent = font
         .horizontal_line_metrics(size)
         .map_or(size * 0.88, |m| m.ascent);

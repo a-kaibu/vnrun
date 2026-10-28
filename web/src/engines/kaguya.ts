@@ -1,5 +1,5 @@
 // Kaguya games through our own engine (crates/kaguya), built by engines/kaguya/build.sh into
-// public/engines/kaguya/. The engine runs the .scr scripts of the WFL1 archives and says
+// public/engines/kaguya/. The engine runs the .scr scripts (WFL1 or LINK archives) and says
 // which pictures to draw where; this side runs it 60 times a second, draws the pictures with
 // WebGPU and plays sounds on the channels the engine names.
 import { importEngine, type EngineContext } from "../engine";

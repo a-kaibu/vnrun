@@ -4,7 +4,7 @@
 //! frames it clicks: 20; KAGUYA_AT=x,y, where; KAGUYA_PICK=0,2,1: the choices to take in
 //! turn, counting from 0, then the first).
 
-use kaguya::engine::Engine;
+use kaguya::Game;
 use nexas::files::Disk;
 use nexas::gfx::{Image, draw};
 
@@ -14,8 +14,8 @@ fn main() {
         root: args[1].clone().into(),
         saves: "/nonexistent".into(),
     };
-    let mut e = Engine::open(Box::new(disk)).unwrap();
-    e.log = true;
+    let mut e = Game::open(Box::new(disk)).unwrap();
+    e.set_log(true);
     e.set_font(&std::fs::read(&args[2]).unwrap()).unwrap();
     let frames: usize = args[3].parse().unwrap();
     let every: usize = std::env::var("KAGUYA_EVERY")
@@ -59,7 +59,7 @@ fn main() {
         if let Some(out) = args.get(4)
             && f % every == 0
         {
-            let mut img = Image::new(e.width, e.height);
+            let mut img = Image::new(e.width(), e.height());
             img.fill([0, 0, 0, 255]);
             for d in e.draws() {
                 draw(&mut img, &d.image, d.src, d.dst, &d.place);

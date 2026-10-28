@@ -3,7 +3,7 @@
 //! (backed by the player's GameFS).
 
 use js_sys::{Array, Float32Array, Object, Reflect, Uint8Array};
-use kaguya::engine::Engine;
+use kaguya::Game as Engine;
 use nexas::files::Files;
 use nexas::gfx::Draw;
 use wasm_bindgen::prelude::*;
@@ -71,11 +71,11 @@ impl Game {
     }
 
     pub fn width(&self) -> u32 {
-        self.e.width
+        self.e.width()
     }
 
     pub fn height(&self) -> u32 {
-        self.e.height
+        self.e.height()
     }
 
     /// The pointer moved.
@@ -139,7 +139,7 @@ impl Game {
     pub fn draws(&mut self) -> Float32Array {
         self.draws = self.e.draws();
         let mut out = Vec::with_capacity(self.draws.len() * DRAW_FIELDS);
-        let (w, h) = (self.e.width as f32, self.e.height as f32);
+        let (w, h) = (self.e.width() as f32, self.e.height() as f32);
         for d in &self.draws {
             out.extend([d.image.id as f32, d.image.w as f32, d.image.h as f32]);
             out.extend(d.corners().into_iter().flatten());
