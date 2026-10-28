@@ -188,7 +188,7 @@ b2010_giga	本編	ネイティブと Chromium でタイトル、最初の台詞�
 s2010_giga_bittersmile	本編	Chromium (21b28be 以降) で START→本編の文章まで。メッセージ枠は中央に表示
 s2007_giga_himesama	本編	Chromium (3f99c53) で START→本編の文章まで
 s2009_giga_curefull	本編	Chromium (21b28be 以降) で START→本編の文章まで。メッセージ枠は中央に表示
-s2006_giga_ab	NG	64d6316 (2015 年版の表) で「table is cut short」
+s2006_giga_ab	本編	2006 年版の VM (演算子 0xD 以降が 1 つずれる、ヘッダの無い .dat、.ani ボタン) に対応。タイトルの Start から体験版01.bin の本文まで (Chromium)
 s2008_giga_sakahari	本編	Chromium (3f99c53) で START→本編の文章まで
 s2011_giga_hinataterrace	本編	Chromium (3f99c53) で START→本編の文章まで
 b2019_giga	本編	6875c68 でタイトルから本編テキストまで。メッセージウィンドウ画像は未表示 (既知)

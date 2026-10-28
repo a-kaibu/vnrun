@@ -300,6 +300,8 @@ pub struct Engine {
     bgm: Vec<Vec<Cell>>,
     current_bgm: Option<usize>,
     images: HashMap<String, Rc<Image>>,
+    /// 2006 animation frames by (file, frame), with their centres
+    anis: HashMap<(String, i32), Option<(Rc<Image>, i32, i32)>>,
     spms: HashMap<String, Rc<Spm>>,
     fonts: HashMap<String, Option<Rc<Font>>>,
     plane: i32,
@@ -355,34 +357,37 @@ impl Engine {
                 order.push(p.to_string());
             }
         }
-        let visuals = arcs
-            .read(files.as_mut(), "Config", "visual.dat")
-            .map(|b| dat::parse(&b))
-            .transpose()?
-            .unwrap_or_default();
-        let stands = arcs
-            .read(files.as_mut(), "Config", "Stand.dat")
-            .map(|b| dat::parse(&b))
-            .transpose()?
-            .unwrap_or_default();
-        let events = arcs
-            .read(files.as_mut(), "Config", "Event.dat")
-            .map(|b| dat::parse(&b))
-            .transpose()?
-            .unwrap_or_default();
+        // a table with a header, else 2006's fixed records
+        let mut table = |name: &str| -> Result<Vec<Vec<dat::Cell>>, String> {
+            let Some(b) = arcs.read(files.as_mut(), "Config", name) else {
+                return Ok(Vec::new());
+            };
+            dat::parse(&b).or_else(|e| dat::parse_2006(name, &b).ok_or(e))
+        };
+        let visuals = table("visual.dat")?;
+        let stands = table("Stand.dat")?;
+        let events = table("Event.dat")?;
         let bgm = arcs
             .read(files.as_mut(), "Config", "BGM.dat")
             .and_then(|b| dat::parse(&b).ok())
             .unwrap_or_default();
-        let (width, height) = arcs
-            .read(files.as_mut(), "Config", "System.dat")
-            .and_then(|b| dat::parse(&b).ok())
-            .map_or((WIDTH, HEIGHT), |rows| screen_size(&rows));
         let mut scripts = HashMap::new();
         let build = arcs
             .read(files.as_mut(), "Script", "System.bin")
             .and_then(|b| script::parse(&b).ok())
             .map_or(&BUILDS[0], |s| Build::detect(&s));
+        // 2006 has no System.dat; its screen is 800x600
+        let (width, height) = arcs
+            .read(files.as_mut(), "Config", "System.dat")
+            .and_then(|b| dat::parse(&b).ok())
+            .map_or(
+                if build.y2006 {
+                    (800, 600)
+                } else {
+                    (WIDTH, HEIGHT)
+                },
+                |rows| screen_size(&rows),
+            );
         let system = load_script(&arcs, files.as_mut(), &mut scripts, "System.bin", build)?;
         let mut thread = Thread::new("System.bin", system);
         // System.bin label 0 starts the game (System.dat's entry table)
@@ -405,6 +410,7 @@ impl Engine {
             bgm,
             current_bgm: None,
             images: HashMap::new(),
+            anis: HashMap::new(),
             spms: HashMap::new(),
             fonts: HashMap::new(),
             plane: 0,
@@ -642,6 +648,52 @@ impl Engine {
         Some(img)
     }
 
+    /// Frame `frame` of a 2006 animation (.ani) and its centre:
+    ///
+    /// ```text
+    /// "ANI\0" ? picture[32] frames:u32 patterns:u32
+    /// frames x (x, y, w, h, centre x, centre y, ?):i32   patterns x (?, frame, ?):i32
+    /// ```
+    fn ani(&mut self, name: &str, frame: i32) -> Option<(Rc<Image>, i32, i32)> {
+        let key = (name.to_lowercase(), frame);
+        if let Some(v) = self.anis.get(&key) {
+            return v.clone();
+        }
+        let v = self.load_ani(name, frame);
+        self.anis.insert(key, v.clone());
+        v
+    }
+
+    fn load_ani(&mut self, name: &str, frame: i32) -> Option<(Rc<Image>, i32, i32)> {
+        let b = self.find(name)?;
+        let int = |at: usize| {
+            b.get(at..at + 4)
+                .map(|v| i32::from_le_bytes(v.try_into().unwrap()))
+        };
+        if !b.starts_with(b"ANI\0") {
+            return None;
+        }
+        let pic = &b.get(8..40)?;
+        let pic = sjis::decode(&pic[..pic.iter().position(|&c| c == 0).unwrap_or(32)]);
+        let n = int(40)?.max(1);
+        let k = frame.clamp(0, n - 1) as usize;
+        let f: Vec<i32> = (0..6)
+            .map(|i| int(48 + k * 28 + i * 4))
+            .collect::<Option<_>>()?;
+        let src = self.image(&pic)?;
+        let (w, h) = (f[2].max(1), f[3].max(1));
+        let mut img = Image::new(w as u32, h as u32);
+        let p = place(0.0, 0.0, 1.0, 1.0, 0.0, 1.0, false);
+        gfx::draw(
+            &mut img,
+            &src,
+            [f[0], f[1], f[0] + w, f[1] + h],
+            [0.0, 0.0, w as f32, h as f32],
+            &p,
+        );
+        Some((Rc::new(img), f[4], f[5]))
+    }
+
     fn spm(&mut self, name: &str) -> Option<Rc<Spm>> {
         let key = name.to_lowercase();
         if let Some(s) = self.spms.get(&key) {
@@ -698,7 +750,12 @@ impl Engine {
             return;
         };
         let (wx, wy) = self.window_at();
-        let text_x = wx as i32 + TEXT.0 - WINDOW.0 as i32;
+        // 2006: dark letters on a light window, which has no room on the left for a face
+        let (text_x, rgb) = if self.build.y2006 {
+            (wx as i32 + 40, [64, 40, 56])
+        } else {
+            (wx as i32 + TEXT.0 - WINDOW.0 as i32, [255, 255, 255])
+        };
         // a 800x600 window is about 157 high: a name and four lines fit closer together
         let (text_y, line) = if self.screen.w == WIDTH {
             (wy as i32 + TEXT.1 - WINDOW.1 as i32, LINE)
@@ -707,12 +764,12 @@ impl Engine {
         };
         let name = message_lines(name, &self.names).concat();
         if !name.is_empty() {
-            let img = font.render(&name, [255, 255, 255], PAD);
+            let img = font.render(&name, rgb, PAD);
             self.message
                 .push((Rc::new(img), text_x - PAD, text_y - line - PAD));
         }
         for (k, l) in message_lines(text, &self.names).iter().enumerate() {
-            let img = font.render(l, [255, 255, 255], PAD);
+            let img = font.render(l, rgb, PAD);
             self.message
                 .push((Rc::new(img), text_x - PAD, text_y + line * k as i32 - PAD));
         }
@@ -722,11 +779,17 @@ impl Engine {
     /// in the middle at the bottom, by the size of the window picture.
     fn window_at(&mut self) -> (f32, f32) {
         let (sw, sh) = (self.screen.w as f32, self.screen.h as f32);
-        let part = self.spm("Interface.spm").and_then(|s| {
-            s.frames
-                .first()
-                .and_then(|f| f.parts.first().map(|p| p.dst))
-        });
+        // 2006: the first frame of MessageWindow.ani
+        let part = if self.build.y2006 {
+            self.ani("MessageWindow.ani", 0)
+                .map(|(img, _, _)| [0, 0, img.w as i32, img.h as i32])
+        } else {
+            self.spm("Interface.spm").and_then(|s| {
+                s.frames
+                    .first()
+                    .and_then(|f| f.parts.first().map(|p| p.dst))
+            })
+        };
         match part {
             Some(d) if self.screen.w != WIDTH => {
                 let (w, h) = ((d[2] - d[0]) as f32, (d[3] - d[1]) as f32);
@@ -863,7 +926,18 @@ impl Engine {
             }
         }
         if !self.message.is_empty() {
-            if let Some(spm) = self.spm("Interface.spm") {
+            if self.build.y2006
+                && let Some((img, _, _)) = self.ani("MessageWindow.ani", 0)
+            {
+                let (x, y) = self.window_at();
+                let (w, h) = (img.w as i32, img.h as i32);
+                out.push(Draw {
+                    image: img.clone(),
+                    src: [0, 0, w, h],
+                    dst: [x, y, x + w as f32, y + h as f32],
+                    place: place(0.0, 0.0, 1.0, 1.0, 0.0, 1.0, false),
+                });
+            } else if let Some(spm) = self.spm("Interface.spm") {
                 let images: Vec<Option<Rc<Image>>> =
                     spm.images.iter().take(1).map(|n| self.image(n)).collect();
                 let p = place(0.0, 0.0, 1.0, 1.0, 0.0, 1.0, false);
@@ -1104,6 +1178,22 @@ impl Host for Engine {
                 let v = [arg(args, 0), arg(args, 2), 0, arg(args, 3)];
                 reordered = v.into_iter().map(Value::Int).collect();
                 (0xf8, &reordered[..])
+            }
+            // 2006: draw (n, time, mode, %, wait) and move (n, time | flags << 16, x, y, wait)
+            0xff09 | 0xff0a => {
+                let t = if id == 0xff0a {
+                    arg(args, 1) & 0xffff
+                } else {
+                    arg(args, 1)
+                };
+                // 2006's draw mode 2 gives how opaque (later: how see-through), as mode 3
+                let mode = match arg(args, 2) {
+                    2 if id == 0xff09 => 3,
+                    m => m,
+                };
+                let v = [arg(args, 0), t, mode, arg(args, 3), 0, arg(args, 4)];
+                reordered = v.into_iter().map(Value::Int).collect();
+                (if id == 0xff09 { 0x159 } else { 0x144 }, &reordered[..])
             }
             _ => (id, args),
         };
@@ -1610,6 +1700,25 @@ impl Host for Engine {
             // 2007: the result of the last selection; the label to go on at when this one ends
             0xff05 => out = self.selected,
             0xff06 => self.after_start = u32::try_from(a(0)).ok(),
+            // 2006: the clicked button (0) or a flag
+            0xff0b => {
+                out = if a(0) == 0 {
+                    self.selected
+                } else {
+                    self.flags.get(&a(0)).copied().unwrap_or(0)
+                }
+            }
+            // 2006: an animation's frame (n, file, frame, x, y, ?), put by its centre
+            0xff0c => {
+                if let Some((img, cx, cy)) = self.ani(&text(args, 1), a(2)) {
+                    self.add_obj(a(0), Look::Image(img), a(3) - cx, a(4) - cy);
+                }
+            }
+            // 2006: wait for a click on a button (1 argument)
+            0xff0d if args.len() == 1 => {
+                self.wait = Wait::Select;
+                flow = Flow::Yield;
+            }
             0x19b => self.plane = a(0),
             0x1a1 => out = self.plane,
             _ => {

@@ -17,6 +17,8 @@ pub struct Build {
     old_ops: bool,
     /// 2007: the VM lacks two of the bitwise ops, so its ops from 0x13 on are two lower than 2010's.
     pub early: bool,
+    /// 2006: the VM has no modulo, so its ops from 0xD on are one lower than 2007's.
+    pub y2006: bool,
     /// ひなたテラス (2011): a move (0x144) goes to an offset from where the object was made
     pub relative_moves: bool,
 }
@@ -27,6 +29,7 @@ pub const BUILDS: &[Build] = &[
         rows: B2015,
         old_ops: false,
         early: false,
+        y2006: false,
         relative_moves: false,
     },
     Build {
@@ -34,6 +37,7 @@ pub const BUILDS: &[Build] = &[
         rows: B2012,
         old_ops: true,
         early: false,
+        y2006: false,
         relative_moves: false,
     },
     Build {
@@ -41,6 +45,7 @@ pub const BUILDS: &[Build] = &[
         rows: B2013,
         old_ops: true,
         early: false,
+        y2006: false,
         relative_moves: false,
     },
     Build {
@@ -48,6 +53,7 @@ pub const BUILDS: &[Build] = &[
         rows: B2011,
         old_ops: true,
         early: false,
+        y2006: false,
         relative_moves: false,
     },
     Build {
@@ -55,6 +61,7 @@ pub const BUILDS: &[Build] = &[
         rows: B2019,
         old_ops: false,
         early: false,
+        y2006: false,
         relative_moves: false,
     },
 ];
@@ -92,6 +99,7 @@ static B2010_BUILD: Build = Build {
     ],
     old_ops: true,
     early: false,
+    y2006: false,
     relative_moves: false,
 };
 
@@ -128,6 +136,7 @@ static B2007_BUILD: Build = Build {
     ],
     old_ops: true,
     early: true,
+    y2006: false,
     relative_moves: false,
 };
 
@@ -161,6 +170,7 @@ static B2008_BUILD: Build = Build {
     ],
     old_ops: true,
     early: false,
+    y2006: false,
     relative_moves: false,
 };
 
@@ -198,6 +208,7 @@ static B2009_BUILD: Build = Build {
     ],
     old_ops: true,
     early: false,
+    y2006: false,
     relative_moves: false,
 };
 
@@ -207,7 +218,48 @@ static B2011H_BUILD: Build = Build {
     rows: B2010_BUILD.rows,
     old_ops: true,
     early: false,
+    y2006: false,
     relative_moves: true,
+};
+
+// angel breath (2006): matched by what the calls of its scripts pass. 0x35 (draw) and 0x2c (move)
+// lack the later calls' unused argument and 0x2c packs flags over the time, so they go through
+// pseudo ids that reorder them. 0x28 makes an object of an animation's frame; 0x54 with one
+// argument waits for a click on a button, which 0x9b(0) then reads (other numbers: flags); 0xa8
+// names the label that runs when the running one ends.
+static B2006_BUILD: Build = Build {
+    name: "2006 (angel breath)",
+    rows: &[
+        (0x00, 0x00, 1),
+        (0x0b, 0x05, 2),
+        (0x27, 0x137, 5),
+        (0x28, 0xff0c, 6),
+        (0x2b, 0x143, 1),
+        (0x2c, 0xff0a, 5),
+        (0x35, 0xff09, 5),
+        (0x39, 0x162, 3),
+        (0x3a, 0x165, 1),
+        (0x54, 0xff0d, 1),
+        (0x55, 0x78, 5),
+        (0x58, 0x8a, 2),
+        (0x59, 0x8a, 2),
+        (0x5a, 0x8a, 2),
+        (0x5b, 0x8a, 2),
+        (0x94, 0x64, 2),
+        (0x95, 0x65, 1),
+        (0x96, 0x67, 4),
+        (0x9a, 0x54, 2),
+        (0x9b, 0xff0b, 1),
+        (0xa6, 0x45, 2),
+        (0xa8, 0xff06, 1),
+        (0xaa, 0x49, 9),
+        (0xab, 0x4a, 0),
+        (0xac, 0xff00, 3),
+    ],
+    old_ops: true,
+    early: true,
+    y2006: true,
+    relative_moves: false,
 };
 
 impl Build {
@@ -229,9 +281,12 @@ impl Build {
         if !self.old_ops {
             return;
         }
-        let early = self.early;
+        let (early, y2006) = (self.early, self.y2006);
         let fix = |b: &mut Block| {
             for ins in b.init.iter_mut().chain(&mut b.code) {
+                if y2006 && ins.op >= 0xd {
+                    ins.op += 1;
+                }
                 if early && ins.op >= 0x13 {
                     ins.op += 2;
                 }
@@ -287,6 +342,16 @@ impl Build {
         {
             return &B2007_BUILD;
         }
+        // 2006: calls a bank (0xaa, 9 arguments) and goes to a file (0xa6, 2)
+        let calls = |arg: u32| {
+            std::iter::once(&script.main)
+                .chain(script.funcs.values())
+                .flat_map(|b| b.init.iter().chain(&b.code))
+                .any(|i| i.op == 7 && i.arg == arg)
+        };
+        if script.legacy && calls(9 << 16 | 0xaa) && calls(2 << 16 | 0xa6) {
+            return &B2006_BUILD;
+        }
         let mut calls = Vec::new();
         let mut collect = |b: &Block| {
             for ins in b.init.iter().chain(&b.code) {
@@ -331,6 +396,24 @@ mod tests {
         assert_eq!(build.canonical(0x122), 0xffff);
         script.main.code.clear();
         assert_ne!(Build::detect(&script).name, B2010_BUILD.name);
+    }
+
+    #[test]
+    fn identifies_the_2006_build_and_shifts_its_ops() {
+        let mut script = Script::default();
+        script.legacy = true;
+        for arg in [9 << 16 | 0xaa, 2 << 16 | 0xa6] {
+            script.main.code.push(Ins { op: 7, arg });
+        }
+        // store (0xd) and the label end (0x19)
+        script.main.code.push(Ins { op: 0xd, arg: 0 });
+        script.main.code.push(Ins { op: 0x19, arg: 0 });
+        let build = Build::detect(&script);
+        assert_eq!(build.name, B2006_BUILD.name);
+        assert_eq!(build.canonical(0x96), 0x67);
+        build.translate(&mut script);
+        let ops: Vec<u32> = script.main.code.iter().map(|i| i.op).collect();
+        assert_eq!(ops, [7, 7, 0xe, 0x1c]);
     }
 
     #[test]
