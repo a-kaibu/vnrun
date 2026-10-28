@@ -325,6 +325,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("game_sys.dat") {
         // PJADV (bootUP!/Pajamas): GAMEDAT PAC archives game_sys.dat, graph.dat, voice.dat..
         Some("pjadv".into())
+    } else if has("systeminfo.json") && has("script.arc") && has("image.arc") {
+        // Eomaia (FG REMAKE): systeminfo.json beside script.arc, image.arc, voice.arc..
+        Some("eomaia".into())
     } else if majiro_arc(game, &names) {
         // Majiro: MajiroArc archives (scenario.arc, data.arc, ...) beside the exe
         Some("majiro".into())
@@ -1007,6 +1010,20 @@ mod detection_tests {
             fs::write(dir.path().join(n), b"GAMEDAT PAC2").unwrap();
         }
         assert_eq!(detect(dir.path()).as_deref(), Some("pjadv"));
+    }
+
+    #[test]
+    fn eomaia_systeminfo_json_is_detected() {
+        let dir = tempfile::tempdir().unwrap();
+        for n in [
+            "systeminfo.json",
+            "script.arc",
+            "image.arc",
+            "yakin_re_tr.exe",
+        ] {
+            fs::write(dir.path().join(n), b"").unwrap();
+        }
+        assert_eq!(detect(dir.path()).as_deref(), Some("eomaia"));
     }
 
     #[test]

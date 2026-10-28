@@ -1,0 +1,13 @@
+[package]
+name = "eomaia"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "The Eomaia engine (FG REMAKE: .arc archives, SCRE scripts, PNG pictures) for the browser"
+
+[dependencies]
+nexas = { path = "../nexas" }
+fontdue = "0.9"
+image = { version = "0.25", default-features = false, features = ["png"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

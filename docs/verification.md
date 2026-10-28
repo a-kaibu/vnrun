@@ -74,6 +74,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | NonColor (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | AZ System (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | PJADV (vnrun) | 1 | 1 |  |  |  |  |  |  |
+| Eomaia (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | ShiinaRio (vnrun) | 3 | 1 |  |  |  |  |  | 2 |
 | NekoSDK / Waffle (vnrun) | 5 | 5 |  |  |  |  |  |  |
 | DxLib MED (vnrun) | 3 | 3 |  |  |  |  |  |  |
@@ -687,6 +688,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2006_unisonshift | [ななついろ★ドロップス 体験版](http://suezou.dyndns.org/dl2006/unisonshift/nanatsuiro/nanatsuiro_trial.zip) | 本編 | PJADV (vnrun) でロゴ→注意書き→タイトル (はじめから)→体験版の挨拶・予告→本編の背景・立ち絵・顔・イベント絵 (拡大と移動)・名前・文章・ボイス・BGM・SE を最後まで進めてタイトルに戻る (pjadv-run、スキップで 4357 メッセージ)。窓の SAVE / LOAD から自前のスロットでセーブ→ロードして同じメッセージに戻る (ネイティブと Chromium) |
+
+### Eomaia (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2023_fg_remake | [夜勤病棟 リメイク 体験版](http://suezou.dyndns.org/dl2023/fg-remake/yakin_re/yakin_re_trial.zip) | 本編 | Eomaia (vnrun) でロゴ→注意書き→タイトル (はじめから)→プロローグ・各話の背景・立ち絵・顔・イベント絵・名前・文章・ボイス・BGM・SE・選択肢→マップ (場所とキャラのアイコン、日・時間の計算はゲームの map / statuswnd ライブラリのまま) で 2 日分を回り→体験版の終わりの絵→タイトルに戻る (eomaia-run、410 メッセージ)。右クリック / Esc の自前スロットでセーブ→ロードして同じメッセージに戻る (ネイティブと Chromium) |
 
 ### ShiinaRio (vnrun)
 

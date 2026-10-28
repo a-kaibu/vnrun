@@ -369,6 +369,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "eomaia"
+version = "0.1.0"
+dependencies = [
+ "fontdue",
+ "image 0.25.10",
+ "nexas",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "eomaia-web"
+version = "0.1.0"
+dependencies = [
+ "eomaia",
+ "js-sys",
+ "nexas",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "equivalent"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
