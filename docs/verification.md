@@ -66,13 +66,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Yuka (vnrun) | 8 | 7 |  |  |  |  |  | 1 |
 | System-NNN (vnrun) | 6 | 6 |  |  |  |  |  |  |
 | Bishop (vnrun) | 6 | 6 |  |  |  |  |  |  |
-<<<<<<< HEAD
 | Eushully AGE (vnrun) | 2 | 2 |  |  |  |  |  |  |
-| Cyberworks (vnrun) | 8 | 4 |  |  |  |  |  | 4 |
-=======
-| Eushully AGE (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | Cyberworks (vnrun) | 9 | 4 |  |  |  |  |  | 5 |
->>>>>>> b03b45c (verify: targets for vnbox trials of engines vnrun already supports)
 | LiLiM (vnrun) | 7 | 7 |  |  |  |  |  |  |
 | Silky's (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | Ivory (vnrun) | 2 | 2 |  |  |  |  |  |  |
