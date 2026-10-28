@@ -326,15 +326,22 @@ impl Engine {
         Ok(e)
     }
 
-    /// The screen size: the layouts say "BackGroundWidth=800" in their comments.
+    /// The screen size: system/etc/game.txt says "ScreenWidth=1280", or the layouts say
+    /// "BackGroundWidth=800" in their comments.
     fn screen_size(&mut self) {
-        let names: Vec<String> = self
+        let mut names: Vec<String> = self
             .g
             .names()
-            .filter(|n| n.ends_with("layout.s") || n.contains("layout"))
-            .take(8)
+            .filter(|n| n.ends_with("etc/game.txt"))
             .cloned()
             .collect();
+        names.extend(
+            self.g
+                .names()
+                .filter(|n| n.ends_with("layout.s") || n.contains("layout"))
+                .take(8)
+                .cloned(),
+        );
         for n in names {
             if let Some(b) = self.g.read(&n) {
                 let t = script::decode(&b);
@@ -348,10 +355,15 @@ impl Engine {
                             .ok()
                     })
                 };
-                if let (Some(w), Some(h)) = (num("BackGroundWidth="), num("BackGroundHeight=")) {
-                    self.width = w;
-                    self.height = h;
-                    return;
+                for (kw, kh) in [
+                    ("ScreenWidth=", "ScreenHeight="),
+                    ("BackGroundWidth=", "BackGroundHeight="),
+                ] {
+                    if let (Some(w), Some(h)) = (num(kw), num(kh)) {
+                        self.width = w;
+                        self.height = h;
+                        return;
+                    }
                 }
             }
         }
@@ -813,6 +825,20 @@ impl Engine {
                 self.free_var(v);
             }
         }
+    }
+
+    /// The number of values of a variable (`\garr`).
+    fn var_len(&mut self, name: &str) -> usize {
+        let (name, _) = decl_name(name);
+        let t = &self.threads[self.cur];
+        t.frames
+            .last()
+            .and_then(|f| f.locals.get(&name))
+            .or_else(|| self.threads[self.refer].globals.get(&name))
+            .or_else(|| t.globals.get(&name))
+            .or_else(|| self.sysvars.get(&name))
+            .or_else(|| self.builtins.get(&name))
+            .map_or(0, |v| v.vals.len())
     }
 
     fn exists(&mut self, name: &str) -> bool {
@@ -1398,6 +1424,40 @@ impl Engine {
             "gvar" => self.declare(1, args),
             "svar" => self.declare(2, args),
             "del" => self.delete(args),
+            "init" => {
+                // the variables back to 0 / ""
+                for a in args {
+                    let (name, _) = decl_name(&a.raw);
+                    let t = self.cur;
+                    let refer = self.refer;
+                    self.threads[t].results.retain(|(n, _), _| *n != name);
+                    let var = match self.threads[t].frames.last_mut() {
+                        Some(f) if f.locals.contains_key(&name) => f.locals.get_mut(&name),
+                        _ => None,
+                    };
+                    let var = match var {
+                        Some(v) => Some(v),
+                        None if self.threads[refer].globals.contains_key(&name) => {
+                            self.threads[refer].globals.get_mut(&name)
+                        }
+                        None => self.sysvars.get_mut(&name),
+                    };
+                    if let Some(v) = var {
+                        let blank = match v.kind {
+                            VKind::Int => Value::Int(0),
+                            VKind::Str => Value::Str(String::new()),
+                            VKind::Obj => continue,
+                        };
+                        for x in v.vals.iter_mut() {
+                            *x = blank.clone();
+                        }
+                    }
+                }
+            }
+            "garr" => {
+                let n = args.first().map_or(0, |a| self.var_len(&a.raw));
+                self.res_int(0, n as i64);
+            }
             "vexs" => {
                 let e = args.first().is_some_and(|a| self.exists(&a.raw));
                 self.res_int(0, e as i64);
@@ -1857,14 +1917,24 @@ impl Engine {
     }
 
     fn cue_sounds(&mut self, id: usize, cues: Vec<u8>) {
-        let Some(a) = self.objs[id].as_ref().and_then(|o| o.abmp().cloned()) else {
+        let Some(o) = self.objs[id].as_ref() else {
             return;
         };
+        let Some(a) = o.abmp().cloned() else {
+            return;
+        };
+        let own = o.sounds.clone();
         for c in cues {
-            if let Some(d) = a.sounds.get(c as usize).filter(|d| !d.is_empty()) {
+            let d = own.get(c as usize).cloned().flatten().or_else(|| {
+                a.sounds
+                    .get(c as usize)
+                    .filter(|d| !d.is_empty())
+                    .map(|d| Rc::new(d.clone()))
+            });
+            if let Some(d) = d {
                 self.sounds.push(SoundEvent {
                     channel: format!("cue{id}"),
-                    data: Some(Rc::new(d.clone())),
+                    data: Some(d),
                     volume: 1.0,
                     repeat: false,
                     fade_ms: 0,

@@ -212,6 +212,33 @@ impl Engine {
                 let b = self.obj(id).map_or((0, 0), |o| o.bar);
                 self.res_int(0, if name == "?v" { b.0 } else { b.1 });
             }
+            "li" | "ls" => {
+                // a picture (sound) of the .b put in place: number, file
+                let (n, f) = (int(0).max(0) as usize, s(1));
+                let Some(path) = self.resolve(at, &f) else {
+                    self.warn(format!("{}: no file {f}", at.file()));
+                    return;
+                };
+                if name == "li" {
+                    let im = self.image(&path);
+                    if let Some(Pic::Anim { images, .. }) =
+                        self.obj(id).and_then(|o| o.pic.as_mut())
+                    {
+                        if images.len() <= n {
+                            images.resize(n + 1, None);
+                        }
+                        images[n] = im;
+                    }
+                } else {
+                    let d = self.g.read(&path).map(Rc::new);
+                    if let Some(o) = self.obj(id) {
+                        if o.sounds.len() <= n {
+                            o.sounds.resize(n + 1, None);
+                        }
+                        o.sounds[n] = d;
+                    }
+                }
+            }
             "ds" => {
                 if let Some(o) = self.obj(id) {
                     o.sense = Some([int(0) as i32, int(1) as i32, int(2) as i32, int(3) as i32]);

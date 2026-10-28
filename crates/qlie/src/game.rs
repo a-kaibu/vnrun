@@ -30,10 +30,19 @@ use crate::pack::Pack;
 
 /// A file name as the index keeps it: lower case, `/` between folders.
 pub fn norm(path: &str) -> String {
-    path.trim()
-        .replace('\\', "/")
-        .trim_start_matches('/')
-        .to_lowercase()
+    let p = path.trim().replace('\\', "/").to_lowercase();
+    // `..` and `.` in the path
+    let mut parts: Vec<&str> = Vec::new();
+    for part in p.split('/') {
+        match part {
+            "" | "." => {}
+            ".." => {
+                parts.pop();
+            }
+            _ => parts.push(part),
+        }
+    }
+    parts.join("/")
 }
 
 pub struct Game {

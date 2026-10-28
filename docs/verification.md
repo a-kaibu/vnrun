@@ -57,7 +57,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | CatSystem2 (vnrun) | 3 | 3 |  |  |  |  |  |  |
 | EntisGLS (vnrun) | 5 | 4 |  |  |  | 1 |  |  |
 | AliceSoft System4 (xsystem4) | 2 | 2 |  |  |  |  |  |  |
-| QLIE (vnrun) | 3 | 1 |  |  |  |  |  | 2 |
+| QLIE (vnrun) | 3 | 1 | 1 |  |  |  |  | 1 |
 
 ### SiglusEngine (siglus_rs)
 
@@ -510,6 +510,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2007_clochette | [かみぱに！体験版](http://suezou.dyndns.org/dl2007/clochette/kamipani/kamipani_trial.zip) | 本編 | QLIE (vnrun) でロゴ→タイトル→Start→本編の文章・名前・背景・立ち絵まで。セーブ→タイトルからロード、バックログも (Chromium) |
+| b2020_barista_lab | [アナベル・メイドガーデン体験版](http://suezou.dyndns.org/dl2020/barista-lab/annabel/annabel_trial.zip) | タイトル | QLIE (vnrun) で注意書き→タイトル (ボタン 6 個) まで (Chromium)。本編は ImoScripter (シナリオの ^ 命令を table/list オブジェクトで解釈するライブラリ) がまだで進まない |
 | b2009_purplesoftware | [シグナルハート 体験版 Ver.01](http://suezou.dyndns.org/dl2009/purplesoftware/signalheart/SignalHeart_Trial01.exe) | 未確認 |  |
-| b2020_barista_lab | [アナベル・メイドガーデン体験版](http://suezou.dyndns.org/dl2020/barista-lab/annabel/annabel_trial.zip) | 未確認 |  |
 <!-- /matrix -->

@@ -91,7 +91,7 @@ fn look(disk: Disk, what: &str, name: Option<&String>) -> Result<(), String> {
                 println!("  layer {:?}", l.name);
                 for k in &l.keys {
                     println!(
-                        "    {:>6} {:?} img {} at {},{} scale {},{} z {} rot {} add {:?} color {:?} a {:.2} ease {} anchor {} cmd {} {}",
+                        "    {:>6} {:?} img {} at {},{} scale {},{} z {} rot {} add {:?} color {:?} a {:.2} ease {} anchor {:?} cmd {} {}",
                         k.time,
                         k.show,
                         k.image,

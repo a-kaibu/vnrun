@@ -169,6 +169,8 @@ pub struct Obj {
     pub sense: Option<[i32; 4]>,
     /// a bar's value and its most
     pub bar: (i64, i64),
+    /// sounds `\ls` put in place of the picture's own, by number
+    pub sounds: Vec<Option<Rc<Vec<u8>>>>,
 }
 
 impl Obj {
@@ -199,6 +201,7 @@ impl Obj {
             cues: Vec::new(),
             sense: None,
             bar: (0, 0),
+            sounds: Vec::new(),
         }
     }
 
@@ -316,7 +319,7 @@ impl Obj {
                         }
                         Show::None => continue,
                     };
-                    let (ax, ay) = anchor(s.anchor);
+                    let (ax, ay) = s.anchor;
                     let x0 = self.x + s.x - w * ax;
                     let y0 = self.y + s.y - hh * ay;
                     let r = [x0, y0, x0 + w, y0 + hh];
@@ -431,7 +434,7 @@ pub fn draws(
                     if s.alpha <= 0.0 || w <= 0.0 || hh <= 0.0 {
                         continue;
                     }
-                    let (ax, ay) = anchor(s.anchor);
+                    let (ax, ay) = s.anchor;
                     let (px, py) = (o.x + s.x, o.y + s.y);
                     let dst = [
                         px - w * ax,

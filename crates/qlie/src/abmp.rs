@@ -41,9 +41,8 @@ pub struct Key {
     /// down, 4 speeding up
     pub ease: u8,
     pub tween: bool,
-    /// which point of the picture is at x, y: 0 top left, 1 top, 2 top right, 3 left, 4 centre,
-    /// ... 8 bottom right
-    pub anchor: u8,
+    /// which point of the picture is at x, y, as fractions of its width and height
+    pub anchor: (f32, f32),
     /// 1: go to key `arg`; 7: stop; 8: play sound `arg`
     pub cmd: u8,
     pub arg: u8,
@@ -230,8 +229,108 @@ fn find(d: &[u8], pat: &[u8], from: usize) -> Option<usize> {
         .map(|i| i + from)
 }
 
+/// The motions of the newer animation data ("abmotion12" with "ablayer25"): UTF-16 names and
+/// keys of 32-bit fields, their size given.
+fn parse_motions12(d: &[u8]) -> Vec<Motion> {
+    let utf16 = |b: &[u8]| {
+        let u: Vec<u16> = b
+            .chunks_exact(2)
+            .map(|c| u16::from_le_bytes([c[0], c[1]]))
+            .collect();
+        String::from_utf16_lossy(&u)
+    };
+    let mut out = Vec::new();
+    let mut at = find(d, b"abmotion", 0);
+    while let Some(m) = at {
+        let mut r = Rd { b: d, p: m + 16 };
+        let name = r
+            .u32()
+            .and_then(|_| r.u16())
+            .and_then(|n| r.take(n as usize * 2))
+            .map(utf16);
+        let Some(name) = name else { break };
+        // 12 bytes, then the number of layers
+        let Some(nlayers) = r.take(12).and_then(|_| r.u8()) else {
+            break;
+        };
+        let mut layers = Vec::new();
+        for _ in 0..nlayers {
+            if d.get(r.p..r.p + 7) != Some(b"ablayer") {
+                break;
+            }
+            r.p += 16;
+            let Some(lname) = r.u16().and_then(|n| r.take(n as usize * 2)).map(utf16) else {
+                break;
+            };
+            let (Some(_), Some(count), Some(_), Some(size)) = (r.u8(), r.u32(), r.u8(), r.u32())
+            else {
+                break;
+            };
+            let mut keys = Vec::new();
+            for _ in 0..count {
+                let Some(k) = r.take(size as usize) else {
+                    break;
+                };
+                if let Some(k) = parse_key12(k) {
+                    keys.push(k);
+                }
+            }
+            layers.push(Layer { name: lname, keys });
+        }
+        out.push(Motion { name, layers });
+        at = find(d, b"abmotion", r.p);
+    }
+    out
+}
+
+fn parse_key12(k: &[u8]) -> Option<Key> {
+    if k.len() < 216 {
+        return None;
+    }
+    let i = |o: usize| i32::from_le_bytes(k[o..o + 4].try_into().unwrap());
+    let rgb = |v: i32| [(v >> 16) as u8, (v >> 8) as u8, v as u8];
+    let show = match i(4) {
+        0 => Show::None,
+        1 => Show::Fill,
+        4 => Show::Image,
+        6 => Show::Hit,
+        n => Show::Other(n as u8),
+    };
+    let ease = i(124);
+    Some(Key {
+        time: i(0) as u32,
+        show,
+        image: i(36) as u16,
+        x: i(132) as f32,
+        y: i(136) as f32,
+        sx: i(144) as f32,
+        sy: i(148) as f32,
+        z: 0,
+        rot: 0.0,
+        add: if i(180) != 0 || i(188) != 0 {
+            rgb(i(188))
+        } else {
+            [0; 3]
+        },
+        color: rgb(i(192)),
+        alpha: i(196).clamp(0, 255) as f32 / 255.0,
+        ease: match ease {
+            0 => 0,
+            3 | 4 => ease as u8,
+            _ => 1,
+        },
+        tween: ease != 0,
+        anchor: (i(112) as f32 / 100.0, i(116) as f32 / 100.0),
+        cmd: i(208) as u8,
+        arg: i(212) as u8,
+    })
+}
+
 /// The motions of the animation data: "abmotion" blocks of "ablayer" blocks of keys.
 fn parse_motions(d: &[u8]) -> Vec<Motion> {
+    if find(d, b"abmotion12", 0).is_some() {
+        return parse_motions12(d);
+    }
     let mut out = Vec::new();
     let mut at = find(d, b"abmotion", 0);
     while let Some(m) = at {
@@ -308,7 +407,7 @@ fn parse_key(k: &[u8]) -> Option<Key> {
         alpha: j(40) as f32 / 255.0,
         ease: j(44),
         tween: j(44) != 0,
-        anchor: j(46),
+        anchor: crate::obj::anchor(j(46)),
         cmd: j(48),
         arg: j(49),
     })
@@ -341,7 +440,7 @@ pub struct State {
     pub add: [u8; 3],
     pub color: [u8; 3],
     pub alpha: f32,
-    pub anchor: u8,
+    pub anchor: (f32, f32),
 }
 
 fn ease(e: u8, f: f32) -> f32 {
