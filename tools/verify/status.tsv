@@ -101,8 +101,8 @@ dl_RJ01642779	タイトル	RPGツクール。画面が拡大されない
 s2019_no_strike_jyosou_jinjya	本編	Chromium (3f99c53) で START→本編の場面 (背景・立ち絵) は進むが、台湾版の Big5 文章が描画されない
 s2014_whirlpool_tearstilla	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_VJ01001386	本編	Chromium (3f99c53+) で START→本編の文章まで
-dl_VJ01004582	タイトル	Chromium で START 後、体験版の挨拶文 1 行のあと (または直後から) 画面が黒いまま進まない
-dl_VJ01000315	タイトル	Chromium で START 後、体験版の挨拶文 1 行のあと (または直後から) 画面が黒いまま進まない
+dl_VJ01004582	本編	Chromium で START→本編の文章まで (名前入力 DIALOG は既定名で進む)
+dl_VJ01000315	本編	Chromium で START→本編の文章まで (名前入力 DIALOG は既定名で進む)
 dl_VJ01002327	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_RJ01648691	本編	416970b (IndexedDB) 以降。クリックでマップ画面まで進む
 dl_RJ01618221	起動	IndexedDB のエラーは消えたが、読み込み中の表示のまま進まない (エラーなし)
@@ -148,7 +148,7 @@ b2018_casket	本編	Chromium (3f99c53+) で START→本編の文章まで
 b2017_no_strike	本編	Chromium (3f99c53+) で START→本編の文章まで
 b2022_casket	本編	Chromium (3f99c53+) で START→本編の文章まで
 b2013_anim	本編	Chromium (3f99c53+) で START→本編の文章まで
-dl_VJ01002863	タイトル	Chromium で START 後、体験版の挨拶文 1 行のあと (または直後から) 画面が黒いまま進まない
+dl_VJ01002863	本編	Chromium で START→本編の文章まで (名前入力 DIALOG は既定名で進む)
 dl_VJ01001385	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_VJ01000407	本編	Chromium (3f99c53+) で START→本編の文章まで
 s2021_casket_bellaca02	本編	Chromium で Hシーン体験版→本編の文章まで
