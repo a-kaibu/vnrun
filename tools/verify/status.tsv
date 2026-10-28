@@ -397,3 +397,4 @@ b2017_anim	NG	シナリオが Enigma Protector で包まれた exe の中にあ�
 b2019_anim	NG	シナリオが Enigma Protector で包まれた exe の中にあり、<game>_sce.dat が無い
 b2022_anim	NG	シナリオが Enigma Protector で包まれた exe の中にあり (cg/psbpack.dat と E-mote)、<game>_sce.dat が無い
 b2026_anim	NG	シナリオが Enigma Protector で包まれた exe の中にあり (cg/psbpack.dat と E-mote)、<game>_sce.dat が無い
+b2018_tinkerbell	本編	Cyberworks (vnrun) で警告→タイトル (e0 のボタン)→Game Start→プロローグの背景 (移動)・立ち絵 (表情差分)・名前・文章・回想のセピアまで (cyberworks-run と Chromium)。右クリックのメニューからセーブ→タイトルの Load Game からロードで本編に戻る (Chromium)

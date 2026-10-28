@@ -63,6 +63,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Kaguya (vnrun) | 6 | 6 |  |  |  |  |  |  |
 | Interheart (vnrun) | 11 | 10 |  |  |  | 1 |  |  |
 | Crowd/ANIM (vnrun) | 9 | 3 |  |  |  | 6 |  |  |
+| Cyberworks (vnrun) | 8 | 1 |  |  |  |  |  | 7 |
 
 ### SiglusEngine (siglus_rs)
 
@@ -574,4 +575,17 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2019_anim | [いつまでも息子のままじゃいられない！５ - 体験版 -](http://suezou.dyndns.org/dl2019/anim/musumama5/musu_mama5_trial.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり、<game>_sce.dat が無い |
 | b2022_anim | [愛妻Ｘ交姦妊活スワッピング - 体験版 -](http://suezou.dyndns.org/dl2022/anim/aisaikoukan/aisaikoukan_trial.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり (cg/psbpack.dat と E-mote)、<game>_sce.dat が無い |
 | b2026_anim | [ママラブ！２～俺の彼女は俺のママ☆世話焼き巨乳凛桜ママ～ - 体験版 -](http://suezou.dyndns.org/dl2026/anim/mamalove2/ANIM_mamalove2_trial.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり (cg/psbpack.dat と E-mote)、<game>_sce.dat が無い |
+
+### Cyberworks (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2018_tinkerbell | [グランギニョルの夜 体験版](http://suezou.dyndns.org/dl2018/tinkerbell/grand_guignol/gguignol_taiken001.zip) | 本編 | Cyberworks (vnrun) で警告→タイトル (e0 のボタン)→Game Start→プロローグの背景 (移動)・立ち絵 (表情差分)・名前・文章・回想のセピアまで (cyberworks-run と Chromium)。右クリックのメニューからセーブ→タイトルの Load Game からロードで本編に戻る (Chromium) |
+| b2012_tinkerbell | [籠女の繭 Web体験版1.1](http://suezou.dyndns.org/dl2012/tinkerbell/kagome/kagome_trial_1_1.zip) | 未確認 |  |
+| b2013_tinkerbell | [ぜったいマジラブ！あまイチャはぷにんぐ！ 体験版](http://suezou.dyndns.org/dl2013/tinkerbell/amaicha/amaicha_taiken100.zip) | 未確認 |  |
+| b2014_wendybell | [こすぷれえっち 体験版](http://suezou.dyndns.org/dl2014/wendybell/cosplay/cosplay_taiken100.zip) | 未確認 |  |
+| b2021_tinkerbell | [淫妖蟲穢 体験版](http://suezou.dyndns.org/dl2021/tinkerbell/inyou_wai/inyou_wai_taiken100.zip) | 未確認 |  |
+| b2023_wendybell | [モラトリアム 体験版1.1b](http://suezou.dyndns.org/dl2023/wendybell/moratorium/moratorium_taiken110b.zip) | 未確認 |  |
+| b2026_tinkerbell | [ムジナ・臭 体験版](http://suezou.dyndns.org/dl2026/tinkerbell/mujina_syu/mujina_syu_taiken100.zip) | 未確認 |  |
+| b2026_wendybell | [友恵の探偵物語～のぞき魔な私の天職～ 体験版](http://suezou.dyndns.org/dl2026/wendybell/tomoe/tomoe_taiken100.zip) | 未確認 |  |
 <!-- /matrix -->

@@ -152,6 +152,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 | Crowd / ANIM | 9 | 自作 (`crates/anim`, `crates/anim-web`) | Rust | あり (WebGPU) | `<game>_sce.dat` (GAX 暗号: 先頭 00 00 00 01、16 バイト鍵がブロックごとに変わる) のバイトコードを解釈。ヘッダはコード末尾と文字列表の位置、コードは 0x0C から、文字列は CP932 の 0 区切り。命令の引数の並びは exe の解釈ループ (switch) から読んだ表 (B/H/I、V は 3D/3E なら変数番号、C は個数付きの文字列番号列)。2008〜2010 年は同じ表、2009 年は e6/e7 に数が 1 つ多く 41 が待ち。画像は CWP (署名とチャンク名を抜いた PNG、R/B 逆)、立ち絵 M* は左半分が絵・右半分がマスク。BGM は bgm/NN.eog (CRM ヘッダ + Ogg)、ボイスと効果音は voice/<game>_wave.pck。タイトル (p_trialmenu の下にボタンの点灯版)・メッセージ枠 (p_message)・選択肢 (p_select) はゲームの絵を使い、ボタンの位置は年ごとの表 (2008 斜め 3 つ、2009 1024x768 で縦 5 つ、2010 縦書き 5 つ)。2009 年は 1024x768 の画面に 1024x576 の絵を上下の帯の間に置く。セーブは自前の 10 スロット (右クリックのメニュー)。9 本中 3 本 (2008・2009・2010) でタイトルから本編まで、Chromium でセーブ→ロード可。2007 年 (番号と引数が違う)・2011 年 (番号の付け直し) は表が要る。2017 年以降の 4 本はシナリオが Enigma Protector で包まれた exe の中で NG。残り: 演出 (51 の雲など)、画面効果 4d の種類、コンフィグ・バックログ、2009 年のメッセージ枠 (p_message が無く自前の帯) |
 | Majiro | ? | 自作 (`crates/majiro`, `crates/majiro-web`) | Rust | あり (WebGPU) | MajiroArc V1〜V3 アーカイブ、.mjo (暗号化を含む) をそのまま動かす VM (スレッド、イベントフック、setskip/デストラクタ)、RCT/RC8 画像 (TC01 の差分、`_.rc8` マスク)、ページ・スプライト (中心基準の _ext)、`$console_*` の文字をページに描いて CONSOLE_WROTE などのイベントで console.mjo に渡す。Closed GAME 体験版 (2015) でタイトルから本編の文章まで (majiro-run と Chromium)。スプライトアニメ・選択肢以降・セーブはまだ |
 | Kaguya | ? | 自作 (`crates/kaguya`, `crates/kaguya-web`) | Rust | あり (WebGPU) | 2006 年頃の世代 (GAME_SYS/AMATU.exe + WFL1 の .arc/.ari)。WFL1 アーカイブ (LZSS)、AP/BMP 画像、tblstr の文章と名前、.scr バイトコードの VM (変数・条件分岐・スクリプト移動)、背景・立ち絵 (胴体+表情の合成)・イベント CG・色かけ、ルール画像トランジション・フェード・フラッシュ・揺れ・カットイン、BGM/効果音/音声 (Ogg)、メッセージ窓とタイトルメニューは exe の代わりに vram01/02 の部品で自前描画。アマツ体験版 (2006) が最後まで通る (kaguya-run と Chromium)。2013 年頃の世代 (GAME_SYS.exe + ARC/、1024x600、label.tbl の GOSUB、ローカル変数、選択肢、APS3 部品画像、AO 立ち絵) も肉牝R30 体験版で本編と場面選択まで。2009 年の GAME_SYS.exe (さらさらささら体験版) も最後まで。2008 年 (夏神 体験版２) も場面選択と各場面まで。LINK の世代 (Start.exe + params.dat + message.dat + LINK6 の .arc、`kaguya::link`) もハラミタマ体験版 (2015) がタイトル→はじめから→プロローグ (A0000..A0070)→共通→マップ (4 人から選ぶ、文字の選択肢で代用)→各ルート①→体験版の終わりまで通る。LoveHolic 体験版 (2018、params v05.7) も同じ実装で最後まで。セーブ・2013 年のマップ画面 (op 54 1 0)・LINK の他の年 (2010/2011/2014/2019) は未確認 |
+| Cyberworks / TinkerBell (Arc0x.dat) | 8 | 自作 (`crates/cyberworks`, `crates/cyberworks-web`) | Rust | あり (WebGPU) | 索引と中身の組 (Arc01→04, 02→05, 03→06, 07→08)。索引は 10 進の桁 (^0x7f) の大きさ + LZSS。種類の文字ごとの 0 始まりの番号で参照。'a'/'d' 画像 (GetInt 符号の見出し、d は直前の土台との差分)、'b'/'c' は末尾の PNG、音声は先頭 "Tink" の Ogg を exe の鍵で XOR。脚本 'a' は文 (M# 命令 / M$ レイヤー命令 / S 文章) を直接解釈し、e0 (ボタン組) と f0 (レイヤー表) からタイトル・ウィンドウ・立ち絵の位置を組む。メッセージ窓の文字・選択肢・セーブ (10 スロット) はエンジンが描く。グランギニョルの夜 体験版 (2018) で警告→タイトル→本編、セーブ/ロード (cyberworks-run と Chromium)。2023 年以降の TinkerBell は ChakraCore 入りの別世代 |
 
 Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softpal 31、FVP 6、Artemis 5)。
 
@@ -266,6 +267,18 @@ Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softp
 - 文章: エンジンは `$console_set` のページに文字を描き (`$console_font` の xl は半角の幅、全角は 2 倍)、CONSOLE_WROTE(page, x, y, w, h, 0) で console.mjo に渡す (console.mjo が少しずつ表示ページへ写す)。改ページ待ちは PAUSE のフック (pause_inter) が自分で待つ。`【名前】` で始まる文は NAME_DISP。`$console_color` の上位バイトは影 (1) / 縁取り (2)。
 - `$reset_exec` (新しいゲーム) で HOT_RESET(0, "", 1) を送る (console.mjo が窓の色や絵を作り直す)。
 - 終わるスレッド (`$thread_end`) も各フレームのデストラクタ (bsel.5) を実行してから消える (遷移の絵がこれで片付く)。
+
+
+## Cyberworks / TinkerBell の実装メモ (2026-10-28)
+
+- 対象: グランギニョルの夜 体験版 (b2018_tinkerbell、Tngg.exe、1280x720)。exe は読むだけで、命令の意味は逆アセンブルから (命令の振り分け 0x45c450 / 表 0x45cd80、文の解釈 0x46eb20)。
+- アーカイブ: Arc01/02/03/07.dat が索引、Arc04/05/06/08.dat が中身 (05a/05b は項目の part バイトで分かれる)。索引の先頭 16 バイトは 8 桁の 10 進 (各桁 ^0x7f、0xff が 0) が 2 つ。桁の並びは作品で違うので両方試し、圧縮後の大きさがファイル長 - 16 に合う方を採る。項目は u32 長さ + id, 展開後, 位置, 圧縮後 (位置と圧縮後の順も連続性で判定), 種類 2 文字, part。
+- 種類: a 脚本, b 画像, e ボタン組, f レイヤー表, j 音声, k 効果音, u BGM, n/o マスク, i/y ムービー (未対応)。参照は種類ごとの 0 始まり番号。
+- 画像: 'a'/'d' は先頭が 0xef で GetInt 符号 (V1=0xe9, V3=0xfb) の 20 個の整数 (3 番目が幅、5 番目が高さ…`pic.rs` の `Scheme::tinkerbell_2018`)。この作品は上下反転しない。'd' は直前の 'd' でない画像 (a か PNG) を土台にした差分。'b'/'c' は末尾の PNG (1 バイト目から大きさ BE)。
+- 音声: 先頭 4 バイト "Tink" を "OggS" に戻し、[4, 0xe1f) を exe 内の鍵文字列 (GUID + " Copyright 2004 Cyberworks ...") で XOR。鍵は末尾の NUL まで含めて 0..=len、以降は 1..=len を繰り返す。BGM (u) は 12 バイトの前置きがある。
+- 脚本: 文 = u32 長さ + トークン。M# 命令番号、M$ レイヤー命令 (exe 内部では 9999)、S 文章 (長さの下位バイトで XOR、0xFE で終わり、ルビは ff ff n 読み m 語)。主な命令は `engine.rs` 冒頭の表。35 は全レイヤーを消して変更の溜め込みを始め、13 (ウィンドウ表示) か効果付きの $ で一度に見せる。
+- レイヤー命令の絵番号は 1 始まり (e0 のボタンの絵は 0 始まり)。種類 2 はセピア (回想)。
+- 残り: ムービー、$ L 9 / 5 (モーション)、コンフィグ・バックログ・オート・スキップ、Arc00 の題名 (展開すると空)。他の TinkerBell / WendyBell 体験版 (targets.tsv の 7 本) は未確認 (2013/2014 の URL はエラーページ)。
 
 ## 未決のこと
 

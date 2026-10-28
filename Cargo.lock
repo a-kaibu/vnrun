@@ -253,6 +253,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "cyberworks"
+version = "0.1.0"
+dependencies = [
+ "encoding_rs",
+ "fontdue",
+ "image 0.25.10",
+ "nexas",
+]
+
+[[package]]
+name = "cyberworks-web"
+version = "0.1.0"
+dependencies = [
+ "cyberworks",
+ "js-sys",
+ "nexas",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "derive_arbitrary"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

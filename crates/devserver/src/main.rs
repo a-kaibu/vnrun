@@ -244,6 +244,9 @@ fn detect(game: &Path) -> Option<String> {
         // (beside the exe, or in ARC/ from about 2013); the LINK generation (2010s):
         // LINK archives beside params.dat and message.dat
         Some("kaguya".into())
+    } else if has("arc01.dat") && has("arc04.dat") && has("arc05.dat") {
+        // Cyberworks / TinkerBell: index files Arc01..03 beside the data Arc04..06
+        Some("cyberworks".into())
     } else if majiro_arc(game, &names) {
         // Majiro: MajiroArc archives (scenario.arc, data.arc, ...) beside the exe
         Some("majiro".into())
