@@ -445,6 +445,7 @@ b2008_bishop	本編	Bishop (vnrun) で BSScript Rev.6 のロゴ→タイトル (
 b2010_bishop	本編	Bishop (vnrun) で BSXScript 2.0 の注意書き→タイトル→始めから→本編の背景・CG・立ち絵・文章・名前、体験版の最後まで (bsx-run と Chromium)
 b2011_bishop	本編	Bishop (vnrun) で BSXScript 2.0 の注意書き→タイトル→始めから→本編の背景・CG・立ち絵 (体と顔の合成)・文章・名前、体験版の最後からタイトルへ (bsx-run と Chromium)。セーブ→ページを開き直してタイトルの「続きから」でロード→同じ CG・文章に戻る (Chromium)
 b2012_bishop	本編	Bishop (vnrun) で BSXScript 2.0 の 1024x576 の注意書き→タイトル→始めから→本編の背景・CG・立ち絵・文章・名前まで (bsx-run と Chromium)。movie を除いて展開して確認
+b2009_eushully	本編	Eushully AGE (vnrun、SYS4 スクリプトを自前で実行) でタイトル→Game Start→引継ぎ設定→ゲームスタート→プロローグの CG・背景・立ち絵・メッセージ窓・名前・文章まで (age-run と Chromium)。InstallShield の setup は tools/verify/isx.py → 7z (MSI) → Data1.cab で展開
 b2021_bishop	本編	Bishop (vnrun) で BSXScript 3.3 の 1024x768 の注意書き→タイトル→最初から始める→本編の背景・CG・立ち絵 (命令 39、近景の x -663)・文章・名前まで (bsx-run と Chromium)。movie を除いて展開して確認
 b2022_evoll	本編	Liar-soft XFL (vnrun) でタイトル (0001.gsc のボタン、ホバー絵)→はじめから→注意書き 9901..9903→0500→1010..1040 の背景・イベント CG・立ち絵 (体 + 顔、サブルーチン)・名前・文章・ボイス・BGM・選択肢→3010 (liar-run 9000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
 b2019_channel_ubai	本編	Liar-soft XFL (vnrun) でタイトル (0001.gsc のボタン)→はじめから→操作説明の絵→0500→1010..1030 の背景・イベント CG・立ち絵・名前・文章・ボイス・BGM (liar-run 9000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る

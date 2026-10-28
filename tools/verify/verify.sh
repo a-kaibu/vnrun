@@ -74,6 +74,7 @@ game_root() {
     yuka) m=(-iname '*.ykc' -o -iname '*01.dat') ;;
     systemnnn) m=(-ipath '*/spt/*.spt') ;;
     bishop) m=(-iname bsxx.dat -o -iname bsx.dat) ;;
+    eushully) m=(-iname sys4ini.bin) ;;
     cyberworks) m=(-iname arc01.dat) ;;
     neko) m=(-iname scr.pak) ;;
     med) m=(-iname md_scr.med) ;;

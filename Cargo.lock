@@ -404,6 +404,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "eushully"
+version = "0.1.0"
+dependencies = [
+ "fontdue",
+ "image 0.25.10",
+ "nexas",
+]
+
+[[package]]
+name = "eushully-web"
+version = "0.1.0"
+dependencies = [
+ "eushully",
+ "js-sys",
+ "nexas",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "fastrand"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

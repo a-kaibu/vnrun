@@ -376,6 +376,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("bsxx.dat") || (has("bsx.dat") && names.iter().any(|n| n.ends_with(".bsa"))) {
         // Bishop: bsxx.dat (BSXScript) or the older bsx.dat beside the .bsa archives
         Some("bishop".into())
+    } else if has("sys4ini.bin") || has("sys5ini.bin") {
+        // Eushully AGE: the sys4ini.bin index of the .alf archives
+        Some("eushully".into())
     } else if has("data.fpk") {
         // Interheart / Candy Soft: data.fpk (the scenario) beside the other .fpk archives
         Some("interheart".into())
