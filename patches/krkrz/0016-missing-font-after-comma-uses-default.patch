@@ -1,0 +1,16 @@
+--- a/visual/FreeTypeFontRasterizer.cpp
++++ b/visual/FreeTypeFontRasterizer.cpp
+@@ -53,6 +53,13 @@
+ 	// TODO 最初に@があった場合にすべて縦書きとして処理する処理は入っていない、縦書き対応するのなら必要。
+ 	if( face[0] == TJS_W(',') ) {
+ 		tjs_string stdname = TVPFontSystem->GetBeingFont(face);
++		// vnrun: ",Name" takes Name without checking it. Windows draws a missing Name in a default
++		// face; FreeType would throw, so use the default font (いつかのメモラージョ asks for an
++		// old face name in its history layer).
++		const tjs_char *bare = stdname.c_str();
++		if( bare[0] == TJS_W('@') ) bare++;
++		if( !TVPFontSystem->FontExists( tjs_string(bare) ) )
++			stdname = tjs_string(TVPFontSystem->GetDefaultFontName());
+ 		faces.push_back( stdname );
+ 	} else {
+ 		split( face, tjs_string(TJS_W(",")), faces );
