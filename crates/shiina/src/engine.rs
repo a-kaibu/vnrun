@@ -18,7 +18,7 @@ use std::rc::Rc;
 
 use nexas::files::Files;
 use nexas::font::Font;
-use nexas::gfx::{Draw, Image, Place};
+use nexas::gfx::{Draw, Image, Place, Rule};
 
 use crate::arc::{self, Archives};
 use crate::s25;
@@ -116,7 +116,12 @@ struct Fade {
     from: Vec<Draw>,
     start: f64,
     ms: f64,
+    /// DRAW_EX kind 2: the old picture goes where its rule picture is dark first
+    rule: Option<Rc<Image>>,
 }
+
+/// How soft a rule wipe's edge is (part of the rule's brightness range).
+const RULE_VAGUE: f32 = 0.25;
 
 pub struct Engine {
     files: Box<dyn Files>,
@@ -143,6 +148,7 @@ pub struct Engine {
     view: View,
     frozen: Option<Vec<Draw>>,
     fade: Option<Fade>,
+    rules: Vec<(usize, Rule)>,
     now: f64,
     bgm: Option<String>,
     se_loop: Option<String>,
@@ -187,6 +193,7 @@ impl Engine {
             wait: Wait::None,
             view: View::Title,
             frozen: None,
+            rules: Vec::new(),
             fade: None,
             now: 0.0,
             bgm: None,
@@ -296,7 +303,7 @@ impl Engine {
                 if self.log {
                     self.trace(&format!("{}:{} {name:?} {lines:?}", self.cur, self.pc - 1));
                 }
-                self.present(0.0);
+                self.present(0.0, None);
                 self.window = true;
                 self.closed = false;
                 self.name = name;
@@ -349,8 +356,17 @@ impl Engine {
                 }
             }
             // the last number: 1 waits for the change to end, 0 goes on (text over it)
-            "DRAW" => self.show(num(0) as f64, num(1) != 0),
-            "DRAW_EX" => self.show(num(2) as f64, num(3) != 0),
+            "DRAW" => self.show(num(0) as f64, num(1) != 0, None),
+            // kind, rule picture (kind 2), ms, wait
+            "DRAW_EX" => {
+                let rule = if num(0) == 2 {
+                    let r = word(1);
+                    self.pic(&r, 0).map(|p| p.image.clone())
+                } else {
+                    None
+                };
+                self.show(num(2) as f64, num(3) != 0, rule)
+            }
             "VOICE" => {
                 let n = word(0);
                 self.voice = (!n.is_empty()).then(|| n.clone());
@@ -387,7 +403,7 @@ impl Engine {
                 self.stop_music(ms as f32);
             }
             "EX" if num(0) == 5 => {
-                self.present(0.0);
+                self.present(0.0, None);
                 self.window = false;
                 self.wait = Wait::Pause;
             }
@@ -452,14 +468,14 @@ impl Engine {
         }
     }
 
-    fn show(&mut self, ms: f64, wait: bool) {
-        self.present(ms);
+    fn show(&mut self, ms: f64, wait: bool, rule: Option<Rc<Image>>) {
+        self.present(ms, rule);
         if !wait && self.wait == Wait::Fade {
             self.wait = Wait::None;
         }
     }
 
-    fn present(&mut self, ms: f64) {
+    fn present(&mut self, ms: f64, rule: Option<Rc<Image>>) {
         if let Some(from) = self.frozen.take()
             && ms > 0.0
             && !self.skip
@@ -468,6 +484,7 @@ impl Engine {
                 from,
                 start: self.now,
                 ms,
+                rule,
             });
             if self.wait == Wait::None {
                 self.wait = Wait::Fade;
@@ -497,6 +514,7 @@ impl Engine {
 
     pub fn draws(&mut self) -> Vec<Draw> {
         let mut out = Vec::new();
+        self.rules.clear();
         match self.view {
             View::Title => self.title_draws(&mut out),
             View::Slots {
@@ -511,7 +529,18 @@ impl Engine {
                     let p = ((self.now - f.start) / f.ms.max(1.0)).clamp(0.0, 1.0) as f32;
                     for d in &f.from {
                         let mut d = d.clone();
-                        d.place.alpha *= 1.0 - p;
+                        match &f.rule {
+                            Some(r) => self.rules.push((
+                                out.len(),
+                                Rule {
+                                    image: r.clone(),
+                                    progress: p,
+                                    vague: RULE_VAGUE,
+                                    appear: false,
+                                },
+                            )),
+                            None => d.place.alpha *= 1.0 - p,
+                        }
                         out.push(d);
                     }
                 }
@@ -673,12 +702,13 @@ impl Engine {
 
     /// The frame as one picture (for the native runner).
     pub fn render(&mut self) -> Image {
-        let mut img = Image::new(self.width, self.height);
-        img.fill([0, 0, 0, 255]);
-        for d in self.draws() {
-            nexas::gfx::draw(&mut img, &d.image, d.src, d.dst, &d.place);
-        }
-        img
+        let ds = self.draws();
+        nexas::gfx::render_ruled(self.width, self.height, &ds, &self.rules)
+    }
+
+    /// The rule wipes of the last [`Engine::draws`]: (draw index, rule).
+    pub fn rules(&self) -> &[(usize, Rule)] {
+        &self.rules
     }
 
     // ---- sounds ----
@@ -1008,7 +1038,7 @@ impl Engine {
         }
         self.saved_at = Some(s.at);
         self.frozen = Some(vec![self.solid([0, 0, 0, 255])]);
-        self.present(400.0);
+        self.present(400.0, None);
     }
 }
 

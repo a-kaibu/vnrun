@@ -249,6 +249,17 @@ impl Rule {
 /// height, progress, vague and appear (1 / 0).
 pub const RULE_FIELDS: usize = 7;
 
+/// The draws on a black `w` x `h` picture, each with its rule (by draw index) if any.
+pub fn render_ruled(w: u32, h: u32, ds: &[Draw], rules: &[(usize, Rule)]) -> Image {
+    let mut img = Image::new(w, h);
+    img.fill([0, 0, 0, 255]);
+    for (i, d) in ds.iter().enumerate() {
+        let r = rules.iter().find(|r| r.0 == i).map(|r| &r.1);
+        draw_ruled(&mut img, &d.image, d.src, d.dst, &d.place, r);
+    }
+    img
+}
+
 /// The numbers [`RULE_FIELDS`] for rules of the draws (by index).
 pub fn rule_fields(rules: &[(usize, Rule)]) -> Vec<f32> {
     let mut out = Vec::with_capacity(rules.len() * RULE_FIELDS);
