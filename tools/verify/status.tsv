@@ -435,3 +435,4 @@ b2015_minato_carnival	本編	NonColor (vnrun) でタイトル (縦のボタン)�
 b2016_waffle	本編	NekoSDK (vnrun) でタイトル (d007 の 10 列のボタン、d003 の絵、d005 のロゴ)→Start→flow00_000 の順に本編の背景・立ち絵・名前・文章 (neko-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
 b2012_waffle	本編	NekoSDK (vnrun) でタイトル (d001 の丸いボタン、d000_101 のロゴ)→はじめから→cfg\chapter_file.ini の最初の脚本の背景・CG・名前・文章 (neko-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
 b2010_waffle	本編	zip の中のセットアップ.EXE は LHa の SFX で、7z で展開すると .pak が直に出る (800x600)。NekoSDK (vnrun) でタイトル (obj\a000 の机、c001 の 5 列のボタン)→始めから→scr.pak の ep_00_00_* を名前順に本編の背景・立ち絵・名前・文章 (neko-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
+b2006_alcot	本編	AZ System (vnrun) でタイトル (title_bg_tr とボタン 6 個)→Prologue (tr_01) の背景 (縦長の絵のパン)・立ち絵 (体 + 目 + 口の合成)・名前・文章・ボイス・BGM・SE を最後まで進めてタイトルに戻る。Digest1 (tr_02)・Digest2 (tr_03)・H scene (tr_04) も最後まで (azsys-run、各 9000〜18000 フレーム)。Chromium でタイトル→Prologue、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る

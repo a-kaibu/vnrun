@@ -70,6 +70,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Silky's (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | Ivory (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | NonColor (vnrun) | 2 | 2 |  |  |  |  |  |  |
+| AZ System (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | ShiinaRio (vnrun) | 3 | 1 |  |  |  |  |  | 2 |
 | NekoSDK / Waffle (vnrun) | 5 | 5 |  |  |  |  |  |  |
 
@@ -541,17 +542,17 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2015_empress | [Closed GAME 体験版](http://suezou.dyndns.org/dl2015/empress/closed_game/ClosedGameTrial.zip) | 本編 | Majiro (vnrun) でロゴ→タイトル→New Game→本編の背景・立ち絵・名前・文章まで (majiro-run と Chromium) |
+| b2015_empress | [Closed GAME 体験版](http://suezou.dyndns.org/dl2015/empress/closed_game/ClosedGameTrial.zip) | 本編 | Majiro (vnrun) でロゴ→タイトル→New Game→本編の背景・立ち絵・名前・文章まで (majiro-run と Chromium)。QSAVE→QLOAD で保存した文章と場面に戻る (majiro-run と Chromium) |
 
 ### Kaguya (vnrun)
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2006_kaguya | [淫皇覇伝アマツ ～白濁の呪印～ 体験版](http://suezou.dyndns.org/dl2006/kaguya/amatsu/amatu_trial.EXE) | 本編 | Kaguya (vnrun) でロゴ→タイトル→最初から→プロローグ→本編の背景・立ち絵・名前・文章・カットインまで、体験版の最後まで通る (kaguya-run と Chromium) |
+| b2006_kaguya | [淫皇覇伝アマツ ～白濁の呪印～ 体験版](http://suezou.dyndns.org/dl2006/kaguya/amatsu/amatu_trial.EXE) | 本編 | Kaguya (vnrun) でロゴ→タイトル→最初から→プロローグ→本編の背景・立ち絵・名前・文章・カットインまで、体験版の最後まで通る (kaguya-run と Chromium)。文章中にセーブ→別セッションでタイトルからロードで同じ文章に戻る (Chromium) |
 | b2008_kaguya | [夏神 体験版２](http://suezou.dyndns.org/dl2008/kaguya/natsukami/natsukami_trial02.exe) | 本編 | Kaguya (vnrun) の 2008 年世代でロゴ→タイトル→最初から→場面選択 (6 項目)→本編の背景・立ち絵 (exe の表から胴体+表情)・名前・文章まで、場面の後は選択に戻る (kaguya-run と Chromium) |
 | b2009_kaguya | [さらさらささら 体験版](http://suezou.dyndns.org/dl2009/kaguya/sasara/Srasrasasara_trial.exe) | 本編 | Kaguya (vnrun) の 2009 年世代 (GAME_SYS.exe + 大文字の .ARC) でロゴ→タイトル→はじめから→本編の背景・立ち絵 (stand.arc の胴体+表情)・名前・文章・アイキャッチまで、体験版の最後 (01_OP09) からタイトルに戻る (kaguya-run と Chromium) |
 | b2013_kaguya | [肉牝R30 ～肉欲に堕ちた牝たち～ 体験版](http://suezou.dyndns.org/dl2013/kaguya/r30/nikumesu_R30_trial.zip) | 本編 | Kaguya (vnrun) の 2013 年世代 (GAME_SYS.exe + ARC/) でロゴ→タイトル→初めから→導入→本編の背景・立ち絵・名前・文章・音声、場面選択の 6 項目 (5 人の場面と製品告知) まで (kaguya-run と Chromium)。場面の後のマップ (op 54 1 0) は未実装で選択に戻る |
-| b2015_kaguya | [ハラミタマ 体験版](http://suezou.dyndns.org/dl2015/kaguya/haramitama/haramitama_trial.zip) | 本編 | Kaguya (vnrun) の LINK 世代 (Start.exe + params.dat + message.dat) でタイトル→はじめから→プロローグ (A0000..A0070) の背景・立ち絵・名前・文章・音声→共通→マップ (文字の選択肢で代用)→各ルート①→体験版の終わりまで通る (kaguya-run と Chromium) |
+| b2015_kaguya | [ハラミタマ 体験版](http://suezou.dyndns.org/dl2015/kaguya/haramitama/haramitama_trial.zip) | 本編 | Kaguya (vnrun) の LINK 世代 (Start.exe + params.dat + message.dat) でタイトル→はじめから→プロローグ (A0000..A0070) の背景・立ち絵・名前・文章・音声→共通→マップ (文字の選択肢で代用)→各ルート①→体験版の終わりまで通る (kaguya-run と Chromium)。セーブ→タイトルの「つづきから」でロードして同じ文章に戻る (kaguya-run と Chromium) |
 | b2018_kaguya | [LoveHolic ～魅惑の乙女と白濁カンケイ～ 体験版](http://suezou.dyndns.org/dl2018/kaguya/love_holic/LoveHolic_trial.zip) | 本編 | Kaguya (vnrun) の LINK 世代 (params v05.7) でタイトル→はじめから→オープニング (A0000..A0070) の背景・立ち絵・名前 (主人公名の置き換え)・文章・音声→共通→行き先 (文字の選択肢で代用)→紅音ルート→体験版の終わりまで通る (kaguya-run と Chromium) |
 
 ### Interheart (vnrun)
@@ -562,12 +563,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2016_inter_heart_glossy | [はらかつ！ ～気になるあの子と子作りエッチ～ 体験版](http://suezou.dyndns.org/dl2016/inter-heart_glossy/harakatsu/harakatsu-trial.zip) | 本編 | Interheart でタイトル→はじめから→本編の E-mote 静止画 (EMT altfile)・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
 | b2017_inter_heart_glossy | [はらかつ２ ～子作りエッチでお悩み解決～ 体験版](http://suezou.dyndns.org/dl2017/inter-heart_glossy/harakatsu2/harakatu2-trial.zip) | 本編 | Interheart でタイトル→はじめから→本編の背景・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
 | b2017_sweet_heart | [透けちゃって！！～九死に一生を得て濃密セカンドライフ～ 体験版](http://suezou.dyndns.org/dl2017/sweet-heart/sukechatte/suketyatte-trial.zip) | 本編 | Interheart でタイトル→はじめから→本編の背景・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
-| b2018_hachimitsu_soft | [ノットフィクション！ 体験版](http://suezou.dyndns.org/dl2018/hachimitsu-soft/knotfc/knotfiction-trial.zip) | 本編 | Interheart でタイトル (エンジン描画のボタン)→はじめから→本編の背景・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
-| b2019_marshmallow_soft | [らぶこみゅ 体験版2](http://suezou.dyndns.org/dl2019/marshmallow-soft/love_commu/lovecommu-trial2.zip) | 本編 | Interheart でタイトル (エンジン描画のボタン)→はじめから→体験版の選択肢→本編の背景・立ち絵・イベント CG・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
+| b2018_hachimitsu_soft | [ノットフィクション！ 体験版](http://suezou.dyndns.org/dl2018/hachimitsu-soft/knotfc/knotfiction-trial.zip) | 本編 | Interheart でタイトル (exe のボタン表から titlechip の本物のボタン)→はじめから→本編の背景・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
+| b2019_marshmallow_soft | [らぶこみゅ 体験版2](http://suezou.dyndns.org/dl2019/marshmallow-soft/love_commu/lovecommu-trial2.zip) | 本編 | Interheart でタイトル (exe のボタン表から titlechip の本物のボタン)→はじめから→体験版の選択肢→本編の背景・立ち絵・イベント CG・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
 | b2020_marshmallow_soft | [あまママほりっく 体験版](http://suezou.dyndns.org/dl2020/marshmallow-soft/amamama/amamama-trial.zip) | 本編 | Interheart でタイトル→はじめから→本編の背景・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium)。00.fpk は WMV のため読まない |
-| b2020_shiba_soft | [ママ×カノ＋ 体験版](http://suezou.dyndns.org/dl2020/shiba-soft/mamakano_plus/mamakanoPlus_trial.zip) | 本編 | Interheart でタイトル (エンジン描画のボタン)→はじめから→本編の背景・立ち絵・顔グラ・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
-| b2021_dessert_soft | [彼女は友達ですか？恋人ですか？それともトメフレですか？Second 体験版](http://suezou.dyndns.org/dl2021/dessert-soft/tomefure_second/TomefureS-trial.zip) | 本編 | Interheart でタイトル (エンジン描画のボタン)→はじめから→スキップ確認の選択肢→本編の背景 (PNG)・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
-| b2026_dessert_soft | [どいなかガールズゆーとぴあ 体験版](http://suezou.dyndns.org/dl2026/dessert-soft/doinaka_girl/doinaka-trial.rar) | 本編 | Interheart でタイトル (エンジン描画のボタン)→はじめから→本編の背景・立ち絵・イベント CG・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
+| b2020_shiba_soft | [ママ×カノ＋ 体験版](http://suezou.dyndns.org/dl2020/shiba-soft/mamakano_plus/mamakanoPlus_trial.zip) | 本編 | Interheart でタイトル (exe のボタン表から titlechip の本物のボタン)→はじめから→本編の背景・立ち絵・顔グラ・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
+| b2021_dessert_soft | [彼女は友達ですか？恋人ですか？それともトメフレですか？Second 体験版](http://suezou.dyndns.org/dl2021/dessert-soft/tomefure_second/TomefureS-trial.zip) | 本編 | Interheart でタイトル (exe のボタン表から titlechip の本物のボタン)→はじめから→スキップ確認の選択肢→本編の背景 (PNG)・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
+| b2026_dessert_soft | [どいなかガールズゆーとぴあ 体験版](http://suezou.dyndns.org/dl2026/dessert-soft/doinaka_girl/doinaka-trial.rar) | 本編 | Interheart でタイトル (exe のボタン表から titlechip の本物のボタン)→はじめから→本編の背景・立ち絵・イベント CG・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
 | b2006_interheart | [オイラは番台２ 体験版](http://suezou.dyndns.org/dl2006/interheart/bandai2/bandai2-trial.lzh) | NG | data.fpk 方式だが脚本が古い ACT_00.txt (SC_DATA 等の銭湯経営シミュレーション) で、Interheart エンジンの ACT_<letter>.TXT 方言と違う |
 
 ### Crowd/ANIM (vnrun)
@@ -652,6 +653,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|
 | b2015_minato_carnival | [姉小路直子と銀色の死神 体験版](http://suezou.dyndns.org/dl2015/minato-carnival/anekouji/anegin_trial.zip) | 本編 | NonColor (vnrun) でタイトル (縦のボタン)→スタート→A1_151013_0..A1_151016_3 の背景・立ち絵 (ST2 の位置表)・CG・名前欄・文章・ボイス (複数同時も)・選択肢 (4 択・3 択・5 択) を進み、体験版ラストの絵→TL でタイトルに戻る (noncolor-run、36500 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る |
 | b2018_mirai | [宿星のガールフレンド２ 体験版](http://suezou.dyndns.org/dl2018/mirai/syukugar2/syukugar2_trialedition.zip) | 本編 | NonColor (vnrun) でタイトル (sys/title の絵とボタン)→START→B01A_180502_0..B02B_180728_0 の背景・立ち絵 (顔 + 体の合成)・CG・名前・文章・ボイス・選択肢 (3 択・2 択) を進み、B07B_180927_1→X02A のおまけトーク (rand のガチャ分岐)→予約する→バナー→TL でタイトルに戻る (noncolor-run、23000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る |
+
+### AZ System (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2006_alcot | [Triptych -トリプティック- 体験版](http://suezou.dyndns.org/dl2006/alcot/triptych/tri_trial100.exe) | 本編 | AZ System (vnrun) でタイトル (title_bg_tr とボタン 6 個)→Prologue (tr_01) の背景 (縦長の絵のパン)・立ち絵 (体 + 目 + 口の合成)・名前・文章・ボイス・BGM・SE を最後まで進めてタイトルに戻る。Digest1 (tr_02)・Digest2 (tr_03)・H scene (tr_04) も最後まで (azsys-run、各 9000〜18000 フレーム)。Chromium でタイトル→Prologue、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る |
 
 ### ShiinaRio (vnrun)
 

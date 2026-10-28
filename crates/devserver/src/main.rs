@@ -193,6 +193,19 @@ fn majiro_arc(game: &Path, names: &[String]) -> bool {
     })
 }
 
+/// An AZ System archive ("ARC\x1a") at the top of the game folder.
+fn azsys_arc(game: &Path) -> bool {
+    fs::read_dir(game).into_iter().flatten().flatten().any(|e| {
+        let name = e.file_name().to_string_lossy().to_ascii_lowercase();
+        let mut head = [0u8; 4];
+        name.ends_with(".arc")
+            && fs::File::open(e.path())
+                .and_then(|mut f| std::io::Read::read_exact(&mut f, &mut head))
+                .is_ok()
+            && &head == b"ARC\x1a"
+    })
+}
+
 /// Whether a .bin file at the top of the game folder is an ESC-ARC archive.
 /// A YKC001 archive at the top of the game folder (Yuka).
 fn ykc_archive(game: &Path, names: &[String]) -> bool {
@@ -306,6 +319,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("script.dat") && has("arc0.dat") {
         // NonColor: script.dat (text scripts) beside arc0.dat.. (ACV1 / DAT archives)
         Some("noncolor".into())
+    } else if azsys_arc(game) {
+        // AZ System: one ARC archive (CPB pictures, ASB scripts, tables) beside the exe
+        Some("azsys".into())
     } else if majiro_arc(game, &names) {
         // Majiro: MajiroArc archives (scenario.arc, data.arc, ...) beside the exe
         Some("majiro".into())

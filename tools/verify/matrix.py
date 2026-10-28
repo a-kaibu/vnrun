@@ -38,6 +38,7 @@ ENGINES = {
     "silkys": "Silky's (vnrun)",
     "ivory": "Ivory (vnrun)",
     "noncolor": "NonColor (vnrun)",
+    "azsys": "AZ System (vnrun)",
     "shiina": "ShiinaRio (vnrun)",
     "neko": "NekoSDK / Waffle (vnrun)",
 }
