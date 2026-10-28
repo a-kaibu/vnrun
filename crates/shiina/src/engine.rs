@@ -125,6 +125,8 @@ struct Fade {
 const RULE_VAGUE: f32 = 0.25;
 
 pub struct Engine {
+    /// the messages read so far (the wheel turned up)
+    backlog: vncommon::backlog::Backlog,
     files: Box<dyn Files>,
     arcs: Archives,
     pub width: u32,
@@ -173,6 +175,7 @@ impl Engine {
             return Err(format!("no {FIRST}.txt in the archives"));
         }
         let mut e = Engine {
+            backlog: Default::default(),
             files,
             arcs,
             width: 800,
@@ -249,6 +252,7 @@ impl Engine {
     // ---- running ----
 
     pub fn frame(&mut self) -> Result<(), String> {
+        self.log_page();
         if let Some(n) = self.instead_of_title.take() {
             self.begin(&n);
         }
@@ -514,6 +518,36 @@ impl Engine {
     }
 
     pub fn draws(&mut self) -> Vec<Draw> {
+        let mut out = self.draws_inner();
+        if self.backlog.is_open() {
+            let log = std::mem::take(&mut self.backlog);
+            let (w, h) = (self.width, self.height);
+            let size = (h as i32 / 27).max(16);
+            out.extend(log.draws(w, h, size, &mut |s, rgb| {
+                let _ = rgb;
+                self.text(s, size)
+            }));
+            self.backlog = log;
+        }
+        out
+    }
+
+    /// Keeps the message waiting for a click in the backlog (vncommon::backlog).
+    fn log_page(&mut self) {
+        if !(self.view == View::Game
+            && matches!(self.wait, Wait::Click | Wait::Pause)
+            && self.window)
+        {
+            return;
+        }
+        let (name, text) = (
+            self.name.clone().unwrap_or_default(),
+            self.text.as_ref().map(|t| t.join("\n")).unwrap_or_default(),
+        );
+        self.backlog.push(name.trim(), &text);
+    }
+
+    fn draws_inner(&mut self) -> Vec<Draw> {
         let mut out = Vec::new();
         self.rules.clear();
         match self.view {
@@ -813,6 +847,10 @@ impl Engine {
     }
 
     pub fn click(&mut self, x: i32, y: i32) {
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         self.pointer = (x, y);
         match self.view {
             View::Title => {
@@ -904,6 +942,10 @@ impl Engine {
     }
 
     pub fn cancel(&mut self) {
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         match self.view {
             View::Menu => self.view = View::Game,
             View::Slots { .. } => self.close_slots(),
@@ -934,6 +976,18 @@ impl Engine {
     }
 
     pub fn wheel(&mut self, up: bool) {
+        // turned up: the backlog
+        if self.backlog.is_open() || up {
+            self.log_page();
+            if self.backlog.is_open()
+                || (self.view == View::Game
+                    && matches!(self.wait, Wait::Click | Wait::Pause)
+                    && self.window)
+            {
+                self.backlog.wheel(up);
+                return;
+            }
+        }
         if !up && matches!(self.wait, Wait::Click | Wait::Pause) && self.view == View::Game {
             self.push_sound("voice", None, 0.0, false, 0.0);
             self.advance();

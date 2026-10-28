@@ -7,6 +7,7 @@ description = "Silky's newer engine (AI6WIN generation) for the browser: .arc ar
 
 [dependencies]
 nexas = { path = "../nexas" }
+vncommon = { path = "../vncommon" }
 encoding_rs = "0.8"
 fontdue = "0.9"
 image = { version = "0.25", default-features = false, features = ["png"] }

@@ -99,6 +99,7 @@ dependencies = [
  "fontdue",
  "image 0.25.10",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -126,6 +127,7 @@ dependencies = [
  "image 0.25.10",
  "miniz_oxide 0.8.9",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -333,6 +335,7 @@ dependencies = [
  "fontdue",
  "image 0.25.10",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -462,6 +465,7 @@ dependencies = [
  "nexas",
  "serde",
  "serde_json",
+ "vncommon",
 ]
 
 [[package]]
@@ -517,6 +521,7 @@ dependencies = [
  "image 0.25.10",
  "miniz_oxide 0.8.9",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -748,6 +753,7 @@ dependencies = [
  "fontdue",
  "image 0.25.10",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -1066,6 +1072,7 @@ dependencies = [
  "image 0.25.10",
  "miniz_oxide 0.8.9",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -1141,6 +1148,7 @@ dependencies = [
  "fontdue",
  "image 0.25.10",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -1455,6 +1463,7 @@ dependencies = [
  "fontdue",
  "image 0.25.10",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]

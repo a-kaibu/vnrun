@@ -153,6 +153,8 @@ struct Window {
 }
 
 pub struct Engine {
+    /// the messages read so far (the wheel turned up)
+    backlog: vncommon::backlog::Backlog,
     files: Box<dyn Files>,
     index: Index,
     /// the folder's file names by lower-case name
@@ -357,6 +359,7 @@ impl Engine {
             .map(|n| (n.to_ascii_lowercase(), n.clone()))
             .collect();
         let mut e = Engine {
+            backlog: Default::default(),
             files,
             index,
             arcs,
@@ -679,6 +682,7 @@ impl Engine {
     }
 
     pub fn frame(&mut self) -> Result<(), String> {
+        self.log_page();
         // the game stands still under our menu
         if self.menu.is_some() {
             return Ok(());
@@ -1657,6 +1661,42 @@ impl Engine {
     }
 
     pub fn draws(&mut self) -> Vec<Draw> {
+        let mut out = self.draws_inner();
+        if self.backlog.is_open() {
+            let log = std::mem::take(&mut self.backlog);
+            let (w, h) = self.screen;
+            let size = (h as i32 / 27).max(16);
+            out.extend(log.draws(w, h, size, &mut |s, rgb| {
+                let _ = rgb;
+                self.line_image(s, size as f32, rgb, [0, 0, 0])
+                    .unwrap_or_else(|| Rc::new(Image::new(1, 1)))
+            }));
+            self.backlog = log;
+        }
+        out
+    }
+
+    /// Keeps the message waiting for a click in the backlog (vncommon::backlog).
+    fn log_page(&mut self) {
+        if !(self.menu.is_none() && matches!(self.wait, Wait::Click)) {
+            return;
+        }
+        let (name, text) = (String::new(), {
+            let mut k: Vec<_> = self
+                .windows
+                .iter()
+                .filter(|w| w.1.lines.iter().any(|l| !l.is_empty()))
+                .collect();
+            k.sort_by_key(|w| *w.0);
+            k.iter()
+                .map(|w| w.1.lines.join("\n"))
+                .collect::<Vec<_>>()
+                .join("\n")
+        });
+        self.backlog.push(name.trim(), &text);
+    }
+
+    fn draws_inner(&mut self) -> Vec<Draw> {
         self.settle();
         let mut out = Vec::new();
         let sprites: Vec<Sprite> = self.sprites.values().cloned().collect();
@@ -1730,6 +1770,10 @@ impl Engine {
     }
 
     pub fn click(&mut self, x: i32, y: i32) {
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         if x >= 0 {
             self.pointer = (x, y);
         }
@@ -1744,6 +1788,10 @@ impl Engine {
 
     /// A right click (cancel).
     pub fn cancel(&mut self) {
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         if self.menu.is_some() {
             self.menu = None;
             return;
@@ -1760,7 +1808,15 @@ impl Engine {
         }
     }
 
-    pub fn wheel(&mut self, _up: bool) {}
+    pub fn wheel(&mut self, up: bool) {
+        // turned up: the backlog
+        if self.backlog.is_open() || up {
+            self.log_page();
+            if self.backlog.is_open() || (self.menu.is_none() && matches!(self.wait, Wait::Click)) {
+                self.backlog.wheel(up);
+            }
+        }
+    }
 
     pub fn take_sounds(&mut self) -> Vec<Sound> {
         std::mem::take(&mut self.sounds)

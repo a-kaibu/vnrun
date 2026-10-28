@@ -134,6 +134,8 @@ enum View {
 struct Pan(f32, f32, u32, u32);
 
 pub struct Engine {
+    /// the messages read so far (the wheel turned up)
+    backlog: vncommon::backlog::Backlog,
     files: Box<dyn Files>,
     arc: Arc,
     /// cg.tbl: picture names by id
@@ -237,6 +239,7 @@ impl Engine {
         }
         let window_tbl = arc.tbl(files.as_mut(), "window.tbl")?;
         let mut e = Engine {
+            backlog: Default::default(),
             files,
             arc,
             cg,
@@ -572,6 +575,7 @@ impl Engine {
     }
 
     pub fn frame(&mut self) -> Result<(), String> {
+        self.log_page();
         self.frames += 1;
         if self.view != View::Game {
             return Ok(());
@@ -658,6 +662,10 @@ impl Engine {
     }
 
     pub fn click(&mut self, x: i32, y: i32) {
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         self.pointer = (x, y);
         if let View::Slots { save } = self.view {
             if let Some(i) = self.slot_rects().iter().position(|r| inside(*r, x, y)) {
@@ -693,6 +701,10 @@ impl Engine {
 
     /// A right click.
     pub fn cancel(&mut self) {
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         if self.view != View::Game {
             self.view = View::Game;
         }
@@ -713,6 +725,16 @@ impl Engine {
 
     /// The wheel: down goes forward.
     pub fn wheel(&mut self, up: bool) {
+        // turned up: the backlog
+        if self.backlog.is_open() || up {
+            self.log_page();
+            if self.backlog.is_open()
+                || (self.view == View::Game && matches!(self.wait, Wait::Click) && self.window)
+            {
+                self.backlog.wheel(up);
+                return;
+            }
+        }
         if !up && self.view == View::Game {
             self.advance();
         }
@@ -804,6 +826,30 @@ impl Engine {
     }
 
     pub fn draws(&mut self) -> Vec<Draw> {
+        let mut out = self.draws_inner();
+        if self.backlog.is_open() {
+            let log = std::mem::take(&mut self.backlog);
+            let (w, h) = (W, H);
+            let size = (h as i32 / 27).max(16);
+            out.extend(log.draws(w, h, size, &mut |s, rgb| {
+                let _ = rgb;
+                self.text_img(s, size, rgb)
+            }));
+            self.backlog = log;
+        }
+        out
+    }
+
+    /// Keeps the message waiting for a click in the backlog (vncommon::backlog).
+    fn log_page(&mut self) {
+        if !(self.view == View::Game && matches!(self.wait, Wait::Click) && self.window) {
+            return;
+        }
+        let (name, text) = (self.name.clone().unwrap_or_default(), self.text.clone());
+        self.backlog.push(name.trim(), &text);
+    }
+
+    fn draws_inner(&mut self) -> Vec<Draw> {
         let mut out = Vec::new();
         if self.wait == Wait::Title {
             if let Some(p) = self.pic("title_bg_tr") {

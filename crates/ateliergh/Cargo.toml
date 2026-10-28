@@ -7,5 +7,6 @@ description = "Atelier G/H's ADV system for the browser: .arc archives, BMP pict
 
 [dependencies]
 nexas = { path = "../nexas" }
+vncommon = { path = "../vncommon" }
 fontdue = "0.9"
 image = { version = "0.25", default-features = false, features = ["png"] }

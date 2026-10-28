@@ -248,6 +248,8 @@ struct Snapshot {
 }
 
 pub struct Engine {
+    /// the messages read so far (the wheel turned up)
+    backlog: vncommon::backlog::Backlog,
     /// the screen size
     pub width: u32,
     pub height: u32,
@@ -404,6 +406,7 @@ fn find(h: &[u8], n: &[u8]) -> Option<usize> {
 impl Engine {
     pub fn open(files: Box<dyn Files>) -> Result<Engine, String> {
         let mut e = Engine {
+            backlog: Default::default(),
             width: SCREEN_V1.0,
             height: SCREEN_V1.1,
             v2: false,
@@ -1515,6 +1518,7 @@ impl Engine {
     // ---- frames ----
 
     pub fn frame(&mut self) -> Result<(), String> {
+        self.log_page();
         self.now += FRAME_MS;
         if let Some(t) = &self.trans
             && self.now - t.start >= t.ms
@@ -1759,6 +1763,46 @@ impl Engine {
     }
 
     pub fn draws(&mut self) -> Vec<Draw> {
+        let mut out = self.draws_inner();
+        if self.backlog.is_open() {
+            let log = std::mem::take(&mut self.backlog);
+            let (w, h) = (self.width, self.height);
+            let size = (h as i32 / 27).max(16);
+            out.extend(log.draws(w, h, size, &mut |s, rgb| {
+                let _ = rgb;
+                self.label(&nexas::sjis::encode(s), rgb, size)
+            }));
+            self.backlog = log;
+        }
+        out
+    }
+
+    /// Keeps the message waiting for a click in the backlog (vncommon::backlog).
+    fn log_page(&mut self) {
+        if !(self.view == View::Game
+            && self.window
+            && self
+                .threads
+                .get(&Key::Scen)
+                .is_some_and(|t| t.wait == Wait::Text))
+        {
+            return;
+        }
+        let (name, text) = (
+            self.name
+                .as_ref()
+                .map(|n| nexas::sjis::decode(n))
+                .unwrap_or_default(),
+            self.text
+                .iter()
+                .map(|l| nexas::sjis::decode(l))
+                .collect::<Vec<_>>()
+                .join(""),
+        );
+        self.backlog.push(name.trim(), &text);
+    }
+
+    fn draws_inner(&mut self) -> Vec<Draw> {
         let mut out = vec![draw(&solid_image([0, 0, 0, 255]), 0.0, 0.0, 1.0)];
         out[0].dst = [0.0, 0.0, self.width as f32, self.height as f32];
         for p in [1u8, 2] {
@@ -1947,6 +1991,10 @@ impl Engine {
     }
 
     pub fn click(&mut self, x: i32, y: i32) {
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         self.pointer = (x, y);
         match self.view {
             View::Menu => {
@@ -2043,6 +2091,10 @@ impl Engine {
     }
 
     pub fn cancel(&mut self) {
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         match self.view {
             View::Menu => self.view = View::Game,
             View::Slots { .. } => self.close_slots(),
@@ -2071,6 +2123,21 @@ impl Engine {
     }
 
     pub fn wheel(&mut self, up: bool) {
+        // turned up: the backlog
+        if self.backlog.is_open() || up {
+            self.log_page();
+            if self.backlog.is_open()
+                || (self.view == View::Game
+                    && self.window
+                    && self
+                        .threads
+                        .get(&Key::Scen)
+                        .is_some_and(|t| t.wait == Wait::Text))
+            {
+                self.backlog.wheel(up);
+                return;
+            }
+        }
         if !up && self.view == View::Game {
             self.advance();
         }

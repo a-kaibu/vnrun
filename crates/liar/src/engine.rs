@@ -137,6 +137,8 @@ struct Window {
 }
 
 pub struct Engine {
+    /// the messages read so far (the wheel turned up)
+    backlog: vncommon::backlog::Backlog,
     files: Box<dyn Files>,
     arcs: Archives,
     pub width: u32,
@@ -212,6 +214,7 @@ impl Engine {
             return Err("no scr.xfl in the game folder".into());
         }
         let mut e = Engine {
+            backlog: Default::default(),
             files,
             arcs,
             width: 1280,
@@ -441,6 +444,7 @@ impl Engine {
     }
 
     pub fn frame(&mut self) -> Result<(), String> {
+        self.log_page();
         self.now += FRAME_MS;
         if let Some(f) = &self.fade
             && self.now - f.start >= f.ms
@@ -992,6 +996,30 @@ impl Engine {
     }
 
     pub fn draws(&mut self) -> Vec<Draw> {
+        let mut out = self.draws_inner();
+        if self.backlog.is_open() {
+            let log = std::mem::take(&mut self.backlog);
+            let (w, h) = (self.width, self.height);
+            let size = (h as i32 / 27).max(16);
+            out.extend(log.draws(w, h, size, &mut |s, rgb| {
+                let _ = rgb;
+                self.label(s, rgb, size)
+            }));
+            self.backlog = log;
+        }
+        out
+    }
+
+    /// Keeps the message waiting for a click in the backlog (vncommon::backlog).
+    fn log_page(&mut self) {
+        if !(self.view == View::Game && matches!(self.wait, Wait::Click) && self.window) {
+            return;
+        }
+        let (name, text) = (self.name.clone().unwrap_or_default(), self.text.clone());
+        self.backlog.push(name.trim(), &text);
+    }
+
+    fn draws_inner(&mut self) -> Vec<Draw> {
         let mut out = match &self.frozen {
             Some(f) => f.clone(),
             None => self.stage_draws(),
@@ -1372,6 +1400,10 @@ impl Engine {
     }
 
     pub fn click(&mut self, x: i32, y: i32) {
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         self.pointer = (x, y);
         match self.view {
             View::Menu => {
@@ -1466,6 +1498,10 @@ impl Engine {
     }
 
     pub fn cancel(&mut self) {
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         match self.view {
             View::Menu => self.view = View::Game,
             View::Slots { .. } => self.close_slots(),
@@ -1489,6 +1525,16 @@ impl Engine {
     }
 
     pub fn wheel(&mut self, up: bool) {
+        // turned up: the backlog
+        if self.backlog.is_open() || up {
+            self.log_page();
+            if self.backlog.is_open()
+                || (self.view == View::Game && matches!(self.wait, Wait::Click) && self.window)
+            {
+                self.backlog.wheel(up);
+                return;
+            }
+        }
         if !up && self.view == View::Game && self.wait == Wait::Click {
             self.advance();
         }

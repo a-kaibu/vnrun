@@ -220,6 +220,8 @@ struct Snap {
 }
 
 pub struct Engine {
+    /// the messages read so far (the wheel turned up)
+    backlog: vncommon::backlog::Backlog,
     files: Box<dyn Files>,
     pub width: u32,
     pub height: u32,
@@ -438,6 +440,7 @@ impl Engine {
             return Err("CMVS: data/pack/script.cpz has no intcode.ps2".into());
         }
         let mut e = Engine {
+            backlog: Default::default(),
             files,
             width: WIDTH,
             height: HEIGHT,
@@ -1068,6 +1071,7 @@ impl Engine {
     // ---- frames ----
 
     pub fn frame(&mut self) -> Result<(), String> {
+        self.log_page();
         self.now += FRAME_MS;
         if let Some(t) = &self.trans
             && self.now - t.start >= t.ms
@@ -1314,6 +1318,38 @@ impl Engine {
     }
 
     pub fn draws(&mut self) -> Vec<Draw> {
+        let mut out = self.draws_inner();
+        if self.backlog.is_open() {
+            let log = std::mem::take(&mut self.backlog);
+            let (w, h) = (self.width, self.height);
+            let size = (h as i32 / 27).max(16);
+            out.extend(log.draws(w, h, size, &mut |s, rgb| {
+                let _ = rgb;
+                self.label(&nexas::sjis::encode(s), rgb, size)
+            }));
+            self.backlog = log;
+        }
+        out
+    }
+
+    /// Keeps the message waiting for a click in the backlog (vncommon::backlog).
+    fn log_page(&mut self) {
+        if !(self.view == View::Game && matches!(self.wait, Some(Wait::Click)) && self.window) {
+            return;
+        }
+        let (name, text) = (
+            nexas::sjis::decode(&self.msg.name),
+            self.msg
+                .lines
+                .iter()
+                .map(|l| nexas::sjis::decode(l))
+                .collect::<Vec<_>>()
+                .join("\n"),
+        );
+        self.backlog.push(name.trim(), &text);
+    }
+
+    fn draws_inner(&mut self) -> Vec<Draw> {
         let mut out = Vec::new();
         self.rules.clear();
         if matches!(
@@ -1421,6 +1457,10 @@ impl Engine {
     }
 
     pub fn click(&mut self, x: i32, y: i32) {
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         self.pointer = (x, y);
         match self.view {
             View::Title => {
@@ -1502,6 +1542,10 @@ impl Engine {
 
     /// A right click: the menu, or back out of it.
     pub fn cancel(&mut self) {
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         self.view = match self.view {
             View::Game => {
                 self.skip = false;
@@ -1527,6 +1571,18 @@ impl Engine {
     }
 
     pub fn wheel(&mut self, up: bool) {
+        // turned up: the backlog
+        if self.backlog.is_open() || up {
+            self.log_page();
+            if self.backlog.is_open()
+                || (self.view == View::Game
+                    && matches!(self.wait, Some(Wait::Click))
+                    && self.window)
+            {
+                self.backlog.wheel(up);
+                return;
+            }
+        }
         if !up && self.view == View::Game {
             self.advance(None);
         }

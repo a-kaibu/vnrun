@@ -7,6 +7,7 @@ description = "The AZ System engine (ARC archives, CPB pictures, ASB scripts) fo
 
 [dependencies]
 nexas = { path = "../nexas" }
+vncommon = { path = "../vncommon" }
 fontdue = "0.9"
 miniz_oxide = "0.8"
 crc32fast = "1"
