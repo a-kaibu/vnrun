@@ -103,6 +103,9 @@ const TEXT: (i32, i32) = (260, 560);
 const LINE: i32 = 36;
 /// the plane of the character pictures (drawn first)
 const STANDS: i32 = i32::MIN;
+
+/// A picture and the point it is placed by (x, y).
+type Placed = (Rc<Image>, i32, i32);
 const MESSAGE_FONT: &str = "ＭＳゴシック24x24.fnt";
 
 /// A value moving from `from` to `to` over `frames` frames from frame `start`.
@@ -301,7 +304,7 @@ pub struct Engine {
     current_bgm: Option<usize>,
     images: HashMap<String, Rc<Image>>,
     /// 2006 animation frames by (file, frame), with their centres
-    anis: HashMap<(String, i32), Option<(Rc<Image>, i32, i32)>>,
+    anis: HashMap<(String, i32), Option<Placed>>,
     /// 2006 character pictures by Stand.dat row, with the centre of the body
     stands_2006: HashMap<usize, Option<(Rc<Image>, i32)>>,
     spms: HashMap<String, Rc<Spm>>,

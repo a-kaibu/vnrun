@@ -40,7 +40,7 @@ pub fn parse_2006(name: &str, b: &[u8]) -> Option<Vec<Vec<Cell>>> {
         _ => return None,
     };
     let size: usize = layout.iter().map(|&c| if c == b'S' { 64 } else { 4 }).sum();
-    if b.is_empty() || b.len() % size != 0 {
+    if b.is_empty() || !b.len().is_multiple_of(size) {
         return None;
     }
     let rows = b
