@@ -7,6 +7,7 @@ pub mod exe;
 pub mod link;
 pub mod pic;
 pub mod scr;
+pub mod slots;
 pub mod text;
 
 use nexas::files::Files;

@@ -31,6 +31,7 @@ use nexas::gfx::{Draw, Image, Place};
 use crate::engine::{SoundEvent, over, text};
 use crate::link::arc::{LinkArc, Pic, picture, stem};
 use crate::link::data::{Messages, Params, Script};
+use crate::slots::{self, Hit, Menu};
 
 const LETTER_MS: f64 = 25.0;
 
@@ -119,6 +120,14 @@ pub struct Engine {
     ui: Ui,
     warned: HashSet<String>,
     pub said: Vec<String>,
+    /// where the instruction being run starts; the script and place of the message on show
+    ins_pc: usize,
+    msg_at: (String, usize),
+    /// the save and load screen, the slots' first lines, what the pointer is over
+    menu: Option<Menu>,
+    slots: Vec<Option<String>>,
+    menu_hover: Option<Hit>,
+    menu_img: Option<(Option<Hit>, Menu, Rc<Image>)>,
 }
 
 fn black(w: u32, h: u32) -> Rc<Image> {
@@ -172,7 +181,14 @@ impl Engine {
             ui: Ui::default(),
             warned: HashSet::new(),
             said: Vec::new(),
+            ins_pc: 0,
+            msg_at: (String::new(), 0),
+            menu: None,
+            slots: Vec::new(),
+            menu_hover: None,
+            menu_img: None,
         };
+        e.slots = slots::read_all(e.files.as_mut());
         if e.arc("scr").is_none() {
             return Err("no scr.arc".into());
         }
@@ -258,7 +274,7 @@ impl Engine {
         };
         for (word, action) in [
             ("はじめから", "start"),
-            ("つづきから", ""),
+            ("つづきから", "load"),
             ("CGモード", ""),
             ("回想モード", ""),
             ("音楽鑑賞", ""),
@@ -552,6 +568,7 @@ impl Engine {
                 self.ret()?;
                 continue;
             };
+            self.ins_pc = self.pc;
             self.pc = i.next;
             match i.op {
                 0x01 => {
@@ -592,12 +609,13 @@ impl Engine {
                 0x07 => {
                     let (line, k, bgm, se) = (i.i32(0), i.i32(4), i.i32(8), i.i32(20));
                     let name = s.name.clone();
-                    if k >= 0 && self.scene != Some((name, k as usize)) {
+                    if k >= 0 && self.scene != Some((name.clone(), k as usize)) {
                         self.show_scene(k as usize, 0, 0);
                     }
                     self.play_bgm(bgm);
                     self.play_loop(se);
                     if line >= 0 {
+                        self.msg_at = (name, self.ins_pc);
                         self.say(line as usize);
                     }
                 }
@@ -710,6 +728,9 @@ impl Engine {
 
     /// Runs one frame (1/60 s).
     pub fn frame(&mut self) -> Result<(), String> {
+        if self.menu.is_some() {
+            return Ok(());
+        }
         self.now += 1000.0 / 60.0;
         let clicked = std::mem::take(&mut self.clicked);
         if let Some(t) = &self.trans
@@ -757,6 +778,10 @@ impl Engine {
     }
 
     pub fn point(&mut self, x: i32, y: i32) {
+        if let Some(m) = self.menu {
+            self.menu_hover = slots::hit(self.width as i32, self.height as i32, m, x, y);
+            return;
+        }
         if self.mode == Mode::Title {
             self.hover = self.menu_at(x, y);
         } else if self.wait == Wait::Choice {
@@ -773,12 +798,20 @@ impl Engine {
                 }
             }
             Some("quit") => self.mode = Mode::Ended,
+            Some("load") => self.open_menu(Menu {
+                save: false,
+                from_title: true,
+            }),
             _ => {}
         }
     }
 
     pub fn click(&mut self, x: i32, y: i32) {
         self.point(x, y);
+        if let Some(m) = self.menu {
+            self.menu_click(m, x, y);
+            return;
+        }
         match self.mode {
             Mode::Title => {
                 if let Some(k) = self.menu_at(x, y) {
@@ -795,8 +828,166 @@ impl Engine {
         }
     }
 
+    /// A right click: the save and load screen (from the title: load), or back out of it.
     pub fn cancel(&mut self) {
         self.skip = false;
+        if self.menu.take().is_some() {
+            return;
+        }
+        match self.mode {
+            Mode::Title => self.open_menu(Menu {
+                save: false,
+                from_title: true,
+            }),
+            Mode::Run if self.wait == Wait::Click && self.msg.is_some() => self.open_menu(Menu {
+                save: true,
+                from_title: false,
+            }),
+            _ => {}
+        }
+    }
+
+    fn open_menu(&mut self, m: Menu) {
+        self.slots = slots::read_all(self.files.as_mut());
+        self.menu_hover = None;
+        self.menu_img = None;
+        self.menu = Some(m);
+    }
+
+    fn menu_click(&mut self, m: Menu, x: i32, y: i32) {
+        match slots::hit(self.width as i32, self.height as i32, m, x, y) {
+            Some(Hit::Save) => self.menu = Some(Menu { save: true, ..m }),
+            Some(Hit::Load) => self.menu = Some(Menu { save: false, ..m }),
+            Some(Hit::Back) => self.menu = None,
+            Some(Hit::Title) => {
+                self.menu = None;
+                self.back_to_title();
+            }
+            Some(Hit::Slot(i)) if m.save => {
+                self.save(i);
+                self.menu = None;
+            }
+            Some(Hit::Slot(i)) if self.slots.get(i).is_some_and(|s| s.is_some()) => {
+                self.menu = None;
+                self.load_slot(i);
+            }
+            Some(Hit::Slot(_)) | None => {}
+        }
+    }
+
+    fn back_to_title(&mut self) {
+        self.sound("voice", None, false, 0.0);
+        self.sound("se", None, false, 0.0);
+        self.play_bgm(-1);
+        self.play_loop(-1);
+        self.msg = None;
+        self.trans = None;
+        self.wait = Wait::None;
+        self.choices.clear();
+        self.choice_imgs.clear();
+        self.stack.clear();
+        self.script = None;
+        self.scene = None;
+        self.hover = None;
+        self.skip = false;
+        self.mode = if self.ui.title.is_some() {
+            Mode::Title
+        } else {
+            Mode::Ended
+        };
+    }
+
+    fn save(&mut self, i: usize) {
+        let mut s = String::new();
+        s += &format!("script={}\npc={}\n", self.msg_at.0, self.msg_at.1);
+        let vars: Vec<String> = self
+            .vars
+            .iter()
+            .enumerate()
+            .filter(|(_, x)| **x != 0)
+            .map(|(k, x)| format!("{k}:{x}"))
+            .collect();
+        s += &format!("vars={}\n", vars.join(","));
+        for (script, pc) in &self.stack {
+            s += &format!("stack={},{}\n", script.name, pc);
+        }
+        if let Some((name, k)) = &self.scene {
+            s += &format!("scene={name},{k}\n");
+        }
+        s += &format!("bgm={}\nloop={}\n", self.bgm, self.se_loop);
+        let first = self
+            .msg
+            .as_ref()
+            .map_or(String::new(), |m| slots::first_line(&m.text));
+        s += &format!("text={first}\n");
+        self.files.write_save(&slots::slot_name(i), s.as_bytes());
+        if let Some(slot) = self.slots.get_mut(i) {
+            *slot = Some(first);
+        }
+        if self.log {
+            eprintln!("kaguya: saved slot {}", i + 1);
+        }
+    }
+
+    fn script_named(&mut self, name: &str) -> Option<Rc<Script>> {
+        let id = self.p.find(name)?;
+        self.load(id).ok()
+    }
+
+    fn load_slot(&mut self, i: usize) {
+        let Some(kv) = slots::read(self.files.as_mut(), i) else {
+            return;
+        };
+        let get = |k: &str| kv.iter().find(|(a, _)| a == k).map(|(_, v)| v.clone());
+        let Some(script) = get("script").and_then(|n| self.script_named(&n)) else {
+            self.warn(format!("save {}: no script", i + 1));
+            return;
+        };
+        self.back_to_title();
+        self.mode = Mode::Run;
+        self.vars = vec![0; 0x10000];
+        for p in get("vars").unwrap_or_default().split(',') {
+            if let Some((k, x)) = p.split_once(':')
+                && let (Ok(k), Ok(x)) = (k.parse::<usize>(), x.parse::<i32>())
+            {
+                self.set(k, x);
+            }
+        }
+        for (k, v) in &kv {
+            if k != "stack" {
+                continue;
+            }
+            let Some((name, pc)) = v.rsplit_once(',') else {
+                continue;
+            };
+            if let Some(sc) = self.script_named(name) {
+                self.stack.push((sc, pc.parse().unwrap_or(0)));
+            }
+        }
+        // the scene of the time, faded in from black; the message then shows it again
+        self.screen = black(self.width, self.height);
+        if let Some((name, k)) = get("scene").and_then(|v| {
+            let (n, k) = v.rsplit_once(',')?;
+            Some((n.to_string(), k.parse::<usize>().ok()?))
+        }) && let Some(sc) = self.script_named(&name)
+        {
+            self.script = Some(sc);
+            self.show_scene(k, 1, 30);
+        }
+        self.script = Some(script.clone());
+        self.pc = get("pc").and_then(|v| v.parse().ok()).unwrap_or(16);
+        let bgm = get("bgm").and_then(|v| v.parse().ok()).unwrap_or(-1);
+        let lp = get("loop").and_then(|v| v.parse().ok()).unwrap_or(-1);
+        self.play_bgm(bgm);
+        self.play_loop(lp);
+        if self.log {
+            eprintln!(
+                "kaguya: loaded slot {} ({} at {:#x})",
+                i + 1,
+                script.name,
+                self.pc
+            );
+        }
     }
 
     /// 0 up, 1 down, 2 left, 3 right, 4 OK, 5 cancel, 6 skip.
@@ -821,7 +1012,7 @@ impl Engine {
             }
             4 => self.clicked = true,
             6 if self.mode == Mode::Run => self.skip = !self.skip,
-            5 => self.skip = false,
+            5 => self.cancel(),
             _ => {}
         }
     }
@@ -993,6 +1184,7 @@ impl Engine {
                     out.push(whole(img, x, y, 1.0));
                 }
             }
+            self.menu_draw(&mut out);
             return out;
         }
         for (img, alpha) in self.screen_now() {
@@ -1025,6 +1217,45 @@ impl Engine {
                 out.push(whole(img, x, y, a));
             }
         }
+        self.menu_draw(&mut out);
         out
+    }
+
+    fn menu_draw(&mut self, out: &mut Vec<Draw>) {
+        let Some(m) = self.menu else { return };
+        let img = match &self.menu_img {
+            Some((h, mm, img)) if *h == self.menu_hover && *mm == m => img.clone(),
+            _ => {
+                let img = Rc::new(slots::picture(
+                    self.font.as_ref(),
+                    self.width,
+                    self.height,
+                    m,
+                    self.menu_hover,
+                    &self.slots,
+                ));
+                self.menu_img = Some((self.menu_hover, m, img.clone()));
+                img
+            }
+        };
+        let (w, h) = (img.w as f32, img.h as f32);
+        out.push(Draw {
+            src: [0, 0, img.w as i32, img.h as i32],
+            dst: [0.0, 0.0, w, h],
+            image: img,
+            place: Place {
+                x: 0.0,
+                y: 0.0,
+                sx: 1.0,
+                sy: 1.0,
+                cx: 0.0,
+                cy: 0.0,
+                rot: 0.0,
+                alpha: 1.0,
+                add: false,
+                flip: (false, false),
+                clip: [0.0, 0.0, w, h],
+            },
+        });
     }
 }

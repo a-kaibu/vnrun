@@ -2,7 +2,8 @@
 //! own (on the title, the first item), and prints the messages; every 60th frame goes to
 //! OUT_DIR as a PNG when given (KAGUYA_EVERY changes that; KAGUYA_CLICK, every how many
 //! frames it clicks: 20; KAGUYA_AT=x,y, where; KAGUYA_PICK=0,2,1: the choices to take in
-//! turn, counting from 0, then the first).
+//! turn, counting from 0, then the first; KAGUYA_SAVES, the saves folder; KAGUYA_EVENTS=
+//! 300:r,310:c400 200: at frame 300 a right click, at 310 a click at (400, 200)).
 
 use kaguya::Game;
 use nexas::files::Disk;
@@ -12,7 +13,9 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     let disk = Disk {
         root: args[1].clone().into(),
-        saves: "/nonexistent".into(),
+        saves: std::env::var("KAGUYA_SAVES")
+            .unwrap_or_else(|_| "/nonexistent".into())
+            .into(),
     };
     let mut e = Game::open(Box::new(disk)).unwrap();
     e.set_log(true);
@@ -37,10 +40,29 @@ fn main() {
     let picks: Vec<usize> = std::env::var("KAGUYA_PICK")
         .map(|v| v.split(',').filter_map(|n| n.parse().ok()).collect())
         .unwrap_or_default();
+    let events: Vec<(usize, String)> = std::env::var("KAGUYA_EVENTS")
+        .map(|v| {
+            v.split(',')
+                .filter_map(|p| {
+                    let (f, what) = p.split_once(':')?;
+                    Some((f.parse().ok()?, what.to_string()))
+                })
+                .collect()
+        })
+        .unwrap_or_default();
     let mut picked = 0;
     for f in 0..frames {
         e.frame().unwrap();
         e.take_sounds();
+        for (_, what) in events.iter().filter(|(at, _)| *at == f) {
+            if what == "r" {
+                e.cancel();
+            } else if let Some(xy) = what.strip_prefix('c')
+                && let Some((x, y)) = xy.split_once(' ')
+            {
+                e.click(x.parse().unwrap_or(0), y.parse().unwrap_or(0));
+            }
+        }
         if f % click == click - 1 {
             if e.choosing() {
                 let n = picks.get(picked).copied().unwrap_or(0);
