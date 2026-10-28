@@ -1,0 +1,6 @@
+// vnrun: layeredwindow.dll gives layeredwindow(hwnd, buffer, pitch, width, height), which copies
+// a layer's pixels into a Win32 layered window so a dialog can have a shaped, translucent frame
+// (hibiki works' customyesnodialog.tjs). The page draws every window from its layers already,
+// so there is nothing to copy.
+if (typeof(global.layeredwindow) === "undefined")
+	global.layeredwindow = function(hwnd, buffer, pitch, width, height) {};

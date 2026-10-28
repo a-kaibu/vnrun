@@ -29,6 +29,7 @@ global.vnrunPlugins = %[
 		"proxyfs.dll" => "proxyFs.tjs",
 		"motionplayer.dll" => "motionPlayer.tjs",
 		"emoteplayer.dll" => "motionPlayer.tjs",
+		"layeredwindow.dll" => "layeredWindow.tjs",
 	],
 ];
 global.Plugins.link = function(name) {

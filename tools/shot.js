@@ -8,6 +8,7 @@
 //   shot:<name>           screenshot to <out prefix>_<name>.png
 //   at:<x>;<y>            click at page pixels (the page is 1280x800)
 //   hold:<x>;<y>[;<ms>]   like at, hovering and holding the button for ms (default 1000)
+//   move:<x>;<y>          move the mouse there without clicking (menus that open on hover)
 //   rclick:<x>;<y>        right-click at page pixels (opens the menu in many KAG games)
 //   key:<Key>             press a key (Playwright names: Enter, Space, ArrowDown, ...)
 //   wheel:<x>;<y>;<dy>    turn the mouse wheel over page pixels (dy < 0 is up)
@@ -88,6 +89,9 @@ if (!url || !out) {
       await page.mouse.down();
       await page.waitForTimeout(ms);
       await page.mouse.up();
+    } else if (cmd === "move") {
+      const [x, y] = arg.split(";").map(Number);
+      await page.mouse.move(x, y, { steps: 5 });
     } else if (cmd === "rclick") {
       const [x, y] = arg.split(";").map(Number);
       await page.mouse.move(x, y);

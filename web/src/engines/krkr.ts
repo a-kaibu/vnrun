@@ -54,6 +54,7 @@ const POLYFILL_FILES = [
     "layerExRasterMP",
     "layerExImage",
     "layerExBTOA",
+    "layeredWindow",
     "extrans",
     "saveStruct",
     "psbFile",
