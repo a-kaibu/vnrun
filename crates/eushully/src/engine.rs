@@ -894,7 +894,13 @@ impl Engine {
             }
             0x202 => {
                 let (id, delay, ms) = (v(self, 0), v(self, 1), v(self, 2));
-                let to = v(self, 3).clamp(0, 255) as f32 / 255.0;
+                // -1: back to the alpha the sprite has now; the scripts follow it with a 203
+                // that sets the alpha to start from (Sankaio's and Tenmei's message bar: 202 -1,
+                // then 203 alpha 0, fades the bar in to the alpha its setup gave it)
+                let to = match v(self, 3) {
+                    x if x < 0 => self.sprites.get(&id).map_or(1.0, |s| s.alpha),
+                    x => x.min(255) as f32 / 255.0,
+                };
                 let tint = v(self, 4);
                 if tint >= 0
                     && let Some(s) = self.sprites.get_mut(&id)
