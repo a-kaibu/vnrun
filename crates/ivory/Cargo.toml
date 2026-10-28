@@ -1,0 +1,11 @@
+[package]
+name = "ivory"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "Ivory's engine (ags.exe) for the browser: fPK archives, SG pictures and the scripts"
+
+[dependencies]
+nexas = { path = "../nexas" }
+fontdue = "0.9"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }

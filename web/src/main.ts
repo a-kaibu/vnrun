@@ -30,6 +30,7 @@ const ENGINES: Record<string, () => Promise<EngineModule>> = {
   cyberworks: () => import("./engines/cyberworks"),
   lilim: () => import("./engines/lilim"),
   silkys: () => import("./engines/silkys"),
+  ivory: () => import("./engines/ivory"),
   shiina: () => import("./engines/shiina"),
   system4: () => import("./engines/system4"),
   escude: () => import("./engines/escude"),

@@ -67,6 +67,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Cyberworks (vnrun) | 8 | 4 |  |  |  |  |  | 4 |
 | LiLiM (vnrun) | 7 | 7 |  |  |  |  |  |  |
 | Silky's (vnrun) | 2 | 2 |  |  |  |  |  |  |
+| Ivory (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | ShiinaRio (vnrun) | 1 | 1 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
@@ -623,6 +624,13 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|
 | b2014_silkys_plus | [なないろリンカネーション 体験版 ver.1.2](http://suezou.dyndns.org/dl2014/silkys-plus/nanairo/nanairo_trial1.2.zip) | 本編 | Silky's (vnrun) でロゴ・注意書き→タイトル (title.akb のボタン)→はじめから→nanairo_01..03 の背景・立ち絵・名前・文章・選択肢を進む (silkys-run、70000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→タイトルの「つづきから」でロードして本編に戻る |
 | b2016_silkys_sakura | [ママのおっぱい～俺の童貞ミルクが搾り取られた件～ 体験版](http://suezou.dyndns.org/dl2016/silkys-sakura/mama_oppai/oppai_trial.zip) | 本編 | Silky's (vnrun) でロゴ・注意書き→タイトル (Title_scroll のスクロール、trial_Title_p のボタン)→はじめから→mmsc_000..006 の背景・立ち絵・イベント CG・名前・文章を最後まで進む (silkys-run、45000 フレーム)。Chromium でタイトル→本編、SAVE ボタンからセーブ→タイトルの「続きから始める」でロードして本編 (背景・イベント CG・立ち絵込み) に戻る |
+
+### Ivory (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2016_evoll | [お嬢様はイイナリみたいです！？ 体験版](http://suezou.dyndns.org/dl2016/evoll/oinari/trial_oinari.zip) | 本編 | Ivory (vnrun) で注意書き・ロゴ→タイトル (TITLE_BASE_TRIAL とボタン)→START→A01..A12_H の背景・立ち絵・イベント CG・名前・文章・選択肢 (A05_H) を進み、trial_finish の紹介→タイトルに戻る (ivory-run、31000 フレーム)。Chromium でタイトル→本編、SAVE ボタンからセーブ→LOAD でロードして保存したメッセージに戻る |
+| b2020_caramel_box_strawberry | [はじカノ 体験版](http://suezou.dyndns.org/dl2020/caramel-box-strawberry/hajikano/hk_trial.zip) | 本編 | Ivory (vnrun) でブランド・注意書き→タイトル (横並びのボタン)→NEW GAME→00_CM_01..09 (アイキャッチの呼び出し、2 択・3 択の選択肢)→02_YN_01→02_YN_01_H01→タイトルに戻る (ivory-run、49000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る |
 
 ### ShiinaRio (vnrun)
 

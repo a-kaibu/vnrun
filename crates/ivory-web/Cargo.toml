@@ -1,0 +1,15 @@
+[package]
+name = "ivory-web"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "The Ivory engine for the browser: wasm-bindgen exports for web/src/engines/ivory.ts"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ivory = { path = "../ivory" }
+nexas = { path = "../nexas" }
+wasm-bindgen = "=0.2.129"
+js-sys = "0.3"

@@ -75,6 +75,7 @@ game_root() {
     cyberworks) m=(-iname arc01.dat) ;;
     lilim) m=(-iname scr.aos) ;;
     silkys) m=(-iname layer.arc) ;;
+    ivory) m=(-ipath '*/misc/script.pk') ;;
     shiina) m=(-iname '*.war') ;;
     nscripter) m=(-iname nscript.dat -o -iname 0.txt -o -iname 00.txt -o -iname '*.nsa' -o -iname '*.sar') ;;
     html) m=(-iname package.json -o -iname index.html -o -iname package.nw -o -iname nw.pak -o -iname app.asar) ;;
@@ -84,6 +85,7 @@ game_root() {
   local up='/pac$'
   [[ $2 == entis ]] && up='/data$'
   [[ $2 == qlie ]] && up='/gamedata$'
+  [[ $2 == ivory ]] && up='/misc$'
   find "$1" -type f \( "${m[@]}" \) -printf '%d %h\n' 2> /dev/null | sort -n | head -1 | cut -d' ' -f2- | sed "s#$up##I"
 }
 
