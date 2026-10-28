@@ -6,6 +6,7 @@ pub mod engine;
 pub mod gfx;
 pub mod mjo;
 pub mod rct;
+pub mod save;
 pub mod sys;
 pub mod value;
 pub mod vm;

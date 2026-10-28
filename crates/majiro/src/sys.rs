@@ -100,6 +100,15 @@ pub struct State {
     pub rand: u32,
     pub frame_mouse: (i32, i32),
     pub libs: HashSet<String>,
+    /// saves (save.rs): no text yet since the last page; the place of this message's first
+    /// text; the save point the scripts set last
+    pub fresh: bool,
+    pub pending: Option<crate::save::Place>,
+    pub point: Option<crate::save::Save>,
+    /// the sprites alive at every `$exec` so far: the ones a load keeps
+    pub ui_sprites: Option<HashSet<i32>>,
+    /// `$set_font_name`'s name
+    pub font_name: String,
 }
 
 pub use crate::console::{Console, Fontout};
@@ -112,6 +121,7 @@ impl State {
             auto_speed: 1000,
             rand: 0x1234_5678,
             next_file: 1,
+            fresh: true,
             ..Default::default()
         };
         for n in NAMES {
@@ -245,6 +255,11 @@ pub const ALPHA: i32 = 0x4000_0000;
 
 /// A run of message text: a name ("【name】" first on a page) or letters for the console.
 pub fn text(e: &mut Engine, th: &mut Thread, s: &str) -> Result<(), String> {
+    if e.sys.fresh {
+        // a message starts: a save made while it shows starts it again
+        e.sys.fresh = false;
+        e.sys.pending = Some(crate::save::place_of(th, th.op_at));
+    }
     let mut events: Vec<(&str, Vec<Value>)> = Vec::new();
     if !e.sys.console.on {
         e.sys.console.on = true;
@@ -307,6 +322,7 @@ fn has_hook(e: &Engine, name: &str) -> bool {
 pub fn ctrl(e: &mut Engine, th: &mut Thread, s: &str) -> Result<Option<Wait>, String> {
     match s {
         "p" => {
+            e.sys.fresh = true;
             if e.log > 1 {
                 eprintln!("[{}] {}", e.sys.console.name, e.sys.console.text);
             }
@@ -319,6 +335,7 @@ pub fn ctrl(e: &mut Engine, th: &mut Thread, s: &str) -> Result<Option<Wait>, St
             Ok(Some(Wait::Page))
         }
         "w" => {
+            e.sys.fresh = true;
             cls(e);
             fire(e, th, &[("CONSOLE_CLS", Vec::new())])?;
             Ok(None)
@@ -337,6 +354,13 @@ pub fn ctrl(e: &mut Engine, th: &mut Thread, s: &str) -> Result<Option<Wait>, St
 }
 
 /// A new page of text: the cursor goes home and the name is forgotten.
+/// The message on show (or the one before, after a clear).
+fn last_msg(e: &Engine) -> String {
+    let c = &e.sys.console;
+    let t = if c.text.is_empty() { &c.last } else { &c.text };
+    t.replace('\n', "")
+}
+
 fn cls(e: &mut Engine) {
     let c = &mut e.sys.console;
     c.last = std::mem::take(&mut c.text);
@@ -605,6 +629,11 @@ pub fn call(e: &mut Engine, th: &mut Thread, h: u32, a: Vec<Value>) -> Result<Re
             let main = e.script_main(&n)?;
             cls(e);
             // a new game: console.mjo sets the window up again
+            let now: HashSet<i32> = e.gfx.sprites.keys().copied().collect();
+            e.sys.ui_sprites = Some(match e.sys.ui_sprites.take() {
+                Some(ui) => ui.intersection(&now).copied().collect(),
+                None => now,
+            });
             let first = if name == "reset_exec" {
                 let args = vec![Value::Int(0), Value::string(""), Value::Int(1)];
                 hooked(e, th, &[("HOT_RESET", args)])
@@ -642,8 +671,11 @@ pub fn call(e: &mut Engine, th: &mut Thread, h: u32, a: Vec<Value>) -> Result<Re
         }
         "thread_is_exist" => return ok(e.thread_alive(int(&a, 0) as usize) as i32),
         "event_hook" | "event_hook_after" => {
-            e.hooks
-                .push((string(&a, 0).to_string(), th.id, int(&a, 1) as u32));
+            let hook = (string(&a, 0).to_string(), th.id, int(&a, 1) as u32);
+            // a load runs the scripts' setup again: a hook is there once
+            if !e.hooks.contains(&hook) {
+                e.hooks.push(hook);
+            }
             return ok(0);
         }
         "event_release" => {
@@ -1410,9 +1442,133 @@ pub fn call(e: &mut Engine, th: &mut Thread, h: u32, a: Vec<Value>) -> Result<Re
         "music_stat" | "sound_stat" | "voice_stat" | "movie_stat" => return ok(0),
         "sound_wait" | "sound2_wait" | "sound3_wait" | "voice_wait" | "music_wait"
         | "music_fadeout_wait" | "voice_ch_wait" | "movie_wait" => return ok(0),
-        "get_save_info$" | "get_save_time$" | "get_last_msg$" | "sound_get_fn$"
-        | "sound2_get_fn$" | "sound3_get_fn$" | "get_clipbord$" | "voicerect_name$"
-        | "get_font_name$" | "font_dialog$" | "dialog_input$" => {
+        "save_point" => {
+            let text = match string(&a, 0) {
+                t if t.is_empty() => last_msg(e),
+                t => t.to_string(),
+            };
+            let place =
+                e.sys.pending.take().unwrap_or_else(|| {
+                    crate::save::place_of(th, th.frames.last().map_or(0, |f| f.pc))
+                });
+            e.sys.point = Some(crate::save::Save {
+                text,
+                save: crate::save::deep_vars(&e.save),
+                place,
+            });
+            return ok(0);
+        }
+        "do_save" => {
+            let n = int(&a, 0);
+            if let Some(s) = &e.sys.point {
+                let b = crate::save::write(s);
+                e.files.write_save(&crate::save::slot_name(n), &b);
+                if e.log > 0 {
+                    eprintln!("majiro: saved slot {n}");
+                }
+            }
+            return ok(0);
+        }
+        "do_load" => {
+            let n = int(&a, 0);
+            let Some(s) = e
+                .files
+                .read_save(&crate::save::slot_name(n))
+                .and_then(|b| crate::save::read(&b).ok())
+            else {
+                // nothing there: the scripts say so
+                return ok(0);
+            };
+            if e.log > 0 {
+                eprintln!("majiro: loading slot {n}");
+            }
+            // a load starts over: the thread that ran the message goes back to it and every
+            // other thread ends (the HOT_RESET handlers start them again)
+            let main = s.place.thread;
+            for t in e.threads.iter_mut() {
+                if t.id != main && t.id != usize::MAX {
+                    t.frames.clear();
+                    t.wait = None;
+                    t.pending.clear();
+                }
+            }
+            e.spawned.retain(|t| t.id == main);
+            e.hooks.retain(|h| h.1 == main);
+            e.save = s.save;
+            // the scene goes: the scripts draw the saved one again; the sprites that
+            // were there at every script change (the message window, menus) stay
+            let scene: Vec<i32> = e
+                .gfx
+                .sprites
+                .keys()
+                .filter(|id| {
+                    e.sys
+                        .ui_sprites
+                        .as_ref()
+                        .is_some_and(|ui| !ui.contains(*id))
+                })
+                .copied()
+                .collect();
+            for id in scene {
+                if let Some(sp) = e.gfx.sprites.get(&id)
+                    && sp.owns_page
+                {
+                    let p = sp.page;
+                    e.gfx.pages.remove(&p);
+                }
+                e.gfx.release_sprite(id);
+            }
+            cls(e);
+            e.sys.fresh = true;
+            e.sys.pending = None;
+            // the click that chose the load does not go on to the message
+            e.sys.clicked = None;
+            e.sys.area_click = None;
+            e.sys.area_queue.clear();
+            // the scripts draw the scene again from the save variables
+            let args = vec![Value::Int(1), Value::string(""), Value::Int(0)];
+            if th.id == main {
+                crate::save::restore(e, th, s.place)?;
+                return calls(hooked(e, th, &[("HOT_RESET", args)]));
+            }
+            let at = e.threads.iter().position(|t| t.id == main);
+            let mut t = match at {
+                Some(i) => std::mem::replace(&mut e.threads[i], Thread::new(usize::MAX)),
+                None => Thread::new(main),
+            };
+            crate::save::restore(e, &mut t, s.place)?;
+            match at {
+                Some(i) => e.threads[i] = t,
+                None => e.spawned.push(t),
+            }
+            hooked(e, th, &[("HOT_RESET", args)]);
+            return Ok(Ret::End);
+        }
+        "get_save_info$" | "get_save_time$" => {
+            let n = int(&a, 0);
+            let s = e
+                .files
+                .read_save(&crate::save::slot_name(n))
+                .and_then(|b| crate::save::read(&b).ok());
+            let v = match (s, name) {
+                (Some(s), "get_save_info$") => s.text,
+                // the scripts put "20" in front
+                (Some(_), _) => "--/--/-- --:--".to_string(),
+                (None, _) => String::new(),
+            };
+            return Ok(Ret::Val(Value::string(v)));
+        }
+        "get_last_msg$" => return Ok(Ret::Val(Value::string(last_msg(e)))),
+        // (n, name): the scripts compare the name with the one they set the window up with
+        "set_font_name" => {
+            if let Some(Value::Str(n)) = a.iter().find(|v| matches!(v, Value::Str(_))) {
+                e.sys.font_name = n.to_string();
+            }
+            return ok(0);
+        }
+        "get_font_name$" => return Ok(Ret::Val(Value::string(e.sys.font_name.clone()))),
+        "sound_get_fn$" | "sound2_get_fn$" | "sound3_get_fn$" | "get_clipbord$"
+        | "voicerect_name$" | "font_dialog$" | "dialog_input$" => {
             return Ok(Ret::Val(Value::string("")));
         }
         "page_set_antidata" => {
@@ -1432,7 +1588,6 @@ pub fn call(e: &mut Engine, th: &mut Thread, h: u32, a: Vec<Value>) -> Result<Re
         | "set_musicvolume"
         | "set_soundvolume"
         | "set_fast_mode_flg"
-        | "set_font_name"
         | "set_caps_stat"
         | "screen_mode"
         | "auto_mode_config"
@@ -1475,7 +1630,6 @@ pub fn call(e: &mut Engine, th: &mut Thread, h: u32, a: Vec<Value>) -> Result<Re
         | "music_vol"
         | "movie_volume"
         | "voice_pan"
-        | "save_point"
         | "force_key_paste"
         | "set_clipbord" => return ok(0),
         _ => {}

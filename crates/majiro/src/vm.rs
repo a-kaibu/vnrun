@@ -79,6 +79,8 @@ pub struct Thread {
     pub pending: Vec<(u32, Vec<Value>)>,
     /// ending: each frame's destructor (`bsel.5`) runs, then the frame goes
     pub unwinding: bool,
+    /// where the instruction being run starts
+    pub op_at: usize,
 }
 
 impl Thread {
@@ -165,6 +167,7 @@ impl Thread {
             line: 0,
             pending: Vec::new(),
             unwinding: false,
+            op_at: 0,
         }
     }
 
@@ -322,6 +325,7 @@ impl Thread {
             let script = frame.script.clone();
             let op = decode(&script.code, frame.pc).map_err(|e| format!("{}: {e}", script.name))?;
             self.frames.last_mut().unwrap().pc = op.next;
+            self.op_at = op.at;
             self.exec(host, &op)
                 .map_err(|e| format!("{}:{} ({:#x}): {e}", script.name, self.line, op.at))?;
         }
