@@ -47,6 +47,7 @@ ENGINES = {
     "neko": "NekoSDK / Waffle (vnrun)",
     "med": "DxLib MED (vnrun)",
     "liar": "Liar-soft XFL (vnrun)",
+    "crossover": "CrossOver Adv.exe (vnrun)",
 }
 RESULTS = ["本編", "タイトル", "起動", "要再確認", "NG", "対象外", "未確認"]
 

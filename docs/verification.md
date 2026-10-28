@@ -50,7 +50,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | HTML (TyranoScript、RPGツクール MV/MZ) | 35 | 34 | 1 |  |  |  |  |  |
 | 吉里吉里 (KiriKiri SDL2) | 135 | 109 | 25 |  |  |  | 1 |  |
 | YU-RIS (vnrun) | 29 | 28 |  |  |  |  | 1 |  |
-| NeXAS (vnrun) | 16 | 13 |  |  | 1 |  | 2 |  |
+| NeXAS (vnrun) | 15 | 13 |  |  | 1 |  | 1 |  |
 | AdvHD (vnrun) | 35 | 30 |  |  |  |  |  | 5 |
 | Tmr-Hiro (vnrun) | 22 | 22 |  |  |  |  |  |  |
 | LiveMaker (vnrun) | 7 | 4 |  |  |  |  |  | 3 |
@@ -79,6 +79,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | NekoSDK / Waffle (vnrun) | 6 | 5 |  |  |  |  |  | 1 |
 | DxLib MED (vnrun) | 3 | 3 |  |  |  |  |  |  |
 | Liar-soft XFL (vnrun) | 2 | 2 |  |  |  |  |  |  |
+| CrossOver Adv.exe (vnrun) | 1 | 1 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -429,7 +430,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2011_giga_hinataterrace | [ひなたテラス -We don't abandon you.- web体験版２](http://suezou.dyndns.org/dl2011/giga/hinataterrace/hinata_webtrial02c.zip) | 本編 | Chromium (3f99c53) で START→本編の文章まで |
 | s2015_giga_renaiphase | [恋愛フェイズ 体験版](http://suezou.dyndns.org/dl2015/giga/renaiphase/RP_trial.zip) | 本編 | d98165b で確認。タイトルの「Digest Story」→「Digest-1」から 共通00.bin のチャット画面と本文まで (Chromium) |
 | s2006_giga_cheerfull | [チアフル！ ～cheerfull!～ 【 体験版 】](http://suezou.dyndns.org/dl2006/giga/cheerfull/cheerfull_trial.exe) | 要再確認 | ダウンロードはできるが、自己展開 exe が GIGA 独自の暗号化形式 (GFL SecureCryptograph) で 7z・unar では展開できない |
-| b2009_crossover | [美乳淫妹 遥「私にイヤらしいコスプレさせるなんて……この変態！」](http://suezou.dyndns.org/dl2009/crossover/haruka/bnharuka_trial.zip) | 対象外 | NeXAS ではない。CrossOver 自社の Adv.exe (DATA/ の PACK 形式に LL5 圧縮の GR2 画像、*Pola* 圧縮の .SCD スクリプト、.VIC 音声)。スクリプト VM が未知で新エンジンが要る (docs/handoff.md) |
 | s2025_milimili_hanako | [ちょっとナマイキなトイレの花子さん ～えっちぃ学園のおばけとエロエロ搾精性活～ 【体験版】](http://suezou.dyndns.org/dl2025/milimili/hanako/hanako_try2.zip) | 対象外 | 中身は Unity 製 (vnbox の NeXAS 判定が誤り) |
 
 ### AdvHD (vnrun)
@@ -770,4 +770,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|
 | b2019_channel_ubai | [アイドル裏営業～汚されたステージ衣装～ 体験版](http://suezou.dyndns.org/dl2019/channel-ubai/idol_ura/idol_ura-trial.zip) | 本編 | Liar-soft XFL (vnrun) でタイトル (0001.gsc のボタン)→はじめから→操作説明の絵→0500→1010..1030 の背景・イベント CG・立ち絵・名前・文章・ボイス・BGM (liar-run 9000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
 | b2022_evoll | [南国プリズン 体験版](http://suezou.dyndns.org/dl2022/evoll/nangoku_prison/Nangoku_Trial.zip) | 本編 | Liar-soft XFL (vnrun) でタイトル (0001.gsc のボタン、ホバー絵)→はじめから→注意書き 9901..9903→0500→1010..1040 の背景・イベント CG・立ち絵 (体 + 顔、サブルーチン)・名前・文章・ボイス・BGM・選択肢→3010 (liar-run 9000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
+
+### CrossOver Adv.exe (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2009_crossover | [美乳淫妹 遥「私にイヤらしいコスプレさせるなんて……この変態！」](http://suezou.dyndns.org/dl2009/crossover/haruka/bnharuka_trial.zip) | 本編 | CrossOver Adv.exe (vnrun) でロゴ→注意書き→タイトル (SYSMENU.SCD のホットスポットとホバー絵)→始めから→OP_01..OP_04 の背景・立ち絵 (形の画像)・イベント CG・名前・文章・ボイス・効果音・BGM・選択肢 2 回→体験版の終わりでタイトルへ (crossover-run 9000 フレーム、スキップ)。Chromium でタイトル→本編、Esc のメニューからセーブ→タイトルの「続きから」でロードし保存した行に戻る |
 <!-- /matrix -->

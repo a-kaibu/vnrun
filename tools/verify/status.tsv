@@ -193,7 +193,7 @@ s2008_giga_sakahari	本編	Chromium (3f99c53) で START→本編の文章まで
 s2011_giga_hinataterrace	本編	Chromium (3f99c53) で START→本編の文章まで
 b2019_giga	本編	6875c68 でタイトルから本編テキストまで。メッセージウィンドウ画像は未表示 (既知)
 b2016_giga	本編	6875c68 でタイトルから New Game で本編テキストまで
-b2009_crossover	対象外	NeXAS ではない。CrossOver 自社の Adv.exe (DATA/ の PACK 形式に LL5 圧縮の GR2 画像、*Pola* 圧縮の .SCD スクリプト、.VIC 音声)。スクリプト VM が未知で新エンジンが要る (docs/handoff.md)
+b2009_crossover	本編	CrossOver Adv.exe (vnrun) でロゴ→注意書き→タイトル (SYSMENU.SCD のホットスポットとホバー絵)→始めから→OP_01..OP_04 の背景・立ち絵 (形の画像)・イベント CG・名前・文章・ボイス・効果音・BGM・選択肢 2 回→体験版の終わりでタイトルへ (crossover-run 9000 フレーム、スキップ)。Chromium でタイトル→本編、Esc のメニューからセーブ→タイトルの「続きから」でロードし保存した行に戻る
 b2012_giga	本編	b425e77 (2012 年版の表) で New Game から本編の文章まで
 b2013_giga	本編	6875c68 でタイトルから new game で本編テキストまで (冒頭は白背景+メッセージウィンドウ)
 b2011_giga	本編	6875c68 でタイトルから はじめから で本編テキストまで
