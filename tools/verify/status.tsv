@@ -152,7 +152,7 @@ dl_VJ01002863	タイトル	Chromium で START 後、体験版の挨拶文 1 行�
 dl_VJ01001385	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_VJ01000407	本編	Chromium (3f99c53+) で START→本編の文章まで
 s2021_casket_bellaca02	タイトル	3e4a888 のビルドでタイトルまで
-dl_RJ01708454	タイトル	3e4a888 のビルドでタイトルまで
+dl_RJ01708454	本編	Chromium で はじめから→本編の文章まで
 b2007_whirlpool	NG	pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」
 b2006_whirlpool	NG	pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」
 dl_VJ01002338	NG	pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」
@@ -363,8 +363,8 @@ b2007_marmalade	本編	ロゴ→タイトル (3D の演出は描かない)→STA
 b2009_cube	本編	注意書き→タイトル→初めから→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認
 b2009_marmalade	本編	タイトル→はじめから→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認
 b2024_syrup_mm	NG	.csx が無い新しい世代 (システムは exe 内、台本は xscript の .srcxml)
-b2013_alicesoft	本編	注意書き→タイトル→ゲーム開始→本編の文章 (ブラウザ)
-b2012_alicesoft	本編	タイトル (シーン選択)→琴音 純愛→本編の文章 (ブラウザ)
+b2013_alicesoft	本編	Chromium で注意書き→ゲーム開始→本編の文章まで (vnrun 検証スレッドでも確認)
+b2012_alicesoft	本編	Chromium で シーン選択 (琴音 純愛)→本編の文章まで (vnrun 検証スレッドでも確認)
 b2007_clochette	本編	QLIE (vnrun) でロゴ→タイトル→Start→本編の文章・名前・背景・立ち絵まで。セーブ→タイトルからロード、バックログも (Chromium)
 b2020_barista_lab	本編	QLIE (vnrun) で注意書き→タイトル→はじめから→本編の文章・名前・背景・立ち絵まで (ImoScripter の ^ 命令)。セーブ→タイトルの「つづきから」でロードも (Chromium)
 b2008_escude	本編	Escu:de (ACPX の C を自前 VM で実行) でタイトル→NEW GAME→本編の背景・文章まで (escude-run と Chromium)。セーブ (スロットの日時・サムネイル)→タイトルからロードで本編に戻る (escude-run)
