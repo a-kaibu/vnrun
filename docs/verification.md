@@ -62,7 +62,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Majiro (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | Kaguya (vnrun) | 6 | 6 |  |  |  |  |  |  |
 | Interheart (vnrun) | 11 | 10 |  |  |  | 1 |  |  |
-| Crowd/ANIM (vnrun) | 9 | 4 |  |  |  | 5 |  |  |
+| Crowd/ANIM (vnrun) | 9 | 5 |  |  |  | 4 |  |  |
 | Cyberworks (vnrun) | 8 | 1 |  |  |  |  |  | 7 |
 | LiLiM (vnrun) | 7 | 2 |  |  |  |  |  | 5 |
 
@@ -567,11 +567,11 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| b2007_anim | [必殺痴漢人　- TRIAL VERSION -](http://suezou.dyndns.org/dl2007/anim/chikan3/ci3_trial.lzh) | 本編 | Crowd/ANIM の 2007 年版 (番号と引数が違う別表、exe の解釈ループから。全ジャンプが命令の頭に落ちるのを確認) でタイトル (p_menu)→はじめから→本編の文章・名前・背景・立ち絵・選択肢 (anim-run と Chromium)。上 48 の帯と下 144 の枠は p_message から。タイトルのメニューは自前の文字ボタン |
 | b2008_anim | [息子の友達に犯されて - TRIAL VERSION -](http://suezou.dyndns.org/dl2008/anim/musuko/musuko_trial.lzh) | 本編 | Crowd/ANIM (<game>_sce.dat を自前で実行) でタイトル→START→説明文→蓉子編/一志編の選択肢→本編の背景・立ち絵・イベント CG・文章・ボイスまで、体験版の最後 (タイトルに戻る) まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (両方) |
 | b2009_anim | [愛娘という名の玩具　- TRIAL VERSION -](http://suezou.dyndns.org/dl2009/anim/eva/eve_trial.lzh) | 本編 | Crowd/ANIM で 1024x768 のタイトル (Start/Load/Exit)→本編の背景 (1024x576 を上下の帯の間に)・立ち絵・イベント CG・文章まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium)。メッセージ枠は自前の半透明の帯 (p_message が無い) |
 | b2010_anim | [贄姫 - TRIAL VERSION -](http://suezou.dyndns.org/dl2010/anim/niehime/nime_trial.lzh) | 本編 | Crowd/ANIM でタイトル (縦書きの 5 ボタン)→初めから→本編の背景・立ち絵・文章まで、体験版の最後まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
 | b2011_anim_team_mm | [NTR彼女はいじめられっ娘 - TRIAL VERSION -](http://suezou.dyndns.org/dl2011/anim-team-mm/ntr/ntr_trial_02.zip) | 本編 | Crowd/ANIM の 2011 年版 (命令の番号が付け直された別表、exe の解釈ループから) でタイトル (pMenuTrial と pMenuTrialButton、位置は exe の数値)→はじめから→本編の背景・立ち絵 (GAX)・文章・ボイス・選択肢まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
-| b2007_anim | [必殺痴漢人　- TRIAL VERSION -](http://suezou.dyndns.org/dl2007/anim/chikan3/ci3_trial.lzh) | NG | Crowd/ANIM (anim) の 2007 年版はオペコードの番号と引数が 2008 年以降と違い (36・30 番台・9a など)、ck_sce.dat を最後まで読めない。家系ごとの表が要る |
 | b2017_anim | [いつまでも俺は母に恋してる！ - 体験版２ -](http://suezou.dyndns.org/dl2017/anim/mamakoi/mamakoi_trial_v2.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり、<game>_sce.dat が無い。保護を外すのはコピー保護の回避にあたるため試みない |
 | b2019_anim | [いつまでも息子のままじゃいられない！５ - 体験版 -](http://suezou.dyndns.org/dl2019/anim/musumama5/musu_mama5_trial.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり、<game>_sce.dat が無い。保護を外すのはコピー保護の回避にあたるため試みない |
 | b2022_anim | [愛妻Ｘ交姦妊活スワッピング - 体験版 -](http://suezou.dyndns.org/dl2022/anim/aisaikoukan/aisaikoukan_trial.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり (cg/psbpack.dat と E-mote)、<game>_sce.dat が無い。保護を外すのはコピー保護の回避にあたるため試みない |

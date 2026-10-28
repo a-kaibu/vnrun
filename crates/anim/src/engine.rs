@@ -220,7 +220,8 @@ impl Engine {
             e.screen = (1024, 768);
         } else if e.title_picture().is_some_and(|t| t.w == 1024) {
             e.screen = (1024, 768);
-            e.stage_y = 96.0;
+            // 2007: a 48-pixel band above the picture, the window in the 144 below it
+            e.stage_y = if e.prog.family == "2007" { 48.0 } else { 96.0 };
         }
         Ok(e)
     }
@@ -467,9 +468,18 @@ impl Engine {
                     self.loops.remove(&ch);
                     self.stop_effect(ch + 1, 300);
                 }
-                0x64 => self.wait = Wait::Until(self.now + n(0).clamp(0, 60000) as u64),
+                0x64 => {
+                    let ms = a.first().map_or(0, |v| self.value(v));
+                    self.wait = Wait::Until(self.now + ms.clamp(0, 60000) as u64)
+                }
                 0x41 if prog.family == "2009" => {
                     self.wait = Wait::Until(self.now + n(0).clamp(0, 60000) as u64)
+                }
+                0x7b if prog.family == "2007" => {
+                    // the time in milliseconds; the scenario waits by looping on it, so let a
+                    // frame pass each time it looks
+                    self.set_var(n(0) as u8, n(1) as u16, self.now as i64);
+                    self.wait = Wait::Until(self.now + 1);
                 }
                 0x7c => self.window = false,
                 0x93 => {
@@ -789,6 +799,11 @@ impl Engine {
         let top = h - self.window_height();
         let window = self.picture("pMessageWindow", false);
         match self.picture("p_message", false) {
+            Some(m) if self.prog.family == "2007" => {
+                // 2007: the date band above the picture and the window panel below it
+                out.push(part(&m, [0, 0, 1024, 48], 0.0, 0.0));
+                out.push(part(&m, [0, 48, 1024, 144], 0.0, top));
+            }
             _ if window.is_some() => {
                 // 2011: the panel from the exe's numbers (its sheet's 1024x209 at y 547)
                 let m = window.unwrap();
@@ -833,6 +848,8 @@ impl Engine {
     fn window_height(&self) -> f32 {
         if self.prog.family == "2011" {
             221.0
+        } else if self.prog.family == "2007" {
+            144.0
         } else if self.stage_y > 0.0 {
             176.0
         } else {
@@ -844,6 +861,8 @@ impl Engine {
     fn bar_size(&self) -> (i32, i32, i32) {
         if self.prog.family == "2011" {
             (1022, 90, 0)
+        } else if self.prog.family == "2007" {
+            (640, 60, 16)
         } else if self.screen.0 == 1024 {
             (1024, 90, 0)
         } else {
@@ -865,19 +884,29 @@ impl Engine {
     }
 
     fn choice_draws(&mut self, answers: &[String], out: &mut Vec<Draw>) {
-        let bars = self.cache.get("p_select#bars").cloned().or_else(|| {
-            let b = self
-                .picture("p_select", false)
-                .or_else(|| self.picture("pSelect", false))?;
-            // 2008 and 2010: two bars, then their masks; 2009: four plain bars
-            let b = if b.h == 224 {
-                Rc::new(data::masked_below(&b))
-            } else {
-                b
-            };
-            self.cache.insert("p_select#bars".into(), b.clone());
-            Some(b)
-        });
+        // 2007: its p_select sheets are white masks for bars the exe draws, so plain bars
+        let plain = self.prog.family == "2007";
+        let bars = self
+            .cache
+            .get("p_select#bars")
+            .cloned()
+            .filter(|_| !plain)
+            .or_else(|| {
+                if plain {
+                    return None;
+                }
+                let b = self
+                    .picture("p_select", false)
+                    .or_else(|| self.picture("pSelect", false))?;
+                // 2008 and 2010: two bars, then their masks; 2009: four plain bars
+                let b = if b.h == 224 {
+                    Rc::new(data::masked_below(&b))
+                } else {
+                    b
+                };
+                self.cache.insert("p_select#bars".into(), b.clone());
+                Some(b)
+            });
         for (r, text) in self.choice_rects(answers.len()).into_iter().zip(answers) {
             let lit = inside(r, self.pointer.0, self.pointer.1);
             let (bw, bh, _) = self.bar_size();
