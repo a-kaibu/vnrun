@@ -152,7 +152,12 @@ impl Engine {
                     .adv
                     .as_ref()
                     .is_some_and(|a| !a.waits_fes() && a.reading());
-            if reading && rclicked {
+            let on_page = self.skip_to.is_none()
+                && self
+                    .adv
+                    .as_ref()
+                    .is_some_and(|a| !a.waits_fes() && a.on_page());
+            if on_page && rclicked {
                 self.open_menu(Mode::Save, None);
                 return true;
             }

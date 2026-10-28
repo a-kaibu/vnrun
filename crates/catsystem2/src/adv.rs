@@ -147,6 +147,12 @@ impl Adv {
     pub fn reading(&self) -> bool {
         matches!(self.wait, Wait::Click | Wait::Select)
     }
+
+    /// A page is showing, maybe still changing faces before it waits (カミカゼ, 2011): the
+    /// right click's save screen may open.
+    pub fn on_page(&self) -> bool {
+        self.reading() || (matches!(self.wait, Wait::Until(_) | Wait::All) && !self.text.is_empty())
+    }
 }
 
 impl Engine {
@@ -1012,7 +1018,16 @@ impl Engine {
             let rest = a[3..].to_vec();
             let x = rest.first().map_or(def.0, |s| self.value(s, cur.0));
             let y = rest.get(1).map_or(def.1, |s| self.value(s, cur.1));
+            // `bg 4 bg035a 0 0 0 9`: the fourth number names the plane
+            let plane = rest
+                .get(3)
+                .and_then(|s| s.parse::<i64>().ok())
+                .filter(|p| (0..10).contains(p))
+                .map(|p| self.plane(p));
             let o = self.obj(i).unwrap();
+            if let Some(p) = plane {
+                o.plane = Some(p);
+            }
             o.parts = files;
             o.file = base;
             o.disp = true;
@@ -1047,6 +1062,15 @@ impl Engine {
             f if f.is_empty() => (String::new(), img("img00")),
             f => (img("img00"), f),
         };
+        // img00 the window and its places, img01 only a mask (カミカゼ☆エクスプローラー！, 2011)
+        // (there its 100s are buttons and 11 the name)
+        let one =
+            !bg.is_empty() && self.g.frame(&frame, 10).is_none() && self.g.frame(&bg, 10).is_some();
+        let (bg, frame) = if one {
+            (String::new(), bg)
+        } else {
+            (bg, frame)
+        };
         // the older meswnd.xml (スズノネセブン！, 2008): <IMAGE><file>, its frame 1 the window,
         // 10 the text and 50 the click mark (its 100s are the buttons, not a name plate)
         let old = mes.is_empty().then(|| {
@@ -1062,12 +1086,14 @@ impl Engine {
                 frame: file,
                 names: String::new(),
                 plate: false,
+                old: true,
             },
             _ => Theme {
                 bg,
                 frame,
                 names: img("img03"),
-                plate: true,
+                plate: !one,
+                old: false,
             },
         });
         self.adv.as_mut().unwrap().win = Some(t.clone());
@@ -1129,7 +1155,7 @@ impl Engine {
             };
             // the older window: its frame 10 covers it all; the text and the name plate go
             // where the window picture (frame 1) has them
-            if !theme.plate
+            if theme.old
                 && let Some(f) = self.g.frame(frame, 1)
             {
                 let (x, y) = (f.x as f32, top + f.y as f32);
@@ -1314,6 +1340,8 @@ pub struct Theme {
     names: String,
     /// frame 100 of `frame` is the name plate
     plate: bool,
+    /// the 2008 window: the text and the name go by its frame 1
+    old: bool,
 }
 
 /// nametable.csv: `number<TAB>name<TAB>...`.
