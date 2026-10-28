@@ -17,7 +17,7 @@
 //! | 14 | pic, ? | the background (layer 0) |
 //! | 15 | ? | no background |
 //! | 1A / 1B | | hold the screen / show the changes at once |
-//! | 1C | kind, time, time | show the changes with a fade |
+//! | 1C | kind, time, time | show the changes with a fade (kind NN: by the mask efNN.msk) |
 //! | 1E | layer, pic, x, y, fade, ? | a picture on a layer |
 //! | 24 | layer, fade | clear a layer (0: all, above 100: a group) |
 //! | 25 | layer, on | show / hide a layer |
@@ -44,7 +44,7 @@ use std::rc::Rc;
 
 use nexas::files::Files;
 use nexas::font::Font;
-use nexas::gfx::{Draw, Image, Place};
+use nexas::gfx::{Draw, Image, Place, Rule};
 
 use crate::gsc::{Arg, Rec, Script};
 use crate::wcg;
@@ -91,7 +91,12 @@ struct Fade {
     from: Vec<Draw>,
     start: f64,
     ms: f64,
+    /// 1C of a kind with a grps:efNN.msk: the old picture goes where the mask is dark first
+    rule: Option<Rc<Image>>,
 }
+
+/// How soft a mask wipe's edge is (part of the mask's brightness range).
+const RULE_VAGUE: f32 = 0.2;
 
 #[derive(Clone, Debug, PartialEq)]
 struct Frame {
@@ -153,6 +158,7 @@ pub struct Engine {
     view: View,
     frozen: Option<Vec<Draw>>,
     fade: Option<Fade>,
+    rules: Vec<(usize, Rule)>,
     now: f64,
     bgm: Option<i32>,
     /// sound channel: the sound loaded, and whether it plays for ever
@@ -233,6 +239,7 @@ impl Engine {
             view: View::Game,
             frozen: None,
             fade: None,
+            rules: Vec::new(),
             now: 0.0,
             bgm: None,
             se: BTreeMap::new(),
@@ -554,7 +561,8 @@ impl Engine {
             0x1b => self.frozen = None,
             0x1c => {
                 let ms = a(1).max(0) as f64 * UNIT_MS;
-                self.present(ms);
+                let rule = self.rule(a(0));
+                self.present_ruled(ms, rule);
             }
             0x1e => {
                 let (slot, pic, x, y, fade) = (a(0), a(1), a(2), a(3), a(4));
@@ -874,13 +882,43 @@ impl Engine {
         img.map(|i| (i, x, y))
     }
 
+    /// The rule picture of a 1C kind: grps:efNN.msk (a BMP), for the kinds that have one.
+    fn rule(&mut self, kind: i32) -> Option<Rc<Image>> {
+        if !(10..100).contains(&kind) || self.skip {
+            return None;
+        }
+        let key = format!("rule/{kind}");
+        if let Some(i) = self.images.get(&key) {
+            return i.clone();
+        }
+        let name = format!("ef{kind:02}.msk");
+        let img = self
+            .arcs
+            .read(self.files.as_mut(), "grps", &name)
+            .and_then(|b| nexas::gfx::bmp(&b))
+            .map(Rc::new);
+        if img.is_none() {
+            self.trace(&format!("no mask grps/{name}"));
+        }
+        if self.images.len() > 48 {
+            self.images.clear();
+        }
+        self.images.insert(key, img.clone());
+        img
+    }
+
     fn present(&mut self, ms: f64) {
+        self.present_ruled(ms, None);
+    }
+
+    fn present_ruled(&mut self, ms: f64, rule: Option<Rc<Image>>) {
         match self.frozen.take() {
             Some(from) if ms > 0.0 && !self.skip => {
                 self.fade = Some(Fade {
                     from,
                     start: self.now,
                     ms,
+                    rule,
                 });
                 if self.wait == Wait::None {
                     self.wait = Wait::Fade;
@@ -957,11 +995,23 @@ impl Engine {
             Some(f) => f.clone(),
             None => self.stage_draws(),
         };
+        self.rules.clear();
         if let Some(f) = &self.fade {
             let p = ((self.now - f.start) / f.ms.max(1.0)).clamp(0.0, 1.0) as f32;
             for d in &f.from {
                 let mut d = d.clone();
-                d.place.alpha *= 1.0 - p;
+                match &f.rule {
+                    Some(r) => self.rules.push((
+                        out.len(),
+                        Rule {
+                            image: r.clone(),
+                            progress: p,
+                            vague: RULE_VAGUE,
+                            appear: false,
+                        },
+                    )),
+                    None => d.place.alpha *= 1.0 - p,
+                }
                 out.push(d);
             }
         }
@@ -1238,12 +1288,13 @@ impl Engine {
 
     /// The frame as one picture (for the native runner).
     pub fn render(&mut self) -> Image {
-        let mut img = Image::new(self.width, self.height);
-        img.fill([0, 0, 0, 255]);
-        for d in self.draws() {
-            nexas::gfx::draw(&mut img, &d.image, d.src, d.dst, &d.place);
-        }
-        img
+        let ds = self.draws();
+        nexas::gfx::render_ruled(self.width, self.height, &ds, &self.rules)
+    }
+
+    /// The mask wipes of the last [`Engine::draws`]: (draw index, rule).
+    pub fn rules(&self) -> &[(usize, Rule)] {
+        &self.rules
     }
 
     // ---- sounds ----
