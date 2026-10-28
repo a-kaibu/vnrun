@@ -5,6 +5,7 @@
 //! the game reads its messages from.
 
 pub mod engine;
+pub mod exe;
 pub mod fpk;
 pub mod pic;
 pub mod script;

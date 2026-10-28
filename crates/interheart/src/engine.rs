@@ -117,6 +117,9 @@ struct Title {
     /// 324 x 52 in 3 rows each) plain ones of our own
     buttons: Vec<(u8, [i32; 4])>,
     classic: bool,
+    /// 2018 on: the program's own table of the buttons (exe.rs), each with what it does as
+    /// the hover map numbers it (0: nothing here)
+    exe: Vec<(u8, crate::exe::Button)>,
 }
 
 /// Our own title buttons: what each does (as the hover map numbers them) and its label.
@@ -365,8 +368,18 @@ impl Engine {
                 .find_map(|n| self.arc.read(self.files.as_mut(), n))
                 .and_then(|b| HoverMap::parse(&b));
             let classic = chip.as_ref().is_some_and(|c| classic_title_chip(c)) && map.is_some();
+            let exe = if classic || chip.is_none() {
+                Vec::new()
+            } else {
+                self.exe_title()
+            };
             let buttons = if classic {
                 map.as_ref().map(|m| m.boxes()).unwrap_or_default()
+            } else if !exe.is_empty() {
+                exe.iter()
+                    .filter(|(v, _)| *v != 0)
+                    .map(|(v, b)| (*v, b.dst))
+                    .collect()
             } else {
                 let (w, h) = (self.screen.0 as i32, self.screen.1 as i32);
                 PLAIN_TITLE
@@ -384,6 +397,7 @@ impl Engine {
                 map,
                 buttons,
                 classic,
+                exe,
             });
         }
         self.fade = Some(Fade {
@@ -402,6 +416,47 @@ impl Engine {
             Some(name) => self.play_bgm(name.trim_end_matches(".OGG").trim_end_matches(".ogg")),
             None => self.stop_bgm(500),
         }
+    }
+
+    /// The title buttons of the program (2018 on). Its ids: 1 new game, 2 the load screen,
+    /// 3 the last save, then the settings, the extras and so on; quitting is the last one
+    /// (6 in 2018, 7 from 2019 when 6 is clearing the data).
+    fn exe_title(&mut self) -> Vec<(u8, crate::exe::Button)> {
+        let names: Vec<String> = self
+            .files
+            .list()
+            .into_iter()
+            .filter(|n| {
+                let l = n.to_lowercase();
+                l.ends_with(".exe")
+                    && !["uninst", "setup", "syscfg", "getpin"]
+                        .iter()
+                        .any(|k| l.starts_with(k))
+            })
+            .collect();
+        for n in names {
+            let Some(b) = self.files.read(&n) else {
+                continue;
+            };
+            let list = crate::exe::buttons(&b, "Title").unwrap_or_default();
+            // the table must hold a new game at least
+            if !list.iter().any(|b| b.id == 1) {
+                continue;
+            }
+            let last = list.iter().map(|b| b.id).max().unwrap_or(0);
+            return list
+                .into_iter()
+                .map(|b| {
+                    let v = match b.id {
+                        1..=3 => b.id as u8,
+                        id if id == last && id >= 6 => 6,
+                        _ => 0,
+                    };
+                    (v, b)
+                })
+                .collect();
+        }
+        Vec::new()
     }
 
     fn title_bg(&mut self) -> Option<Rc<Image>> {
@@ -874,6 +929,22 @@ impl Engine {
         let Some(t) = &self.title else { return out };
         if let Some(bg) = &t.bg {
             out.push(draw(bg, 0.0, 0.0, 1.0));
+        }
+        if !t.exe.is_empty()
+            && let Some(chip) = t.chip.clone()
+        {
+            let (px, py) = self.pointer;
+            for (_, b) in &t.exe {
+                let state = usize::from(inside(b.dst, px, py));
+                let [x0, y0, x1, y1] = b.src[state];
+                out.push(part(
+                    &chip,
+                    [x0, y0, x1 - x0, y1 - y0],
+                    b.dst[0] as f32,
+                    b.dst[1] as f32,
+                ));
+            }
+            return out;
         }
         if !t.classic {
             let buttons = t.buttons.clone();
