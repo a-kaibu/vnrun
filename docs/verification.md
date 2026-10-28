@@ -42,8 +42,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | エンジン | 本数 | 本編 | タイトル | 起動 | 要再確認 | NG | 対象外 | 未確認 |
 |---|---|---|---|---|---|---|---|---|
 | SiglusEngine (siglus_rs) | 19 | 5 | 14 |  |  |  |  |  |
-| RealLive (siglus_rs) | 8 | 4 | 2 |  | 1 |  | 1 |  |
-| BGI (ethornell-rs) | 21 | 1 | 20 |  |  |  |  |  |
+| RealLive (siglus_rs) | 8 | 6 |  |  | 1 |  | 1 |  |
+| BGI (ethornell-rs) | 21 | 11 | 10 |  |  |  |  |  |
 | Softpal (sena-rs) | 28 | 27 |  |  |  | 1 |  |  |
 | Artemis (art3m1s-core) | 6 | 1 | 5 |  |  |  |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
@@ -114,9 +114,9 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2007_hadashi | [ハーレム×すくらっち体験版](http://suezou.dyndns.org/dl2007/hadashi/scratch/scratch_taiken.zip) | 本編 |  |
 | b2007_sagaplanets | [聖炎天使エレアノール 体験版](http://suezou.dyndns.org/dl2007/sagaplanets/eleanor/EleanorTrial.lzh) | 本編 | fonts/ が要る |
 | b2008_hadashi | [お姉さん×すくらっち体験版](http://suezou.dyndns.org/dl2008/hadashi/scratch2/trial.lzh) | 本編 |  |
+| s2008_sagaplanets_cominghumming | [Coming×Humming!! -カミング・ハミング- （体験版）](http://suezou.dyndns.org/dl2008/sagaplanets/cominghumming/ComingHumming_Trial.zip) | 本編 | Chromium で本編のセーブ/ロード確認 (siglus_rs 0006: 選択肢の間の行番号を読み飛ばす) |
+| s2009_hadashi_cool | [素直くーる体験版](http://suezou.dyndns.org/dl2009/hadashi/cool/trial.lzh) | 本編 | Chromium で本編のセーブ/ロード確認 (siglus_rs 0007: 番号なしのボタンはオブジェクト番号を返す) |
 | s2014_hadashi_3pl | [3Ping Lovers!☆一夫二妻の世界へようこそ♪　体験版](http://suezou.dyndns.org/dl2014/hadashi/3pl/trial.zip) | 本編 | 最初の選択肢まで |
-| s2008_sagaplanets_cominghumming | [Coming×Humming!! -カミング・ハミング- （体験版）](http://suezou.dyndns.org/dl2008/sagaplanets/cominghumming/ComingHumming_Trial.zip) | タイトル |  |
-| s2009_hadashi_cool | [素直くーる体験版](http://suezou.dyndns.org/dl2009/hadashi/cool/trial.lzh) | タイトル |  |
 | s2010_sagaplanets_kisaragi | [キサラギGOLD★STAR](http://suezou.dyndns.org/dl2010/sagaplanets/kisaragi/kisaragi_goldstar_trial.zip) | 要再確認 | 展開後にエンジンの印のファイル (Seen.txt) が見つからない |
 | r1_reallive_five | [5 -ファイブ- 体験版](http://ram.product.co.jp/5/DL/Five_trial_setup.exe) | 対象外 | インストーラ形式 (展開できない) |
 
@@ -124,18 +124,18 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| b2006_lumpofsugar | [いつか、届く、あの空に。【体験版】](http://suezou.dyndns.org/dl2006/lumpofsugar/itsusora/itsusora_trial.lzh) | 本編 | ネイティブ (ethornell headless) で はじめから→本編→右クリックのメニューからセーブ/ロード確認 |
+| b2010_lumpofsugar | [Hello,good-bye 体験版](http://suezou.dyndns.org/dl2010/lumpofsugar/hello_good-bye/Hello_goodbye_trial_web.zip) | 本編 | ネイティブ (ethornell headless) で 最初から→本編→ウィンドウの「記録」でセーブ、「読込」でロード確認 |
+| b2011_lumpofsugar | [DiamicDays_Trial.zip](http://suezou.dyndns.org/dl2011/lumpofsugar/diamicdays/DiamicDays_Trial.zip) | 本編 | ネイティブ (ethornell headless) で はじめから→本編→セーブ/ロード確認 |
+| b2013_lumpofsugar | [sekachu_trial_WEB2.zip](http://suezou.dyndns.org/dl2013/lumpofsugar/sekachu/sekachu_trial_WEB2.zip) | 本編 | ethornell-rs 0010 (解放済みスプライトのフェード、VM メモリ 512MB) でセーブ/ロード画面が開くようになり、本編のセーブ/ロード確認 (ネイティブ) |
+| b2015_hooksoft | [トラベリングスターズ 体験版02 Ver1.00](http://suezou.dyndns.org/dl2015/hooksoft/traveling_stars/travelingstars_trial_02.zip) | 本編 | ネイティブ (ethornell headless) で はじめから→本編→右クリックのメニューからセーブ/ロード確認 |
+| b2015_lump_of_sugar | [rensou_trial_WEB.zip](http://suezou.dyndns.org/dl2015/lump-of-sugar/rensourelation/rensou_trial_WEB.zip) | 本編 | ethornell-rs 0010 (ネイティブの絶対パス) で 最初から→本編→歯車のメニューからセーブ/ロード確認 (ネイティブ) |
+| b2019_hooksoft | [どっちのｉが好きですか？　Ｈシーン体験版　Ver1.00](http://suezou.dyndns.org/dl2019/hooksoft/isuki/isuki_h_trial.zip) | 本編 | ethornell-rs 0010 (Sprite の GetProperty 0x10) でセーブ画面が開くようになり、本編 (H シーン体験版) のセーブ/ロード確認 (ネイティブ) |
+| b2019_sukerasparo | [kudan_trial.zip](http://suezou.dyndns.org/dl2019/sukerasparo/kudan/kudan_trial.zip) | 本編 | ネイティブ (ethornell headless) で START→本編→SAVE&LOAD でセーブ/ロード確認 |
+| b2020_sukerasomero | [oshilove_trial.zip](http://suezou.dyndns.org/dl2020/sukerasomero/oshi_love/oshilove_trial.zip) | 本編 | ネイティブ (ethornell headless) で START→本編→右端のメニューからセーブ/ロード確認 (約 7000 フレーム、遅い) |
+| r1_bgi_kudan | [クダンノフォークロア 体験版](http://sukerasparo.com/data/kudan_trial.zip) | 本編 | b2019_sukerasparo と同じ作品 (クダンノフォークロア)。そちらで本編のセーブ/ロード確認 |
 | s2016_hooksoft_amenitys_life | [AmenitysLife Ver1.00](http://suezou.dyndns.org/dl2016/hooksoft/amenitys_life/AmenitysLife_trial_02.zip) | 本編 | f81eded 以降も本編まで |
-| b2006_lumpofsugar | [いつか、届く、あの空に。【体験版】](http://suezou.dyndns.org/dl2006/lumpofsugar/itsusora/itsusora_trial.lzh) | タイトル |  |
-| b2010_lumpofsugar | [Hello,good-bye 体験版](http://suezou.dyndns.org/dl2010/lumpofsugar/hello_good-bye/Hello_goodbye_trial_web.zip) | タイトル | 28374cc (0009 更新) でタイトルまで |
-| b2011_lumpofsugar | [DiamicDays_Trial.zip](http://suezou.dyndns.org/dl2011/lumpofsugar/diamicdays/DiamicDays_Trial.zip) | タイトル |  |
-| b2013_lumpofsugar | [sekachu_trial_WEB2.zip](http://suezou.dyndns.org/dl2013/lumpofsugar/sekachu/sekachu_trial_WEB2.zip) | タイトル | c27e445 で直った |
-| b2015_hooksoft | [トラベリングスターズ 体験版02 Ver1.00](http://suezou.dyndns.org/dl2015/hooksoft/traveling_stars/travelingstars_trial_02.zip) | タイトル | c27e445 で直った |
-| b2015_lump_of_sugar | [rensou_trial_WEB.zip](http://suezou.dyndns.org/dl2015/lump-of-sugar/rensourelation/rensou_trial_WEB.zip) | タイトル | 3b42c00 で解消 |
-| b2019_hooksoft | [どっちのｉが好きですか？　Ｈシーン体験版　Ver1.00](http://suezou.dyndns.org/dl2019/hooksoft/isuki/isuki_h_trial.zip) | タイトル | c27e445 で直った |
-| b2019_sukerasparo | [kudan_trial.zip](http://suezou.dyndns.org/dl2019/sukerasparo/kudan/kudan_trial.zip) | タイトル |  |
-| b2020_sukerasomero | [oshilove_trial.zip](http://suezou.dyndns.org/dl2020/sukerasomero/oshi_love/oshilove_trial.zip) | タイトル | インストール用の目印ファイルを無視する 3b42c00 で解消 |
 | dl_VJ01004381 | [顔のない月 -待宵の双椿-](https://trial.dlsite.com/professional/VJ01005000/VJ01004381_trial.zip) | タイトル | 28374cc (0009 更新) でタイトルまで |
-| r1_bgi_kudan | [クダンノフォークロア 体験版](http://sukerasparo.com/data/kudan_trial.zip) | タイトル | 本編まで進むことは前回確認済み (handoff) |
 | s2010_lumpofsugar_prismrhythm | [PrismRhythm-プリズムリズム- Web特別体験版](http://suezou.dyndns.org/dl2010/lumpofsugar/prismrhythm/PrismRhythm_trial_Web.lzh) | タイトル | 28374cc (0009 更新) でタイトルまで。800x600 の画面が中央に小さく出る |
 | s2011_lumpofsugar_gackoh | [学☆王 - THE ROYAL SEVEN STARS - 体験入学版](http://suezou.dyndns.org/dl2011/lumpofsugar/gackoh/Gackoh_Trial.zip) | タイトル | 28374cc (0009 更新) でタイトルまで |
 | s2014_hooksoft_meltymoment | [MeltyMoment 体験版 Ver1.00](http://suezou.dyndns.org/dl2014/hooksoft/meltymoment/MeltyMoment_trial.zip) | タイトル | c27e445 で直った |

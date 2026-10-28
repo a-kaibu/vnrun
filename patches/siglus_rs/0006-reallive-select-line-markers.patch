@@ -1,0 +1,21 @@
+diff --git a/crates/reallive/src/bytecode.rs b/crates/reallive/src/bytecode.rs
+index 7099d0e..70f5932 100644
+--- a/crates/reallive/src/bytecode.rs
++++ b/crates/reallive/src/bytecode.rs
+@@ -569,8 +569,14 @@ impl Reader<'_> {
+         }
+         let mut options = Vec::with_capacity(usize::from(argc));
+         for _ in 0..argc {
+-            while self.at(0) == b',' {
+-                self.pos += 1;
++            // Options may be separated by commas and by extra line markers
++            // (`\n` + i16) left by blank source lines between them.
++            loop {
++                match self.at(0) {
++                    b',' => self.pos += 1,
++                    b'\n' => self.pos += 3,
++                    _ => break,
++                }
+             }
+             let mut conditions = Vec::new();
+             if self.at(0) == b'(' {

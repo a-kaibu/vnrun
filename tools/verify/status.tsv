@@ -22,19 +22,19 @@ dl_VJ01002167	タイトル
 s2013_sagaplanets_karumaruka	タイトル	
 dl_VJ01000673	タイトル	
 s2023_hadashi_harem_shangrila	タイトル	タイトルの後に「siglus wasm step failed: unhandled form command chain [38, 2, 3]」
-s2008_sagaplanets_cominghumming	タイトル	
-s2009_hadashi_cool	タイトル	
-r1_bgi_kudan	タイトル	本編まで進むことは前回確認済み (handoff)
+s2008_sagaplanets_cominghumming	本編	Chromium で本編のセーブ/ロード確認 (siglus_rs 0006: 選択肢の間の行番号を読み飛ばす)
+s2009_hadashi_cool	本編	Chromium で本編のセーブ/ロード確認 (siglus_rs 0007: 番号なしのボタンはオブジェクト番号を返す)
+r1_bgi_kudan	本編	b2019_sukerasparo と同じ作品 (クダンノフォークロア)。そちらで本編のセーブ/ロード確認
 s2010_sagaplanets_kisaragi	要再確認	展開後にエンジンの印のファイル (Seen.txt) が見つからない
-b2019_hooksoft	タイトル	c27e445 で直った
-b2015_hooksoft	タイトル	c27e445 で直った
-b2020_sukerasomero	タイトル	インストール用の目印ファイルを無視する 3b42c00 で解消
-b2006_lumpofsugar	タイトル	
-b2013_lumpofsugar	タイトル	c27e445 で直った
-b2019_sukerasparo	タイトル	
-b2011_lumpofsugar	タイトル	
-b2015_lump_of_sugar	タイトル	3b42c00 で解消
-b2010_lumpofsugar	タイトル	28374cc (0009 更新) でタイトルまで
+b2019_hooksoft	本編	ethornell-rs 0010 (Sprite の GetProperty 0x10) でセーブ画面が開くようになり、本編 (H シーン体験版) のセーブ/ロード確認 (ネイティブ)
+b2015_hooksoft	本編	ネイティブ (ethornell headless) で はじめから→本編→右クリックのメニューからセーブ/ロード確認
+b2020_sukerasomero	本編	ネイティブ (ethornell headless) で START→本編→右端のメニューからセーブ/ロード確認 (約 7000 フレーム、遅い)
+b2006_lumpofsugar	本編	ネイティブ (ethornell headless) で はじめから→本編→右クリックのメニューからセーブ/ロード確認
+b2013_lumpofsugar	本編	ethornell-rs 0010 (解放済みスプライトのフェード、VM メモリ 512MB) でセーブ/ロード画面が開くようになり、本編のセーブ/ロード確認 (ネイティブ)
+b2019_sukerasparo	本編	ネイティブ (ethornell headless) で START→本編→SAVE&LOAD でセーブ/ロード確認
+b2011_lumpofsugar	本編	ネイティブ (ethornell headless) で はじめから→本編→セーブ/ロード確認
+b2015_lump_of_sugar	本編	ethornell-rs 0010 (ネイティブの絶対パス) で 最初から→本編→歯車のメニューからセーブ/ロード確認 (ネイティブ)
+b2010_lumpofsugar	本編	ネイティブ (ethornell headless) で 最初から→本編→ウィンドウの「記録」でセーブ、「読込」でロード確認
 s2015_smee_pure_connect	タイトル	c27e445 で直った
 s2014_hooksoft_meltymoment	タイトル	c27e445 で直った
 s2021_smee_pureconnect_hd	タイトル	3b42c00 で解消

@@ -1,0 +1,100 @@
+diff --git a/crates/ethornell-app/src/lib.rs b/crates/ethornell-app/src/lib.rs
+index dd45665..7dc8afa 100644
+--- a/crates/ethornell-app/src/lib.rs
++++ b/crates/ethornell-app/src/lib.rs
+@@ -5680,6 +5680,13 @@ impl RuntimeTraceApi {
+         if let Some(mode) = self.graph90_sprite_mode(object) {
+             // CDspObjSprite::GetProperty (sub_4288F0).
+             match parameter {
++                // The read side of SetProperty 0x10 (replace the primary
++                // bitmap): the sprite's bitmap, -1 without one. BGI 1.7x
++                // save screens walk the sprites with it to compose the
++                // thumbnail (HOOKSOFT syswnd._bp).
++                0x10 => {
++                    return Ok(vec![properties.format_resource.unwrap_or(-1)]);
++                }
+                 0x41 => {
+                     let rotation = properties.properties.get(&0x41).map(|pair| pair.0);
+                     return match mode {
+@@ -26619,6 +26626,17 @@ impl ethornell_vm::GraphApi for RuntimeTraceApi {
+                         "Graph90:20 expected six arguments".to_string(),
+                     ));
+                 };
++                // A sprite handle (0x80000000 tag) that is no longer live: the
++                // owner thread released it while this thread was still
++                // closing (BGI 1.7x save/load screens fade the config
++                // background after the load reset has already ended
++                // cnfgbgmngr). Skip the fade instead of stopping the game.
++                if (*object as u32) & 0xF000_0000 == 0x8000_0000
++                    && !self.graph_handle_exists(*object)
++                {
++                    tracing::warn!(object = *object, "Graph90:20 on a released sprite skipped");
++                    return Ok(ethornell_vm::Value::None);
++                }
+                 let control_id = self.schedule_native_cdspobj_control(
+                     *object,
+                     None,
+diff --git a/crates/ethornell-vm/src/lib.rs b/crates/ethornell-vm/src/lib.rs
+index 9b9d6ea..73794fc 100644
+--- a/crates/ethornell-vm/src/lib.rs
++++ b/crates/ethornell-vm/src/lib.rs
+@@ -75,7 +75,23 @@ const CODE_WINDOW_SIZE: u32 = HEAP_OFFSET_BASE - CODE_WINDOW_OFFSET;
+ const HEAP_OFFSET_BASE: u32 = 0x0020_0000;
+ const HEAP_MEMORY_BASE: usize = (LOCAL_MEMORY_BASE + HEAP_OFFSET_BASE) as usize;
+ const INITIAL_MEMORY_SIZE: usize = 16 * 1024 * 1024;
+-const MAX_MEMORY_SIZE: usize = 256 * 1024 * 1024;
++// The target allocates from the process heap; BGI 1.7x save/load screens
++// hold three 63 MB record buffers and a 32 MB one at once, which does not
++// fit the 32 MB-segment layout below 256 MB.
++const MAX_MEMORY_SIZE: usize = 512 * 1024 * 1024;
++
++/// Backing size for a write ending at `end`: powers of two up to 256 MB,
++/// then whole 32 MB steps so a large heap does not double the buffer.
++fn grown_memory_size(end: usize) -> usize {
++    const STEP_LIMIT: usize = 256 * 1024 * 1024;
++    let size = end.next_power_of_two().max(INITIAL_MEMORY_SIZE);
++    let size = if size > STEP_LIMIT {
++        end.div_ceil(AUX_MEMORY_SEGMENT_SIZE as usize) * AUX_MEMORY_SEGMENT_SIZE as usize
++    } else {
++        size
++    };
++    size.min(MAX_MEMORY_SIZE)
++}
+ const OPERAND_STACK_CAPACITY: usize = 4096;
+ 
+ /// Where an operand found by `Vm::operand_from_top` is held.
+@@ -7018,7 +7034,7 @@ impl Vm {
+             return;
+         }
+         if self.memory.len() < end {
+-            self.memory.resize(end.next_power_of_two().max(INITIAL_MEMORY_SIZE).min(MAX_MEMORY_SIZE), 0);
++            self.memory.resize(grown_memory_size(end), 0);
+         }
+         self.memory[start..end].copy_from_slice(&code[..end - start]);
+     }
+@@ -7720,11 +7736,7 @@ impl Vm {
+             return Err(VmError::MemoryOutOfBounds { addr, size });
+         }
+         if end > self.memory.len() {
+-            let grown = end
+-                .next_power_of_two()
+-                .max(INITIAL_MEMORY_SIZE)
+-                .min(MAX_MEMORY_SIZE);
+-            self.memory.resize(grown, 0);
++            self.memory.resize(grown_memory_size(end), 0);
+         }
+         Ok(start..end)
+     }
+diff --git a/crates/ethornell-vm/src/resource_io.rs b/crates/ethornell-vm/src/resource_io.rs
+index b36998f..6ddb70b 100644
+--- a/crates/ethornell-vm/src/resource_io.rs
++++ b/crates/ethornell-vm/src/resource_io.rs
+@@ -19,6 +19,8 @@ pub(crate) fn is_absolute_resource_path(path: &str) -> bool {
+     let bytes = path.as_bytes();
+     // A restricted (browser) host roots the game folder at bgi-resource\.
+     bytes.first() == Some(&b'\\')
++        // A native Unix host roots the game folder at an absolute '/' path.
++        || (cfg!(unix) && bytes.first() == Some(&b'/'))
+         || bytes.get(1) == Some(&b':')
+         || path.starts_with("bgi-resource\\")
+         || path.starts_with("bgi-user\\")

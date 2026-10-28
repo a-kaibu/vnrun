@@ -1,0 +1,33 @@
+diff --git a/crates/reallive/src/modules/obj.rs b/crates/reallive/src/modules/obj.rs
+index 2151891..330be28 100644
+--- a/crates/reallive/src/modules/obj.rs
++++ b/crates/reallive/src/modules/obj.rs
+@@ -652,14 +652,20 @@ pub fn properties(machine: &mut Machine, command: &Command) -> Result<Next> {
+                 *slot = *value;
+             }
+         })?,
+-        1064 => each(machine, &t.refs, |o| {
+-            let b = &mut o.params.button;
+-            b.is_button = 1;
+-            b.action = get(0);
+-            b.se = get(1);
+-            b.group = get(2);
+-            b.number = get(3);
+-        })?,
++        // OBJFRONTSET_BUTTON(action, se[, group[, number]]): without a
++        // number the button answers with its own object number (素直くーる's
++        // story picker switches on the object numbers 0, 1, 2 and 4).
++        1064 => {
++            for &r in &t.refs {
++                let number = if v.len() > 3 { get(3) } else { r.child.unwrap_or(r.buf) };
++                let b = &mut machine.sys.gfx.object_mut(r)?.params.button;
++                b.is_button = 1;
++                b.action = get(0);
++                b.se = get(1);
++                b.group = get(2);
++                b.number = number;
++            }
++        }
+         1066 => each(machine, &t.refs, |o| o.params.button.state = get(0))?,
+         1070 | 1071 if v.is_empty() => each(machine, &t.refs, |o| o.params.own_clip = None)?,
+         1070 => each(machine, &t.refs, |o| o.params.own_clip = Some(grp_rect(&v)))?,
