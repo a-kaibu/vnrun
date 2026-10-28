@@ -48,8 +48,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Artemis (art3m1s-core) | 6 | 1 | 5 |  |  |  |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 35 | 3 | 17 | 9 | 3 | 1 |  | 2 |
-| 吉里吉里 (KiriKiri SDL2) | 135 | 67 | 67 |  |  |  | 1 |  |
-| YU-RIS (vnrun) | 29 | 24 |  |  |  | 4 | 1 |  |
+| 吉里吉里 (KiriKiri SDL2) | 135 | 83 | 51 |  |  |  | 1 |  |
+| YU-RIS (vnrun) | 29 | 25 |  |  |  | 3 | 1 |  |
 | NeXAS (vnrun) | 16 | 11 | 1 |  | 1 | 2 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
 | Tmr-Hiro (vnrun) | 22 | 22 |  |  |  |  |  |  |
@@ -232,18 +232,23 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2008_akabeesoft | [ＷＬＯ-世界恋愛機構- web用体験版](http://suezou.dyndns.org/dl2008/akabeesoft/wlo/wlo_webtrial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
 | b2008_asa_project | [Hime のち Honey - 体験版](http://suezou.dyndns.org/dl2008/asa-project/himehoney/hime_web_trial1.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: b9e72ec でロゴと注意書き 2 枚をクリックで送るとタイトル画面まで表示 |
 | b2008_dualtail | [Venus Blood Chimera](http://suezou.dyndns.org/dl2008/dualtail/vbc/VBC_trial_SLGver100.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: e7d5b88 でタイトル画面まで表示 |
+| b2009_dualtail | [魔法少女ラヴィリオン 体験版](http://suezou.dyndns.org/dl2009/dualtail/ravilion/ravi_trial.exe) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: dc42573 でタイトル画面まで表示 (クリックで設定画面も開く) |
 | b2010_akabeesoft | [置き場がない！ web体験版](http://suezou.dyndns.org/dl2010/akabeesoft/okiba/okiba_webTRIAL.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d084599 (setLayerPos) でタイトル画面まで表示 |
 | b2010_grand_cru | [Reunion～３日間だけのプチ同棲～　体験版](http://suezou.dyndns.org/dl2010/grand-cru/reunion/Reunion_trial.lzh) | 本編 | a29c215 で Start から本編テキストまで |
 | b2011_grand_cru | [はっぴぃふぁくとりー　体験版](http://suezou.dyndns.org/dl2011/grand-cru/hf/hp_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 で黒地にタイトルのメニュー文字だけ出る |
 | b2012_akabeesoft3 | [JOKER-死線の果ての道化師-](http://suezou.dyndns.org/dl2012/akabeesoft3/joker/joker_web_trial2.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
 | b2012_alcot | [中の人などいない！　体験版](http://suezou.dyndns.org/dl2012/alcot/naka/nakanohito_trial.exe) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: bd7853c でタイトル表示 (GAME START 等のメニュー描画まで) |
+| b2012_cross_over | [美脚隷嬢優奈「脚もお尻もこんなに穢すなんて……絶対に許さない！」体験版](http://suezou.dyndns.org/dl2012/cross-over/yuna/br_yuuna_trial2.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: e7d5b88 でタイトル画面まで表示 |
 | b2012_kai | [リヴォルバーガール☆ハンマーレディ　体験版](http://suezou.dyndns.org/dl2012/kai/rghl/RGHLtrial-WEB.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: bd7853c でタイトル表示 (START/LOAD 等の看板メニュー描画まで) |
 | b2012_parasol | [恋妹SWEET☆DAYS 体験版](http://suezou.dyndns.org/dl2012/parasol/koiimo/koiimo_taiken.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示。クリック後に黒画面 |
+| b2013_cross_over | [花嫁狩凌 ～絶対快楽の白濁淫毒～ 体験版](http://suezou.dyndns.org/dl2013/cross-over/hana/hanayome_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 でタイトルまで |
+| b2013_dualtail | [VenusBlood-GAIA- WEB専用ADV体験版](http://suezou.dyndns.org/dl2013/dualtail/vbg/VBG_WEB_AVGTrial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d084599 (setLayerPos) でタイトル画面まで表示 |
 | b2013_hulotte | [妹のおかげでモテすぎてヤバい。 体験版](http://suezou.dyndns.org/dl2013/hulotte/moteyaba/moteyaba_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 で注意画面からタイトルまで (XOR 暗号の xp3) |
 | b2013_madosoft | [ナマイキデレーション体験版 WEB Ver.](http://suezou.dyndns.org/dl2013/madosoft/namadere/namadere_trial_web.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 でタイトルまで |
 | b2014_hibiki_works | [ＰＲＥＴＴＹ×Ｃ∧ＴＩＯＮ](http://suezou.dyndns.org/dl2014/hibiki-works/pretty_cation/pc_web-trial1.01.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: a29c215 でロゴと注意書き 2 枚をクリックで送るとタイトル画面まで表示 |
 | b2015_appetite | [愛娘は、マゾ性隷～娘だからって遠慮しないでね？～　体験版　Ver1.00](http://suezou.dyndns.org/dl2015/appetite/musume/apt054_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | b2015_mille_feuille | [極煌戦姫ミストルティア 体験版](http://suezou.dyndns.org/dl2015/mille-feuille/mistletear/blazingangel_mistletear_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: b9e72ec でタイトル画面まで表示 |
+| b2016_apadash | [満淫オーク電車～くっ！　任務じゃなければこんな場所…～　体験版　Ver1.00](http://suezou.dyndns.org/dl2016/apadash/oak_train/aptd005_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | b2016_appetite | [アナル＊ティーチャー～感度良肛！？　逆レッスン～　体験版　Ver1.00](http://suezou.dyndns.org/dl2016/appetite/anaru_teacher/apt068_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | b2016_cube | [間宮くんちの五つ子事情 体験版](http://suezou.dyndns.org/dl2016/cube/mamiya/mamiya_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 0c62865 で白画面からクリック 2 回でタイトル画面まで表示 |
 | b2017_appetite | [催眠アプリで寝取りハメ～これまでの恨み、ヤり返してやる！　体験版　Ver1.00](http://suezou.dyndns.org/dl2017/appetite/hypnotism_application/apt098_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
@@ -255,12 +260,14 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2020_at_sakura | [優来（ゆら）があいつに抱かれる理由（わけ） 体験版](http://suezou.dyndns.org/dl2020/at-sakura/yura_wake/aspc-0112_taiken_ver1.0.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | b2020_chaos_r | [悪堕ち 魔導処女～絶対支配の触手調教～　体験版](http://suezou.dyndns.org/dl2020/chaos-r/madousyojo/madousyojo_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | b2020_lass_pixy | [リトルシックガール　～桃蜜は妹の香り～　体験版](http://suezou.dyndns.org/dl2020/lass-pixy/lsg03/LSG3_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: bd7853c でタイトル表示 (Start/Continue 等のボタン描画まで) |
+| b2020_pin_point | [世話焼き奥さんで人の頼みを断れない亜衣さんにお願いして中出しハメ放題のドスケベ妻になってもらった 体験版](http://suezou.dyndns.org/dl2020/pin-point/wife_ai/PP34_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示。起動時に「フルスクリーンで表示しますか？」の確認ダイアログが出る |
 | b2021_at_sakura | [愛する彼女は画面の中、他の男の上で腰をふる 体験版](http://suezou.dyndns.org/dl2021/at-sakura/ai_gamen/aspc-0123_taiken_ver1.0.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 でロゴからタイトルまで。色も正しい |
 | b2021_chaos_r | [神聖昂燐ダクリュオン～正しい天使の育てかた～　体験版](http://suezou.dyndns.org/dl2021/chaos-r/dakr/dakr_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | b2021_kelp | [アイドル姉妹をエッチにプロデュース！ 体験版](http://suezou.dyndns.org/dl2021/kelp/idol_simai/IDOL_SIMAI_TR.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | b2021_pin_point | [売国王姫～堕落のメス豚母娘～体験版](http://suezou.dyndns.org/dl2021/pin-point/baikoku_ouhi/PP36_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示。起動時に「フルスクリーンで表示しますか？」の確認ダイアログが出る |
 | b2022_at_sakura | [愛する恋人を大嫌いな旧友に寝取られた件 体験版](http://suezou.dyndns.org/dl2022/at-sakura/ai_tomo/aspc-0125_taiken_ver1.0.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動) |
 | b2022_chaos_r | [進軍ゴブリン軍団～人類総苗床化作戦～ 体験版](http://suezou.dyndns.org/dl2022/chaos-r/gobblin_gundan/GOBBLIN_TR.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
+| b2023_apadash | [最強の人妻ヒロインが寝取られるまで～お願い！夫にはバラさないで…～　体験版　Ver1.00](http://suezou.dyndns.org/dl2023/apadash/hitoduma_heroine/aptd027_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | b2023_appetite | [洗脳航路～エイリアンの苗床に導かれるエリート女軍人たち～　体験版　Ver1.00](http://suezou.dyndns.org/dl2023/appetite/senno_kouro/apt246_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | b2023_at_sakura | [堕とされた義姉 体験版](http://suezou.dyndns.org/dl2023/at-sakura/oti_ane/aspc-0138_taiken_ver1.0.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | b2023_chaos_r | [神聖昂燐エストランジェ体験版](http://suezou.dyndns.org/dl2023/chaos-r/strncxe/strncxe_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
@@ -271,47 +278,49 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | r1_kag3 | [KAG3 紹介デモ](https://krkrz.github.io/download/kr2_232r2.zip) | 本編 | 2026-10-26: 公式 syoukai デモ。Pad で Config を編集・保存し、再起動後に読み込み、紹介本文まで確認 |
 | s2006_akabeesoft_conboku | [こんな娘がいたら僕はもう～web体験版第2弾～](http://suezou.dyndns.org/dl2006/akabeesoft/conboku/conboku_taiken_02.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: bd7853c でインストーラ (Inno) 展開後に注意書き→タイトルメニューまで表示 |
 | s2008_akabeesoft_gsen | [G線上の魔王](http://suezou.dyndns.org/dl2008/akabeesoft/gsen/g_trial2.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: 体験版2。開発機のドライブパスを無視してタイトルを確認 |
+| s2008_dualtail_clarice | [奴隷将校クラリス　－　白濁のグローリエ　－　ＡＤＶパート体験版](http://suezou.dyndns.org/dl2008/dualtail/clarice/Clarice_ADVtrial.exe) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: e7d5b88 でタイトル画面まで表示 |
+| s2009_dualtail_haiironosora | [灰色の空に堕ちた翼　体験版 Ver.1.00](http://suezou.dyndns.org/dl2009/dualtail/haiironosora/TD06_TRIAL100.exe) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | s2010_akabeesoft_lavender | [光輪の町、ラベンダーの少女　体験版](http://suezou.dyndns.org/dl2010/akabeesoft/lavender/lavender_webTRIAL.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: 体験版の cxdec を自動検出。保護対象6,030ファイルの Adler-32 が一致 |
+| s2014_cross_over_tori | [鳥籠の姫 ～絶対妊娠の姉妹悦辱～　体験版](http://suezou.dyndns.org/dl2014/cross-over/tori/torikago_trial1_2.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | s2015_appetite_inbo | [発情淫母～疼く熟体は、その欲情を抑えきれない～　体験版　Ver1.00](http://suezou.dyndns.org/dl2015/appetite/inbo/apt050_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | s2016_akabeesoft3_inosupe | [生命のスペア](http://suezou.dyndns.org/dl2016/akabeesoft3/inosupe/inosupe_webtrialver.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: data.bin と TLG のみのアーカイブを検出。タイトルメニューを確認 |
 | s2016_appetite_husband | [夫に言えない義父との姦淫～嫌なのに忘れられなくなりそう～　体験版　Ver1.00](http://suezou.dyndns.org/dl2016/appetite/husband/apt073_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | s2016_appetite_wawatasi | [わ、わたしを縛りたい？～僕と地味娘の秘密の関係～　体験版　Ver1.00](http://suezou.dyndns.org/dl2016/appetite/wawatasi/apt081_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
+| s2017_akabeesoft3_tonofuta | [少女と年の差、ふたまわり。](http://suezou.dyndns.org/dl2017/akabeesoft3/tonofuta/syoujyo_to_toshinosa_hutamawari_webtrial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: data.bin の検出と引用符なしの末尾 cond 式に対応し、タイトルメニューを確認 |
 | s2017_appetite_evil_monmusu | [ゆけゆけ悪のモンむす軍団！～怪人娘に搾り取られるえっちで過酷な世界性服大作戦～　体験版　Ver1.00](http://suezou.dyndns.org/dl2017/appetite/evil_monmusu/apt101_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示 |
 | s2017_appetite_immorality_don | [背徳の母娘丼～淫欲に沈むママといもうと～　体験版　Ver1.00](http://suezou.dyndns.org/dl2017/appetite/immorality_don/apt090_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | s2017_nanawind_alice_gram | [春音アリス＊グラム　体験版](http://suezou.dyndns.org/dl2017/nanawind/alice_gram/harugra_trial.zip) | 本編 | a29c215 で STORY から本編テキストまで。cf28cf7 (開発サーバーの接続修正) 後は単独3回とも起動 (以前の「読み込み中」は開発サーバー側の不具合) |
 | s2018_appetite_boku_mother | [欲求不満なボクのママのＳＥＸレッスン～パパには言えない家庭内情事～　Trial](http://suezou.dyndns.org/dl2018/appetite/boku_mother/apt106_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示 |
 | s2018_appetite_shokushu_ouji | [触手王子の肉嫁探し～母と姉弟の終わらない絶頂地獄～　体験版](http://suezou.dyndns.org/dl2018/appetite/shokushu_ouji/apt116_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
+| s2019_apadash_chuni_saimin | [厨二病が催眠術を使えたら～勘違い転校生のエッチな悪神召喚術～　体験版　Ver1.00](http://suezou.dyndns.org/dl2019/apadash/chuni_saimin/aptd015_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示 |
 | s2019_appetite_aniyome_furin | [兄嫁に誘われて～義姉がエロ過ぎて家庭内不倫～　体験版　Ver1.00](http://suezou.dyndns.org/dl2019/appetite/aniyome_furin/apt144_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | s2019_appetite_dt_kyoiku | [[2019/05/08 01][mode_title.ks - 164]ママの妹の童貞教育～ひきこもった僕は外出せずに中出しする～　体験版](http://suezou.dyndns.org/dl2019/appetite/dt_kyoiku/apt148_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | s2020_at_sakura_lover_swapping | [恋人スワッピング 体験版](http://suezou.dyndns.org/dl2020/at-sakura/lover_swapping/aspc-0107_taiken_ver1.0.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
+| s2021_akabeesoft2_roleplayer | [ROLEPLAYER：小粥姉妹の粘膜ポトレ ぐりぐちゃLIVE！](http://suezou.dyndns.org/dl2021/akabeesoft2/roleplayer/ab2_roleplayer_okayushimai_webtrial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 6,195 ファイルの Adler-32 一致 |
 | s2021_at_sakura_kodane | [親友に子種を注がれる俺の妻 体験版](http://suezou.dyndns.org/dl2021/at-sakura/kodane/aspc-0121_taiken_ver1.0.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示 |
 | s2021_at_sakura_tuma_10 | [愛する妻と１０人の過去男 体験版](http://suezou.dyndns.org/dl2021/at-sakura/tuma_10/aspc-0117_taiken_ver1.0.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: XP3 が data.xp3 以外の配置でも起動し、タイトルを確認 |
 | s2021_dualtail_vbhi | [VenusBlood HOLLOW International SRPG Trial ENG Ver.](http://suezou.dyndns.org/dl2021/dualtail/vbhi/VBHI_SRPGTrial_EN.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示。クリック後に「RuntimeError: null function」で停止 |
+| s2022_akabeesoft2_roleplayer_tororo | [ROLEPLAYER：とろろ姉妹の粘膜ポトレ ぐりぐちゃLIVE！](http://suezou.dyndns.org/dl2022/akabeesoft2/roleplayer_tororo/ab2_roleplayer_tororoshimai_webtrial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 5,892 ファイルの Adler-32 一致 |
 | s2022_at_sakura_konya_aitu | [今夜もあいつに抱かれる彼女 体験版](http://suezou.dyndns.org/dl2022/at-sakura/konya_aitu/aspc-0129_taiken_ver1.0.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | s2022_at_sakura_ntr_tuma_miina | [ネトラセ妻、美衣奈 体験版](http://suezou.dyndns.org/dl2022/at-sakura/ntr_tuma-miina/aspc-0132_taiken_ver1.0.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | s2023_chaos_r_bian_rr | [魔子宮聖女ビアンカ∽ノエイン～終焉なき破瓜と悦楽の煉獄～　体験版](http://suezou.dyndns.org/dl2023/chaos-r/bian_rr/bianRR_TR.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
+| s2023_cross_over_isekai_ma | [異世界行ってマッサージで生き残ろうとしたら美脚美女とイチャ×2ライフ～転移ボーナスが美味しすぎた件～体験版](http://suezou.dyndns.org/dl2023/cross-over/isekai_ma/isekai_ma_taiken.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | s2024_appetite_inyoku_train | [淫欲の通学電車～嫌なのにされたい私は堕ちていく～　体験版](http://suezou.dyndns.org/dl2024/appetite/inyoku_train/apt249_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示 |
 | s2024_appetite_isekai_cyoroin | [異世界チョロインは、いとも簡単に堕とされる～あれ、ボクの彼女…寝取られちゃいました？～　体験版](http://suezou.dyndns.org/dl2024/appetite/isekai_cyoroin/apt251_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示 |
 | s2024_at_sakura_iede_takamura | [家出少女・高邑緋雪の秘蜜 体験版](http://suezou.dyndns.org/dl2024/at-sakura/iede_takamura/aspc-0155_taiken_ver1.0.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
+| s2025_akabeesoft2_roleplayer_ikura | [Role player：いくら姉妹の粘膜ポトレ　ぐりぐちゃLIVE！　体験版](http://suezou.dyndns.org/dl2025/akabeesoft2/roleplayer_ikura/Role_player_ikura_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: f99fe3f でタイトル画面まで表示 (起動から約 2 分) |
 | b2006_mille_feuille | [ソウルレイザー☆ユナ 体験版](http://suezou.dyndns.org/dl2006/mille-feuille/yuna/yuna_taiken.zip) | タイトル | 2026-10-26: InstallShield の MSI/CAB を展開してファイル名を復元。タイトルを確認 |
 | b2008_mille_feuille | [魔法少女沙枝 Vol.2 体験版](http://suezou.dyndns.org/dl2008/mille-feuille/sae2/sae2_trial2.zip) | タイトル | 2026-10-26: インストーラの data1.cab を展開し、タイトルを確認 |
-| b2009_dualtail | [魔法少女ラヴィリオン 体験版](http://suezou.dyndns.org/dl2009/dualtail/ravilion/ravi_trial.exe) | タイトル | dc42573 でタイトル画面まで表示 (クリックで設定画面も開く) |
 | b2011_nanawind | [ユユカナ 体験版](http://suezou.dyndns.org/dl2011/nanawind/yuyukana/yuyu_taiken01.zip) | タイトル | 2026-10-26: yuyukana.tpm の cxdec を自動検出。保護対象4,410ファイルの Adler-32 が一致 |
-| b2012_cross_over | [美脚隷嬢優奈「脚もお尻もこんなに穢すなんて……絶対に許さない！」体験版](http://suezou.dyndns.org/dl2012/cross-over/yuna/br_yuuna_trial2.zip) | タイトル | e7d5b88 でタイトル画面まで表示 |
-| b2013_cross_over | [花嫁狩凌 ～絶対快楽の白濁淫毒～ 体験版](http://suezou.dyndns.org/dl2013/cross-over/hana/hanayome_trial.zip) | タイトル | 591d0a0 でタイトルまで |
-| b2013_dualtail | [VenusBlood-GAIA- WEB専用ADV体験版](http://suezou.dyndns.org/dl2013/dualtail/vbg/VBG_WEB_AVGTrial.zip) | タイトル | d084599 (setLayerPos) でタイトル画面まで表示 |
 | b2014_undermoon | [奪われた学園～罠に落ちた優等生～　体験版](http://suezou.dyndns.org/dl2014/undermoon/ubaware/ubaware_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2015_ammolite | [お兄ちゃん、教えて……～義妹とヒミツの保健実習～　体験版　Ver1.00](http://suezou.dyndns.org/dl2015/ammolite/oni/amml011_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2015_nanawind | [ALIA’s CARNIVAL! Flowering Sky　体験版(WEB.ver)](http://suezou.dyndns.org/dl2015/nanawind/alias_fs/ALIAs_CARNIVAL_floweringsky_trial.zip) | タイトル | cf28cf7 (開発サーバーの接続修正) 後は単独3回ともタイトル画面まで。Start 後の選択肢ボタンの文字が出ない件は未確認 |
 | b2015_pachipachi_soft | [おしおき生意気ギャル ～エロいオシオキをしたら自分からエッチを求めてきた～ 体験版](http://suezou.dyndns.org/dl2015/pachipachi-soft/oshioki/oshioki_trial.zip) | タイトル | 2026-10-26: Mado の31バイト周期 XOR を自動検出。保護対象749ファイルの Adler-32 が一致 |
 | b2016_alcot | [よめがみ My Sweet Goddess! リコＨシーン体験版](http://suezou.dyndns.org/dl2016/alcot/yomegami/yomegami_trial3.exe) | タイトル | ae3efe1 でタイトル画面まで表示 (起動から約 2 分) |
-| b2016_apadash | [満淫オーク電車～くっ！　任務じゃなければこんな場所…～　体験版　Ver1.00](http://suezou.dyndns.org/dl2016/apadash/oak_train/aptd005_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2017_sukerasparo | [ことのは・アムリラート](http://suezou.dyndns.org/dl2017/sukerasparo/kotonoha/kotonoha_trial.zip) | タイトル | 2026-10-26: EXE 内蔵 XP3 をプロジェクトとして選び、タイトルを確認 |
 | b2019_sator | [モウソウスピーカー～Ｈな妄想が聴こえてくるよ～　体験版](http://suezou.dyndns.org/dl2019/sator/mousou_speaker/mousou_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| b2020_pin_point | [世話焼き奥さんで人の頼みを断れない亜衣さんにお願いして中出しハメ放題のドスケベ妻になってもらった 体験版](http://suezou.dyndns.org/dl2020/pin-point/wife_ai/PP34_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示。起動時に「フルスクリーンで表示しますか？」の確認ダイアログが出る |
 | b2022_hending | [リンパにATATA! ～メス牡蠣ミルクどぴゅらっしゅ♡～](http://suezou.dyndns.org/dl2022/hending/atata/atata_trial.zip) | タイトル | 0009: Akabei 方式の鍵を自動検出し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 2,372 ファイルの Adler-32 一致 |
 | b2022_syoku | [触災の島～Island of the Dead～体験版　Ver1.00](http://suezou.dyndns.org/dl2022/syoku/syokusai_island/Syokusai_Island_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| b2023_apadash | [最強の人妻ヒロインが寝取られるまで～お願い！夫にはバラさないで…～　体験版　Ver1.00](http://suezou.dyndns.org/dl2023/apadash/hitoduma_heroine/aptd027_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | b2023_lump_of_sugar_all | [瑠璃桜](http://suezou.dyndns.org/dl2023/lump-of-sugar_all/rurizakura/Rurizakura_trial.zip) | タイトル | dc42573 でタイトル画面まで表示 |
 | dl_VJ01000429 | [【DLsite限定版】進軍ゴブリン軍団2 ～淫獣軍VS.INTRUDER～](https://trial.dlsite.com/professional/VJ01001000/VJ01000429_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | dl_VJ01000497 | [【DLsite限定版】性感エステ 灯 -AKARI- マキ（28）](https://trial.dlsite.com/professional/VJ01001000/VJ01000497_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
@@ -327,35 +336,26 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_VJ01004598 | [女王社長の僕争奪戦 ～カラダもリードも譲らない！ で、どっちのが好きなのっ！？～](https://trial.dlsite.com/professional/VJ01005000/VJ01004598_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | dl_VJ01006612 | [背徳の母乳 ～そんなに出しちゃダメぇ～](https://trial.dlsite.com/professional/VJ01007000/VJ01006612_trial.zip) | タイトル | d51f3e8 系のページでタイトル画面まで表示 |
 | r1_krkr_apt306 | [先輩、好きです……押忍！ 体験版](https://www.appetite-game.com/apt306/image/apt306_tr.zip) | タイトル | e7d5b88 でタイトル画面まで表示 |
-| s2008_dualtail_clarice | [奴隷将校クラリス　－　白濁のグローリエ　－　ＡＤＶパート体験版](http://suezou.dyndns.org/dl2008/dualtail/clarice/Clarice_ADVtrial.exe) | タイトル | e7d5b88 でタイトル画面まで表示 |
 | s2008_ninetail_amatu | [天ツ風　～傀儡陣風帖～](http://suezou.dyndns.org/dl2008/ninetail/amatu/amatu_trial_0901ver100.exe) | タイトル |  |
-| s2009_dualtail_haiironosora | [灰色の空に堕ちた翼　体験版 Ver.1.00](http://suezou.dyndns.org/dl2009/dualtail/haiironosora/TD06_TRIAL100.exe) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2011_grand_cru_imostar | [しゅ～てぃんぐ妹スター☆ ～おにいちゃん、覚悟しててよね♪～　体験版](http://suezou.dyndns.org/dl2011/grand-cru/imostar/imosta_trial.zip) | タイトル | d2edfde でタイトル画面まで表示 |
 | s2011_hulotte_with_ribbon | [With Ribbon Hシーン体験版](http://suezou.dyndns.org/dl2011/hulotte/with-ribbon/with-ribbon_trial2.zip) | タイトル | d2edfde で注意書きの後クリックでタイトル画面まで表示 (OP ムービーは飛ばす) |
 | s2011_parasol_delivara | [でりばらっ！-deliverance of strays- 体験版](http://suezou.dyndns.org/dl2011/parasol/delivara/delivara_taiken.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2012_ninetail_gears_of_dragoon | [Gears of Dragoon  -RPG体験版 ver.1.00-](http://suezou.dyndns.org/dl2012/ninetail/gears_of_dragoon/GoD_RPG_trial_100.zip) | タイトル | e2e9bbf + cf28cf7 で完全な data.xp3 (657,587,992 バイト) からタイトル画面まで |
 | s2013_hibiki_works_lovely_cation2 | [ＬＯＶＥＬＹ×Ｃ∧ＴＩＯＮ２](http://suezou.dyndns.org/dl2013/hibiki-works/lovely_cation2/LxC2_trial_web.zip) | タイトル | a29c215 でロゴと注意書き 2 枚をクリックで送るとタイトル画面まで表示 |
-| s2014_cross_over_tori | [鳥籠の姫 ～絶対妊娠の姉妹悦辱～　体験版](http://suezou.dyndns.org/dl2014/cross-over/tori/torikago_trial1_2.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2014_cube_koikano | [恋する彼女の不器用な舞台 体験版](http://suezou.dyndns.org/dl2014/cube/koikano/koikanoTrial.zip) | タイトル | d2edfde でクリック 3〜4 回の後タイトル画面まで表示 |
 | s2015_hulotte_yomeyaba | [嫁探しが捗りすぎてヤバい。 体験版](http://suezou.dyndns.org/dl2015/hulotte/yomeyaba/yomeyaba_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2016_ammolite_little_twins | [りとる☆ついんず　～すぐにトリコにしてあげる♪～　体験版　Ver1.00](http://suezou.dyndns.org/dl2016/ammolite/little_twins/amml012_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| s2017_akabeesoft3_tonofuta | [少女と年の差、ふたまわり。](http://suezou.dyndns.org/dl2017/akabeesoft3/tonofuta/syoujyo_to_toshinosa_hutamawari_webtrial.zip) | タイトル | 2026-10-26: data.bin の検出と引用符なしの末尾 cond 式に対応し、タイトルメニューを確認 |
 | s2017_atelier_gh_neneki | [粘液地獄　～巨大ヌルヌル生物に汚された女学生～ 体験版](http://suezou.dyndns.org/dl2017/atelier-gh/neneki/neneki_TR.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2018_pin_point_yakyurare | [彼女が野球部の性処理マネージャーに…～体育会系セックスで寝取られて～体験版](http://suezou.dyndns.org/dl2018/pin-point/yakyurare/yakyurare_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示。起動時に「フルスクリーンで表示しますか？」の確認ダイアログが出る |
-| s2019_apadash_chuni_saimin | [厨二病が催眠術を使えたら～勘違い転校生のエッチな悪神召喚術～　体験版　Ver1.00](http://suezou.dyndns.org/dl2019/apadash/chuni_saimin/aptd015_tr.zip) | タイトル | d51f3e8 系のページでタイトル画面まで表示 |
 | s2019_sukerasparo_itsukano | [いつかのメモラージョよりぬき体験版](http://suezou.dyndns.org/dl2019/sukerasparo/itsukano/itsukano_trial2.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2020_monoceros_plus_kanosen | [ボクのカノジョはえっちな先生　体験版](http://suezou.dyndns.org/dl2020/monoceros_plus/kanosen/kanosen_TR.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2020_pajamas_ex_paizuri | [最高に都合のいいパイズリ上手のマリーさん－体験版－](http://suezou.dyndns.org/dl2020/pajamas-ex/paizuri/paizuri_tr.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2020_sagaplanets_kakenuke | [かけぬけ★青春スパーキング！ 体験版](http://suezou.dyndns.org/dl2020/sagaplanets/kakenuke/kakenuke_trial.zip) | タイトル | d2edfde でクリック後タイトル画面まで表示 (Mojimo フォントは使わずページのフォント) |
-| s2021_akabeesoft2_roleplayer | [ROLEPLAYER：小粥姉妹の粘膜ポトレ ぐりぐちゃLIVE！](http://suezou.dyndns.org/dl2021/akabeesoft2/roleplayer/ab2_roleplayer_okayushimai_webtrial.zip) | タイトル | 0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 6,195 ファイルの Adler-32 一致 |
 | s2021_nanawind_kanade_gram_ch1 | [花鐘カナデ＊グラム Chapter1 -小桜結- 体験版](http://suezou.dyndns.org/dl2021/nanawind/kanade-gram_ch1/kanade-gram_ch1-trial.zip) | タイトル | 2026-10-27: EXE の bres リソースから cxdec を自動準備。data.xp3 の保護対象1,955ファイルが一致。PIMG の表示状態を初期化し、背景・キャラクター・メニュー・花びらを表示 |
 | s2021_no_strike_Trap_Genesis | [Jyosou Souseiki Trial Ver.](http://suezou.dyndns.org/dl2021/no-strike/Trap_Genesis/Jyosou_Souseiki_Trial.zip) | タイトル | 2026-10-26: 平文スクリプトの誤判定を修正。タイトルメニューを確認 |
-| s2022_akabeesoft2_roleplayer_tororo | [ROLEPLAYER：とろろ姉妹の粘膜ポトレ ぐりぐちゃLIVE！](http://suezou.dyndns.org/dl2022/akabeesoft2/roleplayer_tororo/ab2_roleplayer_tororoshimai_webtrial.zip) | タイトル | 0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 5,892 ファイルの Adler-32 一致 |
 | s2022_mille_feuille_excelchiffon | [燦然可憐エクセルシフォン 体験版](http://suezou.dyndns.org/dl2022/mille-feuille/excelchiffon/excelchiffon_trial.zip) | タイトル | b9e72ec でタイトル画面まで表示 (ウィンドウより大きいレイヤの修正) |
-| s2023_cross_over_isekai_ma | [異世界行ってマッサージで生き残ろうとしたら美脚美女とイチャ×2ライフ～転移ボーナスが美味しすぎた件～体験版](http://suezou.dyndns.org/dl2023/cross-over/isekai_ma/isekai_ma_taiken.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
 | s2023_hending_hassyakusama | [ソープランドのはっしゃくさま](http://suezou.dyndns.org/dl2023/hending/hassyakusama/hending_soapland_no_hassyakusama_webtrial.zip) | タイトル | 0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 3,236 ファイルの Adler-32 一致 |
 | s2024_no_strike_yuribatake | [Jyosou Yuribatake Trial](http://suezou.dyndns.org/dl2024/no-strike/yuribatake/jyosou_yuribatake_japantrial.zip) | タイトル | 2026-10-27: 平文 UTF-8 の誤判定と、補助ウィンドウへの入力誤配送を修正。言語選択からタイトルメニューへの遷移を確認 |
-| s2025_akabeesoft2_roleplayer_ikura | [Role player：いくら姉妹の粘膜ポトレ　ぐりぐちゃLIVE！　体験版](http://suezou.dyndns.org/dl2025/akabeesoft2/roleplayer_ikura/Role_player_ikura_trial.zip) | タイトル | f99fe3f でタイトル画面まで表示 (起動から約 2 分) |
 | s2025_poison_extasy_paizuri_me | [最高に都合の良いパイズリ上手のマリーさん - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2025/poison-extasy/paizuri_me/paizuri_me_tr.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
 | s2026_no_strike_jyosou_yuriarashi | [Jyosou Yuriarasi Trial](http://suezou.dyndns.org/dl2026/no-strike/jyosou_yuriarashi/jyosouyuriarashi_trial.zip) | タイトル | 2026-10-27: 平文 UTF-8 の誤判定と、補助ウィンドウへの入力誤配送を修正。言語選択からタイトルメニューへの遷移を確認 |
 | s2026_poison_motion_sxs2_me | [姉妹X催眠２ - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2026/poison-motion/sxs2-me/sxs2me_trial.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
@@ -366,6 +366,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| b2006_whirlpool | [いな☆こい！ ～お稲荷さまとモテモテのたたり～ 体験版 ver 1.00](http://suezou.dyndns.org/dl2006/whirlpool/inakoi/inakoi_trial_100.exe) | 本編 | Chromium で はじめから→本編の文章まで (222 形式の pac/*.ypf) |
 | b2010_whirlpool | [涼風のメルト -Where wishes are drawn to each other- WEB体験版](http://suezou.dyndns.org/dl2010/whirlpool/melt/webtrial_melt.exe) | 本編 | Chromium (3f99c53) で START→本編の文章→体験版終了の選択肢まで |
 | b2013_anim | [息子の友達に堕とされて　体験版](http://suezou.dyndns.org/dl2013/anim/musuko2/musuko2_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | b2014_whirlpool | [G.I.B. ガールズ・イン・ブラック  WEB体験版](http://suezou.dyndns.org/dl2014/whirlpool/gib/gib_webtrial.exe) | 本編 | Chromium (3f99c53) で START→体験版メニュー (本編/Hシーン) と説明文まで |
@@ -390,7 +391,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2021_casket_bellaca02 | [リンカーベル・アカデミア～龍族のフィアンセ～Hシーン体験版](http://suezou.dyndns.org/dl2021/casket/bellaca02/bellaca02_trial.zip) | 本編 | Chromium で Hシーン体験版→本編の文章まで |
 | s2023_casket_oshitona_vtuber02 | [画面から出てきた推しVtuberとHな同棲生活 ～庶民派吸血鬼お嬢様は契約したい～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber02/oshitona02_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | s2023_casket_oshitona_vtuber03 | [画面から出てきた推しVtuberとHな同棲生活 ～夢魔かわASMR配信者は地雷系？～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber03/oshitona03_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
-| b2006_whirlpool | [いな☆こい！ ～お稲荷さまとモテモテのたたり～ 体験版 ver 1.00](http://suezou.dyndns.org/dl2006/whirlpool/inakoi/inakoi_trial_100.exe) | NG | pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」 |
 | b2007_whirlpool | [magus_trial.exe](http://suezou.dyndns.org/dl2007/whirlpool/magus/magus_trial.exe) | NG | pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」 |
 | b2021_whirlpool | [けもの道☆ガーリッシュスクエア　体験版](http://suezou.dyndns.org/dl2021/whirlpool/kemonomichi-gs/kemonomichi-gs_trial.zip) | NG | 3e4a888 で「yst00067.ybn: short arguments」 |
 | dl_VJ01002338 | [いな☆こい！ ～お稲荷さまとモテモテのたたり～](https://trial.dlsite.com/professional/VJ01003000/VJ01002338_trial.zip) | NG | pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」 |
