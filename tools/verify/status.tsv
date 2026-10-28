@@ -90,8 +90,8 @@ s2023_casket_oshitona_vtuber03	本編	Chromium (3f99c53+) で START→本編の�
 s2020_casket_ayakashi03	本編	Chromium (3f99c53+) で START→本編の文章まで
 s2011_whirlpool_maikaze	本編	Chromium (3f99c53) で START→本編の文章まで (クリック位置ずれで LOAD 画面も開く)
 s2023_milimili_onaho_yokai	本編	本文まで。F9/F11 で保存と読み込み
-r1_tyrano	本編	dadce4b (exe 末尾の app を vnrun-prep が展開) でタイトル→はじめから→本編の背景・文章まで (Chromium、タイトルまで約 200 秒)
-dl_VJ01000810	本編	exe 末尾の app を vnrun-prep が展開。タイトル→はじめから→本編の CG・文章まで (Chromium)
+r1_tyrano	本編	検証スレッドでも Chromium でタイトル画面まで確認。dadce4b (exe 末尾の app を vnrun-prep が展開) でタイトル→はじめから→本編の背景・文章まで (Chromium、タイトルまで約 200 秒)
+dl_VJ01000810	本編	検証スレッドでも Chromium でタイトル画面まで確認。exe 末尾の app を vnrun-prep が展開。タイトル→はじめから→本編の CG・文章まで (Chromium)
 dl_RJ01731048	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編の会話まで。「Cannot find module ./js/libs/greenworks」は出るが続行する (Chromium)
 dl_RJ01604592	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編の会話まで (Chromium)
 dl_RJ01698597	本編	検証スレッドでも Chromium でタイトル画面まで確認。0df7c53 でタイトル→ニューゲーム→本編の文章 (名前入力の案内) まで (Chromium、タイトルまで約 240 秒)
@@ -119,7 +119,7 @@ s2021_casket_bellaca	本編	Chromium (3f99c53+) で START→本編の文章ま�
 dl_RJ01699765	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編の会話まで (Chromium)
 dl_RJ01702392	本編	検証スレッドでも Chromium でタイトル画面まで確認。f41e050 (RPGツクールを NW.js と同じくフレームに合わせて拡大) でタイトル→ニューゲーム→色選択→本編の背景・文章まで (クリックで進む)
 dl_RJ01618747	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編の会話まで (Chromium)
-dl_VJ01001309	本編	e7626d4 (EXE 基準オフセットの app zip、.tpatch を vnrun-prep が適用) でタイトル→はじめから→本編の立ち絵・文章まで (Chromium)
+dl_VJ01001309	本編	検証スレッドでも Chromium でタイトル画面まで確認。e7626d4 (EXE 基準オフセットの app zip、.tpatch を vnrun-prep が適用) でタイトル→はじめから→本編の立ち絵・文章まで (Chromium)
 dl_RJ01720958	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編のマップまで (Chromium)
 dl_RJ01703802	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→ニューゲーム→本編のマップ・会話まで (Chromium、タイトルまで約 200 秒)
 dl_RJ01699647	本編	検証スレッドでも Chromium でタイトル画面まで確認。タイトル→はじめから→導入の立ち絵・文章まで。「reading 'unlockInfo'」は実績プラグインがセーブ無しを読んだときのもので、プラグイン自身が拾って続行する
@@ -193,7 +193,7 @@ s2008_giga_sakahari	本編	Chromium (3f99c53) で START→本編の文章まで
 s2011_giga_hinataterrace	本編	Chromium (3f99c53) で START→本編の文章まで
 b2019_giga	本編	6875c68 でタイトルから本編テキストまで。メッセージウィンドウ画像は未表示 (既知)
 b2016_giga	本編	6875c68 でタイトルから New Game で本編テキストまで
-b2009_crossover	本編	CrossOver Adv.exe (vnrun) でロゴ→注意書き→タイトル (SYSMENU.SCD のホットスポットとホバー絵)→始めから→OP_01..OP_04 の背景・立ち絵 (形の画像)・イベント CG・名前・文章・ボイス・効果音・BGM・選択肢 2 回→体験版の終わりでタイトルへ (crossover-run 9000 フレーム、スキップ)。Chromium でタイトル→本編、Esc のメニューからセーブ→タイトルの「続きから」でロードし保存した行に戻る
+b2009_crossover	本編	検証スレッドでも Chromium でタイトル画面まで確認。CrossOver Adv.exe (vnrun) でロゴ→注意書き→タイトル (SYSMENU.SCD のホットスポットとホバー絵)→始めから→OP_01..OP_04 の背景・立ち絵 (形の画像)・イベント CG・名前・文章・ボイス・効果音・BGM・選択肢 2 回→体験版の終わりでタイトルへ (crossover-run 9000 フレーム、スキップ)。Chromium でタイトル→本編、Esc のメニューからセーブ→タイトルの「続きから」でロードし保存した行に戻る
 b2012_giga	本編	b425e77 (2012 年版の表) で New Game から本編の文章まで
 b2013_giga	本編	6875c68 でタイトルから new game で本編テキストまで (冒頭は白背景+メッセージウィンドウ)
 b2011_giga	本編	6875c68 でタイトルから はじめから で本編テキストまで
@@ -450,22 +450,22 @@ s2010_eushully_ikusa_verita	本編	Eushully AGE (vnrun) でタイトル→Game S
 s2016_eushully_sankaio	本編	Eushully AGE (vnrun) でタイトル→Game Start→シナリオ選択 (チュートリアル)→開始→アナスタシアの CG・名前・文章まで、クリックで文章が進む (age-run と Chromium)。画面は 1280x720 (SYSTEM4 が左上に開く最大の窓から)。setup は InstallShield (ISSetupStream、型 3 は属性 24 バイト)。メッセージ窓の下地 (sprite 204000) は 202 の到達値 -1 の扱いを直して天冥のコンキスタで出ることを確認 (同じ処理、珊海王では未再確認)
 s2020_eushully_tenmei	本編	Eushully AGE (vnrun) でタイトル→GAME START→体験版開始→ヘルミィナの CG・背景・メッセージ窓・名前・文章まで、クリックで文章が進む (age-run と Chromium)。画面は 1600x900。setup は InstallShield (MSI の中の Data1.cab)
 s2024_eushully_hyakusen	本編	Eushully AGE (vnrun、SYS5: sys5ini.bin は S5IN の展開済み索引、スクリプトは UTF-16) でタイトル→GAME START→初期設定→ゲームを開始する→プロローグ (全画面の窓 3 に中央寄せの文章)→森の背景・立ち絵・顔・名前の札・文章、重ねて組み立てる CG (0x207) と表情の差し替えまで (age-run と Chromium)。U+E000 などの私用文字は同梱の AGE-EXTEND.TTF で描く。setup は InstallShield の MSI の中の Data1.cab と Data11.cab にまたがる data.alf (1.3 GB)。タイトルのキャラクターの滑り込み (0x1ff のずれを 0x220 で 0 に) と Version 1.00.0000 (sys5ini.bin の GAMEVERSION、数字フォント 0x2da/0x23b) も描く。Esc の自前メニューからセーブ→別セッションのタイトルで Esc→ロードで保存した行に戻り、クリックで次の文章へ (age-run と Chromium、2026-10-28)。BGM は PCM の WAV (BGM036.WAV など) をブラウザで再生、.XWM (xWMA) は飛ばす
-b2012_atelier_gh	本編	Atelier G/H (vnrun、crates/ateliergh) でロゴ→注意書き→タイトル→すた～と→A010 の背景・顔・名前・文章→A020 の終わりの選択肢まで (agh-run と Chromium)。えろえろも～ど の場面選択 (マスク画像の当たり判定) も表示。setup は 7z の自己展開
+b2012_atelier_gh	本編	検証スレッドでも Chromium でタイトル画面まで確認。Atelier G/H (vnrun、crates/ateliergh) でロゴ→注意書き→タイトル→すた～と→A010 の背景・顔・名前・文章→A020 の終わりの選択肢まで (agh-run と Chromium)。えろえろも～ど の場面選択 (マスク画像の当たり判定) も表示。setup は 7z の自己展開
 b2021_bishop	本編	Bishop (vnrun) で BSXScript 3.3 の 1024x768 の注意書き→タイトル→最初から始める→本編の背景・CG・立ち絵 (命令 39、近景の x -663)・文章・名前まで (bsx-run と Chromium)。movie を除いて展開して確認
-b2022_evoll	本編	Liar-soft XFL (vnrun) でタイトル (0001.gsc のボタン、ホバー絵)→はじめから→注意書き 9901..9903→0500→1010..1040 の背景・イベント CG・立ち絵 (体 + 顔、サブルーチン)・名前・文章・ボイス・BGM・選択肢→3010 (liar-run 9000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
-b2019_channel_ubai	本編	Liar-soft XFL (vnrun) でタイトル (0001.gsc のボタン)→はじめから→操作説明の絵→0500→1010..1030 の背景・イベント CG・立ち絵・名前・文章・ボイス・BGM (liar-run 9000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
-b2023_fg_remake	本編	Eomaia (vnrun) でロゴ→注意書き→タイトル (はじめから)→プロローグ・各話の背景・立ち絵・顔・イベント絵・名前・文章・ボイス・BGM・SE・選択肢→マップ (場所とキャラのアイコン、日・時間の計算はゲームの map / statuswnd ライブラリのまま) で 2 日分を回り→体験版の終わりの絵→タイトルに戻る (eomaia-run、410 メッセージ)。右クリック / Esc の自前スロットでセーブ→ロードして同じメッセージに戻る (ネイティブと Chromium)
+b2022_evoll	本編	検証スレッドでも Chromium でタイトル画面まで確認。Liar-soft XFL (vnrun) でタイトル (0001.gsc のボタン、ホバー絵)→はじめから→注意書き 9901..9903→0500→1010..1040 の背景・イベント CG・立ち絵 (体 + 顔、サブルーチン)・名前・文章・ボイス・BGM・選択肢→3010 (liar-run 9000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
+b2019_channel_ubai	本編	検証スレッドでも Chromium でタイトル画面まで確認。Liar-soft XFL (vnrun) でタイトル (0001.gsc のボタン)→はじめから→操作説明の絵→0500→1010..1030 の背景・イベント CG・立ち絵・名前・文章・ボイス・BGM (liar-run 9000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
+b2023_fg_remake	本編	検証スレッドでも Chromium でタイトル画面まで確認。Eomaia (vnrun) でロゴ→注意書き→タイトル (はじめから)→プロローグ・各話の背景・立ち絵・顔・イベント絵・名前・文章・ボイス・BGM・SE・選択肢→マップ (場所とキャラのアイコン、日・時間の計算はゲームの map / statuswnd ライブラリのまま) で 2 日分を回り→体験版の終わりの絵→タイトルに戻る (eomaia-run、410 メッセージ)。右クリック / Esc の自前スロットでセーブ→ロードして同じメッセージに戻る (ネイティブと Chromium)
 dl_VJ01002202	対象外	PlayDRM の製品版の体験版。PlayDRM の作品は vnbox の Wine で正規の認証を通して遊び、vnrun では動かさない (データが素の MPK でも)
-b2007_propeller	本編	Propeller MPK (vnrun) でロゴ→タイトル→本編 co001〜co007 (背景・立ち絵・イベント CG・名前・ルビ・ボイス・BGM・選択肢 3 回、体験版で塞がれた選択肢は押しても進まない)→体験版の終わりでタイトルへ (propeller-run、スキップ)。Chromium でタイトル→本編、Esc のメニューからセーブ→タイトルの LOAD でロードし保存した行に戻る
-s2011_propeller_sukima	本編	Propeller MPK (vnrun、2011 の幅の広いスクリプト形式、1024x576) で注意書き→序章 (カットイン窓・名前・ルビ・BGM)→タイトル→はじめから→sa_01〜sa_10 (選択肢多数)→体験版の終わりでタイトルへ、「体験版2」の選択画面から鈴ルートの抜粋も最後まで (propeller-run、スキップ)。Chromium で序章→タイトル→本編、Esc のメニューからセーブ→タイトルの「続きから」でロードし保存した行に戻る
-dl_RJ01655345	本編	Electron 版 TyranoScript (app.asar を vnrun-prep が展開) でタイトル→START→章選択「少女と百合の丘」→本編の文章まで、歯車メニューからセーブし、別セッションでタイトルの歯車→LOAD で同じ文章に戻る (Chromium)
-dl_RJ01707379	本編	Electron 版 TyranoScript (app.asar を vnrun-prep が展開) でタイトル→はじめる→導入の文章→着せ替え・拘束の本編画面まで (Chromium)。ゲームにセーブ機能が無い ([hidemenubutton] のみ)
-dl_RJ01712071	本編	Electron 版 TyranoScript (app.asar を vnrun-prep が展開) でロゴ (クリック待ち)→タイトル→初めから→難易度選択と確認→本編の文章まで。メニューからセーブし、別セッションでタイトルの「続きから」で同じ文章に戻る (Chromium)
-dl_RJ01706994	本編	Electron の自作 HTML ゲーム (app.asar を vnrun-prep が展開、ページ遷移あり) でタイトル→START→街 (本編の拠点画面)→訓練所まで。localStorage の自動セーブ (tougij_save_v1) がサーバーに残り、別セッションで進めた時刻 (1日目 朝→昼) から再開 (Chromium)
-dl_RJ01715225	本編	Electron の PixiJS ゲーム (app.asar を vnrun-prep が展開、dist/index.html を開く。ページに process を置くとタイトルのボタンが効かなくなるため、サブフォルダのページには Node の代役を置かない) で成人確認→タイトル→迷い込む→本編の文章まで (Chromium)。体験版はセーブを書かない (ElectronBridge の JSON 保存は終了処理しか使われていない)
-dl_RJ01735938	本編	Electron の HTML ゲーム (app/index.html を開く) で導入の説明→最初の魂を迎える→転生先・生まれ方を決める本編画面まで (Chromium)。体験版はセーブ無し (説明に「セーブと図鑑は製品版」)
-dl_RJ01744242	本編	Electron の GDevelop ゲーム (app/index.html を開く) でタイトル→NEW GAME→はじめる→PLAY→本編の会話まで (Chromium)。ゲームにセーブ機能が無い (イベントに storage 系の命令が無い)
-dl_RJ01747016	本編	Electron の HTML ゲーム (dist/index.html を開く) で導入→冒険者の町のマップ→案内さんとの会話まで。localStorage の自動セーブ (ffcards_adventure_v1) がサーバーに残り、別セッションで同じ位置から再開 (Chromium)
+b2007_propeller	本編	検証スレッドでも Chromium でタイトル画面まで確認。Propeller MPK (vnrun) でロゴ→タイトル→本編 co001〜co007 (背景・立ち絵・イベント CG・名前・ルビ・ボイス・BGM・選択肢 3 回、体験版で塞がれた選択肢は押しても進まない)→体験版の終わりでタイトルへ (propeller-run、スキップ)。Chromium でタイトル→本編、Esc のメニューからセーブ→タイトルの LOAD でロードし保存した行に戻る
+s2011_propeller_sukima	本編	検証スレッドでも Chromium でタイトル画面まで確認。Propeller MPK (vnrun、2011 の幅の広いスクリプト形式、1024x576) で注意書き→序章 (カットイン窓・名前・ルビ・BGM)→タイトル→はじめから→sa_01〜sa_10 (選択肢多数)→体験版の終わりでタイトルへ、「体験版2」の選択画面から鈴ルートの抜粋も最後まで (propeller-run、スキップ)。Chromium で序章→タイトル→本編、Esc のメニューからセーブ→タイトルの「続きから」でロードし保存した行に戻る
+dl_RJ01655345	本編	検証スレッドでも Chromium でタイトル画面まで確認。Electron 版 TyranoScript (app.asar を vnrun-prep が展開) でタイトル→START→章選択「少女と百合の丘」→本編の文章まで、歯車メニューからセーブし、別セッションでタイトルの歯車→LOAD で同じ文章に戻る (Chromium)
+dl_RJ01707379	本編	検証スレッドでも Chromium でタイトル画面まで確認。Electron 版 TyranoScript (app.asar を vnrun-prep が展開) でタイトル→はじめる→導入の文章→着せ替え・拘束の本編画面まで (Chromium)。ゲームにセーブ機能が無い ([hidemenubutton] のみ)
+dl_RJ01712071	本編	検証スレッドでも Chromium でタイトル画面まで確認。Electron 版 TyranoScript (app.asar を vnrun-prep が展開) でロゴ (クリック待ち)→タイトル→初めから→難易度選択と確認→本編の文章まで。メニューからセーブし、別セッションでタイトルの「続きから」で同じ文章に戻る (Chromium)
+dl_RJ01706994	本編	検証スレッドでも Chromium でタイトル画面まで確認。Electron の自作 HTML ゲーム (app.asar を vnrun-prep が展開、ページ遷移あり) でタイトル→START→街 (本編の拠点画面)→訓練所まで。localStorage の自動セーブ (tougij_save_v1) がサーバーに残り、別セッションで進めた時刻 (1日目 朝→昼) から再開 (Chromium)
+dl_RJ01715225	本編	検証スレッドでも Chromium でタイトル画面まで確認。Electron の PixiJS ゲーム (app.asar を vnrun-prep が展開、dist/index.html を開く。ページに process を置くとタイトルのボタンが効かなくなるため、サブフォルダのページには Node の代役を置かない) で成人確認→タイトル→迷い込む→本編の文章まで (Chromium)。体験版はセーブを書かない (ElectronBridge の JSON 保存は終了処理しか使われていない)
+dl_RJ01735938	本編	検証スレッドでも Chromium でタイトル画面まで確認。Electron の HTML ゲーム (app/index.html を開く) で導入の説明→最初の魂を迎える→転生先・生まれ方を決める本編画面まで (Chromium)。体験版はセーブ無し (説明に「セーブと図鑑は製品版」)
+dl_RJ01744242	本編	検証スレッドでも Chromium でタイトル画面まで確認。Electron の GDevelop ゲーム (app/index.html を開く) でタイトル→NEW GAME→はじめる→PLAY→本編の会話まで (Chromium)。ゲームにセーブ機能が無い (イベントに storage 系の命令が無い)
+dl_RJ01747016	本編	検証スレッドでも Chromium でタイトル画面まで確認。Electron の HTML ゲーム (dist/index.html を開く) で導入→冒険者の町のマップ→案内さんとの会話まで。localStorage の自動セーブ (ffcards_adventure_v1) がサーバーに残り、別セッションで同じ位置から再開 (Chromium)
 dl_VJ01000787	本編	DebonosuWorks (vnrun、crates/debonosu) でロゴ→注意書き→タイトル→最初から始める→プロローグ (01.scb) の背景・名前・文章・声・BGM まで (deb-run と Chromium)。ダンジョン (map) に入る所で止まり、Live2D の立ち絵・3D・戦闘はなし。自前のセーブ・ロード (Esc で保存、タイトルの「続きから始める」で読み込み) も Chromium で確認
 r1_sakana	本編	SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し .ui のビューと .ks の脚本を実行) でタイトル→Start→本編 (背景・立ち絵・表情・名前・メッセージ窓・BGM・ボイス・選択肢)。Chromium でタイトル→本編、クイックセーブ / セーブ欄に保存→ページを開き直してタイトルの Continue でロードし保存したページに戻る
 dl_VJ01002468	本編	SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し .ui のビューと .ks の脚本を実行) でタイトル→Start→本編 (背景・名前・メッセージ窓・BGM・ボイス)。Chromium でタイトル→本編、クイックセーブ / セーブ欄に保存→ページを開き直してタイトルの Continue でロードし保存したページに戻る
