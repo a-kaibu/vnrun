@@ -257,6 +257,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "cmvs"
+version = "0.1.0"
+dependencies = [
+ "encoding_rs",
+ "fontdue",
+ "image 0.25.10",
+ "nexas",
+]
+
+[[package]]
 name = "color_quant"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

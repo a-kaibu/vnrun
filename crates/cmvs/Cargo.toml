@@ -1,0 +1,12 @@
+[package]
+name = "cmvs"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "Purple software's CMVS engine (CPZ5 archives, PB3 pictures, PS2 scripts) for the browser"
+
+[dependencies]
+nexas = { path = "../nexas" }
+fontdue = "0.9"
+encoding_rs = "0.8"
+image = { version = "0.25", default-features = false, features = ["png"] }
