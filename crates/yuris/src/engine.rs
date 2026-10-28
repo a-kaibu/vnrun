@@ -925,6 +925,17 @@ impl World {
                 Ok(Flow::Next)
             }
             "DIALOG" => {
+                // INPUT=1: a box to type a line into (the player's name; Lilith asks again while
+                // it is empty). There is none here: the default text (DEFSTR) is taken.
+                if on(st, c, "INPUT")? {
+                    if let Some(e) = c.arg("LETSTR") {
+                        let def = c.arg("DEFSTR").map(|d| st.eval(d)).transpose()?.map_or_else(Vec::new, |v| v.bytes());
+                        let e = e.to_vec();
+                        st.assign(&e, Value::Str(def))?;
+                    }
+                    store(st, c, Value::Int(1))?;
+                    return Ok(Flow::Next);
+                }
                 let s = text(st, c, "STR")?.unwrap_or_default();
                 let caption = text(st, c, "CAPTION")?.unwrap_or_default();
                 let buttons = if on(st, c, "YESNOCANCEL")? {
