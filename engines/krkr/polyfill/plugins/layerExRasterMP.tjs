@@ -1,0 +1,44 @@
+// vnrun: layerExRasterMP.dll (dualtail's VenusBlood titles). Its raster copies stand in as plain
+// layer copies: the title's wavy logo comes out straight, and the 3D map's floor is drawn in
+// strips mapped onto its quad. Without them the title's timer threw "Member copyRasterHW2 does
+// not exist", which ended the script engine (vbhi 2021: the next click hit a null function).
+{
+	var L = global.Layer;
+
+	// copyRasterHW2(dx, dy, src, lines, sx, sy, sw, sh): src's rect at (dx, dy), each line moved
+	// by the offsets in lines (not here).
+	if (typeof(L.copyRasterHW2) === "undefined")
+		L.copyRasterHW2 = function(dx, dy, src, lines, sx, sy, sw, sh) {
+			copyRect(dx, dy, src, sx, sy, sw, sh);
+		} incontextof null;
+
+	// copyPRaster2(dl, dt, dw, dh, src, sl, st, sw, sh, x0, y0, x1, y1, x2, y2, x3, y3, blend, *):
+	// src's rect onto the quad (upper-left, upper-right, lower-right, lower-left), clipped to the
+	// destination rect. Each strip of rows is an affine copy between the quad's left and right
+	// edges, which comes close to the plugin's perspective mapping.
+	if (typeof(L.copyPRaster2) === "undefined")
+		L.copyPRaster2 = function(dl, dt, dw, dh, src, sl, st, sw, sh, x0, y0, x1, y1, x2, y2, x3, y3, blend = 1) {
+			if (src === void || src === null || sw <= 0 || sh <= 0) return;
+			var cl = clipLeft, ct = clipTop, cw = clipWidth, ch = clipHeight;
+			setClip(dl, dt, dw, dh);
+			var strips = 16;
+			for (var k = 0; k < strips; k++) {
+				var r0 = st + (int)(sh * k / strips), r1 = st + (int)(sh * (k + 1) / strips);
+				if (r1 <= r0) continue;
+				var t0 = (r0 - st) / sh, t1 = (r1 - st) / sh;
+				var ax = x0 + (x3 - x0) * t0, ay = y0 + (y3 - y0) * t0;
+				var bx = x1 + (x2 - x1) * t0, by = y1 + (y2 - y1) * t0;
+				var cx = x0 + (x3 - x0) * t1, cy = y0 + (y3 - y0) * t1;
+				if (blend)
+					operateAffine(src, sl, r0, sw, r1 - r0, false, ax, ay, bx, by, cx, cy);
+				else
+					affineCopy(src, sl, r0, sw, r1 - r0, false, ax, ay, bx, by, cx, cy);
+			}
+			setClip(cl, ct, cw, ch);
+		} incontextof null;
+
+	// Its other copies are not used by the titles seen so far; they draw nothing.
+	var methods = [ "copyPRaster2bmp", "copyRasterIS", "copyRectShadow" ];
+	for (var i = 0; i < methods.count; i++)
+		if (typeof(L[methods[i]]) === "undefined") L[methods[i]] = function() {} incontextof null;
+}

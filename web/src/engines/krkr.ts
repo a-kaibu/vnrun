@@ -51,6 +51,7 @@ const POLYFILL_FILES = [
     "getSample",
     "gamepad",
     "layerExAlpha",
+    "layerExRasterMP",
     "extrans",
     "saveStruct",
     "psbFile",
