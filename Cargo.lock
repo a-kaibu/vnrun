@@ -951,6 +951,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd"
 
 [[package]]
+name = "pjadv"
+version = "0.1.0"
+dependencies = [
+ "fontdue",
+ "image 0.25.10",
+ "nexas",
+]
+
+[[package]]
+name = "pjadv-web"
+version = "0.1.0"
+dependencies = [
+ "js-sys",
+ "nexas",
+ "pjadv",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "png"
 version = "0.17.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"

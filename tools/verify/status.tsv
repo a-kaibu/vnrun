@@ -439,3 +439,4 @@ b2006_alcot	本編	AZ System (vnrun) でタイトル (title_bg_tr とボタン 6
 b2018_fudegaki_soft	本編	DxLib MED (vnrun) で注意書き→ロゴ・ブランドコール→タイトル (STITLE のクリックマップ、MENU03_N/F)→NEW GAME→SMAIN から 000_PRO000A..E の背景・立ち絵 (体 + 顔)・名前・文章・選択肢・ボイス・BGM (med-run 20000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
 b2012_fudegaki_soft	本編	DxLib MED (vnrun) で 1024x768 のロゴ→タイトル (CBLMAP_TITLE_MENU)→はじめから→体験版メニュー (CBLMAP_TRIAL_MENU)→P_001→R_001 の背景・CG・名前・文章 (med-run 6000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
 b2012_trois	本編	DxLib MED (vnrun) でロゴ→タイトル (TITLE のクリックマップ)→START→M2TMAIN→MOP2-T のプロローグ (md_jpg の絵、立ち絵・名前・文章)→選択肢→MA02XX (med-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
+b2006_unisonshift	本編	PJADV (vnrun) でロゴ→注意書き→タイトル (はじめから)→体験版の挨拶・予告→本編の背景・立ち絵・顔・イベント絵 (拡大と移動)・名前・文章・ボイス・BGM・SE を最後まで進めてタイトルに戻る (pjadv-run、スキップで 4357 メッセージ)。窓の SAVE / LOAD から自前のスロットでセーブ→ロードして同じメッセージに戻る (ネイティブと Chromium)

@@ -39,6 +39,7 @@ ENGINES = {
     "ivory": "Ivory (vnrun)",
     "noncolor": "NonColor (vnrun)",
     "azsys": "AZ System (vnrun)",
+    "pjadv": "PJADV (vnrun)",
     "shiina": "ShiinaRio (vnrun)",
     "neko": "NekoSDK / Waffle (vnrun)",
     "med": "DxLib MED (vnrun)",

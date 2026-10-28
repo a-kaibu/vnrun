@@ -322,6 +322,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if azsys_arc(game) {
         // AZ System: one ARC archive (CPB pictures, ASB scripts, tables) beside the exe
         Some("azsys".into())
+    } else if has("game_sys.dat") {
+        // PJADV (bootUP!/Pajamas): GAMEDAT PAC archives game_sys.dat, graph.dat, voice.dat..
+        Some("pjadv".into())
     } else if majiro_arc(game, &names) {
         // Majiro: MajiroArc archives (scenario.arc, data.arc, ...) beside the exe
         Some("majiro".into())
@@ -986,6 +989,15 @@ mod detection_tests {
         assert_eq!(detect(dir.path()).as_deref(), Some("advhd"));
         fs::remove_file(dir.path().join("ADVHD.EXE")).unwrap();
         assert_eq!(detect(dir.path()).as_deref(), Some("bgi"));
+    }
+
+    #[test]
+    fn pjadv_game_sys_dat_is_detected() {
+        let dir = tempfile::tempdir().unwrap();
+        for n in ["game_sys.dat", "graph.dat", "voice.dat", "nana_trial.exe"] {
+            fs::write(dir.path().join(n), b"GAMEDAT PAC2").unwrap();
+        }
+        assert_eq!(detect(dir.path()).as_deref(), Some("pjadv"));
     }
 
     #[test]

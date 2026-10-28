@@ -71,6 +71,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Ivory (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | NonColor (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | AZ System (vnrun) | 1 | 1 |  |  |  |  |  |  |
+| PJADV (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | ShiinaRio (vnrun) | 3 | 1 |  |  |  |  |  | 2 |
 | NekoSDK / Waffle (vnrun) | 5 | 5 |  |  |  |  |  |  |
 | DxLib MED (vnrun) | 3 | 3 |  |  |  |  |  |  |
@@ -660,6 +661,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2006_alcot | [Triptych -トリプティック- 体験版](http://suezou.dyndns.org/dl2006/alcot/triptych/tri_trial100.exe) | 本編 | AZ System (vnrun) でタイトル (title_bg_tr とボタン 6 個)→Prologue (tr_01) の背景 (縦長の絵のパン)・立ち絵 (体 + 目 + 口の合成)・名前・文章・ボイス・BGM・SE を最後まで進めてタイトルに戻る。Digest1 (tr_02)・Digest2 (tr_03)・H scene (tr_04) も最後まで (azsys-run、各 9000〜18000 フレーム)。Chromium でタイトル→Prologue、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る |
+
+### PJADV (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2006_unisonshift | [ななついろ★ドロップス 体験版](http://suezou.dyndns.org/dl2006/unisonshift/nanatsuiro/nanatsuiro_trial.zip) | 本編 | PJADV (vnrun) でロゴ→注意書き→タイトル (はじめから)→体験版の挨拶・予告→本編の背景・立ち絵・顔・イベント絵 (拡大と移動)・名前・文章・ボイス・BGM・SE を最後まで進めてタイトルに戻る (pjadv-run、スキップで 4357 メッセージ)。窓の SAVE / LOAD から自前のスロットでセーブ→ロードして同じメッセージに戻る (ネイティブと Chromium) |
 
 ### ShiinaRio (vnrun)
 

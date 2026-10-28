@@ -81,6 +81,7 @@ game_root() {
     ivory) m=(-ipath '*/misc/script.pk') ;;
     noncolor) m=(-iname arc0.dat) ;;
     azsys) m=(-iname '*.arc') ;;
+    pjadv) m=(-iname game_sys.dat) ;;
     shiina) m=(-iname '*.war') ;;
     nscripter) m=(-iname nscript.dat -o -iname 0.txt -o -iname 00.txt -o -iname '*.nsa' -o -iname '*.sar') ;;
     html) m=(-iname package.json -o -iname index.html -o -iname package.nw -o -iname nw.pak -o -iname app.asar) ;;
