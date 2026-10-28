@@ -148,6 +148,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 | QLIE | 4 | 自作 (`crates/qlie`, `crates/qlie-web`) | Rust | あり (WebGPU) | GameData の .pack アーカイブ (1.0/2.0/3.0/3.1、3.1 は exe の RESKEY か key.fkey の鍵)、.b (ABMP のモーション付き画像)、.s スクリプト (`@@` ラベル、`\` 命令、`^` のストーリー命令は rep の置き換え)。ゲームスレッドとシステムスレッド (メニューは `$$$GameThreadImage` の上に開く)、`\stop` のハンドラ、オブジェクト (img/btn/sbtn/msg/snd/list/bar と sys/eff/cam/inp/dat などの組み込み)。かみぱに！体験版でタイトルから本編 (背景・立ち絵・名前・ルビ) まで。アナベル・メイドガーデン体験版は ImoScripter (`^bg01,file:...` のような命令を table/list オブジェクトで解釈するスクリプト側のライブラリ) で本編まで: table の `\v` `\?v` `\comb` `\asn` `\brep` `\bpos` など、`\exop` と rep の `\?r`、テンプレートのラベルはそれを置いたスクリプトで探す、`\p4` `\alg2` `\col` の位置・拡大・揃え、.b の `*MesSurface` 画像の位置に本文、`\thrd,1,label` でシステムスレッドのメニュー、`mdat` `tdat` はメモリ上のセーブ。セーブ・ロードは `\scp,dat` を自前の形式で (シナリオのファイルと最後の本文の行と変数、ロードはシナリオの @@TOP からゲームのスキップで進める)、バックログはゲームの画面で log オブジェクトから。3.0 の key.fkey は GARbro どおり (pack_keyfile を先に解く、exe の TFORM1 の IconKeyImage があればゲーム鍵も) だが、シグナルハート体験版 (3.0 + key.fkey、IconKeyImage なし) はこれで解けず未対応。音声・効果のマスクは簡略、OnFrame や動画はまだ |
 | Escude | 8 | 自作 (`crates/escude`, `crates/escude-web`) | Rust | あり (WebGPU) | ESC-ARC アーカイブ、ゲームの C ソース (ACPX) をコンパイルして自前の VM で実行 (構造体は詰めて配置、unsigned の昇格、setjmp/longjmp)。プレーン (8/16/24/32 bit の DIB) と 36 種の合成モード、スプライト (回転・拡大・子)、gtext、ogg の音、getkey/getpoint の入力。ヴェルディア幻奏曲体験版と Re;Lord 体験版でタイトルから本編まで。セーブ・ロードはゲーム自身の画面のまま (`dir_get` の文書フォルダ以下をセーブとして保存、`file_gettime` の日時は `vnrun-times.txt` に持つ) で、両作品ともセーブ→タイトルからロードで本編に戻る。パターンワイプ (BLT_PATTERN / BLT_PATBLEND) も描く。角度は 1 周 2048 |
 | Majiro | ? | 自作 (`crates/majiro`, `crates/majiro-web`) | Rust | あり (WebGPU) | MajiroArc V1〜V3 アーカイブ、.mjo (暗号化を含む) をそのまま動かす VM (スレッド、イベントフック、setskip/デストラクタ)、RCT/RC8 画像 (TC01 の差分、`_.rc8` マスク)、ページ・スプライト (中心基準の _ext)、`$console_*` の文字をページに描いて CONSOLE_WROTE などのイベントで console.mjo に渡す。Closed GAME 体験版 (2015) でタイトルから本編の文章まで (majiro-run と Chromium)。スプライトアニメ・選択肢以降・セーブはまだ |
+| Kaguya | ? | 自作 (`crates/kaguya`, `crates/kaguya-web`) | Rust | あり (WebGPU) | 2006 年頃の世代 (GAME_SYS/AMATU.exe + WFL1 の .arc/.ari)。WFL1 アーカイブ (LZSS)、AP/BMP 画像、tblstr の文章と名前、.scr バイトコードの VM (変数・条件分岐・スクリプト移動)、背景・立ち絵 (胴体+表情の合成)・イベント CG・色かけ、ルール画像トランジション・フェード・フラッシュ・揺れ・カットイン、BGM/効果音/音声 (Ogg)、メッセージ窓とタイトルメニューは exe の代わりに vram01/02 の部品で自前描画。アマツ体験版 (2006) が最後まで通る (kaguya-run と Chromium)。セーブ・選択肢・LINK アーカイブの新しい世代 (Start.exe + params.dat) はまだ |
 
 Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softpal 31、FVP 6、Artemis 5)。
 
@@ -270,3 +271,15 @@ Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softp
 - vnrun のサーバーの形 (ゲームの取り込み、一覧、セーブの保存先とバックアップ)。
 - ゲームのファイルの大きいものを丸ごと読む問題 (上記)。
 - 描画は WebGPU だけ、という決まりに対する残り: AliceSoft System4 (xsystem4) と Artemis (art3m1s-core) は GLES を見えない canvas の WebGL2 で描き、読み戻した画素を Presenter (WebGPU) で出している。つなぎの間の措置で、GLES の描画を WebGPU に移す (または CPU で描く) のが残りの作業。
+
+## Kaguya の実装メモ (2026-10-28)
+
+- 対象はアトリエかぐやの古い世代 (exe + `scr/bg_/sp_/cg_/cgw/bgm/wav/vo1/vo2/tblstr` の `.arc` と `.ari`)。新しい世代 (Start.exe + `bgd/cgd/spd/scr.arc` の LINK アーカイブ、params.dat) は別物で未対応。devserver は `scr.arc` と `tblstr.arc` があれば kaguya にする。
+- WFL1: `.ari` は `.arc` と同じエントリ見出し (i32 名前長、反転した cp932 名、u16 mode、u32 size) を並べたもの。ただし mode 1 (LZSS) の展開後サイズ u32 は `.arc` 側にだけあり、データの直前に置かれる。データ位置は 4 から見出しとデータを足していけば出る。LZSS はビット列 MSB 先頭、1+8 ビットでリテラル、0+12 ビット位置+4 ビット長 (+2)、窓 4096 で最初の書き込み位置は 1。
+- 画像: `AP` (u32 幅、u32 高さ、u16、BGRA 下から上) と 24 ビット BMP。.sp_ は 800x600 の全画面に位置込みで描かれている。立ち絵 "nata13" は胴体 "nata00" に表情 "nat013" を重ねたもの (胴体が無ければ名前そのままの 1 枚、または "xxx000")。exe は izu/bai/aya の 3 人だけ別扱いしている (未解明、izub00 系が無い)。
+- 文章: tblstr.arc は (u32 種類 0 文/2 名前、u32 長さ、反転した本文、反転していない 0 で終わる) の並び。tblstr.ari は件数のあと各文の位置で、文番号 i は ari の i 番目の u32 (0 番目が件数)。名前はスクリプトが tblstr.arc のバイト位置で指す。
+- .scr: 12 バイトの見出し (8 バイト + コード長)、命令は u8 op + u8 長さ (文字列を除く) + 引数、そのあと op ごとに決まった長さ引数の文字列 (反転、0 終わり)。文字列長: 0c/0f/10/12/2c/3d/48/49/50/52/56 は +3、13 は +3 (0xff で無し)、15 は +4、2f は u16 +4、5e は +2、62 は +3 と +8。ジャンプ先はコード先頭 (ファイルの +12) からの位置。インタプリタは AMATU.exe の 0x426ab0、ジャンプ表 0x4286c8 (op 0..0x66)。
+- 主な op: 00 変数=定数、01 加算、5b 変数コピー、02 ジャンプ、03..08 比較ジャンプ (+2 のビット 1/2 が左/右を定数にする; eq ne gt lt ge le)、0c スクリプトへ移る、27 終わり (タイトルへ)、2a タイトルメニュー (ゲームモード 0x15)、13 文 (+4 名前位置、+8 文番号、文字列 = 音声 "say0052.voi" → vo1/vo2)、14 窓を消す、15 画像 (+3 種類: 0 背景 (立ち絵も消す) 1 背景だけ 2..5 立ち絵の枠 7 イベント CG 8 ルール画像)、16 トランジション (直前にルール画像があればそれで、無ければクロスフェード)、17 層を消す、58 層の色かけ、1d すぐ表示、19/1a 黒からフェードイン/黒へフェードアウト、1f/20 同じく短く、21/5f 白/色フラッシュ、22 揺れ、57/18 待ち (100ms 単位)、50 BGM (+2 = 2 で .bgm、1 は MIDI)、52 効果音 (+2 = 2 でループ)、53 BGM 停止、55 ループ効果音の停止、2c 音声、62..66 カットイン (出す・動かす・待つ・消す・フェード)。60 (ルールの色?)・3d・47・54 (章の区切り) などは何もしない。
+- タイトルの var[2] は exe が 1 にしている (しないとロゴの後 test.scr に行く)。メニュー位置は自前で決めた (右下、「最初から始める」「終了する」だけ)。
+- 確認: `kaguya-run <ゲーム> <フォント> <フレーム数> [出力先]` が自動クリックで進めて PNG を書く。アマツ体験版は 000_pro→001..003_op→004_inter を通ってタイトルに戻る (未知 op の警告なし)。
+

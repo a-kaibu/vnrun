@@ -60,6 +60,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | QLIE (vnrun) | 3 | 2 |  |  |  | 1 |  |  |
 | Escude (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | Majiro (vnrun) | 1 | 1 |  |  |  |  |  |  |
+| Kaguya (vnrun) | 1 | 1 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -530,4 +531,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2015_empress | [Closed GAME 体験版](http://suezou.dyndns.org/dl2015/empress/closed_game/ClosedGameTrial.zip) | 本編 | Majiro (vnrun) でロゴ→タイトル→New Game→本編の背景・立ち絵・名前・文章まで (majiro-run と Chromium) |
+
+### Kaguya (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2006_kaguya | [淫皇覇伝アマツ ～白濁の呪印～ 体験版](http://suezou.dyndns.org/dl2006/kaguya/amatsu/amatu_trial.EXE) | 本編 | Kaguya (vnrun) でロゴ→タイトル→最初から→プロローグ→本編の背景・立ち絵・名前・文章・カットインまで、体験版の最後まで通る (kaguya-run と Chromium) |
 <!-- /matrix -->

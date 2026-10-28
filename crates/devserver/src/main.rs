@@ -235,6 +235,9 @@ fn detect(game: &Path) -> Option<String> {
         Some("reallive".into())
     } else if has("advhd.exe") && names.iter().any(|n| n.ends_with(".arc")) {
         Some("advhd".into())
+    } else if has("scr.arc") && has("tblstr.arc") {
+        // Kaguya (2006 era): WFL1 archives with .ari indexes, the scripts in scr.arc
+        Some("kaguya".into())
     } else if majiro_arc(game, &names) {
         // Majiro: MajiroArc archives (scenario.arc, data.arc, ...) beside the exe
         Some("majiro".into())

@@ -1,0 +1,15 @@
+[package]
+name = "kaguya-web"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "The Kaguya engine for the browser: wasm-bindgen exports for web/src/engines/kaguya.ts"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+kaguya = { path = "../kaguya" }
+nexas = { path = "../nexas" }
+wasm-bindgen = "=0.2.129"
+js-sys = "0.3"
