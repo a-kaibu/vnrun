@@ -85,9 +85,9 @@ s2014_erectlip_furyou	タイトル	93bee9c 以降もタイトルまで
 s2014_qoobrand_majokoi	タイトル	654935e 以降でタイトルまで
 s2014_erectlip_gyokumajyo	タイトル	654935e / 8c223b7 でタイトルのボタンまで出る
 dl_VJ01002655	タイトル	93bee9c 以降もタイトルまで
-s2023_casket_oshitona_vtuber02	タイトル	
-s2023_casket_oshitona_vtuber03	タイトル	
-s2020_casket_ayakashi03	タイトル	
+s2023_casket_oshitona_vtuber02	本編	Chromium (3f99c53+) で START→本編の文章まで
+s2023_casket_oshitona_vtuber03	本編	Chromium (3f99c53+) で START→本編の文章まで
+s2020_casket_ayakashi03	本編	Chromium (3f99c53+) で START→本編の文章まで
 s2011_whirlpool_maikaze	本編	Chromium (3f99c53) で START→本編の文章まで (クリック位置ずれで LOAD 画面も開く)
 s2023_milimili_onaho_yokai	タイトル	93bee9c 以降は panic せずタイトルまで
 r1_tyrano	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)。exe を zip として展開すれば読めるはず
@@ -99,23 +99,23 @@ dl_RJ01730521	タイトル	7b79c2c / 86e1fe3 以降のページでタイトル�
 dl_RJ01741863	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
 dl_RJ01642779	タイトル	RPGツクール。画面が拡大されない
 s2019_no_strike_jyosou_jinjya	本編	Chromium (3f99c53) で START→本編の場面 (背景・立ち絵) は進むが、台湾版の Big5 文章が描画されない
-s2014_whirlpool_tearstilla	タイトル	6b6e16b / 3e4a888 (YU-RIS 554) でタイトルまで。初期化に40秒ほどかかる
-dl_VJ01001386	タイトル	5224635 (YU-RIS 482) でタイトルまで
-dl_VJ01004582	タイトル	5224635 (YU-RIS 482) でタイトルまで
-dl_VJ01000315	タイトル	5224635 (YU-RIS 482) でタイトルまで
-dl_VJ01002327	タイトル	c03eae9 (YU-RIS 551 のシステム変数) でタイトルまで
+s2014_whirlpool_tearstilla	本編	Chromium (3f99c53+) で START→本編の文章まで
+dl_VJ01001386	本編	Chromium (3f99c53+) で START→本編の文章まで
+dl_VJ01004582	タイトル	Chromium で START 後、体験版の挨拶文 1 行のあと (または直後から) 画面が黒いまま進まない
+dl_VJ01000315	タイトル	Chromium で START 後、体験版の挨拶文 1 行のあと (または直後から) 画面が黒いまま進まない
+dl_VJ01002327	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_RJ01648691	本編	416970b (IndexedDB) 以降。クリックでマップ画面まで進む
 dl_RJ01618221	起動	IndexedDB のエラーは消えたが、読み込み中の表示のまま進まない (エラーなし)
 dl_RJ357058	NG	「Unexpected end of JSON input」のまま
 dl_RJ01720493	起動	7b79c2c / 86e1fe3 以降のページでも黒画面のまま (エラーなし)
 dl_RJ01722380	タイトル	416970b (IndexedDB) でタイトルまで
 dl_RJ01727123	タイトル	416970b (IndexedDB) でタイトルまで
-s2016_no_strike_jyogaku	タイトル	5224635 (YU-RIS 482) でタイトルまで
+s2016_no_strike_jyogaku	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_RJ01612664	タイトル	RPGツクール。画面が拡大されない
-dl_RJ01721024	タイトル	
+dl_RJ01721024	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_RJ01686418	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
 dl_RJ01706991	タイトル	RPGツクール
-s2021_casket_bellaca	タイトル	
+s2021_casket_bellaca	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_RJ01699765	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
 dl_RJ01702392	起動	黒画面のまま (エラーなし)
 dl_RJ01618747	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
@@ -144,13 +144,13 @@ b2015_ammolite	タイトル	5d1348e でタイトル画面まで表示
 b2016_apadash	タイトル	5d1348e でタイトル画面まで表示
 b2021_at_sakura	タイトル	591d0a0 でロゴからタイトルまで。色も正しい
 b2025_monoceros_plus	タイトル	5d1348e でタイトル画面まで表示
-b2018_casket	タイトル	3e4a888 のビルドでタイトルまで
-b2017_no_strike	タイトル	3e4a888 のビルドでタイトルまで
-b2022_casket	タイトル	3e4a888 のビルドでタイトルまで
-b2013_anim	タイトル	3e4a888 のビルドでタイトルまで
-dl_VJ01002863	タイトル	3e4a888 のビルドでタイトルまで
-dl_VJ01001385	タイトル	3e4a888 のビルドでタイトルまで
-dl_VJ01000407	タイトル	3e4a888 のビルドでタイトルまで
+b2018_casket	本編	Chromium (3f99c53+) で START→本編の文章まで
+b2017_no_strike	本編	Chromium (3f99c53+) で START→本編の文章まで
+b2022_casket	本編	Chromium (3f99c53+) で START→本編の文章まで
+b2013_anim	本編	Chromium (3f99c53+) で START→本編の文章まで
+dl_VJ01002863	タイトル	Chromium で START 後、体験版の挨拶文 1 行のあと (または直後から) 画面が黒いまま進まない
+dl_VJ01001385	本編	Chromium (3f99c53+) で START→本編の文章まで
+dl_VJ01000407	本編	Chromium (3f99c53+) で START→本編の文章まで
 s2021_casket_bellaca02	タイトル	3e4a888 のビルドでタイトルまで
 dl_RJ01708454	タイトル	3e4a888 のビルドでタイトルまで
 b2007_whirlpool	NG	pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」
