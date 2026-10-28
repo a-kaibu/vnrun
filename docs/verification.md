@@ -68,7 +68,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | LiLiM (vnrun) | 7 | 7 |  |  |  |  |  |  |
 | Silky's (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | Ivory (vnrun) | 2 | 2 |  |  |  |  |  |  |
-| ShiinaRio (vnrun) | 1 | 1 |  |  |  |  |  |  |
+| ShiinaRio (vnrun) | 3 | 1 |  |  |  |  |  | 2 |
+| NekoSDK / Waffle (vnrun) | 2 | 2 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -637,4 +638,13 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2011_guilty | [種憑け村 序章体験版](http://suezou.dyndns.org/dl2011/guilty/tanetsukemura/tanetsukemura_taiken.zip) | 本編 | ShiinaRio (vnrun) でタイトル (SYSTITLE.S25 の絵とボタン)→はじめから→A001..A017 の背景・立ち絵・名前・文章・音声を最後まで通り、体験版の終わりでタイトルに戻る (shiina-run)。Chromium でタイトル→本編、右クリックのメニューからセーブ→タイトルのつづきからロードで本編に戻る |
+| b2017_onomatope_raspberry | [ビッチ姉妹が清純なはずがないっ！！ 体験版](http://suezou.dyndns.org/dl2017/onomatope-raspberry/bitch_sister/bitchsister_trial_101.zip) | 未確認 |  |
+| b2017_onomatope_raspberry_gakuen | [ビッチ学園が清純なはずがないっ！！？ 体験版](http://suezou.dyndns.org/dl2017/onomatope-raspberry/bitch_gakuen/bitchigakuen_trial.zip) | 未確認 |  |
+
+### NekoSDK / Waffle (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2014_waffle | [巨乳ファンタジー２if 体験版](http://suezou.dyndns.org/dl2014/waffle/kyonyu2if/kyonyu2if_taiken.exe) | 本編 | NekoSDK (vnrun) でタイトル (anime の背景・ロゴ)→はじめから→scr.pak の ep_* を名前順に本編の背景・立ち絵・顔窓・名前・文章 (neko-run 15000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
+| b2017_waffle | [隣人に壊されていく俺の妻 体験版](http://suezou.dyndns.org/dl2017/waffle/rinzin/rinjin_taiken.exe) | 本編 | NekoSDK (vnrun) で文字の序章→タイトル (obj の背景・ロゴ・ボタン)→はじめから→flow00_000 の順に本編の背景・立ち絵・CG (拡大・移動)・名前・文章 (neko-run 6000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
 <!-- /matrix -->

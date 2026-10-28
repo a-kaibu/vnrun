@@ -1,0 +1,13 @@
+[package]
+name = "neko"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "A NekoSDK engine for the browser (Waffle): reads the NEKOPACK .pak archives, BMP + ALP pictures and runs the ADV scripts"
+
+[dependencies]
+miniz_oxide = "0.8"
+encoding_rs = "0.8"
+nexas = { path = "../nexas" }
+fontdue = "0.9"
+image = { version = "0.25", default-features = false, features = ["png"] }

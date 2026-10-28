@@ -422,3 +422,5 @@ b2012_feng	本編	Yuka (vnrun) で 1280x960 の注意書き→タイトル→は
 b2013_hooksoft	本編	Yuka (vnrun) で 1280x720 のタイトル→START GAME→体験版の説明→本編の背景・立ち絵・文章まで (yuka-run と Chromium)
 b2016_evoll	本編	Ivory (vnrun) で注意書き・ロゴ→タイトル (TITLE_BASE_TRIAL とボタン)→START→A01..A12_H の背景・立ち絵・イベント CG・名前・文章・選択肢 (A05_H) を進み、trial_finish の紹介→タイトルに戻る (ivory-run、31000 フレーム)。Chromium でタイトル→本編、SAVE ボタンからセーブ→LOAD でロードして保存したメッセージに戻る
 b2020_caramel_box_strawberry	本編	Ivory (vnrun) でブランド・注意書き→タイトル (横並びのボタン)→NEW GAME→00_CM_01..09 (アイキャッチの呼び出し、2 択・3 択の選択肢)→02_YN_01→02_YN_01_H01→タイトルに戻る (ivory-run、49000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る
+b2017_waffle	本編	NekoSDK (vnrun) で文字の序章→タイトル (obj の背景・ロゴ・ボタン)→はじめから→flow00_000 の順に本編の背景・立ち絵・CG (拡大・移動)・名前・文章 (neko-run 6000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
+b2014_waffle	本編	NekoSDK (vnrun) でタイトル (anime の背景・ロゴ)→はじめから→scr.pak の ep_* を名前順に本編の背景・立ち絵・顔窓・名前・文章 (neko-run 15000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る

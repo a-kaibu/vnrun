@@ -73,6 +73,7 @@ game_root() {
     anim) m=(-iname '*_sce.dat') ;;
     yuka) m=(-iname '*.ykc' -o -iname '*01.dat') ;;
     cyberworks) m=(-iname arc01.dat) ;;
+    neko) m=(-iname scr.pak) ;;
     lilim) m=(-iname scr.aos) ;;
     silkys) m=(-iname layer.arc) ;;
     ivory) m=(-ipath '*/misc/script.pk') ;;

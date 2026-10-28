@@ -318,6 +318,11 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("cs2.exe") || names.iter().any(|n| n == "scene.int") {
         // CatSystem2: cs2.exe beside the .int archives
         Some("catsystem2".into())
+    } else if (has("scr.pak") && has("cfg.pak"))
+        || (has("gamedata") && game.join("gamedata").join("scr.pak").is_file())
+    {
+        // NekoSDK (Waffle): NEKOPACK archives scr/flow/cfg/obj.pak, often in gamedata/
+        Some("neko".into())
     } else if has("gamedata") && has_qlie_pack(game) {
         // QLIE: GameData/data0.pack beside the exe
         Some("qlie".into())

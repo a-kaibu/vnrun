@@ -37,6 +37,7 @@ ENGINES = {
     "silkys": "Silky's (vnrun)",
     "ivory": "Ivory (vnrun)",
     "shiina": "ShiinaRio (vnrun)",
+    "neko": "NekoSDK / Waffle (vnrun)",
 }
 RESULTS = ["本編", "タイトル", "起動", "要再確認", "NG", "対象外", "未確認"]
 
