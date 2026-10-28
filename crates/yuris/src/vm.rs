@@ -1025,9 +1025,17 @@ impl Vm {
             let b = expr::Vars::get(st, &set).bytes();
             sjis::chars(&b).first().map_or(0, |c| c.iter().fold(0, |n, &x| n << 8 | x as i64))
         } else if on("STRTYPE")? {
-            // 1 when every character is a digit
+            // 1 when every character is half width, 2 when every one is full width, 3 when
+            // mixed, 0 when empty (ERIS 555 builds $_TEXT_FLAG-like '1'/'2' strings from it)
             let b = expr::Vars::get(st, &set).bytes();
-            (!b.is_empty() && b.iter().all(u8::is_ascii_digit)) as i64
+            let chars = sjis::chars(&b);
+            let full = chars.iter().filter(|c| c.len() > 1).count();
+            match (chars.len(), full) {
+                (0, _) => 0,
+                (_, 0) => 1,
+                (n, f) if n == f => 2,
+                _ => 3,
+            }
         } else {
             0
         };
