@@ -133,17 +133,17 @@ dl_RJ01650072	タイトル
 dl_RJ01702800	タイトル	
 dl_RJ01720685	本編	クリックで最初の会話まで
 r1_kag3	本編	2026-10-26: 公式 syoukai デモ。Pad で Config を編集・保存し、再起動後に読み込み、紹介本文まで確認
-b2006_ninetail	タイトル	5d1348e でタイトル画面まで表示
-b2016_cube	タイトル	0c62865 で白画面からクリック 2 回でタイトル画面まで表示
-b2013_hulotte	タイトル	591d0a0 で注意画面からタイトルまで (XOR 暗号の xp3)
+b2006_ninetail	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+b2016_cube	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 0c62865 で白画面からクリック 2 回でタイトル画面まで表示
+b2013_hulotte	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 で注意画面からタイトルまで (XOR 暗号の xp3)
 r1_krkr_apt306	タイトル	e7d5b88 でタイトル画面まで表示
 b2022_syoku	タイトル	5d1348e でタイトル画面まで表示
-b2011_grand_cru	タイトル	591d0a0 で黒地にタイトルのメニュー文字だけ出る
-b2015_appetite	タイトル	5d1348e でタイトル画面まで表示
+b2011_grand_cru	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 で黒地にタイトルのメニュー文字だけ出る
+b2015_appetite	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 b2015_ammolite	タイトル	5d1348e でタイトル画面まで表示
 b2016_apadash	タイトル	5d1348e でタイトル画面まで表示
-b2021_at_sakura	タイトル	591d0a0 でロゴからタイトルまで。色も正しい
-b2025_monoceros_plus	タイトル	5d1348e でタイトル画面まで表示
+b2021_at_sakura	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 でロゴからタイトルまで。色も正しい
+b2025_monoceros_plus	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 b2018_casket	本編	Chromium (3f99c53+) で START→本編の文章まで
 b2017_no_strike	本編	Chromium (3f99c53+) で START→本編の文章まで
 b2022_casket	本編	Chromium (3f99c53+) で START→本編の文章まで
@@ -159,31 +159,31 @@ dl_VJ01002338	NG	pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn i
 b2010_whirlpool	本編	Chromium (3f99c53) で START→本編の文章→体験版終了の選択肢まで
 b2014_whirlpool	本編	Chromium (3f99c53) で START→体験版メニュー (本編/Hシーン) と説明文まで
 b2021_whirlpool	NG	3e4a888 で「yst00067.ybn: short arguments」
-b2022_at_sakura	タイトル	591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動)
-b2024_at_sakura	タイトル	591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動)
+b2022_at_sakura	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動)
+b2024_at_sakura	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 でタイトルまで (b2021_at_sakura と同じ挙動)
 b2013_cross_over	タイトル	591d0a0 でタイトルまで
-b2013_madosoft	タイトル	591d0a0 でタイトルまで
-b2008_asa_project	タイトル	b9e72ec でロゴと注意書き 2 枚をクリックで送るとタイトル画面まで表示
-b2008_akabeesoft	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
-b2010_akabeesoft	タイトル	d084599 (setLayerPos) でタイトル画面まで表示
-b2006_akabeesoft	タイトル	dc42573 でタイトル画面まで表示
-b2012_akabeesoft3	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
+b2013_madosoft	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 でタイトルまで
+b2008_asa_project	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: b9e72ec でロゴと注意書き 2 枚をクリックで送るとタイトル画面まで表示
+b2008_akabeesoft	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
+b2010_akabeesoft	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d084599 (setLayerPos) でタイトル画面まで表示
+b2006_akabeesoft	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: dc42573 でタイトル画面まで表示
+b2012_akabeesoft3	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
 b2011_nanawind	タイトル	2026-10-26: yuyukana.tpm の cxdec を自動検出。保護対象4,410ファイルの Adler-32 が一致
-b2020_lass_pixy	タイトル	bd7853c でタイトル表示 (Start/Continue 等のボタン描画まで)
+b2020_lass_pixy	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: bd7853c でタイトル表示 (Start/Continue 等のボタン描画まで)
 b2015_pachipachi_soft	タイトル	2026-10-26: Mado の31バイト周期 XOR を自動検出。保護対象749ファイルの Adler-32 が一致
 b2010_grand_cru	本編	a29c215 で Start から本編テキストまで
 b2014_undermoon	タイトル	5d1348e でタイトル画面まで表示
-b2016_appetite	タイトル	5d1348e でタイトル画面まで表示
+b2016_appetite	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 b2023_apadash	タイトル	5d1348e でタイトル画面まで表示
-b2017_appetite	タイトル	5d1348e でタイトル画面まで表示
+b2017_appetite	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 b2019_sator	タイトル	5d1348e でタイトル画面まで表示
-b2021_chaos_r	タイトル	5d1348e でタイトル画面まで表示
-b2021_kelp	タイトル	5d1348e でタイトル画面まで表示
-b2022_chaos_r	タイトル	5d1348e でタイトル画面まで表示
+b2021_chaos_r	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+b2021_kelp	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+b2022_chaos_r	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 b2019_tinkle_position	本編	1929e7a で「はじめる」からハグクリックの説明画面まで
 b2023_lump_of_sugar_all	タイトル	dc42573 でタイトル画面まで表示
-b2012_alcot	タイトル	bd7853c でタイトル表示 (GAME START 等のメニュー描画まで)
-b2012_kai	タイトル	bd7853c でタイトル表示 (START/LOAD 等の看板メニュー描画まで)
+b2012_alcot	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: bd7853c でタイトル表示 (GAME START 等のメニュー描画まで)
+b2012_kai	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: bd7853c でタイトル表示 (START/LOAD 等の看板メニュー描画まで)
 b2010_giga	本編	ネイティブと Chromium でタイトル、最初の台詞とボイスの再生開始を確認。背景演出、続き、セーブ等は未完成
 s2010_giga_bittersmile	本編	Chromium (3f99c53) で START→本編の文章まで。メッセージ枠が右端で切れて見える
 s2007_giga_himesama	本編	Chromium (3f99c53) で START→本編の文章まで
@@ -214,42 +214,42 @@ s2011_marine_marching	本編	6eba683 (Tmr-Hiro) で START から本編の文章�
 s2025_milimili_hanako	対象外	中身は Unity 製 (vnbox の NeXAS 判定が誤り)
 s2015_giga_renaiphase	タイトル	b425e77 でもタイトルまで
 s2006_giga_cheerfull	要再確認	自己展開 exe のダウンロード/展開に失敗
-b2018_appetite	タイトル	5d1348e でタイトル画面まで表示
-b2019_appetite	タイトル	5d1348e でタイトル画面まで表示
-b2023_appetite	タイトル	5d1348e でタイトル画面まで表示
-b2020_chaos_r	タイトル	5d1348e でタイトル画面まで表示
-b2023_chaos_r	タイトル	5d1348e でタイトル画面まで表示
-b2020_at_sakura	タイトル	5d1348e でタイトル画面まで表示
-b2023_at_sakura	タイトル	5d1348e でタイトル画面まで表示
-b2025_at_sakura	タイトル	5d1348e でタイトル画面まで表示
-b2019_dualtail	タイトル	5d1348e でタイトル画面まで表示
-b2012_parasol	タイトル	5d1348e でタイトル画面まで表示。クリック後に黒画面
+b2018_appetite	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+b2019_appetite	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+b2023_appetite	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+b2020_chaos_r	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+b2023_chaos_r	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+b2020_at_sakura	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+b2023_at_sakura	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+b2025_at_sakura	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+b2019_dualtail	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+b2012_parasol	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示。クリック後に黒画面
 b2020_pin_point	タイトル	5d1348e でタイトル画面まで表示。起動時に「フルスクリーンで表示しますか？」の確認ダイアログが出る
-b2021_pin_point	タイトル	5d1348e でタイトル画面まで表示。起動時に「フルスクリーンで表示しますか？」の確認ダイアログが出る
-b2008_dualtail	タイトル	e7d5b88 でタイトル画面まで表示
+b2021_pin_point	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示。起動時に「フルスクリーンで表示しますか？」の確認ダイアログが出る
+b2008_dualtail	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: e7d5b88 でタイトル画面まで表示
 b2012_cross_over	タイトル	e7d5b88 でタイトル画面まで表示
 b2009_dualtail	タイトル	dc42573 でタイトル画面まで表示 (クリックで設定画面も開く)
 b2022_hending	タイトル	0009: Akabei 方式の鍵を自動検出し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 2,372 ファイルの Adler-32 一致
-b2020_akabeesoft3	タイトル	0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 4,201 ファイルの Adler-32 一致
+b2020_akabeesoft3	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 4,201 ファイルの Adler-32 一致
 b2013_dualtail	タイトル	d084599 (setLayerPos) でタイトル画面まで表示
-b2015_mille_feuille	タイトル	b9e72ec でタイトル画面まで表示
-s2017_appetite_immorality_don	タイトル	5d1348e でタイトル画面まで表示
-s2019_appetite_dt_kyoiku	タイトル	5d1348e でタイトル画面まで表示
+b2015_mille_feuille	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: b9e72ec でタイトル画面まで表示
+s2017_appetite_immorality_don	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+s2019_appetite_dt_kyoiku	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 dl_VJ01003347	タイトル	5d1348e でタイトル画面まで表示
 dl_VJ01001109	タイトル	5d1348e でタイトル画面まで表示
 s2023_cross_over_isekai_ma	タイトル	5d1348e でタイトル画面まで表示
-s2016_appetite_wawatasi	タイトル	5d1348e でタイトル画面まで表示
+s2016_appetite_wawatasi	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 dl_VJ01000497	タイトル	5d1348e でタイトル画面まで表示
 dl_VJ01000679	タイトル	5d1348e でタイトル画面まで表示
-s2015_appetite_inbo	タイトル	5d1348e でタイトル画面まで表示
+s2015_appetite_inbo	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 s2011_parasol_delivara	タイトル	5d1348e でタイトル画面まで表示
-s2023_chaos_r_bian_rr	タイトル	5d1348e でタイトル画面まで表示
+s2023_chaos_r_bian_rr	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 dl_VJ01000564	タイトル	5d1348e でタイトル画面まで表示
 s2009_dualtail_haiironosora	タイトル	5d1348e でタイトル画面まで表示
 s2015_hulotte_yomeyaba	タイトル	5d1348e でタイトル画面まで表示
 s2019_sukerasparo_itsukano	タイトル	5d1348e でタイトル画面まで表示
 s2016_ammolite_little_twins	タイトル	5d1348e でタイトル画面まで表示
-s2019_appetite_aniyome_furin	タイトル	5d1348e でタイトル画面まで表示
+s2019_appetite_aniyome_furin	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 s2018_pin_point_yakyurare	タイトル	5d1348e でタイトル画面まで表示。起動時に「フルスクリーンで表示しますか？」の確認ダイアログが出る
 dl_VJ01000639	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
 s2014_hibiki_works	NG	customhistorylayer.tjs(124) ScrollBarInit で例外、「Invalid TLG header or unsupported TLG version」
@@ -265,18 +265,18 @@ s2020_sagaplanets_kakenuke	タイトル	d2edfde でクリック後タイトル�
 s2026_poison_motion_sxs2_me	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
 s2011_grand_cru_imostar	タイトル	d2edfde でタイトル画面まで表示
 dl_VJ01004136	タイトル	5d1348e でタイトル画面まで表示
-s2018_appetite_shokushu_ouji	タイトル	5d1348e でタイトル画面まで表示
-s2022_at_sakura_ntr_tuma_miina	タイトル	5d1348e でタイトル画面まで表示
-s2024_at_sakura_iede_takamura	タイトル	5d1348e でタイトル画面まで表示
+s2018_appetite_shokushu_ouji	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+s2022_at_sakura_ntr_tuma_miina	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+s2024_at_sakura_iede_takamura	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 s2017_atelier_gh_neneki	タイトル	5d1348e でタイトル画面まで表示
 dl_VJ01004598	タイトル	5d1348e でタイトル画面まで表示
 dl_VJ01000429	タイトル	5d1348e でタイトル画面まで表示
 dl_VJ01002065	タイトル	5d1348e でタイトル画面まで表示
 s2020_pajamas_ex_paizuri	タイトル	5d1348e でタイトル画面まで表示
-s2016_appetite_husband	タイトル	5d1348e でタイトル画面まで表示
+s2016_appetite_husband	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 s2020_monoceros_plus_kanosen	タイトル	5d1348e でタイトル画面まで表示
-s2020_at_sakura_lover_swapping	タイトル	5d1348e でタイトル画面まで表示
-s2022_at_sakura_konya_aitu	タイトル	5d1348e でタイトル画面まで表示
+s2020_at_sakura_lover_swapping	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+s2022_at_sakura_konya_aitu	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 dl_VJ01003070	タイトル	5d1348e でタイトル画面まで表示
 s2014_cross_over_tori	タイトル	5d1348e でタイトル画面まで表示
 s2023_hending_hassyakusama	タイトル	0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 3,236 ファイルの Adler-32 一致
@@ -306,21 +306,21 @@ s2026_ensemble_sweet_ribichu	本編	b076f1f で START から本編テキスト�
 r1_advhd	本編	b75e0c9 で START から「1 Day」を経て本編テキストまで
 b2014_ensemble	本編	b75e0c9 で START から本編テキストまで
 s2013_pulltop_cocoro	本編	3fe627e で START からキャラクター選択画面まで
-s2024_appetite_isekai_cyoroin	タイトル	d51f3e8 系のページでタイトル画面まで表示
-s2024_appetite_inyoku_train	タイトル	d51f3e8 系のページでタイトル画面まで表示
-s2017_appetite_evil_monmusu	タイトル	d51f3e8 系のページでタイトル画面まで表示
-s2021_at_sakura_kodane	タイトル	d51f3e8 系のページでタイトル画面まで表示
+s2024_appetite_isekai_cyoroin	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示
+s2024_appetite_inyoku_train	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示
+s2017_appetite_evil_monmusu	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示
+s2021_at_sakura_kodane	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示
 s2019_apadash_chuni_saimin	タイトル	d51f3e8 系のページでタイトル画面まで表示
 dl_VJ01000502	タイトル	d51f3e8 系のページでタイトル画面まで表示
-s2018_appetite_boku_mother	タイトル	d51f3e8 系のページでタイトル画面まで表示
+s2018_appetite_boku_mother	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示
 dl_VJ01006612	タイトル	d51f3e8 系のページでタイトル画面まで表示
-s2021_dualtail_vbhi	タイトル	d51f3e8 系のページでタイトル画面まで表示。クリック後に「RuntimeError: null function」で停止
+s2021_dualtail_vbhi	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示。クリック後に「RuntimeError: null function」で停止
 s2026_poison_motion_sxs_me	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
 s2025_poison_extasy_paizuri_me	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
 s2011_hulotte_with_ribbon	タイトル	d2edfde で注意書きの後クリックでタイトル画面まで表示 (OP ムービーは飛ばす)
 s2014_cube_koikano	タイトル	d2edfde でクリック 3〜4 回の後タイトル画面まで表示
 s2021_nanawind_kanade_gram_ch1	タイトル	2026-10-27: EXE の bres リソースから cxdec を自動準備。data.xp3 の保護対象1,955ファイルが一致。PIMG の表示状態を初期化し、背景・キャラクター・メニュー・花びらを表示
-s2010_akabeesoft_lavender	タイトル	2026-10-26: 体験版の cxdec を自動検出。保護対象6,030ファイルの Adler-32 が一致
+s2010_akabeesoft_lavender	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: 体験版の cxdec を自動検出。保護対象6,030ファイルの Adler-32 が一致
 s2021_akabeesoft2_roleplayer	タイトル	0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 6,195 ファイルの Adler-32 一致
 s2017_nanawind_alice_gram	本編	a29c215 で STORY から本編テキストまで。cf28cf7 (開発サーバーの接続修正) 後は単独3回とも起動 (以前の「読み込み中」は開発サーバー側の不具合)
 s2022_mille_feuille_excelchiffon	タイトル	b9e72ec でタイトル画面まで表示 (ウィンドウより大きいレイヤの修正)
@@ -332,15 +332,15 @@ s2018_ensemble_otostuki	本編	b75e0c9 で注意画面 → タイトル → STAR
 s2008_ninetail_amatu	タイトル	
 dl_RJ01677912	本編	1929e7a で START から本編テキストまで (立ち絵・名前欄・文章)
 b2016_alcot	タイトル	ae3efe1 でタイトル画面まで表示 (起動から約 2 分)
-b2014_hibiki_works	タイトル	a29c215 でロゴと注意書き 2 枚をクリックで送るとタイトル画面まで表示
-s2006_akabeesoft_conboku	タイトル	bd7853c でインストーラ (Inno) 展開後に注意書き→タイトルメニューまで表示
+b2014_hibiki_works	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: a29c215 でロゴと注意書き 2 枚をクリックで送るとタイトル画面まで表示
+s2006_akabeesoft_conboku	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: bd7853c でインストーラ (Inno) 展開後に注意書き→タイトルメニューまで表示
 b2008_mille_feuille	タイトル	2026-10-26: インストーラの data1.cab を展開し、タイトルを確認
 b2017_sukerasparo	タイトル	2026-10-26: EXE 内蔵 XP3 をプロジェクトとして選び、タイトルを確認
 b2006_mille_feuille	タイトル	2026-10-26: InstallShield の MSI/CAB を展開してファイル名を復元。タイトルを確認
-b2007_akabeesoft	タイトル	2026-10-26: G線上の魔王の最初の体験版。開発機のドライブパスを無視してタイトルを確認
-s2008_akabeesoft_gsen	タイトル	2026-10-26: 体験版2。開発機のドライブパスを無視してタイトルを確認
-s2021_at_sakura_tuma_10	タイトル	2026-10-26: XP3 が data.xp3 以外の配置でも起動し、タイトルを確認
-s2016_akabeesoft3_inosupe	タイトル	2026-10-26: data.bin と TLG のみのアーカイブを検出。タイトルメニューを確認
+b2007_akabeesoft	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: G線上の魔王の最初の体験版。開発機のドライブパスを無視してタイトルを確認
+s2008_akabeesoft_gsen	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: 体験版2。開発機のドライブパスを無視してタイトルを確認
+s2021_at_sakura_tuma_10	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: XP3 が data.xp3 以外の配置でも起動し、タイトルを確認
+s2016_akabeesoft3_inosupe	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: data.bin と TLG のみのアーカイブを検出。タイトルメニューを確認
 s2017_akabeesoft3_tonofuta	タイトル	2026-10-26: data.bin の検出と引用符なしの末尾 cond 式に対応し、タイトルメニューを確認
 s2019_parasol_renran_p	対象外	2026-10-26: 配布 URL は体験版の差分パッチのみ。起動用 EXE/startup と本体が含まれない
 b2006_lune	本編	961c800 (Marble) で START から本編の文章・立ち絵まで (Chromium)
