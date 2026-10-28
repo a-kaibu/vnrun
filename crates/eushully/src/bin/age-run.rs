@@ -3,10 +3,11 @@
 //!     age-run <game folder> <frames> <out prefix> [frame[:x:y[:kind]] ...]
 //!
 //! A bare `frame` is saved as `<out prefix><frame>.png`; `frame:x:y` clicks there on that frame
-//! (`:x:y:r` a right click, `:x:y:m` only moves the pointer, `:k:n` presses pad key n). The
-//! last frame is always saved. AGE_FONT names a TrueType font, AGE_TRACE=1 prints each
-//! instruction (and each frame's number), AGE_SPRITES=1 lists the sprites with every saved
-//! frame; the text shown and the instructions not carried out are printed at the end.
+//! (`:x:y:r` a right click, `:x:y:m` only moves the pointer, `:k:n` presses pad key n, `:e`
+//! opens or closes the save menu as Escape does). The last frame is always saved. AGE_FONT
+//! names a TrueType font, AGE_TRACE=1 prints each instruction (and each frame's number),
+//! AGE_SPRITES=1 lists the sprites with every saved frame; the text shown and the
+//! instructions not carried out are printed at the end.
 
 use std::path::Path;
 
@@ -43,6 +44,10 @@ fn main() -> Result<(), String> {
             let n = |i: usize| act.get(i).and_then(|s| s.parse::<i32>().ok()).unwrap_or(0);
             if act[0] == "k" {
                 e.key(n(1));
+                continue;
+            }
+            if act[0] == "e" {
+                e.menu();
                 continue;
             }
             let (x, y) = (n(0), n(1));

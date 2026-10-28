@@ -135,6 +135,11 @@ impl Game {
         self.e.cancel();
     }
 
+    /// Escape: opens or closes our save/load menu.
+    pub fn menu(&mut self) {
+        self.e.menu();
+    }
+
     /// A key as the pad numbers: 0..3 up, down, left, right, 4 enter, 10 cancel.
     pub fn key(&mut self, k: i32) {
         self.e.key(k);

@@ -1,7 +1,7 @@
 // Eushully games (AGE, SYS4 scripts) through our own engine (crates/eushully), built by
 // engines/eushully/build.sh into public/engines/eushully/. The engine runs the scripts and
 // says which pictures to draw where; this side runs it 60 times a second, draws the pictures
-// with WebGPU and passes clicks and saves.
+// with WebGPU and passes clicks and keys (Escape: our save/load menu).
 import { importEngine, type EngineContext } from "../engine";
 import type { GameFS } from "../gamefs";
 import { Compositor } from "../compositor";
@@ -14,6 +14,8 @@ interface Game {
   ended(): boolean;
   click(x: number, y: number): void;
   cancel(): void;
+  /** opens or closes our save/load menu */
+  menu(): void;
   key(k: number): void;
   wheel(up: boolean): void;
   point(x: number, y: number): void;
@@ -124,9 +126,10 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
     Space: 4,
   };
   canvas.addEventListener("keydown", (event) => {
+    // Escape opens our save/load menu (also on the title); right click stays the game's
     if (event.code === "Escape") {
       event.preventDefault();
-      game.cancel();
+      game.menu();
       return;
     }
     const k = pad[event.code];

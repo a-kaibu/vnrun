@@ -8,4 +8,5 @@ description = "Eushully AGE (SYS4) for the browser: ALF archives, AGF pictures a
 [dependencies]
 nexas = { path = "../nexas" }
 fontdue = "0.9"
+miniz_oxide = "0.8"
 image = { version = "0.25", default-features = false, features = ["png"] }

@@ -16,6 +16,8 @@ use nexas::gfx::{Draw, Image, Place};
 use crate::alf::Index;
 use crate::script::{Arg, Script};
 
+mod save;
+
 pub struct Sound {
     pub data: Vec<u8>,
     pub volume: f32,
@@ -83,6 +85,8 @@ enum AnimKind {
     Alpha,
     Scale,
     Move,
+    /// the offset a 1ff gives, added to the position
+    Offset,
 }
 
 /// A change of a sprite over time; it starts from the value the sprite has when it begins.
@@ -101,6 +105,7 @@ impl Sprite {
             AnimKind::Alpha => [self.alpha, 0.0],
             AnimKind::Scale => self.scale,
             AnimKind::Move => [self.x, self.y],
+            AnimKind::Offset => self.off,
         }
     }
 
@@ -109,6 +114,7 @@ impl Sprite {
             AnimKind::Alpha => self.alpha = v[0],
             AnimKind::Scale => self.scale = v,
             AnimKind::Move => (self.x, self.y) = (v[0], v[1]),
+            AnimKind::Offset => self.off = v,
         }
     }
 }
@@ -125,6 +131,8 @@ struct Sprite {
     tint: i32,
     pivot: (f32, f32),
     scale: [f32; 2],
+    /// added to the position (1ff; a 220 then slides it, often back to 0)
+    off: [f32; 2],
     anims: Vec<Anim>,
 }
 
@@ -155,6 +163,16 @@ pub struct Engine {
     gp: HashMap<u32, Ptr>,
     frames: Vec<Frame>,
     textures: HashMap<i32, Rc<Image>>,
+    /// how each texture was made, for saves
+    recipes: HashMap<i32, Rc<Vec<TexOp>>>,
+    /// our save/load menu (Escape), over the game
+    menu: Option<save::Menu>,
+    /// the music playing (a file number), for saves
+    bgm: Option<i32>,
+    /// GAMEVERSION from the ini's settings (2eb), "1.00.0000"
+    version: String,
+    /// number fonts (2da): texture, where 0 is (x y), a digit's size, the space between
+    digit_fonts: HashMap<i32, (i32, [i32; 4], i32)>,
     sprites: BTreeMap<i32, Sprite>,
     windows: HashMap<i32, Window>,
     window: i32,
@@ -192,7 +210,94 @@ fn rgb(c: i32) -> [u8; 3] {
     [(c >> 16) as u8, (c >> 8) as u8, c as u8]
 }
 
+/// How a texture was made, so that a save can make it again: from a file or blank, then
+/// filled, written on and drawn over; `Pixels` is the picture itself.
+#[derive(Clone, Debug)]
+enum TexOp {
+    File(i32),
+    New(u32, u32),
+    Pixels(Rc<Image>),
+    /// x, y, w, h; alpha; colour
+    Fill([i32; 4], i32, i32),
+    /// the source as it was made, its part (x, y, w, h) and where it goes
+    Blit(Rc<Vec<TexOp>>, [i32; 4], i32, i32),
+    Text {
+        x: i32,
+        y: i32,
+        s: String,
+        size: f32,
+        rgb: [u8; 3],
+        shadow: [u8; 3],
+    },
+}
+
+/// Fills x, y, w, h of a texture with a colour and alpha.
+fn fill(t: &mut Image, r: [i32; 4], al: i32, c: i32) {
+    t.renew();
+    let [x, y, w, h] = r;
+    let c = rgb(c);
+    for yy in y.max(0)..(y + h).min(t.h as i32) {
+        for xx in x.max(0)..(x + w).min(t.w as i32) {
+            let i = ((yy as u32 * t.w + xx as u32) * 4) as usize;
+            t.px[i..i + 3].copy_from_slice(&c);
+            t.px[i + 3] = al.clamp(0, 255) as u8;
+        }
+    }
+}
+
+/// Draws a rendered line of text on a texture, its letters' cell at (x, y).
+fn put_text(t: &mut Image, line: &Image, x: i32, y: i32) {
+    t.renew();
+    let p = Place {
+        x: 0.0,
+        y: 0.0,
+        sx: 1.0,
+        sy: 1.0,
+        cx: 0.0,
+        cy: 0.0,
+        rot: 0.0,
+        alpha: 1.0,
+        add: false,
+        flip: (false, false),
+        clip: [0.0, 0.0, t.w as f32, t.h as f32],
+    };
+    let (w, h) = (line.w as f32, line.h as f32);
+    let (x, y) = (
+        x as f32 - crate::text::PAD as f32,
+        y as f32 - crate::text::PAD as f32,
+    );
+    let src = [0, 0, line.w as i32, line.h as i32];
+    nexas::gfx::draw(t, line, src, [x, y, x + w, y + h], &p);
+}
+
 /// Draws `src` (x, y, w, h of it) over `dst` at (dx, dy), by the source's alpha.
+/// A setting at the end of sys4ini.bin/sys5ini.bin ("GAMEVERSION" -> "1.00.0000"): the key
+/// and its value follow each other as zero-ended strings (UTF-16 in SYS5).
+fn ini_setting(ini: &[u8], key: &str) -> Option<String> {
+    let wide: Vec<u8> = key
+        .encode_utf16()
+        .chain([0])
+        .flat_map(u16::to_le_bytes)
+        .collect();
+    if let Some(i) = find(ini, &wide) {
+        let units: Vec<u16> = ini[i + wide.len()..]
+            .chunks_exact(2)
+            .map(|c| u16::from_le_bytes([c[0], c[1]]))
+            .take_while(|&u| u != 0)
+            .collect();
+        return Some(String::from_utf16_lossy(&units));
+    }
+    let narrow: Vec<u8> = key.bytes().chain([0]).collect();
+    let i = find(ini, &narrow)?;
+    let rest = &ini[i + narrow.len()..];
+    let end = rest.iter().position(|&b| b == 0)?;
+    Some(String::from_utf8_lossy(&rest[..end]).into_owned())
+}
+
+fn find(hay: &[u8], needle: &[u8]) -> Option<usize> {
+    hay.windows(needle.len()).rposition(|w| w == needle)
+}
+
 fn blit(dst: &mut Image, src: &Image, r: [i32; 4], dx: i32, dy: i32) {
     dst.renew();
     let [sx, sy, w, h] = r;
@@ -233,7 +338,9 @@ impl Engine {
             .ok_or("no sys4ini.bin or sys5ini.bin")?
             .clone();
         let mut index = Index::default();
-        index.add(&files.read(&ini).ok_or("sys4ini.bin: unreadable")?)?;
+        let ini_bytes = files.read(&ini).ok_or("sys4ini.bin: unreadable")?;
+        index.add(&ini_bytes)?;
+        let version = ini_setting(&ini_bytes, "GAMEVERSION").unwrap_or_default();
         // append indexes (APPEND01.AAI ...) add or replace files
         let mut appends: Vec<&String> = names
             .iter()
@@ -259,6 +366,11 @@ impl Engine {
             gp: HashMap::new(),
             frames: Vec::new(),
             textures: HashMap::new(),
+            recipes: HashMap::new(),
+            menu: None,
+            bgm: None,
+            version,
+            digit_fonts: HashMap::new(),
             sprites: BTreeMap::new(),
             windows: HashMap::new(),
             window: 1,
@@ -567,6 +679,10 @@ impl Engine {
     }
 
     pub fn frame(&mut self) -> Result<(), String> {
+        // the game stands still under our menu
+        if self.menu.is_some() {
+            return Ok(());
+        }
         self.now += FRAME_MS;
         self.settle();
         if self.release > 0 {
@@ -825,10 +941,14 @@ impl Engine {
             }
             // ---- sound ----
             0xbf => {
-                let n = v(self, 0);
+                let n = self.bgm_file(v(self, 0));
                 self.play(n, BGM, true);
+                self.bgm = Some(n);
             }
-            0xc0 | 0xc1 => self.stop(BGM, 500),
+            0xc0 | 0xc1 => {
+                self.stop(BGM, 500);
+                self.bgm = None;
+            }
             0xc4 => {
                 let n = v(self, 0);
                 self.play(n, VOICE, false);
@@ -896,8 +1016,9 @@ impl Engine {
             // ---- pictures ----
             0x1f8 => {
                 let (id, w, h) = (v(self, 0), v(self, 1), v(self, 2));
-                let img = Image::new(w.clamp(1, 4096) as u32, h.clamp(1, 4096) as u32);
-                self.textures.insert(id, Rc::new(img));
+                let (w, h) = (w.clamp(1, 4096) as u32, h.clamp(1, 4096) as u32);
+                self.textures.insert(id, Rc::new(Image::new(w, h)));
+                self.recipes.insert(id, Rc::new(vec![TexOp::New(w, h)]));
             }
             0x1f9 | 0x20f => {
                 let (file, id) = (v(self, 0), v(self, 1));
@@ -909,6 +1030,7 @@ impl Engine {
                 let id = v(self, 0);
                 if !(self.sys5 && self.sprites.values().any(|s| s.tex == id)) {
                     self.textures.remove(&id);
+                    self.recipes.remove(&id);
                 }
             }
             0x1fb => {
@@ -923,6 +1045,7 @@ impl Engine {
                     tint: 0xffffff,
                     pivot: (0.0, 0.0),
                     scale: [1.0, 1.0],
+                    off: [0.0, 0.0],
                     anims: Vec::new(),
                 };
                 match self.sprites.get_mut(&id) {
@@ -986,7 +1109,26 @@ impl Engine {
             0x220 => {
                 let (id, delay, ms) = (v(self, 0), v(self, 1), v(self, 2));
                 let to = [v(self, 3) as f32, v(self, 4) as f32];
-                self.animate(id, AnimKind::Move, delay, ms, to);
+                // after a 1ff it moves the offset (the title's slide-in: 1ff -10 20, then
+                // 220 to 0 0); otherwise the position
+                let kind = match self.sprites.get(&id) {
+                    Some(s)
+                        if s.off != [0.0, 0.0]
+                            || s.anims.iter().any(|a| a.kind == AnimKind::Offset) =>
+                    {
+                        AnimKind::Offset
+                    }
+                    _ => AnimKind::Move,
+                };
+                self.animate(id, kind, delay, ms, to);
+            }
+            0x1ff => {
+                let id = v(self, 0);
+                let off = [v(self, 1) as f32, v(self, 2) as f32];
+                if let Some(s) = self.sprites.get_mut(&id) {
+                    s.anims.retain(|a| a.kind != AnimKind::Offset);
+                    s.off = off;
+                }
             }
             0x219 => {
                 let id = v(self, 0);
@@ -1036,16 +1178,8 @@ impl Engine {
                 let (x, y, w, h) = (v(self, 1), v(self, 2), v(self, 3), v(self, 4));
                 let (al, c) = (v(self, 5), v(self, 6));
                 if let Some(t) = self.textures.get_mut(&id) {
-                    let t = Rc::make_mut(t);
-                    t.renew();
-                    let c = rgb(c);
-                    for yy in y.max(0)..(y + h).min(t.h as i32) {
-                        for xx in x.max(0)..(x + w).min(t.w as i32) {
-                            let i = ((yy as u32 * t.w + xx as u32) * 4) as usize;
-                            t.px[i..i + 3].copy_from_slice(&c);
-                            t.px[i + 3] = al.clamp(0, 255) as u8;
-                        }
-                    }
+                    fill(Rc::make_mut(t), [x, y, w, h], al, c);
+                    self.record(id, TexOp::Fill([x, y, w, h], al, c));
                 }
             }
             // draw a texture onto another: src, dst, sx, sy, w, h, dx, dy (SYS5 builds its
@@ -1058,7 +1192,32 @@ impl Engine {
                     && let Some(t) = self.textures.get_mut(&dst)
                 {
                     blit(Rc::make_mut(t), &s, r, dx, dy);
+                    let from = self.recipes.get(&src).cloned();
+                    let from = from.unwrap_or_else(|| Rc::new(vec![TexOp::Pixels(s)]));
+                    self.record(dst, TexOp::Blit(from, r, dx, dy));
                 }
+            }
+            0x2eb => self.set_text(a[0], self.version.clone()),
+            0x2c7 => {
+                // a part of a string: chars from start, len of them
+                let s = self.text(a[1]);
+                let (start, len) = (v(self, 2).max(0) as usize, v(self, 3).max(0) as usize);
+                let part = s.chars().skip(start).take(len).collect();
+                self.set_text(a[0], part);
+            }
+            0x2ec => {
+                let n = self.text(a[1]).trim().parse().unwrap_or(0);
+                self.set(a[0], n);
+            }
+            0x2da => {
+                let r = [v(self, 2), v(self, 3), v(self, 4), v(self, 5)];
+                self.digit_fonts
+                    .insert(v(self, 0), (v(self, 1), r, v(self, 6)));
+            }
+            0x23b => {
+                let (id, font, n) = (v(self, 0), v(self, 1), v(self, 2));
+                let (x, y, digits, pad) = (v(self, 3), v(self, 4), v(self, 5), v(self, 6));
+                self.draw_number(id, font, n, (x, y), digits, pad == 1);
             }
             0x204 => {
                 let id = v(self, 0);
@@ -1122,33 +1281,118 @@ impl Engine {
     }
 
     fn load_texture(&mut self, file: i32, id: i32) {
+        if let Some(img) = self.decode_file(file) {
+            self.textures.insert(id, Rc::new(img));
+            self.recipes.insert(id, Rc::new(vec![TexOp::File(file)]));
+        }
+    }
+
+    fn decode_file(&mut self, file: i32) -> Option<Image> {
         let name = self.file_name(file as usize);
         match self
             .read_file(file as usize)
             .map(|b| crate::agf::decode(&b))
         {
-            Some(Ok(img)) => {
-                self.textures.insert(id, Rc::new(img));
-            }
+            Some(Ok(img)) => Some(img),
             Some(Err(e)) => {
                 if self.log {
                     eprintln!("{name}: {e}");
                 }
+                None
             }
             None => {
                 if self.log {
                     eprintln!("no file {file:#x}");
                 }
+                None
             }
         }
     }
 
+    /// Notes a change to a texture in the list of how it was made (saves make it again from
+    /// that); a long list becomes the picture itself.
+    fn record(&mut self, id: i32, op: TexOp) {
+        let Some(t) = self.textures.get(&id).cloned() else {
+            return;
+        };
+        let Some(r) = self.recipes.get_mut(&id) else {
+            self.recipes.insert(id, Rc::new(vec![TexOp::Pixels(t)]));
+            return;
+        };
+        let r = Rc::make_mut(r);
+        r.push(op);
+        if r.len() > 48 {
+            *r = vec![TexOp::Pixels(t)];
+        }
+    }
+
+    /// Makes a texture again from how it was made.
+    fn build(&mut self, ops: &[TexOp]) -> Option<Image> {
+        let mut img: Option<Image> = None;
+        for op in ops {
+            match op {
+                TexOp::File(n) => img = self.decode_file(*n),
+                TexOp::New(w, h) => img = Some(Image::new(*w, *h)),
+                TexOp::Pixels(p) => img = Some((**p).clone()),
+                TexOp::Fill(r, al, c) => {
+                    if let Some(t) = img.as_mut() {
+                        fill(t, *r, *al, *c);
+                    }
+                }
+                TexOp::Blit(src, r, dx, dy) => {
+                    if let (Some(s), true) = (self.build(src), img.is_some()) {
+                        blit(img.as_mut().unwrap(), &s, *r, *dx, *dy);
+                    }
+                }
+                TexOp::Text {
+                    x,
+                    y,
+                    s,
+                    size,
+                    rgb,
+                    shadow,
+                } => {
+                    if let Some(line) = self.line_image(s, *size, *rgb, *shadow)
+                        && let Some(t) = img.as_mut()
+                    {
+                        put_text(t, &line, *x, *y);
+                    }
+                }
+            }
+        }
+        img
+    }
+
+    /// The file of a play-bgm number: SYS4 gives the file's number, SYS5 the track's
+    /// (36: BGM036.WAV, or .OGG/.XWM).
+    /// bf's track number names BGMnnn (b2009: bf 23 is BGM023.OGG, file 23 is HISTORY.BIN);
+    /// a game without such names gets the file of that number when it is music.
+    fn bgm_file(&self, n: i32) -> i32 {
+        let named = ["WAV", "OGG", "AOG", "XWM"]
+            .iter()
+            .find_map(|ext| self.index.find(&format!("BGM{n:03}.{ext}")));
+        match named {
+            Some(f) => f as i32,
+            None if n >= 0 && self.file_name(n as usize).to_uppercase().starts_with("BGM") => n,
+            None => -1,
+        }
+    }
+
     fn play(&mut self, n: i32, channel: i32, looped: bool) {
+        if n < 0 {
+            return;
+        }
+        if self.log {
+            eprintln!("play {n} {} on {channel}", self.file_name(n as usize));
+        }
         let Some(data) = self.read_file(n as usize) else {
             return;
         };
         let data = if data.starts_with(b"AOGG") && data.len() > 0x14 {
             data[0x14..].to_vec()
+        } else if data.starts_with(b"RIFF") && data.get(8..12) == Some(b"XWMA") {
+            // xWMA (WMA in RIFF, SYS5's short tracks): browsers do not decode it
+            return;
         } else if data.starts_with(b"OggS") || data.starts_with(b"RIFF") {
             data
         } else {
@@ -1249,34 +1493,77 @@ impl Engine {
             return;
         };
         if let Some(t) = self.textures.get_mut(&id) {
-            let t = Rc::make_mut(t);
-            t.renew();
-            let p = Place {
-                x: 0.0,
-                y: 0.0,
-                sx: 1.0,
-                sy: 1.0,
-                cx: 0.0,
-                cy: 0.0,
-                rot: 0.0,
-                alpha: 1.0,
-                add: false,
-                flip: (false, false),
-                clip: [0.0, 0.0, t.w as f32, t.h as f32],
-            };
-            let (w, h) = (line.w as f32, line.h as f32);
-            let (x, y) = (
-                x as f32 - crate::text::PAD as f32,
-                y as f32 - crate::text::PAD as f32,
-            );
-            nexas::gfx::draw(
-                t,
-                &line,
-                [0, 0, line.w as i32, line.h as i32],
-                [x, y, x + w, y + h],
-                &p,
+            put_text(Rc::make_mut(t), &line, x, y);
+            let s = s.to_string();
+            self.record(
+                id,
+                TexOp::Text {
+                    x,
+                    y,
+                    s,
+                    size,
+                    rgb,
+                    shadow,
+                },
             );
         }
+    }
+
+    /// 23b: sprite `id` shows `n` in number font `font`, `digits` wide (zero padded when
+    /// `pad`, else right aligned), on a texture of its own.
+    fn draw_number(&mut self, id: i32, font: i32, n: i32, at: (i32, i32), digits: i32, pad: bool) {
+        let Some(&(src, [sx, sy, w, h], gap)) = self.digit_fonts.get(&font) else {
+            return;
+        };
+        let Some(img) = self.textures.get(&src).cloned() else {
+            return;
+        };
+        let digits = digits.clamp(1, 16);
+        let mut text = n.max(0).to_string();
+        if pad {
+            text = format!("{:0>1$}", text, digits as usize);
+        }
+        let step = w - gap;
+        let width = (step * (digits - 1) + w).max(1);
+        let tex = -0x10000 - id;
+        let (tw, th) = (width as u32, h.max(1) as u32);
+        self.textures.insert(tex, Rc::new(Image::new(tw, th)));
+        self.recipes.insert(tex, Rc::new(vec![TexOp::New(tw, th)]));
+        let from = self.recipes.get(&src).cloned();
+        let from = from.unwrap_or_else(|| Rc::new(vec![TexOp::Pixels(img.clone())]));
+        let skip = (digits - text.len() as i32).max(0);
+        for (i, c) in text
+            .bytes()
+            .rev()
+            .take(digits as usize)
+            .collect::<Vec<_>>()
+            .iter()
+            .rev()
+            .enumerate()
+        {
+            let r = [sx + (c - b'0') as i32 * w, sy, w, h];
+            let dx = (skip + i as i32) * step;
+            if let Some(t) = self.textures.get_mut(&tex) {
+                blit(Rc::make_mut(t), &img, r, dx, 0);
+            }
+            self.record(tex, TexOp::Blit(from.clone(), r, dx, 0));
+        }
+        let s = self.sprites.entry(id).or_insert_with(|| Sprite {
+            tex,
+            src: [0; 4],
+            x: 0.0,
+            y: 0.0,
+            alpha: 1.0,
+            add: false,
+            tint: 0xffffff,
+            pivot: (0.0, 0.0),
+            scale: [1.0, 1.0],
+            off: [0.0, 0.0],
+            anims: Vec::new(),
+        });
+        s.tex = tex;
+        s.src = [0, 0, width, h];
+        (s.x, s.y) = (at.0 as f32, at.1 as f32);
     }
 
     // ---- drawing ----
@@ -1309,7 +1596,7 @@ impl Engine {
             flip: (false, false),
             clip: [0.0, 0.0, self.screen.0 as f32, self.screen.1 as f32],
         };
-        (place, cur.x, cur.y)
+        (place, cur.x + cur.off[0], cur.y + cur.off[1])
     }
 
     fn animate(&mut self, id: i32, kind: AnimKind, delay: i32, ms: i32, to: [f32; 2]) {
@@ -1423,6 +1710,7 @@ impl Engine {
                 });
             }
         }
+        self.menu_draws(&mut out);
         out
     }
 
@@ -1445,6 +1733,10 @@ impl Engine {
         if x >= 0 {
             self.pointer = (x, y);
         }
+        if self.menu.is_some() {
+            self.menu_click(x, y);
+            return;
+        }
         self.buttons |= 1;
         self.release = 3;
         self.clicked = true;
@@ -1452,6 +1744,10 @@ impl Engine {
 
     /// A right click (cancel).
     pub fn cancel(&mut self) {
+        if self.menu.is_some() {
+            self.menu = None;
+            return;
+        }
         self.keys.push(10);
         self.clicked = true;
     }
@@ -1481,10 +1777,32 @@ impl Engine {
         for (id, s) in &self.sprites {
             let size = self.textures.get(&s.tex).map(|t| (t.w, t.h));
             out += &format!(
-                "{id} tex {} {size:?} src {:?} at {} {} alpha {} tint {:x}\n",
-                s.tex, s.src, s.x, s.y, s.alpha, s.tint
+                "{id} tex {} {size:?} src {:?} at {} {} off {:?} alpha {} tint {:x}\n",
+                s.tex, s.src, s.x, s.y, s.off, s.alpha, s.tint
             );
         }
         out
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ini_settings_in_both_encodings() {
+        let wide: Vec<u8> = concat!("x\0GAMEVERSION\0", "1.00.0000\0RC\0")
+            .encode_utf16()
+            .flat_map(u16::to_le_bytes)
+            .collect();
+        assert_eq!(
+            ini_setting(&wide, "GAMEVERSION").as_deref(),
+            Some("1.00.0000")
+        );
+        assert_eq!(
+            ini_setting(b"GAMEVERSION\x002.10\0", "GAMEVERSION").as_deref(),
+            Some("2.10")
+        );
+        assert_eq!(ini_setting(b"nothing", "GAMEVERSION"), None);
     }
 }
