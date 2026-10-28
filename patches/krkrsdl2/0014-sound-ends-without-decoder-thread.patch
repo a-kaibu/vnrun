@@ -1,0 +1,14 @@
+--- a/src/core/sound/sdl2/WaveImpl.cpp
++++ b/src/core/sound/sdl2/WaveImpl.cpp
+@@ -2853,6 +2853,11 @@
+ 					if(LoopManager) LoopManager->SetPosition(0);
+ 					return true;
+ 				}
++			// Everything decoded is queued: wait for it to play out. Reading on would take a
++			// stale L2 unit (no decoder thread refills it with empty units in a build without
++			// threads) and queue silence for ever, so the buffer never stopped (KAG's [ws] and
++			// [wv] waited for good).
++			if (bufferremain <= 0) return true;
+ 			}
+ #if 0
+ 			else
