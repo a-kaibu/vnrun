@@ -575,3 +575,17 @@ Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softp
   - セーブは自前 (右クリック / Esc、12 枠、JSON): 呼び出しの積み (スクリプト・位置・L の置き場・引数)・スタック・S/B/L・フラグ・見えている背景と立ち絵・フェード色・BGM・メッセージ。メッセージ待ちでだけセーブできる。
 - 確認: `EOMAIA_FONT=ipag.ttf EOMAIA_LOG=1 eomaia-run <game> <frames> <out> [frame:x:y[:r|m|s|o] ...]` (o は選択肢かマップが出ているときだけクリック)。体験版はプロローグ→ryu101→nar301→ryu102→マップ (1 日目)→ryu103・104→マップ (2 日目)→ryu105〜107→tr_end.png→タイトルで、410 メッセージ。
 - 残り: マップ右上の週・曜日・残り時間の数字、ステータス窓 (panel)、バックログ・オート・スキップの UI、ムービー (a_*.dat、ASF/WMV) と OP、アイキャッチの動き、h シーン回想 (title の sub)。
+
+## CMVS (Purple software, *.cpz / PB3 / PS2) と Musica の調べ (2026-10-28)
+
+s2011_purplesoftware_miranosu (体験版、cmvs32.exe) は形式の調べまで。エンジンは未着手で、status.tsv の行もまだ足していない。
+
+- CPZ5 の展開は GARbro ArcCPZ.cs (MIT) の流れどおりで読めた (9 つの .cpz すべて、ogg は OggS、PS2A は展開できる)。ただし鍵の組は GARbro に無い。
+  - cmvs32.exe には CPZ5 の読み手のクラスが 4 つあり、スクリプトの命令 (0x4512f0 の手前、値は大域 0x55ae2c) がどれを使うかを決める (3 は CPZ3、5 / 6 / その他)。このタイトルは 4 つ目 (vtable 0x525f30、索引の読み手 0x44a030 付近)。
+  - 4 つ目の MD5 変種: 初期値 0x64FE9A8C, 0xC2F93EA8, 0xEF81BA5D, 0x92C8A72F、結果は [s1 ^ 0x49876325, s2 + 0x54F46D7C, s3 ^ 0xAC7958B7, s0 + 0x1C0638BD] (変換本体 0x447270 は普通の MD5)。
+  - 秘密の文字列は exe の 3 本目 (VA 0x525f48、「解析する悪い子はリコがお仕置きしちゃいます。メッ！かわいいとか言っても許してあげないんだからぁ！」の SJIS 96 バイト = 24 語)。GARbro の既定 (〜呪っちゃいました♪) は 2 本目で、前半 11 語だけ同じ。
+  - そのほかの定数 (ヘッダの XOR、0x3795B39A、表の係数 0x1A743125、0x3A / 0x7E、ディレクトリ・エントリの種、エントリ鍵 0x2547A39E / 0xBC / 0x5C29E87B、PB3 の頭の復号) は GARbro の CPZ5 と同じ。ヘッダ 0x38 の語は 0x37ACF831 で XOR されるが、このクラスでは使われていない。
+  - exe の .rdata は VA = ファイル位置 + 0x401600 (.text は + 0x400C00)。
+- 中身: script.cpz に 18 本の .ps2 (start.ps2 は pack 直下に生で置かれる)、bg / event / chip / stand / balloon は PB3B。種類は 1 (event・chip)、2 と 3 (bg・chip、JBP1 系)、5 と 6 (stand・balloon、6 は 5 の基底画像に差分を重ねる)。一部の背景は data/imgvideo/*.cmv (22 本の動く背景)。se / voice は ogg、BGM は data/music/*.ogg。
+- 見送りの理由: PS2 スクリプトの VM は命令の分岐先が 650 ほどあり (0x461000 付近の switch)、資料も無い。PB3 の 2 / 3 / 6 と CMV (JBP1) の復号も要る。Propeller くらいの手間では終わらないので、次の機会に回す。手元の Python の読み手 (cpz.py / md5v.py) は残していない。上の定数で作り直せる。
+- r1_musica (Musica .paz): 配布元 (minori.ph) は日本以外からだと英語のページへ飛ばされ、archive.org にも写しが無く (web.archive.org は接続が切られる)、体験版を手に入れられなかった。未着手。
