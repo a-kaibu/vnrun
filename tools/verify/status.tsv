@@ -98,7 +98,7 @@ dl_RJ01698597	本編	0df7c53 でタイトル→ニューゲーム→本編の文
 dl_RJ01730521	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
 dl_RJ01741863	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
 dl_RJ01642779	タイトル	RPGツクール。画面が拡大されない
-s2019_no_strike_jyosou_jinjya	本編	Chromium (3f99c53) で START→本編の場面 (背景・立ち絵) は進むが、台湾版の Big5 文章が描画されない
+s2019_no_strike_jyosou_jinjya	本編	Chromium (675fd0a 以降) で START→本編の文章まで、台湾版の Big5 文章も表示
 s2014_whirlpool_tearstilla	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_VJ01001386	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_VJ01004582	本編	Chromium で START→本編の文章まで (名前入力 DIALOG は既定名で進む)
@@ -185,9 +185,9 @@ b2023_lump_of_sugar_all	タイトル	dc42573 でタイトル画面まで表示
 b2012_alcot	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: bd7853c でタイトル表示 (GAME START 等のメニュー描画まで)
 b2012_kai	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: bd7853c でタイトル表示 (START/LOAD 等の看板メニュー描画まで)
 b2010_giga	本編	ネイティブと Chromium でタイトル、最初の台詞とボイスの再生開始を確認。背景演出、続き、セーブ等は未完成
-s2010_giga_bittersmile	本編	Chromium (3f99c53) で START→本編の文章まで。メッセージ枠が右端で切れて見える
+s2010_giga_bittersmile	本編	Chromium (21b28be 以降) で START→本編の文章まで。メッセージ枠は中央に表示
 s2007_giga_himesama	本編	Chromium (3f99c53) で START→本編の文章まで
-s2009_giga_curefull	本編	Chromium (3f99c53) で START→本編の文章まで。メッセージ枠が右端で切れて見える
+s2009_giga_curefull	本編	Chromium (21b28be 以降) で START→本編の文章まで。メッセージ枠は中央に表示
 s2006_giga_ab	NG	64d6316 (2015 年版の表) で「table is cut short」
 s2008_giga_sakahari	本編	Chromium (3f99c53) で START→本編の文章まで
 s2011_giga_hinataterrace	本編	Chromium (3f99c53) で START→本編の文章まで
@@ -365,8 +365,8 @@ b2009_marmalade	本編	タイトル→はじめから→本編の文章 (entis-r
 b2024_syrup_mm	NG	.csx が無い新しい世代 (システムは exe 内、台本は xscript の .srcxml)
 b2013_alicesoft	本編	Chromium で注意書き→ゲーム開始→本編の文章まで (vnrun 検証スレッドでも確認)
 b2012_alicesoft	本編	Chromium で シーン選択 (琴音 純愛)→本編の文章まで (vnrun 検証スレッドでも確認)
-b2007_clochette	本編	QLIE (vnrun) でロゴ→タイトル→Start→本編の文章・名前・背景・立ち絵まで。セーブ→タイトルからロード、バックログも (Chromium)
-b2020_barista_lab	本編	QLIE (vnrun) で注意書き→タイトル→はじめから→本編の文章・名前・背景・立ち絵まで (ImoScripter の ^ 命令)。セーブ→タイトルの「つづきから」でロードも (Chromium)
+b2007_clochette	本編	QLIE (vnrun) でロゴ→タイトル→Start→本編の文章・名前・背景・立ち絵まで。セーブ→タイトルからロード、バックログも (Chromium)。検証スレッドでもタイトル画面まで確認
+b2020_barista_lab	本編	QLIE (vnrun) で注意書き→タイトル→はじめから→本編の文章・名前・背景・立ち絵まで (ImoScripter の ^ 命令)。セーブ→タイトルの「つづきから」でロードも (Chromium)。検証スレッドでもタイトル画面まで確認
 b2008_escude	本編	Escu:de (ACPX の C を自前 VM で実行) でタイトル→NEW GAME→本編の背景・文章まで (escude-run と Chromium)。セーブ (スロットの日時・サムネイル)→タイトルからロードで本編に戻る (escude-run)
 b2014_escude	本編	Escu:de でロゴ→タイトル→はじめから→プロローグの文章まで (Chromium)、CG と文章ウィンドウの場面まで (escude-run)。セーブ→タイトルからロードでプロローグに戻る (Chromium と escude-run)
 b2009_purplesoftware	NG	QLIE (vnrun) では FilePackVer3.0 + DLL/key.fkey の暗号が解けず「startup.s: no @@TOP」(GARbro の 3.0 鍵ファイル方式・アイコン鍵を試しても 1PC にならない)

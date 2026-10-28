@@ -49,7 +49,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 35 | 3 | 17 | 9 | 3 | 1 |  | 2 |
 | 吉里吉里 (KiriKiri SDL2) | 135 | 67 | 67 |  |  |  | 1 |  |
-| YU-RIS (vnrun) | 29 | 21 | 3 |  |  | 4 | 1 |  |
+| YU-RIS (vnrun) | 29 | 24 |  |  |  | 4 | 1 |  |
 | NeXAS (vnrun) | 16 | 11 | 1 |  | 1 | 2 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
 | Tmr-Hiro (vnrun) | 22 | 22 |  |  |  |  |  |  |
@@ -373,22 +373,22 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2022_casket | [あやかし遊郭～花魁道中～体験版](http://suezou.dyndns.org/dl2022/casket/ayakashi_pack/ayakashipack_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | dl_RJ01708454 | [こんな安楽椅子探偵は嫌だ！](https://trial.dlsite.com/doujin/RJ01709000/RJ01708454_trial.zip) | 本編 | Chromium で はじめから→本編の文章まで |
 | dl_RJ01721024 | [むかしグラビアアイドルだった団地妻](https://trial.dlsite.com/doujin/RJ01722000/RJ01721024_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
+| dl_VJ01000315 | [【限定版】エルフェンキング](https://trial.dlsite.com/professional/VJ01001000/VJ01000315_trial.zip) | 本編 | Chromium で START→本編の文章まで (名前入力 DIALOG は既定名で進む) |
 | dl_VJ01000407 | [画面から出てきた推しVtuberとHな同棲生活 ～夢魔かわASMR配信者は地雷系？～](https://trial.dlsite.com/professional/VJ01001000/VJ01000407_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | dl_VJ01001385 | [【豪華版】ボクが当主になるために今日からメイドとHします2](https://trial.dlsite.com/professional/VJ01002000/VJ01001385_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | dl_VJ01001386 | [【通常版】ボクが当主になるために今日からメイドとHします2](https://trial.dlsite.com/professional/VJ01002000/VJ01001386_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | dl_VJ01002327 | [竜翼のメロディア −Diva with the blessed dragonol−](https://trial.dlsite.com/professional/VJ01003000/VJ01002327_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
+| dl_VJ01002863 | [【限定版】巨乳軍人支配催眠「私の任務は貴方にご奉仕する事です。色んな穴をご自由にお使い下さい」](https://trial.dlsite.com/professional/VJ01003000/VJ01002863_trial.zip) | 本編 | Chromium で START→本編の文章まで (名前入力 DIALOG は既定名で進む) |
+| dl_VJ01004582 | [【豪華版】家族は（俺以外）サキュバスでした ～二人の姉と母との性活で精液を搾り取られます～](https://trial.dlsite.com/professional/VJ01005000/VJ01004582_trial.zip) | 本編 | Chromium で START→本編の文章まで (名前入力 DIALOG は既定名で進む) |
 | s2011_whirlpool_maikaze | [舞風のメルト -Where leads to feeling destination- WEB体験版 (ver1.01)](http://suezou.dyndns.org/dl2011/whirlpool/maikaze/webtrial_maikaze_ver101.exe) | 本編 | Chromium (3f99c53) で START→本編の文章まで (クリック位置ずれで LOAD 画面も開く) |
 | s2014_whirlpool_tearstilla | [鯨神のティアスティラ 体験版](http://suezou.dyndns.org/dl2014/whirlpool/tearstilla/kujira_trial_web.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | s2016_no_strike_jyogaku | [女装学園（孕）　体験版](http://suezou.dyndns.org/dl2016/no-strike/jyogaku/jyogaku_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
-| s2019_no_strike_jyosou_jinjya | [josou jinjya_trial](http://suezou.dyndns.org/dl2019/no-strike/jyosou_jinjya/josou_jinjya_trial_TW.zip) | 本編 | Chromium (3f99c53) で START→本編の場面 (背景・立ち絵) は進むが、台湾版の Big5 文章が描画されない |
+| s2019_no_strike_jyosou_jinjya | [josou jinjya_trial](http://suezou.dyndns.org/dl2019/no-strike/jyosou_jinjya/josou_jinjya_trial_TW.zip) | 本編 | Chromium (675fd0a 以降) で START→本編の文章まで、台湾版の Big5 文章も表示 |
 | s2020_casket_ayakashi03 | [あやかし遊郭～花魁アマビエ民譚集～体験版](http://suezou.dyndns.org/dl2020/casket/ayakashi03/ayakashi03_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | s2021_casket_bellaca | [リンカーベル・アカデミア～落第魔女とヒミツの儀式～体験版](http://suezou.dyndns.org/dl2021/casket/bellaca/bellaca01_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | s2021_casket_bellaca02 | [リンカーベル・アカデミア～龍族のフィアンセ～Hシーン体験版](http://suezou.dyndns.org/dl2021/casket/bellaca02/bellaca02_trial.zip) | 本編 | Chromium で Hシーン体験版→本編の文章まで |
 | s2023_casket_oshitona_vtuber02 | [画面から出てきた推しVtuberとHな同棲生活 ～庶民派吸血鬼お嬢様は契約したい～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber02/oshitona02_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | s2023_casket_oshitona_vtuber03 | [画面から出てきた推しVtuberとHな同棲生活 ～夢魔かわASMR配信者は地雷系？～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber03/oshitona03_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
-| dl_VJ01000315 | [【限定版】エルフェンキング](https://trial.dlsite.com/professional/VJ01001000/VJ01000315_trial.zip) | タイトル | Chromium で START 後、体験版の挨拶文 1 行のあと (または直後から) 画面が黒いまま進まない |
-| dl_VJ01002863 | [【限定版】巨乳軍人支配催眠「私の任務は貴方にご奉仕する事です。色んな穴をご自由にお使い下さい」](https://trial.dlsite.com/professional/VJ01003000/VJ01002863_trial.zip) | タイトル | Chromium で START 後、体験版の挨拶文 1 行のあと (または直後から) 画面が黒いまま進まない |
-| dl_VJ01004582 | [【豪華版】家族は（俺以外）サキュバスでした ～二人の姉と母との性活で精液を搾り取られます～](https://trial.dlsite.com/professional/VJ01005000/VJ01004582_trial.zip) | タイトル | Chromium で START 後、体験版の挨拶文 1 行のあと (または直後から) 画面が黒いまま進まない |
 | b2006_whirlpool | [いな☆こい！ ～お稲荷さまとモテモテのたたり～ 体験版 ver 1.00](http://suezou.dyndns.org/dl2006/whirlpool/inakoi/inakoi_trial_100.exe) | NG | pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」 |
 | b2007_whirlpool | [magus_trial.exe](http://suezou.dyndns.org/dl2007/whirlpool/magus/magus_trial.exe) | NG | pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」 |
 | b2021_whirlpool | [けもの道☆ガーリッシュスクエア　体験版](http://suezou.dyndns.org/dl2021/whirlpool/kemonomichi-gs/kemonomichi-gs_trial.zip) | NG | 3e4a888 で「yst00067.ybn: short arguments」 |
@@ -407,8 +407,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2019_giga | [アイキス 豪華体験版](http://suezou.dyndns.org/dl2019/giga/aikiss/aikiss_premium_trial.zip) | 本編 | 6875c68 でタイトルから本編テキストまで。メッセージウィンドウ画像は未表示 (既知) |
 | s2007_giga_himesama | [姫さまっ、お手やわらかに！ -体験版-](http://suezou.dyndns.org/dl2007/giga/himesama/hime_trialc.zip) | 本編 | Chromium (3f99c53) で START→本編の文章まで |
 | s2008_giga_sakahari | [さかあがりハリケーン 体験版 Ver.2](http://suezou.dyndns.org/dl2008/giga/sakahari/sakahari_trial2.zip) | 本編 | Chromium (3f99c53) で START→本編の文章まで |
-| s2009_giga_curefull | [キュアフル！ 体験版](http://suezou.dyndns.org/dl2009/giga/curefull/curefull_trial.zip) | 本編 | Chromium (3f99c53) で START→本編の文章まで。メッセージ枠が右端で切れて見える |
-| s2010_giga_bittersmile | [bitter smile. ～ビタースマイル～ 体験版２](http://suezou.dyndns.org/dl2010/giga/bittersmile/bittersmile_trial2.zip) | 本編 | Chromium (3f99c53) で START→本編の文章まで。メッセージ枠が右端で切れて見える |
+| s2009_giga_curefull | [キュアフル！ 体験版](http://suezou.dyndns.org/dl2009/giga/curefull/curefull_trial.zip) | 本編 | Chromium (21b28be 以降) で START→本編の文章まで。メッセージ枠は中央に表示 |
+| s2010_giga_bittersmile | [bitter smile. ～ビタースマイル～ 体験版２](http://suezou.dyndns.org/dl2010/giga/bittersmile/bittersmile_trial2.zip) | 本編 | Chromium (21b28be 以降) で START→本編の文章まで。メッセージ枠は中央に表示 |
 | s2011_giga_hinataterrace | [ひなたテラス -We don't abandon you.- web体験版２](http://suezou.dyndns.org/dl2011/giga/hinataterrace/hinata_webtrial02c.zip) | 本編 | Chromium (3f99c53) で START→本編の文章まで |
 | s2015_giga_renaiphase | [恋愛フェイズ 体験版](http://suezou.dyndns.org/dl2015/giga/renaiphase/RP_trial.zip) | タイトル | b425e77 でもタイトルまで |
 | s2006_giga_cheerfull | [チアフル！ ～cheerfull!～ 【 体験版 】](http://suezou.dyndns.org/dl2006/giga/cheerfull/cheerfull_trial.exe) | 要再確認 | 自己展開 exe のダウンロード/展開に失敗 |
@@ -517,8 +517,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2007_clochette | [かみぱに！体験版](http://suezou.dyndns.org/dl2007/clochette/kamipani/kamipani_trial.zip) | 本編 | QLIE (vnrun) でロゴ→タイトル→Start→本編の文章・名前・背景・立ち絵まで。セーブ→タイトルからロード、バックログも (Chromium) |
-| b2020_barista_lab | [アナベル・メイドガーデン体験版](http://suezou.dyndns.org/dl2020/barista-lab/annabel/annabel_trial.zip) | 本編 | QLIE (vnrun) で注意書き→タイトル→はじめから→本編の文章・名前・背景・立ち絵まで (ImoScripter の ^ 命令)。セーブ→タイトルの「つづきから」でロードも (Chromium) |
+| b2007_clochette | [かみぱに！体験版](http://suezou.dyndns.org/dl2007/clochette/kamipani/kamipani_trial.zip) | 本編 | QLIE (vnrun) でロゴ→タイトル→Start→本編の文章・名前・背景・立ち絵まで。セーブ→タイトルからロード、バックログも (Chromium)。検証スレッドでもタイトル画面まで確認 |
+| b2020_barista_lab | [アナベル・メイドガーデン体験版](http://suezou.dyndns.org/dl2020/barista-lab/annabel/annabel_trial.zip) | 本編 | QLIE (vnrun) で注意書き→タイトル→はじめから→本編の文章・名前・背景・立ち絵まで (ImoScripter の ^ 命令)。セーブ→タイトルの「つづきから」でロードも (Chromium)。検証スレッドでもタイトル画面まで確認 |
 | b2009_purplesoftware | [シグナルハート 体験版 Ver.01](http://suezou.dyndns.org/dl2009/purplesoftware/signalheart/SignalHeart_Trial01.exe) | NG | QLIE (vnrun) では FilePackVer3.0 + DLL/key.fkey の暗号が解けず「startup.s: no @@TOP」(GARbro の 3.0 鍵ファイル方式・アイコン鍵を試しても 1PC にならない) |
 
 ### Escude (vnrun)
