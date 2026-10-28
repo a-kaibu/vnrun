@@ -57,7 +57,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | CatSystem2 (vnrun) | 3 | 3 |  |  |  |  |  |  |
 | EntisGLS (vnrun) | 5 | 4 |  |  |  | 1 |  |  |
 | AliceSoft System4 (xsystem4) | 2 | 2 |  |  |  |  |  |  |
-| QLIE (vnrun) | 3 | 2 |  |  |  |  |  | 1 |
+| QLIE (vnrun) | 3 | 2 |  |  |  | 1 |  |  |
 | Escude (vnrun) | 2 | 2 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
@@ -512,7 +512,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|
 | b2007_clochette | [かみぱに！体験版](http://suezou.dyndns.org/dl2007/clochette/kamipani/kamipani_trial.zip) | 本編 | QLIE (vnrun) でロゴ→タイトル→Start→本編の文章・名前・背景・立ち絵まで。セーブ→タイトルからロード、バックログも (Chromium) |
 | b2020_barista_lab | [アナベル・メイドガーデン体験版](http://suezou.dyndns.org/dl2020/barista-lab/annabel/annabel_trial.zip) | 本編 | QLIE (vnrun) で注意書き→タイトル→はじめから→本編の文章・名前・背景・立ち絵まで (ImoScripter の ^ 命令)。セーブ→タイトルの「つづきから」でロードも (Chromium) |
-| b2009_purplesoftware | [シグナルハート 体験版 Ver.01](http://suezou.dyndns.org/dl2009/purplesoftware/signalheart/SignalHeart_Trial01.exe) | 未確認 |  |
+| b2009_purplesoftware | [シグナルハート 体験版 Ver.01](http://suezou.dyndns.org/dl2009/purplesoftware/signalheart/SignalHeart_Trial01.exe) | NG | QLIE (vnrun) では FilePackVer3.0 + DLL/key.fkey の暗号が解けず「startup.s: no @@TOP」(GARbro の 3.0 鍵ファイル方式・アイコン鍵を試しても 1PC にならない) |
 
 ### Escude (vnrun)
 

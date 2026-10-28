@@ -369,3 +369,4 @@ b2007_clochette	本編	QLIE (vnrun) でロゴ→タイトル→Start→本編の
 b2020_barista_lab	本編	QLIE (vnrun) で注意書き→タイトル→はじめから→本編の文章・名前・背景・立ち絵まで (ImoScripter の ^ 命令)。セーブ→タイトルの「つづきから」でロードも (Chromium)
 b2008_escude	本編	Escu:de (ACPX の C を自前 VM で実行) でタイトル→NEW GAME→本編の背景・文章まで (escude-run と Chromium)。セーブ (スロットの日時・サムネイル)→タイトルからロードで本編に戻る (escude-run)
 b2014_escude	本編	Escu:de でロゴ→タイトル→はじめから→プロローグの文章まで (Chromium)、CG と文章ウィンドウの場面まで (escude-run)。セーブ→タイトルからロードでプロローグに戻る (Chromium と escude-run)
+b2009_purplesoftware	NG	QLIE (vnrun) では FilePackVer3.0 + DLL/key.fkey の暗号が解けず「startup.s: no @@TOP」(GARbro の 3.0 鍵ファイル方式・アイコン鍵を試しても 1PC にならない)

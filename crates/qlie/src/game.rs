@@ -24,6 +24,47 @@ pub fn key_file(files: &mut dyn Files) -> Option<Vec<u8>> {
     None
 }
 
+/// A 3.0 game's own key: 256 bytes of the icon in the exe's main form (the TFORM1 resource,
+/// a Delphi form: the `Picture.Data` of its `IconKeyImage`, after "\x05TIcon").
+pub fn game_key(files: &mut dyn Files) -> Option<Vec<u8>> {
+    let exes: Vec<String> = files
+        .list()
+        .into_iter()
+        .filter(|n| n.to_ascii_lowercase().ends_with(".exe"))
+        .collect();
+    for exe in exes {
+        let Some(pe) = files.read(&exe) else { continue };
+        let Some(form) = crate::pe::resource(&pe, "#10", "TFORM1") else {
+            continue;
+        };
+        if let Some(k) = icon_key(&form) {
+            return Some(k);
+        }
+    }
+    None
+}
+
+fn icon_key(form: &[u8]) -> Option<Vec<u8>> {
+    let find = |hay: &[u8], needle: &[u8], from: usize| {
+        hay.get(from..)?
+            .windows(needle.len())
+            .position(|w| w == needle)
+            .map(|i| i + from)
+    };
+    let at = find(form, b"IconKeyImage", 0)?;
+    let prop = find(form, b"\x0cPicture.Data", at)? + 13;
+    // vaBinary, a length, then the data
+    if *form.get(prop)? != 0x0A {
+        return None;
+    }
+    let n = u32::from_le_bytes(form.get(prop + 1..prop + 5)?.try_into().ok()?) as usize;
+    let data = form.get(prop + 5..prop + 5 + n)?;
+    if !data.starts_with(b"\x05TIcon") || data.len() < 0x106 {
+        return None;
+    }
+    Some(data[6..0x106].to_vec())
+}
+
 use std::collections::HashMap;
 
 use crate::pack::Pack;
@@ -56,6 +97,11 @@ impl Game {
     /// Opens GameData/data*.pack (later archives win, as patches do).
     pub fn open(mut files: Box<dyn Files>) -> Result<Game, String> {
         let key = key_file(files.as_mut());
+        let gkey = if key.is_some() {
+            game_key(files.as_mut())
+        } else {
+            None
+        };
         let mut names: Vec<String> = Vec::new();
         for i in 0..64 {
             let n = format!("GameData/data{i}.pack");
@@ -70,7 +116,7 @@ impl Game {
             index: HashMap::new(),
         };
         for n in names {
-            match Pack::open(g.files.as_mut(), &n, key.clone()) {
+            match Pack::open_with(g.files.as_mut(), &n, key.clone(), gkey.clone()) {
                 Ok(p) => {
                     let k = g.packs.len();
                     for (i, e) in p.entries.iter().enumerate() {

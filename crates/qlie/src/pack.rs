@@ -32,6 +32,8 @@ pub struct Pack {
     arc_key: u32,
     /// key.fkey / the exe's RESKEY, or the archive's pack_keyfile decrypted with it
     key_file: Option<Vec<u8>>,
+    /// 3.0: the game's own key (the exe's TFORM1 IconKeyImage), mixed in with the key file
+    game_key: Option<Vec<u8>>,
     /// 2.0 data in a 1.0 archive
     v2_data: bool,
 }
@@ -188,7 +190,13 @@ fn mix(data: &mut [u8], mut hash64: u64, mut table: impl FnMut(usize) -> u64) {
 }
 
 /// 3.0 data with a key file.
-fn decrypt_v3_key(data: &mut [u8], raw_name: &[u8], arc_key: u32, key_file: &[u8]) {
+fn decrypt_v3_key(
+    data: &mut [u8],
+    raw_name: &[u8],
+    arc_key: u32,
+    key_file: &[u8],
+    game_key: Option<&[u8]>,
+) {
     let len = data.len() as u32;
     let (mut hash, mut seed) = (0x85F532u32, 0x33F641u32);
     for (i, &b) in raw_name.iter().enumerate() {
@@ -204,8 +212,14 @@ fn decrypt_v3_key(data: &mut [u8], raw_name: &[u8], arc_key: u32, key_file: &[u8
                 .wrapping_add(hash ^ len ^ 0x8F32DC)),
     );
     seed = 9u32.wrapping_mul(seed & 0xFF_FFFF);
+    if game_key.is_some() {
+        seed ^= 0x453A;
+    }
     let mut mt = Mt::new(seed);
     mt.xor_state(key_file);
+    if let Some(g) = game_key {
+        mt.xor_state(g);
+    }
     let table: Vec<u64> = (0..16).map(|_| mt.rand64()).collect();
     for _ in 0..9 {
         mt.rand();
@@ -380,6 +394,16 @@ impl Pack {
         path: &str,
         key_file: Option<Vec<u8>>,
     ) -> Result<Pack, String> {
+        Pack::open_with(files, path, key_file, None)
+    }
+
+    /// [`Pack::open`] with a 3.0 game's own key ([`crate::game::game_key`]) too.
+    pub fn open_with(
+        files: &mut dyn Files,
+        path: &str,
+        key_file: Option<Vec<u8>>,
+        game_key: Option<Vec<u8>>,
+    ) -> Result<Pack, String> {
         let size = files.size(path).ok_or(format!("{path}: not found"))?;
         if size < 0x1c {
             return Err(format!("{path}: too small"));
@@ -426,6 +450,11 @@ impl Pack {
             entries: Vec::new(),
             arc_key,
             key_file: None,
+            game_key: if version == Version::V3 {
+                game_key
+            } else {
+                None
+            },
             v2_data: version != Version::V1,
         };
         // 1.0 archives may have any of three layouts: try them in turn
@@ -551,7 +580,13 @@ impl Pack {
                 Version::V1 => decrypt_v2(&mut data, 0, self.v2_data),
                 Version::V2 => decrypt_v2(&mut data, 0, true),
                 Version::V3 => match &self.key_file {
-                    Some(k) => decrypt_v3_key(&mut data, &e.raw_name, self.arc_key, k),
+                    Some(k) => decrypt_v3_key(
+                        &mut data,
+                        &e.raw_name,
+                        self.arc_key,
+                        k,
+                        self.game_key.as_deref(),
+                    ),
                     None => decrypt_v2(&mut data, self.arc_key, true),
                 },
                 Version::V31 => decrypt_v31(&mut data, e, self.arc_key, self.key_file.as_deref()),
