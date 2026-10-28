@@ -137,7 +137,7 @@ b2006_ninetail	本編	検証スレッドでも Chromium で本編の文章まで
 b2016_cube	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 0c62865 で白画面からクリック 2 回でタイトル画面まで表示
 b2013_hulotte	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 で注意画面からタイトルまで (XOR 暗号の xp3)
 r1_krkr_apt306	タイトル	e7d5b88 でタイトル画面まで表示
-b2022_syoku	タイトル	5d1348e でタイトル画面まで表示
+b2022_syoku	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 b2011_grand_cru	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 591d0a0 で黒地にタイトルのメニュー文字だけ出る
 b2015_appetite	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 b2015_ammolite	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
@@ -170,13 +170,13 @@ b2006_akabeesoft	本編	2026-10-28: タイトル→開始→本編の文章を�
 b2012_akabeesoft3	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
 b2011_nanawind	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: yuyukana.tpm の cxdec を自動検出。保護対象4,410ファイルの Adler-32 が一致
 b2020_lass_pixy	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: bd7853c でタイトル表示 (Start/Continue 等のボタン描画まで)
-b2015_pachipachi_soft	タイトル	2026-10-26: Mado の31バイト周期 XOR を自動検出。保護対象749ファイルの Adler-32 が一致
+b2015_pachipachi_soft	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: Mado の31バイト周期 XOR を自動検出。保護対象749ファイルの Adler-32 が一致
 b2010_grand_cru	本編	a29c215 で Start から本編テキストまで
-b2014_undermoon	タイトル	5d1348e でタイトル画面まで表示
+b2014_undermoon	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 b2016_appetite	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 b2023_apadash	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 b2017_appetite	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
-b2019_sator	タイトル	5d1348e でタイトル画面まで表示
+b2019_sator	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 b2021_chaos_r	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 b2021_kelp	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 b2022_chaos_r	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
@@ -229,7 +229,7 @@ b2021_pin_point	本編	検証スレッドでも Chromium で本編の文章ま�
 b2008_dualtail	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: e7d5b88 でタイトル画面まで表示
 b2012_cross_over	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: e7d5b88 でタイトル画面まで表示
 b2009_dualtail	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: dc42573 でタイトル画面まで表示 (クリックで設定画面も開く)
-b2022_hending	タイトル	0009: Akabei 方式の鍵を自動検出し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 2,372 ファイルの Adler-32 一致
+b2022_hending	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 0009: Akabei 方式の鍵を自動検出し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 2,372 ファイルの Adler-32 一致
 b2020_akabeesoft3	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 4,201 ファイルの Adler-32 一致
 b2013_dualtail	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d084599 (setLayerPos) でタイトル画面まで表示
 b2015_mille_feuille	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: b9e72ec でタイトル画面まで表示
@@ -247,8 +247,8 @@ s2023_chaos_r_bian_rr	本編	2026-10-28: タイトル→開始→本編の文章
 dl_VJ01000564	タイトル	5d1348e でタイトル画面まで表示
 s2009_dualtail_haiironosora	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 s2015_hulotte_yomeyaba	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
-s2019_sukerasparo_itsukano	タイトル	5d1348e でタイトル画面まで表示
-s2016_ammolite_little_twins	タイトル	5d1348e でタイトル画面まで表示
+s2019_sukerasparo_itsukano	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
+s2016_ammolite_little_twins	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 s2019_appetite_aniyome_furin	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 s2018_pin_point_yakyurare	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示。起動時に「フルスクリーンで表示しますか？」の確認ダイアログが出る
 dl_VJ01000639	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
@@ -279,7 +279,7 @@ s2020_at_sakura_lover_swapping	本編	2026-10-28: タイトル→開始→本編
 s2022_at_sakura_konya_aitu	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
 dl_VJ01003070	タイトル	5d1348e でタイトル画面まで表示
 s2014_cross_over_tori	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
-s2023_hending_hassyakusama	タイトル	0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 3,236 ファイルの Adler-32 一致
+s2023_hending_hassyakusama	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 0009: Akabei 方式を自動復号し、Chromium でタイトルまで確認 (2026-10-26)。保護対象 3,236 ファイルの Adler-32 一致
 b2014_ensemble_sweet	本編	71cd396 で START から本編テキストまで
 b2014_guilty	本編	14cde42 で START から本編テキストまで
 b2014_pulltop_latte	本編	b076f1f で START からキャラクター選択画面まで
@@ -315,7 +315,7 @@ dl_VJ01000502	タイトル	d51f3e8 系のページでタイトル画面まで表
 s2018_appetite_boku_mother	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示
 dl_VJ01006612	タイトル	d51f3e8 系のページでタイトル画面まで表示
 s2021_dualtail_vbhi	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示。クリック後に「RuntimeError: null function」で停止
-s2026_poison_motion_sxs_me	タイトル	d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
+s2026_poison_motion_sxs_me	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
 s2025_poison_extasy_paizuri_me	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示
 s2011_hulotte_with_ribbon	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d2edfde で注意書きの後クリックでタイトル画面まで表示 (OP ムービーは飛ばす)
 s2014_cube_koikano	タイトル	d2edfde でクリック 3〜4 回の後タイトル画面まで表示
@@ -331,11 +331,11 @@ dl_VJ01004836	本編	b076f1f で START から本編テキストまで
 s2018_ensemble_otostuki	本編	b75e0c9 で注意画面 → タイトル → START から本編テキストまで (zip を取り直し)
 s2008_ninetail_amatu	タイトル	
 dl_RJ01677912	本編	1929e7a で START から本編テキストまで (立ち絵・名前欄・文章)
-b2016_alcot	タイトル	ae3efe1 でタイトル画面まで表示 (起動から約 2 分)
+b2016_alcot	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: ae3efe1 でタイトル画面まで表示 (起動から約 2 分)
 b2014_hibiki_works	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: a29c215 でロゴと注意書き 2 枚をクリックで送るとタイトル画面まで表示
 s2006_akabeesoft_conboku	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: bd7853c でインストーラ (Inno) 展開後に注意書き→タイトルメニューまで表示
 b2008_mille_feuille	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: インストーラの data1.cab を展開し、タイトルを確認
-b2017_sukerasparo	タイトル	2026-10-26: EXE 内蔵 XP3 をプロジェクトとして選び、タイトルを確認
+b2017_sukerasparo	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: EXE 内蔵 XP3 をプロジェクトとして選び、タイトルを確認
 b2006_mille_feuille	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: InstallShield の MSI/CAB を展開してファイル名を復元。タイトルを確認
 b2007_akabeesoft	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: G線上の魔王の最初の体験版。開発機のドライブパスを無視してタイトルを確認
 s2008_akabeesoft_gsen	本編	2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-26: 体験版2。開発機のドライブパスを無視してタイトルを確認
