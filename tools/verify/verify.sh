@@ -70,6 +70,7 @@ game_root() {
     qlie) m=(-ipath '*/gamedata/data0.pack') ;;
     escude) m=(-iname script.bin) ;;
     interheart) m=(-iname data.fpk) ;;
+    anim) m=(-iname '*_sce.dat') ;;
     nscripter) m=(-iname nscript.dat -o -iname 0.txt -o -iname 00.txt -o -iname '*.nsa' -o -iname '*.sar') ;;
     html) m=(-iname package.json -o -iname index.html -o -iname package.nw -o -iname nw.pak -o -iname app.asar) ;;
   esac

@@ -388,3 +388,12 @@ b2021_dessert_soft	本編	Interheart でタイトル (エンジン描画のボ�
 b2026_dessert_soft	本編	Interheart でタイトル (エンジン描画のボタン)→はじめから→本編の背景・立ち絵・イベント CG・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium)
 b2015_kaguya	本編	Kaguya (vnrun) の LINK 世代 (Start.exe + params.dat + message.dat) でタイトル→はじめから→プロローグ (A0000..A0070) の背景・立ち絵・名前・文章・音声→共通→マップ (文字の選択肢で代用)→各ルート①→体験版の終わりまで通る (kaguya-run と Chromium)
 b2018_kaguya	本編	Kaguya (vnrun) の LINK 世代 (params v05.7) でタイトル→はじめから→オープニング (A0000..A0070) の背景・立ち絵・名前 (主人公名の置き換え)・文章・音声→共通→行き先 (文字の選択肢で代用)→紅音ルート→体験版の終わりまで通る (kaguya-run と Chromium)
+b2007_anim	NG	Crowd/ANIM (anim) の 2007 年版はオペコードの番号と引数が 2008 年以降と違い (36・30 番台・9a など)、ck_sce.dat を最後まで読めない。家系ごとの表が要る
+b2008_anim	本編	Crowd/ANIM (<game>_sce.dat を自前で実行) でタイトル→START→説明文→蓉子編/一志編の選択肢→本編の背景・立ち絵・イベント CG・文章・ボイスまで、体験版の最後 (タイトルに戻る) まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (両方)
+b2009_anim	本編	Crowd/ANIM で 1024x768 のタイトル (Start/Load/Exit)→本編の背景 (1024x576 を上下の帯の間に)・立ち絵・イベント CG・文章まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium)。メッセージ枠は自前の半透明の帯 (p_message が無い)
+b2010_anim	本編	Crowd/ANIM でタイトル (縦書きの 5 ボタン)→初めから→本編の背景・立ち絵・文章まで、体験版の最後まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium)
+b2011_anim_team_mm	NG	Crowd/ANIM の 2011 年版は命令の番号が付け直され (文章が c8〜cb、0a が行内の文字列など)、2008〜2010 年の表では読めない
+b2017_anim	NG	シナリオが Enigma Protector で包まれた exe の中にあり、<game>_sce.dat が無い
+b2019_anim	NG	シナリオが Enigma Protector で包まれた exe の中にあり、<game>_sce.dat が無い
+b2022_anim	NG	シナリオが Enigma Protector で包まれた exe の中にあり (cg/psbpack.dat と E-mote)、<game>_sce.dat が無い
+b2026_anim	NG	シナリオが Enigma Protector で包まれた exe の中にあり (cg/psbpack.dat と E-mote)、<game>_sce.dat が無い

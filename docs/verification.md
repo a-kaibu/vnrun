@@ -62,6 +62,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Majiro (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | Kaguya (vnrun) | 6 | 6 |  |  |  |  |  |  |
 | Interheart (vnrun) | 11 | 10 |  |  |  | 1 |  |  |
+| Crowd/ANIM (vnrun) | 9 | 3 |  |  |  | 6 |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -559,4 +560,18 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2021_dessert_soft | [彼女は友達ですか？恋人ですか？それともトメフレですか？Second 体験版](http://suezou.dyndns.org/dl2021/dessert-soft/tomefure_second/TomefureS-trial.zip) | 本編 | Interheart でタイトル (エンジン描画のボタン)→はじめから→スキップ確認の選択肢→本編の背景 (PNG)・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
 | b2026_dessert_soft | [どいなかガールズゆーとぴあ 体験版](http://suezou.dyndns.org/dl2026/dessert-soft/doinaka_girl/doinaka-trial.rar) | 本編 | Interheart でタイトル (エンジン描画のボタン)→はじめから→本編の背景・立ち絵・イベント CG・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
 | b2006_interheart | [オイラは番台２ 体験版](http://suezou.dyndns.org/dl2006/interheart/bandai2/bandai2-trial.lzh) | NG | data.fpk 方式だが脚本が古い ACT_00.txt (SC_DATA 等の銭湯経営シミュレーション) で、Interheart エンジンの ACT_<letter>.TXT 方言と違う |
+
+### Crowd/ANIM (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2008_anim | [息子の友達に犯されて - TRIAL VERSION -](http://suezou.dyndns.org/dl2008/anim/musuko/musuko_trial.lzh) | 本編 | Crowd/ANIM (<game>_sce.dat を自前で実行) でタイトル→START→説明文→蓉子編/一志編の選択肢→本編の背景・立ち絵・イベント CG・文章・ボイスまで、体験版の最後 (タイトルに戻る) まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (両方) |
+| b2009_anim | [愛娘という名の玩具　- TRIAL VERSION -](http://suezou.dyndns.org/dl2009/anim/eva/eve_trial.lzh) | 本編 | Crowd/ANIM で 1024x768 のタイトル (Start/Load/Exit)→本編の背景 (1024x576 を上下の帯の間に)・立ち絵・イベント CG・文章まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium)。メッセージ枠は自前の半透明の帯 (p_message が無い) |
+| b2010_anim | [贄姫 - TRIAL VERSION -](http://suezou.dyndns.org/dl2010/anim/niehime/nime_trial.lzh) | 本編 | Crowd/ANIM でタイトル (縦書きの 5 ボタン)→初めから→本編の背景・立ち絵・文章まで、体験版の最後まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
+| b2007_anim | [必殺痴漢人　- TRIAL VERSION -](http://suezou.dyndns.org/dl2007/anim/chikan3/ci3_trial.lzh) | NG | Crowd/ANIM (anim) の 2007 年版はオペコードの番号と引数が 2008 年以降と違い (36・30 番台・9a など)、ck_sce.dat を最後まで読めない。家系ごとの表が要る |
+| b2011_anim_team_mm | [NTR彼女はいじめられっ娘 - TRIAL VERSION -](http://suezou.dyndns.org/dl2011/anim-team-mm/ntr/ntr_trial_02.zip) | NG | Crowd/ANIM の 2011 年版は命令の番号が付け直され (文章が c8〜cb、0a が行内の文字列など)、2008〜2010 年の表では読めない |
+| b2017_anim | [いつまでも俺は母に恋してる！ - 体験版２ -](http://suezou.dyndns.org/dl2017/anim/mamakoi/mamakoi_trial_v2.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり、<game>_sce.dat が無い |
+| b2019_anim | [いつまでも息子のままじゃいられない！５ - 体験版 -](http://suezou.dyndns.org/dl2019/anim/musumama5/musu_mama5_trial.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり、<game>_sce.dat が無い |
+| b2022_anim | [愛妻Ｘ交姦妊活スワッピング - 体験版 -](http://suezou.dyndns.org/dl2022/anim/aisaikoukan/aisaikoukan_trial.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり (cg/psbpack.dat と E-mote)、<game>_sce.dat が無い |
+| b2026_anim | [ママラブ！２～俺の彼女は俺のママ☆世話焼き巨乳凛桜ママ～ - 体験版 -](http://suezou.dyndns.org/dl2026/anim/mamalove2/ANIM_mamalove2_trial.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり (cg/psbpack.dat と E-mote)、<game>_sce.dat が無い |
 <!-- /matrix -->

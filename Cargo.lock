@@ -47,6 +47,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
+name = "anim"
+version = "0.1.0"
+dependencies = [
+ "fontdue",
+ "image 0.25.10",
+ "nexas",
+]
+
+[[package]]
+name = "anim-web"
+version = "0.1.0"
+dependencies = [
+ "anim",
+ "js-sys",
+ "nexas",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "anyhow"
 version = "1.0.104"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -1,0 +1,11 @@
+[package]
+name = "anim"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "The Crowd / ANIM ADV engine for the browser: reads the encrypted <game>_sce.dat bytecode, CWP pictures and PCK sounds and runs them"
+
+[dependencies]
+nexas = { path = "../nexas" }
+fontdue = "0.9"
+image = { version = "0.25", default-features = false, features = ["png"] }
