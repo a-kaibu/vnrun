@@ -110,6 +110,8 @@ enum Mode {
 /// What a scene is made of; layers by the load type of op 0x15.
 #[derive(Clone, Default, PartialEq)]
 struct Scene {
+    /// a plain colour under the background (generation 2, op 0x60)
+    color: Option<[u8; 3]>,
     bg: Option<String>,
     cg: Option<String>,
     /// load types 2..=5
@@ -145,6 +147,8 @@ struct Obj {
     image: Rc<Image>,
     x: f32,
     y: f32,
+    /// the picture's own place, added to the positions the script gives
+    off: (f32, f32),
     alpha: f32,
     /// moving: from, to, start, ms
     mv: Option<Move>,
@@ -164,8 +168,11 @@ pub struct Engine {
     text: Text,
     pub width: u32,
     pub height: u32,
-    /// 1: the 2006 engine, 2: the GAME_SYS.exe of 2013 (see scr.rs)
+    /// 1: the 2006 engine, 2: the GAME_SYS.exe of 2009 and 2013
     version: u8,
+    /// the table of string lengths the scripts decode with (scr.rs): 1 (2006), 2 (2013) or
+    /// 3 (2009, the 2006 lengths with the later instructions)
+    table: u8,
     /// generation 2: the script-local variables, label.tbl (script, offset) and the
     /// return addresses of GOSUB
     locals: Vec<i32>,
@@ -275,7 +282,7 @@ impl Engine {
     pub fn open(mut files: Box<dyn Files>) -> Result<Engine, String> {
         let mut arcs = HashMap::new();
         for name in [
-            "scr", "bg_", "sp_", "cg_", "cgw", "bgm", "wav", "vo1", "vo2", "parts",
+            "scr", "bg_", "sp_", "cg_", "cgw", "bgm", "wav", "vo1", "vo2", "parts", "stand",
         ] {
             if let Some(file) = locate(files.as_mut(), name, "arc") {
                 arcs.insert(name, Arc::open(files.as_mut(), &file)?);
@@ -297,6 +304,7 @@ impl Engine {
             width: 800,
             height: 600,
             version: 1,
+            table: 1,
             locals: vec![0; 4096],
             labels: Vec::new(),
             stack: Vec::new(),
@@ -353,7 +361,7 @@ impl Engine {
             .map(|e| e.name.clone())
             .filter(|n| n.to_lowercase().ends_with(".scr"))
             .collect();
-        let mut score = [0, 0];
+        let mut score = [0, 0, 0];
         for n in &names {
             let Some(b) = self.read("scr", n) else {
                 continue;
@@ -361,16 +369,22 @@ impl Engine {
             let Ok(sc) = Script::parse(n, &b) else {
                 continue;
             };
-            for v in [1u8, 2] {
+            for v in [1u8, 2, 3] {
                 if sc.decodes(v) {
                     score[v as usize - 1] += 1;
                 }
             }
         }
-        self.version = if score[1] > score[0] { 2 } else { 1 };
+        // the first of the best (2009 decodes in 3 only where it uses GOSUB)
+        self.table = (1..=3).max_by_key(|&v| (score[v - 1], 3 - v)).unwrap_or(1) as u8;
+        self.version = if self.table == 1 { 1 } else { 2 };
         if self.version == 2 {
-            // label.tbl: (u32 length, script name, u32 length, label, u32 offset) each
-            if let Some(b) = self.read("scr", "label.tbl") {
+            // label.tbl (label.scr in 2009): (u32 length, script name, u32 length, label,
+            // u32 offset) each
+            if let Some(b) = self
+                .read("scr", "label.tbl")
+                .or_else(|| self.read("scr", "label.scr"))
+            {
                 let mut at = 0;
                 let u32at = |at: usize| {
                     b.get(at..at + 4)
@@ -389,7 +403,7 @@ impl Engine {
                     self.labels.push((file, off));
                 }
             }
-            if let Some((img, _, _)) = self.placed("parts", "title_bg_01_t") {
+            if let Some((img, _, _)) = self.title_bg() {
                 self.width = img.w;
                 self.height = img.h;
             } else {
@@ -414,10 +428,22 @@ impl Engine {
         crate::pic::parts(&b).ok()
     }
 
+    /// Generation 2: the title picture of parts.arc.
+    fn title_bg(&mut self) -> Option<Placed> {
+        ["title_bg_01_t", "title_back_trial", "title_back"]
+            .into_iter()
+            .find_map(|n| {
+                let p = self.parts(n)?;
+                let q = p.parts.first()?;
+                Some((Rc::new(crop(&p.atlas, q.src)), q.x, q.y))
+            })
+            .or_else(|| self.placed("parts", "title_bg_01_t"))
+    }
+
     fn make_skin(&mut self) -> Skin {
         let mut k = Skin::default();
         if self.version == 2 {
-            k.title_bg = self.placed("parts", "title_bg_01_t");
+            k.title_bg = self.title_bg();
             for (name, choice) in [("title_start", Choice::New), ("title_exit", Choice::Exit)] {
                 let Some(p) = self.parts(name) else { continue };
                 let img = Rc::new(p.atlas);
@@ -440,6 +466,16 @@ impl Engine {
             };
             k.window = one(self, "avg_mes_window");
             k.name_plate = one(self, "avg_namebg");
+            if k.window.is_none() {
+                // 2009: message_window, with a round place for the name at its left
+                k.window = one(self, "message_window");
+                let wy = k.window.as_ref().map_or(470, |w| w.2);
+                k.name_size = 18.0;
+                k.name_box = (8, wy + 22, 116);
+                k.text_at = (150, wy + 38);
+                k.text_size = 21.0;
+                return k;
+            }
             let (wy, (px, py, pw, ph)) = (
                 k.window.as_ref().map_or(450, |w| w.2),
                 k.name_plate.as_ref().map_or((100, 444, 465, 35), |p| {
@@ -517,6 +553,12 @@ impl Engine {
     }
 
     fn placed(&mut self, arc: &str, name: &str) -> Option<Placed> {
+        // 2009 cut-ins name the parts of parts.arc by their type, APS3
+        let arc = if arc.eq_ignore_ascii_case("ap3") || arc.eq_ignore_ascii_case("prs") {
+            "parts"
+        } else {
+            arc
+        };
         let k = format!("{arc}/{name}");
         if let Some(p) = self.pics.get(&k) {
             return Some(p.clone());
@@ -525,7 +567,17 @@ impl Engine {
             self.warn(format!("no picture {k}"));
             return None;
         };
-        match crate::pic::decode(&b) {
+        let pic = crate::pic::decode(&b).or_else(|err| {
+            // a sheet of parts: its first part
+            let p = crate::pic::parts(&b).map_err(|_| err)?;
+            let q = p.parts.first().ok_or("no parts")?;
+            Ok::<_, String>(crate::pic::Pic {
+                img: crop(&p.atlas, q.src),
+                x: q.x,
+                y: q.y,
+            })
+        });
+        match pic {
             Ok(p) => {
                 if self.pics.len() > 40 {
                     self.pics.clear();
@@ -545,10 +597,37 @@ impl Engine {
         self.arcs.get(arc).is_some_and(|a| a.find(name).is_some())
     }
 
+    /// A character of stand.arc (2009): u8 length + "STD01", then the body and the face, each
+    /// a u8 length, a name ("sao_c1.prs", a picture of sp_.arc, placed by its own x, y) and
+    /// 8 bytes (7 after the face; the body's first u32 is sometimes 23, not understood).
+    fn stand(&mut self, b: &[u8]) -> Vec<Placed> {
+        let mut out = Vec::new();
+        let mut at = 6;
+        while let Some(&n) = b.get(at) {
+            let n = n as usize;
+            let Some(name) = b.get(at + 1..at + 1 + n) else {
+                break;
+            };
+            at += 9 + n;
+            let name = String::from_utf8_lossy(name);
+            let name = name.split('.').next().unwrap_or_default().to_string();
+            if let Some(p) = self.placed("sp_", &name) {
+                out.push(p);
+            }
+        }
+        out
+    }
+
     /// A character. Generation 1: "nata13" is the body "nata00" with the face "nat013" over
     /// it; without such a body the name is a whole picture, or the face goes on the plain body
     /// "nat000". Generation 2: "body|face" (op 0x79), moved by the body's entry of center.scr.
     fn character(&mut self, name: &str) -> Vec<Placed> {
+        if self.version == 2
+            && !name.contains('|')
+            && let Some(b) = self.read("stand", name)
+        {
+            return self.stand(&b);
+        }
         if self.version == 2 {
             let (body, face) = name.split_once('|').unwrap_or((name, ""));
             let (dx, dy) = self
@@ -598,7 +677,8 @@ impl Engine {
     fn compose(&mut self) -> Rc<Image> {
         let s = self.back.clone();
         let mut out = Image::new(self.width, self.height);
-        out.fill([0, 0, 0, 255]);
+        let [r, g, b] = s.color.unwrap_or([0; 3]);
+        out.fill([r, g, b, 255]);
         if let Some(bg) = &s.bg
             && let Some((p, x, y)) = self.placed("bg_", bg)
         {
@@ -679,7 +759,7 @@ impl Engine {
             if self.mode != Mode::Run || self.wait != Wait::None {
                 return Ok(());
             }
-            let Some(ins) = self.script.decode(self.pc, self.version) else {
+            let Some(ins) = self.script.decode(self.pc, self.table) else {
                 self.warn(format!("{}: bad code at {:#x}", self.script.name, self.pc));
                 self.back_to_title();
                 return Ok(());
@@ -828,6 +908,24 @@ impl Engine {
             0x54 => {
                 if flags == 0 && i.u8(3) == 0 {
                     self.enter_title();
+                }
+            }
+            // a plain colour for the next screen, for the transition after it
+            0x60 => {
+                self.back = Scene {
+                    color: Some(i.rgb(2)),
+                    ..Scene::default()
+                }
+            }
+            // waits: milliseconds, and for the cut-ins to stop moving (2009 logo)
+            0x77 => {
+                if !self.skip {
+                    self.wait = Wait::Until(self.now + i.i32(4) as f64, true);
+                }
+            }
+            0x78 => {
+                if !self.skip {
+                    self.wait = Wait::Objects;
                 }
             }
             0x09 => self.choices.clear(),
@@ -1001,14 +1099,17 @@ impl Engine {
                 let slot = i.u8(2) as usize;
                 let name = i.s(0).to_string();
                 let arc = i.s(1).to_string();
-                let image = self.pic(&arc, &name).or_else(|| self.pic("bg_", &name));
+                let image = self
+                    .placed(&arc, &name)
+                    .or_else(|| self.placed("bg_", &name));
                 if slot < 3
-                    && let Some(image) = image
+                    && let Some((image, dx, dy)) = image
                 {
                     self.objs[slot] = Some(Obj {
                         image,
-                        x: i.i16(4) as f32,
-                        y: i.i16(6) as f32,
+                        x: (i.i16(4) + dx) as f32,
+                        y: (i.i16(6) + dy) as f32,
+                        off: (dx as f32, dy as f32),
                         alpha: 1.0,
                         mv: None,
                         fade: None,
@@ -1019,7 +1120,7 @@ impl Engine {
             0x63 => {
                 let now = self.now;
                 if let Some(Some(o)) = self.objs.get_mut(i.u8(2) as usize) {
-                    let to = (i.i16(6) as f32, i.i16(8) as f32);
+                    let to = (i.i16(6) as f32 + o.off.0, i.i16(8) as f32 + o.off.1);
                     o.mv = Some(((o.x, o.y), to, now, i.i16(4).max(0) as f64));
                 }
             }

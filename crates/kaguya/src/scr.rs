@@ -45,7 +45,7 @@ impl Ins {
 }
 
 /// The lengths of the strings after an instruction, from its fixed part. Generation 1 is
-/// the 2006 engine (AMATU.exe), 2 the GAME_SYS.exe of 2013.
+/// the 2006 engine (AMATU.exe), 2 the GAME_SYS.exe of 2013, 3 the GAME_SYS.exe of 2009.
 fn string_lengths(op: u8, f: &[u8], version: u8) -> Vec<usize> {
     let b = |i: usize| f.get(i).copied().unwrap_or(0) as usize;
     if version == 2 {
@@ -58,6 +58,12 @@ fn string_lengths(op: u8, f: &[u8], version: u8) -> Vec<usize> {
             0x88 => vec![b(2), b(3)],
             _ => Vec::new(),
         };
+    }
+    if version == 3 {
+        // the 2009 GAME_SYS.exe: the 2006 lengths, with GOSUB by label
+        if op == 0x70 {
+            return vec![b(2)];
+        }
     }
     match op {
         0x0c | 0x0f | 0x10 | 0x12 | 0x2c | 0x3d | 0x48 | 0x49 | 0x50 | 0x52 | 0x56 => vec![b(3)],
