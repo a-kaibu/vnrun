@@ -214,8 +214,11 @@ impl Engine {
         };
         e.slots = (0..SLOTS).map(|i| e.read_slot(i)).collect();
         e.read_globals();
-        // the screen is as wide as the title (1024 in 2009, whose pictures are 1024x576)
-        if e.title_picture().is_some_and(|t| t.w == 1024) {
+        // the screen is as wide as the title (1024 in 2009, whose pictures are 1024x576, and in
+        // 2011, whose pictures fill 1024x768 of 1024x1024 textures)
+        if e.prog.family == "2011" {
+            e.screen = (1024, 768);
+        } else if e.title_picture().is_some_and(|t| t.w == 1024) {
             e.screen = (1024, 768);
             e.stage_y = 96.0;
         }
@@ -311,6 +314,14 @@ impl Engine {
         self.vars.get(&(kind, n)).copied().unwrap_or(0)
     }
 
+    fn value(&self, a: &Arg) -> i64 {
+        match a {
+            Arg::N(n) => *n,
+            Arg::Var(k, n) => self.var(*k, *n),
+            Arg::List(_) => 0,
+        }
+    }
+
     fn jump(&mut self, at: i64) {
         match self.prog.index.get(&(at as u32)) {
             Some(&i) => self.pc = i,
@@ -350,7 +361,7 @@ impl Engine {
                 },
                 0x19..=0x1e | 0x22 => {
                     let (k, v) = (n(0) as u8, n(1) as u16);
-                    let x = n(2);
+                    let x = a.get(2).map_or(0, |v| self.value(v));
                     let old = self.var(k, v);
                     let new = match insn.op {
                         0x19 => old.wrapping_add(x),
@@ -368,7 +379,7 @@ impl Engine {
                 }
                 0x24..=0x2f => {
                     let v = self.var(n(0) as u8, n(1) as u16);
-                    let x = n(2);
+                    let x = a.get(2).map_or(0, |v| self.value(v));
                     if compare(insn.op - if insn.op >= 0x2a { 0x2a } else { 0x24 }, v, x) {
                         if insn.op >= 0x2a {
                             self.stack.push(self.pc);
@@ -419,7 +430,7 @@ impl Engine {
                         self.charas[slot] = None;
                     }
                 }
-                0x4d | 0x96 => self.transition(n(0)),
+                0x4d | 0x96 => self.transition(n(0), a.get(1).map(|v| v.n())),
                 0x4e => {
                     let c = [n(0) as u8, n(1) as u8, n(2) as u8, 255];
                     let ms = n(6).clamp(0, 5000) as u64;
@@ -526,10 +537,12 @@ impl Engine {
     }
 
     /// Shows what changed since the screen was frozen.
-    fn transition(&mut self, effect: i64) {
-        let ms = match effect {
-            0 => 0,
-            e if e >= 80 => 700,
+    fn transition(&mut self, effect: i64, time: Option<i64>) {
+        let ms = match (effect, time) {
+            // 2011: the kind and its time
+            (_, Some(t)) => t.clamp(0, 5000) as u64,
+            (0, _) => 0,
+            (e, _) if e >= 80 => 700,
             _ => 300,
         };
         if effect >= 80 {
@@ -605,7 +618,12 @@ impl Engine {
         }
         for c in self.charas.iter().flatten() {
             let left = c.x as f32 - c.image.w as f32 / 2.0;
-            let top = self.screen.1 as f32 - y - c.image.h as f32;
+            // a 2011 character fills a screen-sized texture: its top is the screen's
+            let top = if c.image.h > self.screen.1 {
+                0.0
+            } else {
+                self.screen.1 as f32 - y - c.image.h as f32
+            };
             out.push(draw(&c.image, left, top, 1.0));
         }
         if let Some((_, l)) = &self.layer {
@@ -661,7 +679,7 @@ impl Engine {
 
     fn title_picture(&mut self) -> Option<Rc<Image>> {
         if self.title.is_none() {
-            let t = ["p_trialmenu", "p_title", "p_menu"]
+            let t = ["p_trialmenu", "pMenuTrial", "p_title", "p_menu"]
                 .iter()
                 .find_map(|n| self.picture(n, false));
             self.title = Some(t);
@@ -704,6 +722,18 @@ impl Engine {
                     ([312, y, 712, y + 46], Some([400, 768 + 46 * i as i32]), a)
                 })
                 .collect(),
+            // 2011 (1024x768 in a 1024x1024 texture): five 270x60 buttons down the left from
+            // pMenuTrialButton.png, each lit one 62 below the plain one (positions from the exe)
+            Some((1024, 1024)) => [
+                (84, 189, 2, 2, Start),
+                (104, 259, 274, 2, Load),
+                (84, 329, 546, 126, Nothing),
+                (104, 399, 2, 250, Nothing),
+                (84, 469, 274, 250, Exit),
+            ]
+            .into_iter()
+            .map(|(x, y, sx, sy, a)| ([x, y, x + 270, y + 60], Some([sx, sy + 62]), a))
+            .collect(),
             _ => [Start, Load, Exit]
                 .into_iter()
                 .enumerate()
@@ -726,9 +756,16 @@ impl Engine {
             let (w, h) = (self.screen.0 as i32, self.screen.1 as i32);
             out.push(part(t, [0, 0, w, h], 0.0, 0.0));
         }
+        // 2011 keeps its buttons, plain and lit, in a sheet of their own
+        let chips = self.picture("pMenuTrialButton", false);
+        let sheet = chips.clone().or(sheet);
         for (r, lit, action) in buttons {
             match (&sheet, lit) {
                 (Some(t), Some([sx, sy])) => {
+                    if chips.is_some() {
+                        let src = [sx, sy - 62, r[2] - r[0], r[3] - r[1]];
+                        out.push(part(t, src, r[0] as f32, r[1] as f32));
+                    }
                     if inside(r, self.pointer.0, self.pointer.1) && action != TitleAction::Nothing {
                         let src = [sx, sy, r[2] - r[0], r[3] - r[1]];
                         out.push(part(t, src, r[0] as f32, r[1] as f32));
@@ -750,7 +787,15 @@ impl Engine {
     fn window_draws(&mut self, out: &mut Vec<Draw>) {
         let (w, h) = (self.screen.0 as f32, self.screen.1 as f32);
         let top = h - self.window_height();
+        let window = self.picture("pMessageWindow", false);
         match self.picture("p_message", false) {
+            _ if window.is_some() => {
+                // 2011: the panel from the exe's numbers (its sheet's 1024x209 at y 547)
+                let m = window.unwrap();
+                let mut d = part(&m, [0, 2, 1024, 209], 0.0, top);
+                d.place.alpha = 0.8;
+                out.push(d);
+            }
             Some(m) if m.h >= 445 => {
                 let mut d = part(&m, [0, 292, 800, 153], 0.0, top);
                 d.place.alpha = 0.8;
@@ -762,14 +807,22 @@ impl Engine {
                 out.push(d);
             }
         }
+        // 2011: the name in the band above the inner box, the text inside it
+        let (name_at, text_at) = if self.prog.family == "2011" {
+            ((60.0, top + 14.0), Some((110.0, top + 62.0)))
+        } else {
+            ((30.0, top + 16.0), None)
+        };
         if let Some(m) = &self.message {
-            let mut y = top + 16.0;
+            let mut y = name_at.1;
             if let Some(n) = &m.name {
-                out.push(draw(n, 30.0, y, 1.0));
+                out.push(draw(n, name_at.0, y, 1.0));
                 y += LINE_STEP;
             }
+            let (x, y0) = text_at.unwrap_or((40.0, y));
+            let mut y = y0;
             for l in &m.lines {
-                out.push(draw(l, 40.0, y, 1.0));
+                out.push(draw(l, x, y, 1.0));
                 y += LINE_STEP;
             }
         }
@@ -778,12 +831,20 @@ impl Engine {
     /// The message window's height at the bottom of the screen (in 2009 it covers the band
     /// below the picture and a little of it).
     fn window_height(&self) -> f32 {
-        if self.stage_y > 0.0 { 176.0 } else { 153.0 }
+        if self.prog.family == "2011" {
+            221.0
+        } else if self.stage_y > 0.0 {
+            176.0
+        } else {
+            153.0
+        }
     }
 
     /// The choice bars: 584x56 (2008, 2010) or the whole width, 90 high (2009).
     fn bar_size(&self) -> (i32, i32, i32) {
-        if self.screen.0 == 1024 {
+        if self.prog.family == "2011" {
+            (1022, 90, 0)
+        } else if self.screen.0 == 1024 {
             (1024, 90, 0)
         } else {
             (584, 56, 12)
@@ -805,7 +866,9 @@ impl Engine {
 
     fn choice_draws(&mut self, answers: &[String], out: &mut Vec<Draw>) {
         let bars = self.cache.get("p_select#bars").cloned().or_else(|| {
-            let b = self.picture("p_select", false)?;
+            let b = self
+                .picture("p_select", false)
+                .or_else(|| self.picture("pSelect", false))?;
             // 2008 and 2010: two bars, then their masks; 2009: four plain bars
             let b = if b.h == 224 {
                 Rc::new(data::masked_below(&b))
@@ -819,6 +882,11 @@ impl Engine {
             let lit = inside(r, self.pointer.0, self.pointer.1);
             let (bw, bh, _) = self.bar_size();
             match &bars {
+                // 2011: the bar and its lit look below, from (2, 2)
+                Some(b) if self.prog.family == "2011" => {
+                    let y = if lit { 92 } else { 2 };
+                    out.push(part(b, [2, y, bw, bh], r[0] as f32, r[1] as f32));
+                }
                 // 2009: the dark bar, lit as the light grey one
                 Some(b) if b.w == 1024 && b.h >= 360 => {
                     let row = if lit { 2 } else { 3 };
@@ -975,10 +1043,16 @@ impl Engine {
     }
 
     fn show_message(&mut self, name: Option<&str>, text: &str) {
+        let text = &unruby(text);
         let name_img = name
             .filter(|n| !n.is_empty())
             .map(|n| self.text(&format!("【{n}】"), [255, 230, 160], TEXT_SIZE));
-        let per_line = ((self.screen.0 as i32 - 80) / TEXT_SIZE).max(10) as usize;
+        let width = if self.prog.family == "2011" {
+            780
+        } else {
+            self.screen.0 as i32 - 80
+        };
+        let per_line = (width / TEXT_SIZE).max(10) as usize;
         let mut lines = Vec::new();
         for l in text.split(['\n', '\r']).filter(|l| !l.is_empty()) {
             for piece in wrap(l, per_line) {
@@ -1015,7 +1089,9 @@ impl Engine {
                 return None;
             }
         };
-        let img = Rc::new(if chara { data::masked(&img) } else { img });
+        // CWP characters carry their mask beside them; GAX ones (2011) have alpha
+        let masked = chara && (b.starts_with(b"CWDP") || b.starts_with(b"AMNP"));
+        let img = Rc::new(if masked { data::masked(&img) } else { img });
         if self.cache.len() > 40 {
             self.cache.clear();
         }
@@ -1494,4 +1570,27 @@ fn draw(image: &Rc<Image>, x: f32, y: f32, alpha: f32) -> Draw {
             clip: [0.0, 0.0, 1e6, 1e6],
         },
     }
+}
+
+/// The text without its readings: `@[阪井:さかい]` is 阪井 (2011).
+fn unruby(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut rest = text;
+    while let Some(i) = rest.find("@[") {
+        out.push_str(&rest[..i]);
+        let tail = &rest[i + 2..];
+        match tail.find(']') {
+            Some(j) => {
+                let inner = &tail[..j];
+                out.push_str(inner.split(':').next().unwrap_or(inner));
+                rest = &tail[j + 1..];
+            }
+            None => {
+                out.push_str(&rest[i..]);
+                rest = "";
+            }
+        }
+    }
+    out.push_str(rest);
+    out
 }

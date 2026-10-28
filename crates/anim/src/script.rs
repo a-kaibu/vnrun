@@ -147,8 +147,193 @@ const FAMILY_2008: &[(u8, &str)] = &[
 /// start with one more number (0 in the trial), 41 waits and b9 takes nothing.
 const FAMILY_2009: &[(u8, &str)] = &[(0xe6, "IIIII"), (0xe7, "IIII"), (0x41, "I"), (0xb9, "")];
 
-/// The releases whose opcodes we know: each family's changes to [`FAMILY_2008`].
-const FAMILIES: &[(&str, &[(u8, &str)])] = &[("2008", &[]), ("2009", FAMILY_2009)];
+/// The 2011 release (NTR彼女はいじめられっ娘) renumbered the opcodes (read from its interpreter
+/// and checked against the whole trial scenario). V values here always have a kind byte;
+/// Z is a label (a string in the code), X the transition (kind, time, then 5, 4 or 16 more bytes
+/// for kinds 28, 46 and 47).
+const FAMILY_2011: &[(u8, &str)] = &[
+    (0x02, "B"),
+    (0x03, ""),
+    (0x04, "BBBIII"),
+    (0x0a, "Z"),
+    (0x0b, "I"),
+    (0x0c, "I"),
+    (0x0d, ""),
+    (0x0e, ""),
+    (0x14, "I"),
+    (0x15, "H"),
+    (0x19, "BHV"),
+    (0x1a, "BHV"),
+    (0x1b, "BHV"),
+    (0x1c, "BHV"),
+    (0x1d, "BHV"),
+    (0x1e, "BHV"),
+    (0x1f, "I"),
+    (0x23, "BHV"),
+    (0x24, "BHVI"),
+    (0x25, "BHVI"),
+    (0x26, "BHVI"),
+    (0x27, "BHVI"),
+    (0x28, "BHVI"),
+    (0x29, "BHVI"),
+    (0x2a, "BHVI"),
+    (0x2b, "BHVI"),
+    (0x2c, "BHVI"),
+    (0x2d, "BHVI"),
+    (0x2e, "BHVI"),
+    (0x2f, "BHVI"),
+    (0x37, "BHVI"),
+    (0x38, "BHVI"),
+    (0x39, "BHVI"),
+    (0x3a, "BHVI"),
+    (0x3b, "BHVI"),
+    (0x3c, "BHVI"),
+    (0x46, "I"),
+    (0x47, "I"),
+    (0x48, "BB"),
+    (0x49, "I"),
+    (0x4a, "BI"),
+    (0x4b, "BI"),
+    (0x4c, "B"),
+    (0x4d, ""),
+    (0x4e, "BB"),
+    (0x4f, "BBI"),
+    (0x50, "BI"),
+    (0x51, "BHHVVVVVB"),
+    (0x52, "BVVVB"),
+    (0x53, ""),
+    (0x54, "X"),
+    (0x55, "III"),
+    (0x56, "H"),
+    (0x58, ""),
+    (0x59, "II"),
+    (0x5a, ""),
+    (0x5b, ""),
+    (0x5c, "I"),
+    (0x5d, "BBB"),
+    (0x5e, "BBB"),
+    (0x5f, "BBB"),
+    (0x60, "II"),
+    (0x61, "IIIII"),
+    (0x63, "IIII"),
+    (0x64, "IIII"),
+    (0x65, "IIII"),
+    (0x6e, "B"),
+    (0x6f, ""),
+    (0x70, "B"),
+    (0x71, "I"),
+    (0x72, ""),
+    (0x73, "HI"),
+    (0x74, "H"),
+    (0x75, ""),
+    (0x76, "II"),
+    (0x77, ""),
+    (0x78, ""),
+    (0x82, "I"),
+    (0x83, "I"),
+    (0x84, "I"),
+    (0x85, ""),
+    (0x86, ""),
+    (0x88, "B"),
+    (0x89, ""),
+    (0x8a, ""),
+    (0x8b, "BH"),
+    (0x8d, "BH"),
+    (0x8e, "BH"),
+    (0x8f, "BH"),
+    (0xbe, "C"),
+    (0xbf, "B"),
+    (0xc1, ""),
+    (0xc2, ""),
+    (0xc3, ""),
+    (0xc8, "IIII"),
+    (0xc9, "III"),
+    (0xca, "III"),
+    (0xcb, "II"),
+    (0xd2, ""),
+];
+
+/// What the 2011 opcodes are in the 2008 numbering the engine runs (the rest do nothing).
+const REMAP_2011: &[(u8, u8)] = &[
+    (0x0b, 0x0b), // goto, gosub, return
+    (0x0c, 0x0c),
+    (0x0d, 0x0d),
+    (0x19, 0x19), // variable op= value
+    (0x1a, 0x1a),
+    (0x1b, 0x1b),
+    (0x1c, 0x1c),
+    (0x1d, 0x1d),
+    (0x1e, 0x1e),
+    (0x24, 0x24), // if variable compares to a value: goto, then gosub
+    (0x25, 0x25),
+    (0x26, 0x26),
+    (0x27, 0x27),
+    (0x28, 0x28),
+    (0x29, 0x29),
+    (0x2a, 0x2a),
+    (0x2b, 0x2b),
+    (0x2c, 0x2c),
+    (0x2d, 0x2d),
+    (0x2e, 0x2e),
+    (0x2f, 0x2f),
+    (0x37, 0x24), // the same handler as 24 to 29 in this release
+    (0x38, 0x25),
+    (0x39, 0x26),
+    (0x3a, 0x27),
+    (0x3b, 0x28),
+    (0x3c, 0x29),
+    (0x46, 0x46), // background
+    (0x4a, 0x49), // character in a slot
+    (0x4c, 0x4c), // character away
+    (0x54, 0x4d), // transition (kind, time)
+    (0x6e, 0x5a), // music
+    (0x6f, 0x5b), // music off
+    (0x71, 0x5d), // sound
+    (0x73, 0x60), // looping sound on a channel
+    (0x74, 0x61), // and off
+    (0x82, 0x64), // pause
+    (0xbe, 0xc8), // choice
+    (0xbf, 0xc9), // its case
+    (0xc8, 0xe6), // voiced, named message
+    (0xc9, 0xe7), // named message
+    (0xca, 0xe8), // voiced message
+    (0xcb, 0xe9), // message
+];
+
+/// A release family: its operand table (changes to [`FAMILY_2008`], or a table of its own),
+/// where its code starts and how its opcodes map onto the 2008 ones.
+struct Family {
+    name: &'static str,
+    own: bool,
+    table: &'static [(u8, &'static str)],
+    start: usize,
+    remap: &'static [(u8, u8)],
+}
+
+/// The releases whose opcodes we know.
+const FAMILIES: &[Family] = &[
+    Family {
+        name: "2008",
+        own: false,
+        table: &[],
+        start: 0x0c,
+        remap: &[],
+    },
+    Family {
+        name: "2009",
+        own: false,
+        table: FAMILY_2009,
+        start: 0x0c,
+        remap: &[],
+    },
+    Family {
+        name: "2011",
+        own: true,
+        table: FAMILY_2011,
+        start: 0x08,
+        remap: REMAP_2011,
+    },
+];
 
 /// An operand.
 #[derive(Debug, Clone, PartialEq)]
@@ -184,18 +369,26 @@ pub struct Program {
     pub strings: Vec<String>,
 }
 
-const CODE_START: usize = 0x0c;
-
 impl Program {
     /// Decodes the scenario with the first family whose opcodes fit it to the end.
     pub fn parse(d: &[u8]) -> Result<Program, String> {
         let mut first = None;
-        for (name, changes) in FAMILIES {
-            let mut table: HashMap<u8, &str> = FAMILY_2008.iter().copied().collect();
-            table.extend(changes.iter().copied());
-            match Program::parse_with(d, &table) {
+        for f in FAMILIES {
+            let mut table: HashMap<u8, &str> = HashMap::new();
+            if !f.own {
+                table.extend(FAMILY_2008.iter().copied());
+            }
+            table.extend(f.table.iter().copied());
+            match Program::parse_with(d, &table, f.start) {
                 Ok(mut p) => {
-                    p.family = name;
+                    p.family = f.name;
+                    if !f.remap.is_empty() {
+                        let map: HashMap<u8, u8> = f.remap.iter().copied().collect();
+                        for i in &mut p.code {
+                            // 0 does nothing in every release
+                            i.op = map.get(&i.op).copied().unwrap_or(0);
+                        }
+                    }
                     return Ok(p);
                 }
                 Err(e) => {
@@ -206,14 +399,14 @@ impl Program {
         Err(first.unwrap_or_default())
     }
 
-    fn parse_with(d: &[u8], table: &HashMap<u8, &str>) -> Result<Program, String> {
+    fn parse_with(d: &[u8], table: &HashMap<u8, &str>, start: usize) -> Result<Program, String> {
         let word = |at: usize| -> Result<usize, String> {
             d.get(at..at + 4)
                 .map(|b| u32::from_le_bytes(b.try_into().unwrap()) as usize)
                 .ok_or_else(|| "the scenario is cut short".to_string())
         };
         let (end, strs) = (word(0)?, word(4)?);
-        if end > d.len() || strs > d.len() || end < CODE_START {
+        if end > d.len() || strs > d.len() || end < start {
             return Err("not a Crowd scenario".into());
         }
         let strings = d[strs..]
@@ -223,7 +416,7 @@ impl Program {
         let mut code = Vec::new();
         let mut index = HashMap::new();
         let mut pending = Vec::new();
-        let mut p = CODE_START;
+        let mut p = start;
         while p < end {
             let at = p as u32;
             let op = d[p];
@@ -263,6 +456,28 @@ impl Program {
                             v.push(take(&mut p, 4)? as i64);
                         }
                         args.push(Arg::List(v));
+                    }
+                    'Z' => {
+                        let n = d[p.min(d.len())..]
+                            .iter()
+                            .position(|&c| c == 0)
+                            .ok_or_else(|| format!("label at {at:#x} runs past the end"))?;
+                        p += n + 1;
+                    }
+                    'X' => {
+                        let kind = take(&mut p, 1)?;
+                        args.push(Arg::N(kind as i64));
+                        args.push(Arg::N(take(&mut p, 4)? as u32 as i32 as i64));
+                        let more = match kind {
+                            0x28 => 5,
+                            0x46 => 4,
+                            0x47 => 16,
+                            _ => 0,
+                        };
+                        if p + more > d.len() {
+                            return Err(format!("opcode {op:02x} at {at:#x} runs past the end"));
+                        }
+                        p += more;
                     }
                     _ => {}
                 }

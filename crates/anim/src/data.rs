@@ -93,8 +93,8 @@ pub fn cwp(b: &[u8]) -> Result<Image, String> {
         png.extend_from_slice(b"\0\0\0IEND\xaeB`\x82");
         png
     } else if let Some(d) = gax_decrypt(b) {
-        // GAX: an encrypted PNG
-        d
+        // GAX (2011): an encrypted PNG, colours and alpha as they are
+        return Image::decode(&d);
     } else {
         b.to_vec()
     };
