@@ -68,6 +68,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Bishop (vnrun) | 6 | 6 |  |  |  |  |  |  |
 | Eushully AGE (vnrun) | 4 | 4 |  |  |  |  |  |  |
 | Atelier G/H (vnrun) | 1 | 1 |  |  |  |  |  |  |
+| DebonosuWorks (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | Cyberworks (vnrun) | 9 | 4 |  |  |  |  |  | 5 |
 | LiLiM (vnrun) | 7 | 7 |  |  |  |  |  |  |
 | Silky's (vnrun) | 2 | 2 |  |  |  |  |  |  |
@@ -685,6 +686,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2012_atelier_gh | [学園ＮＴＲ -僕の知らない彼女の淫顔- 体験版](http://suezou.dyndns.org/dl2012/atelier-gh/ntr/ntr_trial.exe) | 本編 | Atelier G/H (vnrun、crates/ateliergh) でロゴ→注意書き→タイトル→すた～と→A010 の背景・顔・名前・文章→A020 の終わりの選択肢まで (agh-run と Chromium)。えろえろも～ど の場面選択 (マスク画像の当たり判定) も表示。setup は 7z の自己展開 |
+
+### DebonosuWorks (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| dl_VJ01000787 | [神楽黎明記 参 ～紫の章～ 体験版](https://trial.dlsite.com/professional/VJ01001000/VJ01000787_trial.zip) | 本編 | DebonosuWorks (vnrun、crates/debonosu) でロゴ→注意書き→タイトル→最初から始める→プロローグ (01.scb) の背景・名前・文章・声・BGM まで (deb-run と Chromium)。ダンジョン (map) に入る所で止まり、Live2D の立ち絵・3D・戦闘はなし |
 
 ### Cyberworks (vnrun)
 

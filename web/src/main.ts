@@ -50,6 +50,7 @@ const ENGINES: Record<string, () => Promise<EngineModule>> = {
   bishop: () => import("./engines/bishop"),
   eushully: () => import("./engines/eushully"),
   ateliergh: () => import("./engines/ateliergh"),
+  debonosu: () => import("./engines/debonosu"),
   html: () => import("./engines/html"),
 };
 

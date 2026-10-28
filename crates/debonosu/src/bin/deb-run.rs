@@ -55,7 +55,8 @@ fn main() -> Result<(), String> {
                 );
             }
         }
-        let save = f == frames || marks.iter().any(|m| m.0 == f && m.1.is_empty()) || r.is_err();
+        let stop = r.is_err() || e.halted().is_some() || e.ended();
+        let save = f == frames || marks.iter().any(|m| m.0 == f && m.1.is_empty()) || stop;
         if save {
             println!("{f}: {}", e.status());
             let out = format!("{prefix}{f}.png");
@@ -63,7 +64,7 @@ fn main() -> Result<(), String> {
             image::save_buffer(&out, &frame.px, frame.w, frame.h, image::ColorType::Rgba8)
                 .map_err(|err| format!("{out}: {err}"))?;
         }
-        if r.is_err() || e.ended() {
+        if stop {
             eprintln!("deb: stopped at frame {f}");
             break;
         }

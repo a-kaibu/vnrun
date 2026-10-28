@@ -363,6 +363,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "debonosu-web"
+version = "0.1.0"
+dependencies = [
+ "debonosu",
+ "js-sys",
+ "nexas",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "derive_arbitrary"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

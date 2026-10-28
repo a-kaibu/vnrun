@@ -293,6 +293,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("msg.arc") && has("sys.arc") && has("dat.arc") {
         // Atelier G/H: masked-index .arc archives, the scripts in msg.arc, settings in sys.arc
         Some("ateliergh".into())
+    } else if has("game.pak") && has("model.pak") && has("mesh.pak") {
+        // DebonosuWorks: .pak archives, the Lua scripts in game.pak
+        Some("debonosu".into())
     } else if has("advhd.exe") && names.iter().any(|n| n.ends_with(".arc")) {
         Some("advhd".into())
     } else if (has("scr.arc") && has("tblstr.arc"))
@@ -355,7 +358,11 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("scenario.mpk") && has("system.mpk") {
         // Propeller: MPK archives (Scenario.mpk, System.mpk, BG.mpk..) beside the exe
         Some("propeller".into())
-    } else if has("scr.xfl") && names.iter().any(|n| n.starts_with("grp") && n.ends_with(".xfl")) {
+    } else if has("scr.xfl")
+        && names
+            .iter()
+            .any(|n| n.starts_with("grp") && n.ends_with(".xfl"))
+    {
         // Liar-soft: scr.xfl beside the grp*.xfl pictures
         Some("liar".into())
     } else if (has("scr.pak") && has("cfg.pak"))

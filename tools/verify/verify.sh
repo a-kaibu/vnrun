@@ -76,6 +76,7 @@ game_root() {
     bishop) m=(-iname bsxx.dat -o -iname bsx.dat) ;;
     eushully) m=(-iname sys4ini.bin) ;;
     ateliergh) m=(-iname msg.arc) ;;
+    debonosu) m=(-iname game.pak) ;;
     cyberworks) m=(-iname arc01.dat) ;;
     neko) m=(-iname scr.pak) ;;
     med) m=(-iname md_scr.med) ;;

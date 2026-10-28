@@ -587,6 +587,7 @@ pub struct Engine {
     included: std::collections::HashSet<String>,
     clicked: bool,
     ended: bool,
+    halted: Option<String>,
     pub trace: bool,
 }
 
@@ -650,6 +651,7 @@ impl Engine {
             included: Default::default(),
             clicked: false,
             ended: false,
+            halted: None,
             trace: std::env::var_os("DEB_TRACE").is_some(),
         };
         e.include("_global")?;
@@ -806,12 +808,21 @@ impl Engine {
         if self.ended {
             return Ok(());
         }
-        let r = self.run();
-        if let Err(e) = &r {
-            eprintln!("deb: {e}");
-            self.ended = true;
+        if self.halted.is_some() {
+            return Ok(());
         }
-        r
+        // a script failing (where the dungeon or a battle would begin) stops the scripts, and
+        // the screen stays as it is
+        if let Err(e) = self.run() {
+            eprintln!("deb: {e}");
+            self.halted = Some(e);
+        }
+        Ok(())
+    }
+
+    /// Why the scripts stopped, if they did.
+    pub fn halted(&self) -> Option<&str> {
+        self.halted.as_deref()
     }
 
     pub fn draws(&mut self) -> Vec<Draw> {
