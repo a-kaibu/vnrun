@@ -1,0 +1,11 @@
+[package]
+name = "yuka"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "The Yuka engine (HOOK, SMEE, feng) for the browser: YKC001 archives, YKS001 scripts run by their own interpreter and YKG pictures"
+
+[dependencies]
+nexas = { path = "../nexas" }
+fontdue = "0.9"
+image = { version = "0.25", default-features = false, features = ["png"] }

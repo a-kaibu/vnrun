@@ -71,6 +71,7 @@ game_root() {
     escude) m=(-iname script.bin) ;;
     interheart) m=(-iname data.fpk) ;;
     anim) m=(-iname '*_sce.dat') ;;
+    yuka) m=(-iname '*.ykc' -o -iname '*01.dat') ;;
     cyberworks) m=(-iname arc01.dat) ;;
     lilim) m=(-iname scr.aos) ;;
     silkys) m=(-iname layer.arc) ;;

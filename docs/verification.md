@@ -63,6 +63,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Kaguya (vnrun) | 6 | 6 |  |  |  |  |  |  |
 | Interheart (vnrun) | 11 | 10 |  |  |  | 1 |  |  |
 | Crowd/ANIM (vnrun) | 9 | 5 |  |  |  | 4 |  |  |
+| Yuka (vnrun) | 7 | 7 |  |  |  |  |  |  |
 | Cyberworks (vnrun) | 8 | 4 |  |  |  |  |  | 4 |
 | LiLiM (vnrun) | 7 | 7 |  |  |  |  |  |  |
 | Silky's (vnrun) | 2 | 2 |  |  |  |  |  |  |
@@ -578,6 +579,18 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2019_anim | [いつまでも息子のままじゃいられない！５ - 体験版 -](http://suezou.dyndns.org/dl2019/anim/musumama5/musu_mama5_trial.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり、<game>_sce.dat が無い。保護を外すのはコピー保護の回避にあたるため試みない |
 | b2022_anim | [愛妻Ｘ交姦妊活スワッピング - 体験版 -](http://suezou.dyndns.org/dl2022/anim/aisaikoukan/aisaikoukan_trial.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり (cg/psbpack.dat と E-mote)、<game>_sce.dat が無い。保護を外すのはコピー保護の回避にあたるため試みない |
 | b2026_anim | [ママラブ！２～俺の彼女は俺のママ☆世話焼き巨乳凛桜ママ～ - 体験版 -](http://suezou.dyndns.org/dl2026/anim/mamalove2/ANIM_mamalove2_trial.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり (cg/psbpack.dat と E-mote)、<game>_sce.dat が無い。保護を外すのはコピー保護の回避にあたるため試みない |
+
+### Yuka (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2007_feng | [あかね色に染まる坂 体験版](http://suezou.dyndns.org/dl2007/feng/akaneiro/romasaka_try.zip) | 本編 | Yuka (vnrun) でタイトル→はじめから→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium)。セーブ→ロードで本編に戻る (Chromium) |
+| b2008_hook | [FairlyLife WEB体験版02](http://suezou.dyndns.org/dl2008/hook/fairlylife/fairlylife_trial_02.zip) | 本編 | Yuka (vnrun) で .dat (YKC001) からタイトル→本編の背景・立ち絵・文章まで (yuka-run と Chromium)。セーブ→タイトルからロード・メニューからロードで本編に戻る (Chromium) |
+| b2008_smee | [晴れハレはーれむ 体験版](http://suezou.dyndns.org/dl2008/smee/harehare/harehare_trial.zip) | 本編 | Yuka (vnrun) でタイトル→本編の背景・文章まで (yuka-run と Chromium) |
+| b2011_hook | [Strawberry Nauts 体験版01](http://suezou.dyndns.org/dl2011/hook/strawberry_nauts/strawberrynauts_trial01.exe) | 本編 | Yuka (vnrun) で自己展開 exe (zip) の DATA01..03.ykc から 1024x576 のタイトル→はじめから→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium)。ルビ (@r) は本文だけ表示 |
+| b2011_smee | [ラブラブル 体験版 vol.01](http://suezou.dyndns.org/dl2011/smee/loveable/loverable_trial_01.zip) | 本編 | Yuka (vnrun) でタイトル (SpriteCreate のパターンのボタン、MouseCase2)→名前入力 (既定の名前で「はい」)→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium) |
+| b2012_feng | [星空へ架かる橋ＡＡ 円佳スペシャルアフター体験版](http://suezou.dyndns.org/dl2012/feng/hoshikaka-aa/hoshiaamadotry.zip) | 本編 | Yuka (vnrun) で 1280x960 の注意書き→タイトル→はじめから→本編の背景・立ち絵・文章・名前 (@gf の名前画像) まで (yuka-run と Chromium)。セーブ→タイトルのつづきから (自前のロード画面) で本編に戻る (Chromium) |
+| b2013_hooksoft | [PriministAr 体験版](http://suezou.dyndns.org/dl2013/hooksoft/priministar/primini_trial.zip) | 本編 | Yuka (vnrun) で 1280x720 のタイトル→START GAME→体験版の説明→本編の背景・立ち絵・文章まで (yuka-run と Chromium) |
 
 ### Cyberworks (vnrun)
 

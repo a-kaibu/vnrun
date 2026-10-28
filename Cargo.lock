@@ -1420,6 +1420,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "yuka"
+version = "0.1.0"
+dependencies = [
+ "fontdue",
+ "image 0.25.10",
+ "nexas",
+]
+
+[[package]]
+name = "yuka-web"
+version = "0.1.0"
+dependencies = [
+ "js-sys",
+ "nexas",
+ "wasm-bindgen",
+ "yuka",
+]
+
+[[package]]
 name = "yuris"
 version = "0.1.0"
 dependencies = [

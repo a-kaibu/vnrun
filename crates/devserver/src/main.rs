@@ -194,6 +194,28 @@ fn majiro_arc(game: &Path, names: &[String]) -> bool {
 }
 
 /// Whether a .bin file at the top of the game folder is an ESC-ARC archive.
+/// A YKC001 archive at the top of the game folder (Yuka).
+fn ykc_archive(game: &Path, names: &[String]) -> bool {
+    if names.iter().any(|n| n.ends_with(".ykc")) {
+        return true;
+    }
+    fs::read_dir(game).into_iter().flatten().flatten().any(|e| {
+        if !e
+            .file_name()
+            .to_string_lossy()
+            .to_lowercase()
+            .ends_with(".dat")
+        {
+            return false;
+        }
+        let mut head = [0u8; 6];
+        fs::File::open(e.path())
+            .and_then(|mut f| std::io::Read::read_exact(&mut f, &mut head))
+            .is_ok()
+            && &head == b"YKC001"
+    })
+}
+
 fn esc_arc(game: &Path, names: &[String]) -> bool {
     if !names.iter().any(|n| n.ends_with(".bin")) {
         return false;
@@ -220,12 +242,21 @@ fn pac_ypf(game: &Path, names: &[String]) -> bool {
     let Some(pac) = names.iter().find(|n| *n == "pac") else {
         return false;
     };
-    let dir = fs::read_dir(game).into_iter().flatten().flatten().find(|e| e.file_name().to_string_lossy().to_lowercase() == *pac);
+    let dir = fs::read_dir(game)
+        .into_iter()
+        .flatten()
+        .flatten()
+        .find(|e| e.file_name().to_string_lossy().to_lowercase() == *pac);
     dir.and_then(|d| fs::read_dir(d.path()).ok())
         .into_iter()
         .flatten()
         .flatten()
-        .any(|e| e.file_name().to_string_lossy().to_lowercase().ends_with(".ypf"))
+        .any(|e| {
+            e.file_name()
+                .to_string_lossy()
+                .to_lowercase()
+                .ends_with(".ypf")
+        })
 }
 
 /// Guesses the engine from the files at the top of the game folder.
@@ -300,6 +331,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if names.iter().any(|n| n.ends_with("_sce.dat")) {
         // Crowd / ANIM: the encrypted <game>_sce.dat scenario beside cg/, bgm/ and voice/
         Some("anim".into())
+    } else if ykc_archive(game, &names) {
+        // Yuka (HOOK, SMEE, feng): YKC001 archives (*.ykc, or *.dat in the older ones)
+        Some("yuka".into())
     } else if has("data.fpk") {
         // Interheart / Candy Soft: data.fpk (the scenario) beside the other .fpk archives
         Some("interheart".into())

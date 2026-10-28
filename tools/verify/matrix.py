@@ -31,6 +31,7 @@ ENGINES = {
     "kaguya": "Kaguya (vnrun)",
     "interheart": "Interheart (vnrun)",
     "anim": "Crowd/ANIM (vnrun)",
+    "yuka": "Yuka (vnrun)",
     "cyberworks": "Cyberworks (vnrun)",
     "lilim": "LiLiM (vnrun)",
     "silkys": "Silky's (vnrun)",

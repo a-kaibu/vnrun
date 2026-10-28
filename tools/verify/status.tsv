@@ -413,3 +413,10 @@ b2026_tinkerbell	本編	Cyberworks 新形式 (1920x1080) で警告→タイト�
 b2026_wendybell	本編	Cyberworks 新形式 (1920x1080、全画面の窓) で警告→タイトル (初めから)→本編の CG・背景・文章を数場面 (cyberworks-run と Chromium)。右のバーの Save でセーブ→新しいセッションのタイトルの続きからロードで同じ行に戻る (Chromium)
 b2016_silkys_sakura	本編	Silky's (vnrun) でロゴ・注意書き→タイトル (Title_scroll のスクロール、trial_Title_p のボタン)→はじめから→mmsc_000..006 の背景・立ち絵・イベント CG・名前・文章を最後まで進む (silkys-run、45000 フレーム)。Chromium でタイトル→本編、SAVE ボタンからセーブ→タイトルの「続きから始める」でロードして本編 (背景・イベント CG・立ち絵込み) に戻る
 b2014_silkys_plus	本編	Silky's (vnrun) でロゴ・注意書き→タイトル (title.akb のボタン)→はじめから→nanairo_01..03 の背景・立ち絵・名前・文章・選択肢を進む (silkys-run、70000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→タイトルの「つづきから」でロードして本編に戻る
+b2007_feng	本編	Yuka (vnrun) でタイトル→はじめから→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium)。セーブ→ロードで本編に戻る (Chromium)
+b2008_hook	本編	Yuka (vnrun) で .dat (YKC001) からタイトル→本編の背景・立ち絵・文章まで (yuka-run と Chromium)。セーブ→タイトルからロード・メニューからロードで本編に戻る (Chromium)
+b2008_smee	本編	Yuka (vnrun) でタイトル→本編の背景・文章まで (yuka-run と Chromium)
+b2011_hook	本編	Yuka (vnrun) で自己展開 exe (zip) の DATA01..03.ykc から 1024x576 のタイトル→はじめから→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium)。ルビ (@r) は本文だけ表示
+b2011_smee	本編	Yuka (vnrun) でタイトル (SpriteCreate のパターンのボタン、MouseCase2)→名前入力 (既定の名前で「はい」)→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium)
+b2012_feng	本編	Yuka (vnrun) で 1280x960 の注意書き→タイトル→はじめから→本編の背景・立ち絵・文章・名前 (@gf の名前画像) まで (yuka-run と Chromium)。セーブ→タイトルのつづきから (自前のロード画面) で本編に戻る (Chromium)
+b2013_hooksoft	本編	Yuka (vnrun) で 1280x720 のタイトル→START GAME→体験版の説明→本編の背景・立ち絵・文章まで (yuka-run と Chromium)
