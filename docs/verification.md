@@ -54,7 +54,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | AdvHD (vnrun) | 35 | 30 |  |  |  |  |  | 5 |
 | Tmr-Hiro (vnrun) | 22 | 22 |  |  |  |  |  |  |
 | LiveMaker (vnrun) | 7 | 4 |  |  |  |  |  | 3 |
-| CatSystem2 (vnrun) | 8 | 3 |  |  |  |  |  | 5 |
+| CatSystem2 (vnrun) | 8 | 4 |  |  |  |  |  | 4 |
 | EntisGLS (vnrun) | 9 | 5 |  |  |  |  |  | 4 |
 | AliceSoft System4 (xsystem4) | 2 | 2 |  |  |  |  |  |  |
 | QLIE (vnrun) | 5 | 3 |  |  |  |  |  | 2 |
@@ -531,8 +531,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2014_azarashi_soft | [アマカノ 体験版 甘えてくれる恋人とのエッチなひととき編](http://suezou.dyndns.org/dl2014/azarashi-soft/amakano/amakano_trialH.zip) | 本編 | 360b26c (CatSystem2) でタイトル→はじめから→本編の文章とマップ画面まで (Chromium) |
 | b2014_windmill_oasis | [春風センセーション！体験版](http://suezou.dyndns.org/dl2014/windmill-oasis/harukaze/harukaze_trial.exe) | 本編 | 360b26c (CatSystem2) で注意書き→タイトル→START→本編の文章・名前まで (Chromium) |
 | b2017_laplacian | [ニュートンと林檎の樹 体験版＋](http://suezou.dyndns.org/dl2017/laplacian/newrin/newrin-trial-plus.zip) | 本編 | 360b26c (CatSystem2) でタイトル→はじめから→体験版メニュー (体験版本編 / えっちしーん) まで (Chromium、完全なダウンロードで確認) |
+| s2008_clochette_suzunone7 | [スズノネセブン！体験版](http://suezou.dyndns.org/dl2008/clochette/suzunone7/suzunone7_trial.zip) | 本編 | CatSystem2 (vnrun) で古い exe の V_CODE から鍵を取り暗号化 .int を展開、タイトル→最初からはじめる→本編 (背景・立ち絵・名前・2008 年形式の meswnd.xml のメッセージ窓) (cs2-run)。本編で右クリックのセーブ欄に保存→新しい実行でタイトルの「続きからはじめる」(titleload) の欄からロードし保存した行に戻る |
 | r1_cs2_hatsumira | [果つることなき未来ヨリ 体験版](http://suezou.dyndns.org/dl2015/frontwing/hatsumira/Hatsumira_Trial_web.zip) | 未確認 |  |
-| s2008_clochette_suzunone7 | [スズノネセブン！体験版](http://suezou.dyndns.org/dl2008/clochette/suzunone7/suzunone7_trial.zip) | 未確認 |  |
 | s2011_clochette_kamikaze | [カミカゼ☆エクスプローラー！WEB体験版](http://suezou.dyndns.org/dl2011/clochette/kamikaze/kamikaze_trial_WEB.zip) | 未確認 |  |
 | s2014_clochette_sakigake | [サキガケ⇒ジェネレーション！ WEB体験版](http://suezou.dyndns.org/dl2014/clochette/sakigake/sakigake_web_trial.zip) | 未確認 |  |
 | s2015_clochette_kokonatsu | [ここから夏のイノセンス！ WEB体験版](http://suezou.dyndns.org/dl2015/clochette/kokonatsu/kokonatsu_web_trial.zip) | 未確認 |  |

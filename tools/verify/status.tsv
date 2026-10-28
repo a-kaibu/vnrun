@@ -471,3 +471,4 @@ r1_sakana	本編	SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し
 dl_VJ01002468	本編	SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し .ui のビューと .ks の脚本を実行) でタイトル→Start→本編 (背景・名前・メッセージ窓・BGM・ボイス)。Chromium でタイトル→本編、クイックセーブ / セーブ欄に保存→ページを開き直してタイトルの Continue でロードし保存したページに戻る
 dl_VJ01004064	本編	SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し .ui のビューと .ks の脚本を実行) でタイトル→Start→本編 (背景・メッセージ窓・BGM)。Chromium でタイトル→本編、クイックセーブ / セーブ欄に保存→ページを開き直してタイトルの Continue でロードし保存したページに戻る
 s2011_purplesoftware_miranosu	本編	CMVS (vnrun、ライブラリ関数を引き取る方式) でタイトル→はじめから→プロローグ→snky01〜snky12 (背景・イベント CG・立ち絵と表情・名前・ルビ・ボイス・BGM・効果音・選択肢 10 回)→体験版の終わりでタイトルへ (cmvs-run、スキップ)。Chromium でタイトル→本編、Esc のメニューからセーブ→タイトルの「つづきから」でロードし保存した行に戻る
+s2008_clochette_suzunone7	本編	CatSystem2 (vnrun) で古い exe の V_CODE から鍵を取り暗号化 .int を展開、タイトル→最初からはじめる→本編 (背景・立ち絵・名前・2008 年形式の meswnd.xml のメッセージ窓) (cs2-run)。本編で右クリックのセーブ欄に保存→新しい実行でタイトルの「続きからはじめる」(titleload) の欄からロードし保存した行に戻る

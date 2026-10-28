@@ -75,7 +75,8 @@ pub fn resource(pe: &[u8], kind: &str, name: &str) -> Option<Vec<u8>> {
 
 /// The passphrase of the game's archives, from cs2.exe.
 pub fn passphrase(pe: &[u8]) -> Option<Vec<u8>> {
-    let mut code = resource(pe, "V_CODE2", "DATA")?;
+    // V_CODE in the older exes (スズノネセブン！, 2008)
+    let mut code = resource(pe, "V_CODE2", "DATA").or_else(|| resource(pe, "V_CODE", "DATA"))?;
     if code.len() < 8 {
         return None;
     }

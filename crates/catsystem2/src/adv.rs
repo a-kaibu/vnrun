@@ -973,6 +973,16 @@ impl Engine {
         let is_sub = SUBS.contains(&sub)
             || sub.starts_with("amove")
             || matches!(sub, "attr" | "attpos" | "mono" | "nega" | "sepia");
+        // motions this does not play (`bg 0 quake ...`, `cg 1 spline ...`): not pictures
+        let unplayed = !is_sub
+            && (matches!(
+                sub,
+                "quake" | "shake" | "mcquake" | "spline" | "m2spline" | "mspline" | "wipe"
+            ) || sub.starts_with("mc"))
+            && !self.g.has(&format!("{sub}.hg3"));
+        if unplayed {
+            return;
+        }
         for n in ns {
             let i = self.layer(kind, n);
             if is_sub {
@@ -1037,10 +1047,28 @@ impl Engine {
             f if f.is_empty() => (String::new(), img("img00")),
             f => (img("img00"), f),
         };
-        let t = Rc::new(Theme {
-            bg,
-            frame,
-            names: img("img03"),
+        // the older meswnd.xml (スズノネセブン！, 2008): <IMAGE><file>, its frame 1 the window,
+        // 10 the text and 50 the click mark (its 100s are the buttons, not a name plate)
+        let old = mes.is_empty().then(|| {
+            let image = crate::game::xml_tag(&xml, "IMAGE").unwrap_or("");
+            crate::game::xml_tag(image, "file")
+                .unwrap_or("")
+                .trim()
+                .to_string()
+        });
+        let t = Rc::new(match old {
+            Some(file) if !file.is_empty() => Theme {
+                bg: String::new(),
+                frame: file,
+                names: String::new(),
+                plate: false,
+            },
+            _ => Theme {
+                bg,
+                frame,
+                names: img("img03"),
+                plate: true,
+            },
         });
         self.adv.as_mut().unwrap().win = Some(t.clone());
         t
@@ -1094,11 +1122,21 @@ impl Engine {
                     ]
                 })
             };
-            let tr = rect(self, 10, [w * 0.2, h - 150.0, w * 0.7, 110.0]);
-            let nr = match self.g.frame(frame, 100) {
+            let mut tr = rect(self, 10, [w * 0.2, h - 150.0, w * 0.7, 110.0]);
+            let mut nr = match self.g.frame(frame, 100).filter(|_| theme.plate) {
                 Some(_) => rect(self, 100, [0.0; 4]),
                 None => rect(self, 11, [w * 0.2, h - 190.0, 200.0, 40.0]),
             };
+            // the older window: its frame 10 covers it all; the text and the name plate go
+            // where the window picture (frame 1) has them
+            if !theme.plate
+                && let Some(f) = self.g.frame(frame, 1)
+            {
+                let (x, y) = (f.x as f32, top + f.y as f32);
+                let iw = f.image.w as f32;
+                tr = [x + 70.0, y + 50.0, iw - 140.0, f.image.h as f32 - 60.0];
+                nr = [x + 58.0, y, 245.0, 36.0];
+            }
             let a = self.adv.as_ref().unwrap();
             let (text, shown, speaker) = (a.text.clone(), a.shown as usize, a.speaker.clone());
             let cached = a
@@ -1274,6 +1312,8 @@ pub struct Theme {
     bg: String,
     frame: String,
     names: String,
+    /// frame 100 of `frame` is the name plate
+    plate: bool,
 }
 
 /// nametable.csv: `number<TAB>name<TAB>...`.

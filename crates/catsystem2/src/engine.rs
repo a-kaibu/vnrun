@@ -898,9 +898,12 @@ impl Engine {
                     eprintln!("{} exits {v}", self.runs[r].name);
                 }
             }
-            "execfes" if arg(1).eq_ignore_ascii_case("saveload") => {
-                // the game's save screen (SAVEPANEL objects): ours instead, answering the
-                // script with 1000 + slot, or -2 for back
+            "execfes"
+                if arg(1).eq_ignore_ascii_case("saveload")
+                    || arg(1).eq_ignore_ascii_case("titleload") =>
+            {
+                // the game's save screen (SAVEPANEL objects; titleload the title's, 2008): ours
+                // instead, answering the script with 1000 + slot, or -2 for back
                 self.end_children(r);
                 self.runs[r].exit_code = -1;
                 self.open_menu(crate::menu::Mode::Load, Some(r));
