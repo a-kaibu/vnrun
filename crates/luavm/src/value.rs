@@ -24,6 +24,28 @@ pub enum Value {
     Func(Rc<Closure>),
     Native(Rc<Native>),
     User(Rc<User>),
+    Thread(Rc<RefCell<Coroutine>>),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CoStatus {
+    Suspended,
+    Running,
+    /// resumed another coroutine and waits for it
+    Normal,
+    Dead,
+}
+
+/// A coroutine: its own registers, open upvalues and Lua frames, kept here while it is not the
+/// running thread.
+pub struct Coroutine {
+    pub id: u32,
+    pub status: CoStatus,
+    /// the function, until the first resume
+    pub(crate) start: Option<Value>,
+    pub(crate) frames: Vec<crate::vm::Frame>,
+    pub(crate) stack: Vec<Value>,
+    pub(crate) open: Vec<(usize, Rc<RefCell<UpVal>>)>,
 }
 
 pub struct Native {
@@ -44,8 +66,8 @@ pub struct Closure {
 }
 
 pub enum UpVal {
-    /// still a register: an index into the Lua stack
-    Open(usize),
+    /// still a register: the thread (0 = main, else a coroutine id) and the index into its stack
+    Open(u32, usize),
     Closed(Value),
 }
 
@@ -83,6 +105,7 @@ impl Value {
             Value::Table(_) => "table",
             Value::Func(_) | Value::Native(_) => "function",
             Value::User(_) => "userdata",
+            Value::Thread(_) => "thread",
         }
     }
     /// A number, from a number or a numeric string.
@@ -132,6 +155,7 @@ impl Value {
             (Value::Func(a), Value::Func(b)) => Rc::ptr_eq(a, b),
             (Value::Native(a), Value::Native(b)) => Rc::ptr_eq(a, b),
             (Value::User(a), Value::User(b)) => Rc::ptr_eq(a, b),
+            (Value::Thread(a), Value::Thread(b)) => Rc::ptr_eq(a, b),
             _ => false,
         }
     }
@@ -175,6 +199,7 @@ impl fmt::Debug for Value {
             Value::Func(c) => write!(f, "function: {:p}", Rc::as_ptr(c)),
             Value::Native(n) => write!(f, "builtin: {}", n.name),
             Value::User(u) => write!(f, "{}: {}", u.kind, u.id),
+            Value::Thread(c) => write!(f, "thread: {:p}", Rc::as_ptr(c)),
         }
     }
 }
@@ -200,9 +225,10 @@ pub fn parse_number(s: &[u8]) -> Option<Value> {
         return None;
     }
     if body.chars().all(|c| c.is_ascii_digit())
-        && let Ok(i) = body.parse::<i64>() {
-            return Some(Value::Int(if neg { -i } else { i }));
-        }
+        && let Ok(i) = body.parse::<i64>()
+    {
+        return Some(Value::Int(if neg { -i } else { i }));
+    }
     let n: f64 = body.parse().ok()?;
     Some(Value::Num(if neg { -n } else { n }))
 }
@@ -229,6 +255,7 @@ impl Hash for Key {
             Value::Func(c) => (Rc::as_ptr(c) as usize).hash(h),
             Value::Native(n) => (Rc::as_ptr(n) as *const u8 as usize).hash(h),
             Value::User(u) => (Rc::as_ptr(u) as usize).hash(h),
+            Value::Thread(c) => (Rc::as_ptr(c) as usize).hash(h),
         }
     }
 }
@@ -324,9 +351,11 @@ impl Table {
     pub fn get(&self, k: &Value) -> Value {
         let k = norm(k);
         if let Value::Int(i) = k
-            && i >= 1 && (i as usize) <= self.arr.len() {
-                return self.arr[i as usize - 1].clone();
-            }
+            && i >= 1
+            && (i as usize) <= self.arr.len()
+        {
+            return self.arr[i as usize - 1].clone();
+        }
         if k.is_nil() {
             return Value::Nil;
         }

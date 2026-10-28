@@ -173,56 +173,78 @@ impl Lua {
     fn find_upval(&mut self, at: usize) -> Rc<RefCell<UpVal>> {
         let pos = self.open.partition_point(|(i, _)| *i < at);
         if let Some((i, u)) = self.open.get(pos)
-            && *i == at {
-                return u.clone();
-            }
-        let u = Rc::new(RefCell::new(UpVal::Open(at)));
+            && *i == at
+        {
+            return u.clone();
+        }
+        let u = Rc::new(RefCell::new(UpVal::Open(self.cur, at)));
         self.open.insert(pos, (at, u.clone()));
         u
     }
 
-    fn upval_get(&self, u: &Rc<RefCell<UpVal>>) -> Value {
-        match &*u.borrow() {
-            UpVal::Open(i) => self.stack[*i].clone(),
-            UpVal::Closed(v) => v.clone(),
+    /// A register of another thread (one parked under the running one, or a suspended one).
+    fn foreign<R>(&mut self, tid: u32, i: usize, f: impl FnOnce(&mut Value) -> R) -> R {
+        if let Some(p) = self.parked.iter_mut().rev().find(|p| p.id == tid) {
+            return f(&mut p.stack[i]);
+        }
+        let co = self.threads.get(&tid).and_then(|w| w.upgrade());
+        match co {
+            Some(co) => f(&mut co.borrow_mut().stack[i]),
+            None => f(&mut Value::Nil),
         }
     }
 
-    fn upval_set(&mut self, u: &Rc<RefCell<UpVal>>, v: Value) {
-        let mut b = u.borrow_mut();
-        match &mut *b {
-            UpVal::Open(i) => self.stack[*i] = v,
-            UpVal::Closed(x) => *x = v,
+    fn upval_get(&mut self, u: &Rc<RefCell<UpVal>>) -> Value {
+        let (tid, i) = match &*u.borrow() {
+            UpVal::Open(t, i) => (*t, *i),
+            UpVal::Closed(v) => return v.clone(),
+        };
+        if tid == self.cur {
+            self.stack[i].clone()
+        } else {
+            self.foreign(tid, i, |v| v.clone())
+        }
+    }
+
+    fn upval_set(&mut self, u: &Rc<RefCell<UpVal>>, x: Value) {
+        let (tid, i) = match &mut *u.borrow_mut() {
+            UpVal::Open(t, i) => (*t, *i),
+            UpVal::Closed(v) => {
+                *v = x;
+                return;
+            }
+        };
+        if tid == self.cur {
+            self.stack[i] = x;
+        } else {
+            self.foreign(tid, i, |v| *v = x);
         }
     }
 }
 
-pub fn run(lua: &mut Lua, cl: Rc<Closure>, args: Vec<Value>) -> LuaResult<Vec<Value>> {
-    if lua.trace {
-        eprintln!("{:1$}{2}:{3}", "", lua.depth, cl.proto.source, cl.proto.line);
-    }
-    let base = lua.stack.len();
-    let r = frame(lua, &cl, base, args);
-    lua.close_upvals(base);
-    lua.stack.truncate(base);
-    r.map_err(|mut e| {
-        let p = &cl.proto;
-        e.trace.push(match p.lines.first() {
-            Some(_) => format!("{}:{}", p.source, p.line),
-            None => format!("{} (function at line {})", p.source, p.line),
-        });
-        e
-    })
-}
-
-fn frame(
-    lua: &mut Lua,
-    cl: &Rc<Closure>,
+/// A Lua function being run: its closure, where its registers start, the next instruction and
+/// the end of its multiple results / varargs.
+pub(crate) struct Frame {
+    cl: Rc<Closure>,
     base: usize,
-    mut args: Vec<Value>,
-) -> LuaResult<Vec<Value>> {
-    let p = cl.proto.clone();
-    let v = p.version;
+    pc: usize,
+    top: usize,
+    varargs: Vec<Value>,
+    /// it yielded through a tail call: the values it is resumed with are its results
+    tail: bool,
+}
+
+pub(crate) enum Exit {
+    Return(Vec<Value>),
+    Yield(Vec<Value>),
+}
+
+/// Sets up the registers of a call to `cl` at the top of the stack.
+pub(crate) fn enter(lua: &mut Lua, cl: Rc<Closure>, mut args: Vec<Value>) -> Frame {
+    if lua.trace {
+        eprintln!("{}:{}", cl.proto.source, cl.proto.line);
+    }
+    let p = &cl.proto;
     let np = p.params as usize;
     let varargs = if p.vararg && args.len() > np {
         args.split_off(np)
@@ -230,14 +252,122 @@ fn frame(
         args.truncate(np);
         Vec::new()
     };
+    let base = lua.stack.len();
     let size = p.max_stack as usize + 1;
     lua.stack.resize(base + size, Value::Nil);
     for (i, a) in args.into_iter().enumerate() {
         lua.stack[base + i] = a;
     }
-    // registers past the fixed frame (multiple results, varargs) extend the stack: `top`
-    let mut top = base + size;
-    let mut pc = 0usize;
+    Frame {
+        cl,
+        base,
+        pc: 0,
+        top: base + size,
+        varargs,
+        tail: false,
+    }
+}
+
+pub fn run(lua: &mut Lua, cl: Rc<Closure>, args: Vec<Value>) -> LuaResult<Vec<Value>> {
+    let mut frames = vec![enter(lua, cl, args)];
+    match exec(lua, &mut frames, None, false)? {
+        Exit::Return(v) => Ok(v),
+        Exit::Yield(_) => err("attempt to yield across a C-call boundary"),
+    }
+}
+
+/// Runs `frames` (the innermost last) until the bottom one returns, or (when `yieldable`) until
+/// coroutine.yield is called; the frames are then left as they are for a later `resume` with
+/// the values yield returns.
+pub(crate) fn exec(
+    lua: &mut Lua,
+    frames: &mut Vec<Frame>,
+    resume: Option<Vec<Value>>,
+    yieldable: bool,
+) -> LuaResult<Exit> {
+    let bottom = frames.first().map_or(lua.stack.len(), |f| f.base);
+    let r = step(lua, frames, resume, yieldable);
+    match r {
+        Err(mut e) => {
+            for f in frames.iter().rev() {
+                let p = &f.cl.proto;
+                e.trace.push(match p.lines.get(f.pc.saturating_sub(1)) {
+                    Some(l) => format!("{}:{}", p.source, l),
+                    None => format!("{} (function at line {})", p.source, p.line),
+                });
+            }
+            frames.clear();
+            lua.close_upvals(bottom);
+            lua.stack.truncate(bottom);
+            Err(e)
+        }
+        ok => ok,
+    }
+}
+
+/// Stores call results the way the CALL at `a` with result count `c` wants them.
+fn place(lua: &mut Lua, base: usize, top: &mut usize, a: usize, c: usize, res: Vec<Value>) {
+    if c == 0 {
+        let need = base + a + res.len();
+        if lua.stack.len() < need {
+            lua.stack.resize(need, Value::Nil);
+        }
+        *top = need;
+        for (i, x) in res.into_iter().enumerate() {
+            lua.stack[base + a + i] = x;
+        }
+    } else {
+        let mut it = res.into_iter();
+        for i in 0..c - 1 {
+            lua.stack[base + a + i] = it.next().unwrap_or_default();
+        }
+    }
+}
+
+fn step(
+    lua: &mut Lua,
+    frames: &mut Vec<Frame>,
+    resume: Option<Vec<Value>>,
+    yieldable: bool,
+) -> LuaResult<Exit> {
+    let Some(f) = frames.last() else {
+        return Ok(Exit::Return(resume.unwrap_or_default()));
+    };
+    let mut cl = f.cl.clone();
+    let mut p = cl.proto.clone();
+    let mut v = p.version;
+    let mut base = f.base;
+    let mut pc = f.pc;
+    let mut top = f.top;
+    // values to return from the current frame (set by RETURN, a tail call to a host function, or
+    // a resume after a yield through a tail call)
+    let mut ret: Option<Vec<Value>> = None;
+    if let Some(vals) = resume {
+        if f.tail {
+            ret = Some(vals);
+        } else {
+            let (_, a, _, c, _) = decode(v, p.code[pc - 1])?;
+            place(lua, base, &mut top, a, c, vals);
+        }
+    }
+    macro_rules! save {
+        () => {{
+            let f = frames.last_mut().unwrap();
+            f.pc = pc;
+            f.top = top;
+        }};
+    }
+    macro_rules! load {
+        () => {{
+            let f = frames.last().unwrap();
+            cl = f.cl.clone();
+            p = cl.proto.clone();
+            v = p.version;
+            base = f.base;
+            pc = f.pc;
+            top = f.top;
+        }};
+    }
     macro_rules! r {
         ($i:expr) => {
             lua.stack[base + $i]
@@ -261,6 +391,17 @@ fn frame(
         };
     }
     loop {
+        if let Some(res) = ret.take() {
+            lua.close_upvals(base);
+            lua.stack.truncate(base);
+            frames.pop();
+            if frames.is_empty() {
+                return Ok(Exit::Return(res));
+            }
+            load!();
+            let (_, a, _, c, _) = decode(v, p.code[pc - 1])?;
+            place(lua, base, &mut top, a, c, res);
+        }
         let Some(&ins) = p.code.get(pc) else {
             return err("ran past the end of a function");
         };
@@ -303,9 +444,14 @@ fn frame(
                 lua.set_index(&t, key, x)?;
             }
             Op::GetGlobal => {
-                let t = Value::Table(lua.globals.clone());
                 let key = k!(bx);
-                r!(a) = lua.index(&t, &key)?;
+                let hit = lua.globals.borrow().get(&key);
+                r!(a) = if hit.is_nil() {
+                    let t = Value::Table(lua.globals.clone());
+                    lua.index(&t, &key)?
+                } else {
+                    hit
+                };
             }
             Op::SetGlobal => {
                 let t = Value::Table(lua.globals.clone());
@@ -380,29 +526,39 @@ fn frame(
                 let f = r!(a).clone();
                 let end = if b == 0 { top } else { base + a + b };
                 let args: Vec<Value> = lua.stack[base + a + 1..end].to_vec();
-                let res = lua.call(&f, args)?;
-                if op == Op::TailCall {
-                    return Ok(res);
+                if let Value::Func(callee) = f {
+                    if frames.len() > 7000 {
+                        return err("stack overflow");
+                    }
+                    save!();
+                    if op == Op::TailCall {
+                        lua.close_upvals(base);
+                        lua.stack.truncate(base);
+                        frames.pop();
+                    }
+                    let fr = enter(lua, callee, args);
+                    frames.push(fr);
+                    load!();
+                    continue;
                 }
-                if c == 0 {
-                    let need = base + a + res.len();
-                    if lua.stack.len() < need {
-                        lua.stack.resize(need, Value::Nil);
+                save!();
+                let res = lua.call(&f, args)?;
+                if let Some(y) = lua.yielded.take() {
+                    if !yieldable {
+                        return err("attempt to yield across a C-call boundary");
                     }
-                    top = need;
-                    for (i, x) in res.into_iter().enumerate() {
-                        r!(a + i) = x;
-                    }
+                    frames.last_mut().unwrap().tail = op == Op::TailCall;
+                    return Ok(Exit::Yield(y));
+                }
+                if op == Op::TailCall {
+                    ret = Some(res);
                 } else {
-                    let mut it = res.into_iter();
-                    for i in 0..c - 1 {
-                        r!(a + i) = it.next().unwrap_or_default();
-                    }
+                    place(lua, base, &mut top, a, c, res);
                 }
             }
             Op::Return => {
                 let end = if b == 0 { top } else { base + a + b - 1 };
-                return Ok(lua.stack[base + a..end.max(base + a)].to_vec());
+                ret = Some(lua.stack[base + a..end.max(base + a)].to_vec());
             }
             Op::ForPrep => {
                 let (init, limit, step) = (r!(a).clone(), r!(a + 1).clone(), r!(a + 2).clone());
@@ -466,6 +622,7 @@ fn frame(
             Op::TForCall | Op::TForLoop51 => {
                 let f = r!(a).clone();
                 let args = vec![r!(a + 1).clone(), r!(a + 2).clone()];
+                save!();
                 let res = lua.call(&f, args)?;
                 let mut it = res.into_iter();
                 for i in 0..c {
@@ -542,6 +699,7 @@ fn frame(
                 r!(a) = Value::Func(Rc::new(Closure { proto, upvals }));
             }
             Op::VarArg => {
+                let varargs = &frames.last().unwrap().varargs;
                 if b == 0 {
                     let need = base + a + varargs.len();
                     if lua.stack.len() < need {
@@ -549,11 +707,11 @@ fn frame(
                     }
                     top = need;
                     for (i, x) in varargs.iter().enumerate() {
-                        r!(a + i) = x.clone();
+                        lua.stack[base + a + i] = x.clone();
                     }
                 } else {
                     for i in 0..b - 1 {
-                        r!(a + i) = varargs.get(i).cloned().unwrap_or_default();
+                        lua.stack[base + a + i] = varargs.get(i).cloned().unwrap_or_default();
                     }
                 }
             }

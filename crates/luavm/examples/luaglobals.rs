@@ -4,11 +4,12 @@
 
 use std::collections::BTreeSet;
 
-use luavm::undump::{self, Proto, Version};
 use luavm::Value;
+use luavm::undump::{self, Proto, Version};
 
 fn name(v: &Value) -> Option<String> {
-    v.as_bytes().map(|b| String::from_utf8_lossy(b).into_owned())
+    v.as_bytes()
+        .map(|b| String::from_utf8_lossy(b).into_owned())
 }
 
 fn walk(p: &Proto, out: &mut BTreeSet<String>) {
@@ -24,7 +25,13 @@ fn walk(p: &Proto, out: &mut BTreeSet<String>) {
         let c = ((i >> 14) & 0x1ff) as usize;
         let b = ((i >> 23) & 0x1ff) as usize;
         let bx = (i >> 14) as usize;
-        let k = |x: usize| if x & 0x100 != 0 { p.consts.get(x & 0xff).and_then(name) } else { None };
+        let k = |x: usize| {
+            if x & 0x100 != 0 {
+                p.consts.get(x & 0xff).and_then(name)
+            } else {
+                None
+            }
+        };
         if op == gettabup && b == 0 {
             if let Some(n) = k(c) {
                 out.insert(n.clone());
@@ -40,10 +47,10 @@ fn walk(p: &Proto, out: &mut BTreeSet<String>) {
         } else if op == gettable || op == selfop {
             if let (Some(g), Some(f)) = (held[b].clone(), k(c)) {
                 out.insert(format!("{g}.{f}"));
-            } else if op == selfop {
-                if let Some(f) = k(c) {
-                    out.insert(format!(":{f}"));
-                }
+            } else if op == selfop
+                && let Some(f) = k(c)
+            {
+                out.insert(format!(":{f}"));
             }
         }
         held[a] = None;

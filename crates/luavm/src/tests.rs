@@ -42,3 +42,8 @@ fn run(src: &str) {
 fn basics() {
     run(include_str!("../tests/basics.lua"));
 }
+
+#[test]
+fn coroutines() {
+    run(include_str!("../tests/coroutine.lua"));
+}

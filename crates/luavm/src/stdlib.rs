@@ -205,9 +205,10 @@ pub fn open(lua: &mut Lua) {
     reg(&mut g, "select", |_, mut a| {
         let n = a.len() as i64 - 1;
         if let Value::Str(s) = arg(&a, 0)
-            && &*s == b"#" {
-                return Ok(vec![Value::Int(n)]);
-            }
+            && &*s == b"#"
+        {
+            return Ok(vec![Value::Int(n)]);
+        }
         let i = check_int(&a, 0, "select")?;
         let i = if i < 0 { n + i } else { i - 1 };
         if i < 0 {
@@ -305,8 +306,14 @@ pub fn open(lua: &mut Lua) {
     open_math(&mut math);
     g.set_str("math", Value::table(math));
 
+    let mut co = Table::default();
+    open_coroutine(&mut co);
+    g.set_str("coroutine", Value::table(co));
+
     let mut os = Table::default();
-    reg(&mut os, "time", |lua, _| Ok(vec![Value::Int((lua.epoch + lua.clock) as i64)]));
+    reg(&mut os, "time", |lua, _| {
+        Ok(vec![Value::Int((lua.epoch + lua.clock) as i64)])
+    });
     reg(&mut os, "clock", |lua, _| Ok(vec![Value::Num(lua.clock)]));
     reg(&mut os, "date", |_, _| {
         Ok(vec![Value::str("2000/01/01 00:00:00")])
@@ -349,6 +356,70 @@ fn str_range(len: usize, i: i64, j: i64) -> (usize, usize) {
     } else {
         (i as usize - 1, j as usize)
     }
+}
+
+fn check_thread(a: &Args, i: usize, f: &str) -> LuaResult<Rc<RefCell<crate::Coroutine>>> {
+    match arg(a, i) {
+        Value::Thread(c) => Ok(c),
+        v => err(format!(
+            "bad argument #{} to '{f}' (coroutine expected, got {})",
+            i + 1,
+            v.type_name()
+        )),
+    }
+}
+
+fn open_coroutine(t: &mut Table) {
+    reg(t, "create", |lua, a| match arg(&a, 0) {
+        f @ (Value::Func(_) | Value::Native(_)) => Ok(vec![lua.new_thread(f)]),
+        _ => err("bad argument #1 to 'create' (function expected)"),
+    });
+    reg(t, "resume", |lua, mut a| {
+        let co = check_thread(&a, 0, "resume")?;
+        a.remove(0);
+        Ok(match lua.resume(&co, a) {
+            Ok(Ok(mut r)) => {
+                r.insert(0, Value::Bool(true));
+                r
+            }
+            Ok(Err(e)) | Err(e) => vec![Value::Bool(false), error_value(&e)],
+        })
+    });
+    reg(t, "yield", |lua, a| {
+        if lua.running().is_none() {
+            return err("attempt to yield from outside a coroutine");
+        }
+        lua.yielded = Some(a);
+        Ok(vec![])
+    });
+    reg(t, "status", |_, a| {
+        let co = check_thread(&a, 0, "status")?;
+        let s = match co.borrow().status {
+            crate::CoStatus::Suspended => "suspended",
+            crate::CoStatus::Running => "running",
+            crate::CoStatus::Normal => "normal",
+            crate::CoStatus::Dead => "dead",
+        };
+        Ok(vec![Value::str(s)])
+    });
+    reg(t, "running", |lua, _| {
+        Ok(vec![lua.running().map_or(Value::Nil, Value::Thread)])
+    });
+    reg(t, "isyieldable", |lua, _| {
+        Ok(vec![Value::Bool(lua.running().is_some())])
+    });
+    reg(t, "wrap", |lua, a| {
+        let f = arg(&a, 0);
+        if !matches!(f, Value::Func(_) | Value::Native(_)) {
+            return err("bad argument #1 to 'wrap' (function expected)");
+        }
+        let Value::Thread(co) = lua.new_thread(f) else {
+            unreachable!()
+        };
+        Ok(vec![Value::native("wrap", move |lua, a| {
+            lua.resume(&co, a)?
+        })])
+    });
 }
 
 fn open_string(t: &mut Table) {

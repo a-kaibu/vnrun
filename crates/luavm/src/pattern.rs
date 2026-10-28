@@ -219,10 +219,9 @@ impl<'a> Matcher<'a> {
             let m = self.single(s, p, ep);
             match pat.get(ep) {
                 Some(b'?') => {
-                    if m
-                        && let Some(r) = self.do_match(s + 1, ep + 1)? {
-                            return Ok(Some(r));
-                        }
+                    if m && let Some(r) = self.do_match(s + 1, ep + 1)? {
+                        return Ok(Some(r));
+                    }
                     p = ep + 1;
                 }
                 Some(b'+') => {

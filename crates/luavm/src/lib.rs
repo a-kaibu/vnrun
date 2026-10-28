@@ -2,7 +2,8 @@
 //! their scripts as luac output (AdvHD). There is no compiler: only `load` of binary chunks.
 //!
 //! Host functions are [`Value::native`] closures; host objects are [`Value::User`] with a
-//! metatable. Coroutines are not supported.
+//! metatable. Coroutines run on their own register stacks; a coroutine can yield from Lua code
+//! (any depth of Lua calls) but not from inside a host function that called back into Lua.
 
 mod pattern;
 mod stdlib;
@@ -11,10 +12,11 @@ pub mod value;
 mod vm;
 
 use std::cell::RefCell;
-use std::rc::Rc;
+use std::collections::HashMap;
+use std::rc::{Rc, Weak};
 
 pub use undump::{Proto, Version};
-pub use value::{Closure, Native, Table, TableRef, UpVal, User, Value};
+pub use value::{Closure, CoStatus, Coroutine, Native, Table, TableRef, UpVal, User, Value};
 
 #[derive(Debug, Clone)]
 pub struct LuaError {
@@ -72,11 +74,31 @@ pub struct Lua {
     seed: u64,
     /// the host's state, for native functions
     pub host: Option<Box<dyn std::any::Any>>,
+    /// the running thread: 0 for the main one, else the coroutine's id
+    cur: u32,
+    /// the threads under the running one (each resumed the next): id, stack, open upvalues
+    parked: Vec<Parked>,
+    /// the coroutines being run, innermost last
+    chain: Vec<Rc<RefCell<Coroutine>>>,
+    /// every coroutine by id, for upvalues still open in a suspended one
+    threads: HashMap<u32, Weak<RefCell<Coroutine>>>,
+    next_co: u32,
+    /// what coroutine.yield was given, until the interpreter suspends the coroutine
+    pub(crate) yielded: Option<Vec<Value>>,
+}
+
+type OpenList = Vec<(usize, Rc<RefCell<UpVal>>)>;
+struct Parked {
+    id: u32,
+    stack: Vec<Value>,
+    open: OpenList,
 }
 
 #[cfg(not(target_arch = "wasm32"))]
 fn now() -> f64 {
-    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64())
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0.0, |d| d.as_secs_f64())
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -104,6 +126,12 @@ impl Lua {
             trace: false,
             seed: 0x2545_f491_4f6c_dd1d,
             host: None,
+            cur: 0,
+            parked: Vec::new(),
+            chain: Vec::new(),
+            threads: HashMap::new(),
+            next_co: 1,
+            yielded: None,
         };
         stdlib::open(&mut lua);
         lua
@@ -163,6 +191,97 @@ impl Lua {
                 self.call(&h, a)
             }
         }
+    }
+
+    /// A new coroutine that will run `f`.
+    pub fn new_thread(&mut self, f: Value) -> Value {
+        let id = self.next_co;
+        self.next_co += 1;
+        let co = Rc::new(RefCell::new(Coroutine {
+            id,
+            status: CoStatus::Suspended,
+            start: Some(f),
+            frames: Vec::new(),
+            stack: Vec::new(),
+            open: Vec::new(),
+        }));
+        self.threads.retain(|_, w| w.strong_count() > 0);
+        self.threads.insert(id, Rc::downgrade(&co));
+        Value::Thread(co)
+    }
+
+    /// The running coroutine (None on the main thread).
+    pub fn running(&self) -> Option<Rc<RefCell<Coroutine>>> {
+        self.chain.last().cloned()
+    }
+
+    /// Runs a coroutine until it yields (Ok(Ok(values))), returns (Ok(Ok(values)), then dead) or
+    /// fails (Ok(Err(error)), then dead). Err when it cannot be resumed.
+    pub fn resume(
+        &mut self,
+        co: &Rc<RefCell<Coroutine>>,
+        args: Vec<Value>,
+    ) -> LuaResult<Result<Vec<Value>, LuaError>> {
+        let (id, start, mut frames) = {
+            let mut c = co.borrow_mut();
+            match c.status {
+                CoStatus::Suspended => {}
+                CoStatus::Dead => return err("cannot resume dead coroutine"),
+                _ => return err("cannot resume non-suspended coroutine"),
+            }
+            if self.chain.len() > 100 {
+                return err("C stack overflow");
+            }
+            c.status = CoStatus::Running;
+            let stack = std::mem::take(&mut c.stack);
+            let open = std::mem::take(&mut c.open);
+            self.parked.push(Parked {
+                id: self.cur,
+                stack: std::mem::replace(&mut self.stack, stack),
+                open: std::mem::replace(&mut self.open, open),
+            });
+            (c.id, c.start.take(), std::mem::take(&mut c.frames))
+        };
+        if let Some(prev) = self.chain.last() {
+            prev.borrow_mut().status = CoStatus::Normal;
+        }
+        self.chain.push(co.clone());
+        self.cur = id;
+        let depth = std::mem::replace(&mut self.depth, 0);
+        let r = match start {
+            Some(Value::Func(cl)) => {
+                frames.push(vm::enter(self, cl, args));
+                vm::exec(self, &mut frames, None, true)
+            }
+            Some(f) => self.call(&f, args).map(vm::Exit::Return),
+            None => vm::exec(self, &mut frames, Some(args), true),
+        };
+        self.depth = depth;
+        self.chain.pop();
+        if let Some(prev) = self.chain.last() {
+            prev.borrow_mut().status = CoStatus::Running;
+        }
+        let p = self.parked.pop().expect("parked thread");
+        self.cur = p.id;
+        let mut c = co.borrow_mut();
+        c.stack = std::mem::replace(&mut self.stack, p.stack);
+        c.open = std::mem::replace(&mut self.open, p.open);
+        Ok(match r {
+            Ok(vm::Exit::Yield(v)) => {
+                c.status = CoStatus::Suspended;
+                c.frames = frames;
+                Ok(v)
+            }
+            Ok(vm::Exit::Return(v)) => {
+                c.status = CoStatus::Dead;
+                Ok(v)
+            }
+            Err(e) => {
+                c.status = CoStatus::Dead;
+                c.stack.clear();
+                Err(e)
+            }
+        })
     }
 
     /// Calls global function `name` (if it exists).

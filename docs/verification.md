@@ -238,7 +238,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_VJ01000810 | [エッチなお姉ちゃんが、褐色巨乳の悪魔だった件](https://trial.dlsite.com/professional/VJ01001000/VJ01000810_trial.zip) | 本編 | exe 末尾の app を vnrun-prep が展開。タイトル→はじめから→本編の CG・文章まで (Chromium) |
 | dl_VJ01001309 | [エッチなお姉ちゃんが、褐色巨乳の悪魔だった件2 ～新たな悪魔ミリス登場♪～](https://trial.dlsite.com/professional/VJ01002000/VJ01001309_trial.zip) | 本編 | e7626d4 (EXE 基準オフセットの app zip、.tpatch を vnrun-prep が適用) でタイトル→はじめから→本編の立ち絵・文章まで (Chromium) |
 | r1_tyrano | [転生した世界で… 体験版](http://www.gocha-mix.com/gp/gxgp01/dl/gxgp001_trial.zip) | 本編 | dadce4b (exe 末尾の app を vnrun-prep が展開) でタイトル→はじめから→本編の背景・文章まで (Chromium、タイトルまで約 200 秒) |
-| dl_RJ01741863 | [淫らに染めて ～叔母が堕ちるまで～](https://trial.dlsite.com/doujin/RJ01742000/RJ01741863_trial.zip) | 本編 | 止まってはいない。SwiftShader では 0.3〜0.5 fps しか出ず (VisuMZ BrightEffects のブルーム・ブラーなど Spriteset_Map のフィルタ 6 枚が GPU 側で重い。JS は 1 フレーム 15 ms 程度)、ニューゲーム後のフェードと Map001→Map011 の移動に数分かかる。約 10 分で本編の会話まで出た。Live2D は無関係 (Cubism Core 5.1.0 は読める)。実 GPU なら問題ないはず |
+| dl_RJ01741863 | [淫らに染めて ～叔母が堕ちるまで～](https://trial.dlsite.com/doujin/RJ01742000/RJ01741863_trial.zip) | タイトル | タイトルは出る。はじめから後は黒画面のまま (VisuMZ EventTitleScene→Map011 の場所移動待ちで止まる、要調査) |
 
 ### 吉里吉里 (KiriKiri SDL2)
 
