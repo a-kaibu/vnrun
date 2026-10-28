@@ -3,5 +3,6 @@
 //! machine and the commands were read from cmvs32.exe.
 
 pub mod cpz;
+pub mod engine;
 pub mod pb3;
 pub mod ps2;

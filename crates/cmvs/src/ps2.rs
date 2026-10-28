@@ -714,7 +714,8 @@ impl Vm {
                     // concatenation: both sides go to the temporary string
                     let b = st.pop();
                     let a = st.pop();
-                    for x in [a, b].into_iter().flatten() {
+                    // the temporary string itself (V(0, 0)) is already there
+                    for x in [a, b].into_iter().flatten().filter(|&x| x != Tok::V(0, 0)) {
                         let r = self.str_ref(x);
                         let txt = self.text(r);
                         self.temp.extend_from_slice(&txt);
