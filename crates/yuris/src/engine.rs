@@ -50,8 +50,10 @@ pub struct World {
     start: [i64; 8],
     /// commands to print with their arguments, for debugging
     pub log: Vec<String>,
-    /// 222: `ID=a NO=n` names the layer or sound `a#n`
+    /// 222 and 263: `ID=a NO=n` names the layer or sound `a.n` (263 scripts build such names themselves)
     numbered: bool,
+    /// 222
+    old: bool,
 }
 
 pub struct Engine {
@@ -68,7 +70,7 @@ impl Engine {
         let prog = Program::load(&mut read)?;
         let (w, h) = (prog.config.width.max(1), prog.config.height.max(1));
         let title = prog.config.title.clone();
-        let numbered = prog.old;
+        let (numbered, old) = (prog.numbered, prog.old);
         let vm = Vm::new(prog)?;
         let world = World {
             layers: Layers::new(w, h),
@@ -83,6 +85,7 @@ impl Engine {
             start: [0; 8],
             log: Vec::new(),
             numbered,
+            old,
         };
         Ok(Engine { vm, world, input: Input::new() })
     }
@@ -351,7 +354,7 @@ impl World {
                 Box::new(move |p| adjust::mono(p, value))
             } else if on(st, c, "REVERSE")? {
                 Box::new(adjust::invert)
-            } else if on(st, c, "RECTPAINT")? && self.numbered {
+            } else if on(st, c, "RECTPAINT")? && self.old {
                 // 222: transparency in the top byte (its text layers are cleared with 0xff000000)
                 let a = 255 - ((value >> 24) & 0xff) as u8;
                 Box::new(move |p| p.copy_from_slice(&[(value >> 16) as u8, (value >> 8) as u8, value as u8, a]))
@@ -748,7 +751,7 @@ fn read_save(b: &[u8]) -> HashMap<u32, Vec<u8>> {
 }
 
 /// 222 names a layer or sound by two keywords, ID and NO (ID2 and NO2, MID and MNO, TID and
-/// TNO): the name with `#n` after it when n is not 0, as a string expression.
+/// TNO): the name with `.n` after it when n is not 0, as a string expression.
 fn numbered_names(st: &State, c: &Call) -> Result<Vec<(usize, Vec<u8>)>, String> {
     let mut out = Vec::new();
     for (i, (k, _, e)) in c.args.iter().enumerate() {
@@ -764,7 +767,7 @@ fn numbered_names(st: &State, c: &Call) -> Result<Vec<(usize, Vec<u8>)>, String>
             continue;
         }
         let mut name = st.eval(e)?.bytes();
-        name.extend(format!("#{n}").bytes());
+        name.extend(format!(".{n}").bytes());
         let mut q = vec![b'"'];
         q.extend(name);
         q.push(b'"');

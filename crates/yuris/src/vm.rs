@@ -28,8 +28,10 @@ pub struct Program {
     /// per script and instruction: the instruction a block command goes to (see `link`)
     partner: Vec<Vec<u32>>,
     op: HashMap<&'static str, u8>,
-    /// the first format (222): layers and sounds are named by ID and NO
+    /// the first format (222)
     pub old: bool,
+    /// 222 and 263: layers and sounds are named by ID and NO
+    pub numbered: bool,
 }
 
 // Commands the VM runs itself.
@@ -54,11 +56,23 @@ impl Program {
         let decls = ybn::variables(&need(read, "ysv.ybn")?).map_err(ctx("ysv.ybn"))?;
         let files: Vec<_> = (0..script_names.len()).map(|i| read(&format!("yst{i:05}.ybn"))).collect();
         let key = files.iter().flatten().find_map(|b| ybn::script_key(b));
+        // 263: one stream with byte jumps; its labels point at bytes too
+        let v263 = files.iter().flatten().next().is_some_and(|b| ybn::script_version(b) < 300);
+        let mut offsets = Vec::new();
         let mut scripts = Vec::with_capacity(script_names.len());
         for (i, f) in files.into_iter().enumerate() {
+            let err = |e: String| format!("yst{i:05}.ybn: {e}");
             scripts.push(match f {
-                Some(b) => ybn::script(&b, key).map_err(|e| format!("yst{i:05}.ybn: {e}"))?,
-                None => Script::default(), // files that only declare (global.yst, macro.yst)
+                Some(b) if v263 => {
+                    let (s, o) = ybn::script_263(&b, &commands).map_err(err)?;
+                    offsets.push(o);
+                    s
+                }
+                Some(b) => ybn::script(&b, key).map_err(err)?,
+                None => {
+                    offsets.push(Vec::new());
+                    Script::default() // files that only declare (global.yst, macro.yst)
+                }
             });
         }
         // the text decides how every string reads, the title included
@@ -75,9 +89,15 @@ impl Program {
         let config = ybn::config(&need(read, "yscfg.ybn")?).map_err(ctx("yscfg.ybn"))?;
         let mut labels = HashMap::new();
         for l in ybn::labels(&need(read, "ysl.ybn")?).map_err(ctx("ysl.ybn"))? {
-            labels.insert(l.name.to_uppercase(), Pos { script: l.script as usize, ip: l.ip as usize });
+            let ip = match offsets.get(l.script as usize) {
+                Some(o) if v263 => o.partition_point(|&x| x < l.ip),
+                _ => l.ip as usize,
+            };
+            labels.insert(l.name.to_uppercase(), Pos { script: l.script as usize, ip });
         }
-        Ok(Self::new(commands, scripts, script_names, labels, decls, config))
+        let mut p = Self::new(commands, scripts, script_names, labels, decls, config);
+        p.numbered = v263;
+        Ok(p)
     }
 
     fn new(
@@ -94,7 +114,7 @@ impl Program {
                 op.insert(name, i as u8);
             }
         }
-        let mut p = Program { commands, scripts, script_names, labels, decls, config, partner: Vec::new(), op, old: false };
+        let mut p = Program { commands, scripts, script_names, labels, decls, config, partner: Vec::new(), op, old: false, numbered: false };
         p.partner = p.scripts.iter().map(|s| p.link(s)).collect();
         p
     }
@@ -127,6 +147,7 @@ impl Program {
         labels.entry("SYSTEM_START".into()).or_insert(Pos { script: 1, ip: 0 });
         let mut p = Self::new(commands, scripts, script_names, labels, decls, config);
         p.old = true;
+        p.numbered = true;
         Ok(p)
     }
 

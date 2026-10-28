@@ -153,7 +153,7 @@ dl_VJ01001385	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_VJ01000407	本編	Chromium (3f99c53+) で START→本編の文章まで
 s2021_casket_bellaca02	本編	Chromium で Hシーン体験版→本編の文章まで
 dl_RJ01708454	本編	Chromium で はじめから→本編の文章まで
-b2007_whirlpool	NG	pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」
+b2007_whirlpool	本編	Chromium で はじめから→本編の文章まで (263 形式。音声と BGM の ypf は除いて確認)
 b2006_whirlpool	本編	Chromium で はじめから→本編の文章まで (222 形式の pac/*.ypf)
 dl_VJ01002338	NG	pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」
 b2010_whirlpool	本編	Chromium (3f99c53) で START→本編の文章→体験版終了の選択肢まで

@@ -2,6 +2,7 @@
 //! (ysv.ybn), the list of scripts (yst_list.ybn), settings (yscfg.ybn) and one yst?????.ybn per
 //! script file.
 
+use crate::old;
 use crate::sjis;
 
 struct Reader<'a> {
@@ -171,6 +172,15 @@ fn version(b: &[u8]) -> u32 {
 /// in ysv.ybn: 300, 474, 482, 550-555 games.
 fn sysvar(ver: u32, id: u16) -> u16 {
     match ver {
+        // 263 (マギウステイル): 222's numbers (see old::sysvar) moved up by 18 or 19, its last
+        // block down by 43, with FILES at 14 as later; matched against いな☆こい！'s ERIS
+        ..300 => match id {
+            0..=15 | 1000.. => id,
+            32..=58 => old::sysvar(id - 18),
+            62..=343 => old::sysvar(id - 19),
+            344..=477 => old::sysvar(id + 43),
+            _ => 20000 + id,
+        },
         // 300 (涼風のメルト): no strings at 32..47, fewer below @_TEXT and among the mouse
         // ones; the script variables (490..) move past 512
         300 => match id {
@@ -353,4 +363,114 @@ pub fn script(b: &[u8], key: Option<[u8; 4]>) -> Result<Script, String> {
         out.push(Instr { op, args: list, line });
     }
     Ok(Script { code: out })
+}
+
+/// 263 writes `$@x` (the number as text) as the variable with '#'; later versions use '#' for
+/// references, so this makes it the int variable and the `s` conversion (after its index).
+fn casts_263(e: &[u8]) -> Vec<u8> {
+    let mut out = Vec::with_capacity(e.len());
+    let mut depth = 0usize;
+    let mut casts = Vec::new();
+    let mut i = 0;
+    while i + 3 <= e.len() {
+        let (op, n) = (e[i], u16::from_le_bytes([e[i + 1], e[i + 2]]) as usize);
+        let tok = &e[i..(i + 3 + n).min(e.len())];
+        i += 3 + n;
+        let cast = matches!(op, b'H' | b'V' | b'v') && n == 3 && tok.get(3) == Some(&b'#');
+        out.extend_from_slice(tok);
+        if cast {
+            let at = out.len() - n;
+            out[at] = b'@';
+        }
+        match op {
+            b'V' => {
+                if cast {
+                    casts.push(depth);
+                }
+                depth += 1;
+            }
+            b')' => {
+                depth = depth.saturating_sub(1);
+                if casts.last() == Some(&depth) {
+                    casts.pop();
+                    out.extend_from_slice(&[b's', 0, 0]);
+                }
+            }
+            _ if cast => out.extend_from_slice(&[b's', 0, 0]),
+            _ => {}
+        }
+    }
+    out
+}
+
+/// The version a script was compiled with.
+pub fn script_version(b: &[u8]) -> u32 {
+    version(b)
+}
+
+/// A 263 script (マギウステイル): one stream of instructions (op u8, argc u8, line u32, then
+/// 12-byte arguments as later) and the resources, each XORed with a 4-byte key from its own
+/// start. RETURNCODE carries its code as a bare u32, and IF/ELSE/LOOP jump to byte offsets
+/// (0: none), which become instruction numbers; the offsets come back for the labels.
+pub fn script_263(b: &[u8], commands: &[Command]) -> Result<(Script, Vec<u32>), String> {
+    magic(b, b"YSTB")?;
+    let ver = version(b);
+    let mut r = Reader::new(b, 8);
+    let code_size = r.u32()? as usize;
+    let res_size = r.u32()? as usize;
+    let res_start = r.u32()? as usize;
+    let body = b.get(32..).unwrap_or_default();
+    let code = body.get(..code_size).ok_or("short code")?;
+    if code.len() < 6 {
+        return Ok((Script::default(), Vec::new()));
+    }
+    // the first line number fits in 16 bits, and the first argument's value starts at 0
+    let mut key = [code[4], code[5], 0, 0];
+    let k23 = if code[1] ^ code[5] != 0 { 14 } else { 10 };
+    if let Some(k) = code.get(k23..k23 + 2) {
+        key[2..].copy_from_slice(k);
+    }
+    let dec = |s: &[u8]| -> Vec<u8> { s.iter().enumerate().map(|(i, c)| c ^ key[i & 3]).collect() };
+    let code = dec(code);
+    let res = dec(b.get(res_start..res_start + res_size).ok_or("short resources")?);
+    let u32_at = |at: usize| code.get(at..at + 4).map(|v| u32::from_le_bytes(v.try_into().unwrap())).ok_or("short code");
+    let name = |op: u8| commands.get(op as usize).map_or("", |c| c.name.as_str());
+    let mut out = Vec::new();
+    let mut offsets = Vec::new();
+    let mut at = 0;
+    while at + 6 <= code.len() {
+        offsets.push(at as u32);
+        let (op, argc) = (code[at], code[at + 1] as usize);
+        let line = u32_at(at + 2)?;
+        at += 6;
+        let mut args = Vec::with_capacity(argc);
+        if name(op) == "RETURNCODE" {
+            at += 4 * argc;
+        } else {
+            for _ in 0..argc {
+                let a = code.get(at..at + 12).ok_or("short arguments")?;
+                at += 12;
+                let keyword = u16::from_le_bytes([a[0], a[1]]);
+                let ty = u16::from_le_bytes([a[2], a[3]]);
+                let size = u32::from_le_bytes(a[4..8].try_into().unwrap());
+                let off = u32::from_le_bytes(a[8..12].try_into().unwrap()) as usize;
+                let mut value = res.get(off..off + size as usize).map(<[u8]>::to_vec).unwrap_or_default();
+                remap_expr(ver, &mut value);
+                args.push(Arg { keyword, ty, value: casts_263(&value), jump: size });
+            }
+        }
+        out.push(Instr { op, args, line });
+    }
+    let index = |off: u32| offsets.partition_point(|&o| o < off) as u32;
+    for ins in &mut out {
+        if matches!(name(ins.op), "IF" | "ELSE" | "LOOP") {
+            for a in ins.args.iter_mut().skip(1) {
+                a.value.clear();
+                if a.jump != 0 {
+                    a.jump = index(a.jump);
+                }
+            }
+        }
+    }
+    Ok((Script { code: out }, offsets))
 }
