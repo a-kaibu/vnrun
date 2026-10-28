@@ -51,23 +51,28 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | 吉里吉里 (KiriKiri SDL2) | 135 | 109 | 25 |  |  |  | 1 |  |
 | YU-RIS (vnrun) | 29 | 28 |  |  |  |  | 1 |  |
 | NeXAS (vnrun) | 16 | 13 |  |  | 1 |  | 2 |  |
-| AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
+| AdvHD (vnrun) | 35 | 30 |  |  |  |  |  | 5 |
 | Tmr-Hiro (vnrun) | 22 | 22 |  |  |  |  |  |  |
-| LiveMaker (vnrun) | 5 | 4 |  |  |  |  |  | 1 |
-| CatSystem2 (vnrun) | 3 | 3 |  |  |  |  |  |  |
-| EntisGLS (vnrun) | 5 | 4 |  |  |  | 1 |  |  |
+| LiveMaker (vnrun) | 7 | 4 |  |  |  |  |  | 3 |
+| CatSystem2 (vnrun) | 8 | 3 |  |  |  |  |  | 5 |
+| EntisGLS (vnrun) | 9 | 4 |  |  |  | 1 |  | 4 |
 | AliceSoft System4 (xsystem4) | 2 | 2 |  |  |  |  |  |  |
-| QLIE (vnrun) | 3 | 2 |  |  |  | 1 |  |  |
-| Escude (vnrun) | 2 | 2 |  |  |  |  |  |  |
-| Majiro (vnrun) | 1 | 1 |  |  |  |  |  |  |
-| Kaguya (vnrun) | 6 | 6 |  |  |  |  |  |  |
-| Interheart (vnrun) | 11 | 10 |  |  |  | 1 |  |  |
-| Crowd/ANIM (vnrun) | 9 | 5 |  |  |  | 4 |  |  |
-| Yuka (vnrun) | 7 | 7 |  |  |  |  |  |  |
+| QLIE (vnrun) | 5 | 2 |  |  |  | 1 |  | 2 |
+| Escude (vnrun) | 8 | 2 |  |  |  |  |  | 6 |
+| Majiro (vnrun) | 4 | 1 |  |  |  |  |  | 3 |
+| Kaguya (vnrun) | 12 | 6 |  |  |  |  |  | 6 |
+| Interheart (vnrun) | 12 | 10 |  |  |  | 1 |  | 1 |
+| Crowd/ANIM (vnrun) | 10 | 5 |  |  |  | 4 |  | 1 |
+| Yuka (vnrun) | 8 | 7 |  |  |  |  |  | 1 |
 | System-NNN (vnrun) | 6 | 6 |  |  |  |  |  |  |
 | Bishop (vnrun) | 6 | 6 |  |  |  |  |  |  |
+<<<<<<< HEAD
 | Eushully AGE (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | Cyberworks (vnrun) | 8 | 4 |  |  |  |  |  | 4 |
+=======
+| Eushully AGE (vnrun) | 1 | 1 |  |  |  |  |  |  |
+| Cyberworks (vnrun) | 9 | 4 |  |  |  |  |  | 5 |
+>>>>>>> b03b45c (verify: targets for vnbox trials of engines vnrun already supports)
 | LiLiM (vnrun) | 7 | 7 |  |  |  |  |  |  |
 | Silky's (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | Ivory (vnrun) | 2 | 2 |  |  |  |  |  |  |
@@ -75,8 +80,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | AZ System (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | PJADV (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | Eomaia (vnrun) | 1 | 1 |  |  |  |  |  |  |
-| ShiinaRio (vnrun) | 3 | 1 |  |  |  |  |  | 2 |
-| NekoSDK / Waffle (vnrun) | 5 | 5 |  |  |  |  |  |  |
+| ShiinaRio (vnrun) | 7 | 1 |  |  |  |  |  | 6 |
+| NekoSDK / Waffle (vnrun) | 6 | 5 |  |  |  |  |  | 1 |
 | DxLib MED (vnrun) | 3 | 3 |  |  |  |  |  |  |
 | Liar-soft XFL (vnrun) | 2 | 2 |  |  |  |  |  |  |
 
@@ -466,6 +471,11 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2019_guilty_harame | [孕女～精子を欲しがる淫らな教え子～ 体験版](http://suezou.dyndns.org/dl2019/guilty/harame/harame_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
 | s2022_ensemble_sweet_otoshita | [乙女とふれあう、ひとつ屋根の下 TRIAL EDITION](http://suezou.dyndns.org/dl2022/ensemble-sweet/otoshita/otoshita_trial.zip) | 本編 | b076f1f で START から本編テキストまで |
 | s2026_ensemble_sweet_ribichu | [リビドーアバンちゅ～る TRIAL EDITION](http://suezou.dyndns.org/dl2026/ensemble-sweet/ribichu/ribichu_trial.exe) | 本編 | b076f1f で START から本編テキストまで |
+| b2011_pulltop | [shinsei_digest_trial.exe](http://suezou.dyndns.org/dl2011/pulltop/shinse/shinsei_digest_trial.exe) | 未確認 |  |
+| s2006_pulltop_haruka | [遥かに仰ぎ、麗しの - 体験版](http://suezou.dyndns.org/dl2006/pulltop/haruka/Haruka_Trial.exe) | 未確認 |  |
+| s2009_pulltop_bellstars | [しろくまベルスターズ♪－体験版](http://suezou.dyndns.org/dl2009/pulltop/bellstars/Bellstars_Trial.exe) | 未確認 |  |
+| s2010_pulltop_lovekami | [恋神　-ラブカミ-（Web用体験版）](http://suezou.dyndns.org/dl2010/pulltop/lovekami/lovekami_webtrial.exe) | 未確認 |  |
+| s2012_pulltop_latte_kanojo | [彼女と俺と恋人と。―体験版](http://suezou.dyndns.org/dl2012/pulltop-latte/kanojo/tototo_trial.zip) | 未確認 |  |
 
 ### Tmr-Hiro (vnrun)
 
@@ -503,6 +513,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | dl_RJ284038 | [彼女と俺と留学生 体験版](https://trial.dlsite.com/doujin/RJ285000/RJ284038_trial.zip) | 本編 | タイトル (背景つき、文字だけのメニューは体験版本来のもの)→はじめから→本編の文章まで (livemaker-run)。Chromium (3f99c53) で Enter のクラッシュ解消を確認 |
 | dl_RJ341209 | [スタイホリック 体験版](https://trial.dlsite.com/doujin/RJ342000/RJ341209_trial.zip) | 本編 | タイトル→Start→名前入力 (打ち替えも可)→本編の文章まで、セーブ画面も開く (livemaker-run)。.lcm の演出 (ロゴ・タイトル前のアニメ) も再生。Chromium (3f99c53) で Enter のクラッシュ解消を確認 |
 | b2006_pulltop | [PRINCESS WALTZ WEB体験版2](http://suezou.dyndns.org/dl2006/pulltop/princesswaltz/PrincessWaltz_WebTrial2.exe) | 未確認 |  |
+| dl_RJ01720600 | [ダーク・デザイア ～隷属おっぱい揉みゲーム～](https://trial.dlsite.com/doujin/RJ01721000/RJ01720600_trial.zip) | 未確認 |  |
+| s2019_alumi_soft_inuyome2 | [わんこの嫁入り ～新たな二本のしっぽ～ 体験版 version 1.00](http://suezou.dyndns.org/dl2019/alumi-soft/inuyome2/inuyome2-trial.zip) | 未確認 |  |
 
 ### CatSystem2 (vnrun)
 
@@ -511,6 +523,11 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2014_azarashi_soft | [アマカノ 体験版 甘えてくれる恋人とのエッチなひととき編](http://suezou.dyndns.org/dl2014/azarashi-soft/amakano/amakano_trialH.zip) | 本編 | 360b26c (CatSystem2) でタイトル→はじめから→本編の文章とマップ画面まで (Chromium) |
 | b2014_windmill_oasis | [春風センセーション！体験版](http://suezou.dyndns.org/dl2014/windmill-oasis/harukaze/harukaze_trial.exe) | 本編 | 360b26c (CatSystem2) で注意書き→タイトル→START→本編の文章・名前まで (Chromium) |
 | b2017_laplacian | [ニュートンと林檎の樹 体験版＋](http://suezou.dyndns.org/dl2017/laplacian/newrin/newrin-trial-plus.zip) | 本編 | 360b26c (CatSystem2) でタイトル→はじめから→体験版メニュー (体験版本編 / えっちしーん) まで (Chromium、完全なダウンロードで確認) |
+| r1_cs2_hatsumira | [果つることなき未来ヨリ 体験版](http://suezou.dyndns.org/dl2015/frontwing/hatsumira/Hatsumira_Trial_web.zip) | 未確認 |  |
+| s2008_clochette_suzunone7 | [スズノネセブン！体験版](http://suezou.dyndns.org/dl2008/clochette/suzunone7/suzunone7_trial.zip) | 未確認 |  |
+| s2011_clochette_kamikaze | [カミカゼ☆エクスプローラー！WEB体験版](http://suezou.dyndns.org/dl2011/clochette/kamikaze/kamikaze_trial_WEB.zip) | 未確認 |  |
+| s2014_clochette_sakigake | [サキガケ⇒ジェネレーション！ WEB体験版](http://suezou.dyndns.org/dl2014/clochette/sakigake/sakigake_web_trial.zip) | 未確認 |  |
+| s2015_clochette_kokonatsu | [ここから夏のイノセンス！ WEB体験版](http://suezou.dyndns.org/dl2015/clochette/kokonatsu/kokonatsu_web_trial.zip) | 未確認 |  |
 
 ### EntisGLS (vnrun)
 
@@ -521,6 +538,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2009_marmalade | [キスと魔王と紅茶 体験版](http://suezou.dyndns.org/dl2009/marmalade/kissmao/kissmao_tr.zip) | 本編 | タイトル→はじめから→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認 |
 | b2010_undermoon | [痴覚過敏 体験版](http://suezou.dyndns.org/dl2010/undermoon/tikaku/chikakukabin_trial.zip) | 本編 | ロゴ→タイトル→START→本編の文章 (entis-run とブラウザ)。検証スレッドでは cbb2054 の Chromium でタイトルまで確認 |
 | b2024_syrup_mm | [狙われた優等生 身代わりの代償 体験版](http://suezou.dyndns.org/dl2024/syrup-mm/yutosei/yutosei_taikenban.zip) | NG | .csx が無い新しい世代 (システムは exe 内、台本は xscript の .srcxml) |
+| s2017_marmalade_mashimaro | [mashimaro_trial.zip](http://suezou.dyndns.org/dl2017/marmalade/mashimaro/mashimaro_trial.zip) | 未確認 |  |
+| s2022_marmalade_studysteady2 | [スタディ§ステディ２体験版](http://suezou.dyndns.org/dl2022/marmalade/studysteady2/stst2_trial.zip) | 未確認 |  |
+| s2025_marmalade_bakaple | [バカップル・サプリメント体験版](http://suezou.dyndns.org/dl2025/marmalade/bakaple/bakaple-trial.rar) | 未確認 |  |
+| s2025_syrup_mm_angel_tear_fhd | [狙われた女神天使エンゼルティアーFHD版（体験版）](http://suezou.dyndns.org/dl2025/syrup-mm/angel-tear_fhd/angeltearfhd_trial.zip) | 未確認 |  |
 
 ### AliceSoft System4 (xsystem4)
 
@@ -536,6 +557,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2007_clochette | [かみぱに！体験版](http://suezou.dyndns.org/dl2007/clochette/kamipani/kamipani_trial.zip) | 本編 | QLIE (vnrun) でロゴ→タイトル→Start→本編の文章・名前・背景・立ち絵まで。セーブ→タイトルからロード、バックログも (Chromium)。検証スレッドでもタイトル画面まで確認 |
 | b2020_barista_lab | [アナベル・メイドガーデン体験版](http://suezou.dyndns.org/dl2020/barista-lab/annabel/annabel_trial.zip) | 本編 | QLIE (vnrun) で注意書き→タイトル→はじめから→本編の文章・名前・背景・立ち絵まで (ImoScripter の ^ 命令)。セーブ→タイトルの「つづきから」でロードも (Chromium)。検証スレッドでもタイトル画面まで確認 |
 | b2009_purplesoftware | [シグナルハート 体験版 Ver.01](http://suezou.dyndns.org/dl2009/purplesoftware/signalheart/SignalHeart_Trial01.exe) | NG | QLIE (vnrun) では FilePackVer3.0 + DLL/key.fkey の暗号が解けず「startup.s: no @@TOP」(GARbro の 3.0 鍵ファイル方式・アイコン鍵を試しても 1PC にならない) |
+| r1_qlie | [天翼のアスクレイン 体験版](https://www.route2.co.jp/Triangle/Products/Asklein/download/Asklein_trial.zip) | 未確認 |  |
+| s2026_lump_of_sugar_tayutama_zero | [tayutamazero_trial.zip](http://suezou.dyndns.org/dl2026/lump-of-sugar/tayutama_zero/tayutamazero_trial.zip) | 未確認 |  |
 
 ### Escude (vnrun)
 
@@ -543,12 +566,21 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|
 | b2008_escude | [ヴェルディア幻奏曲体験版](http://suezou.dyndns.org/dl2008/escude/verdia/verdia_trial.zip) | 本編 | Escu:de (ACPX の C を自前 VM で実行) でタイトル→NEW GAME→本編の背景・文章まで (escude-run と Chromium)。セーブ (スロットの日時・サムネイル)→タイトルからロードで本編に戻る (escude-run) |
 | b2014_escude | [Re;Lord ～ヘルフォルトの魔女とぬいぐるみ～ 体験版](http://suezou.dyndns.org/dl2014/escude/relord/ReLord_Trial.zip) | 本編 | Escu:de でロゴ→タイトル→はじめから→プロローグの文章まで (Chromium)、CG と文章ウィンドウの場面まで (escude-run)。セーブ→タイトルからロードでプロローグに戻る (Chromium と escude-run) |
+| dl_VJ01002637 | [悠刻のファムファタル](https://trial.dlsite.com/professional/VJ01003000/VJ01002637_trial.zip) | 未確認 |  |
+| dl_VJ01006026 | [姫と艶欲のインペリウム](https://trial.dlsite.com/professional/VJ01007000/VJ01006026_trial.zip) | 未確認 |  |
+| s2009_escude_prister | [乙女恋心プリスター体験版](http://suezou.dyndns.org/dl2009/escude/prister/prister_trial.zip) | 未確認 |  |
+| s2012_escude_gurenka | [紅蓮華 - 体験版](http://suezou.dyndns.org/dl2012/escude/gurenka/gurenka_trial_net.zip) | 未確認 |  |
+| s2014_escude_hanaou | [花嫁と魔王 - 体験版 Ver.](http://suezou.dyndns.org/dl2014/escude/hanaou/28hanaou_trial.zip) | 未確認 |  |
+| s2025_escude_haison2 | [廃村少女［弐］　～陰り誘う秘姫の匣～　体験版](http://suezou.dyndns.org/dl2025/escude/haison2/haison2_trial.zip) | 未確認 |  |
 
 ### Majiro (vnrun)
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2015_empress | [Closed GAME 体験版](http://suezou.dyndns.org/dl2015/empress/closed_game/ClosedGameTrial.zip) | 本編 | 検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。Majiro (vnrun) でロゴ→タイトル→New Game→本編の背景・立ち絵・名前・文章まで (majiro-run と Chromium)。QSAVE→QLOAD で保存した文章と場面に戻る (majiro-run と Chromium) |
+| b2011_empress | [Starless 体験版](http://suezou.dyndns.org/dl2011/empress/starless/starless_trial2_web.zip) | 未確認 |  |
+| r1_majiro | [あいれぼ 体験版](http://suezou.dyndns.org/dl2008/siesta/irevo/irevotrial.zip) | 未確認 |  |
+| s2012_empress_lewdness | [LEWDNESS ～Vita sexualis～](http://suezou.dyndns.org/dl2012/empress/lewdness/Lewdness_trial.zip) | 未確認 |  |
 
 ### Kaguya (vnrun)
 
@@ -560,6 +592,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2013_kaguya | [肉牝R30 ～肉欲に堕ちた牝たち～ 体験版](http://suezou.dyndns.org/dl2013/kaguya/r30/nikumesu_R30_trial.zip) | 本編 | 検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。Kaguya (vnrun) の 2013 年世代 (GAME_SYS.exe + ARC/) でロゴ→タイトル→初めから→導入→本編の背景・立ち絵・名前・文章・音声、場面選択の 6 項目 (5 人の場面と製品告知) まで (kaguya-run と Chromium)。場面の後のマップ (op 54 1 0) は未実装で選択に戻る |
 | b2015_kaguya | [ハラミタマ 体験版](http://suezou.dyndns.org/dl2015/kaguya/haramitama/haramitama_trial.zip) | 本編 | 検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。Kaguya (vnrun) の LINK 世代 (Start.exe + params.dat + message.dat) でタイトル→はじめから→プロローグ (A0000..A0070) の背景・立ち絵・名前・文章・音声→共通→マップ (文字の選択肢で代用)→各ルート①→体験版の終わりまで通る (kaguya-run と Chromium)。セーブ→タイトルの「つづきから」でロードして同じ文章に戻る (kaguya-run と Chromium) |
 | b2018_kaguya | [LoveHolic ～魅惑の乙女と白濁カンケイ～ 体験版](http://suezou.dyndns.org/dl2018/kaguya/love_holic/LoveHolic_trial.zip) | 本編 | 検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。Kaguya (vnrun) の LINK 世代 (params v05.7) でタイトル→はじめから→オープニング (A0000..A0070) の背景・立ち絵・名前 (主人公名の置き換え)・文章・音声→共通→行き先 (文字の選択肢で代用)→紅音ルート→体験版の終わりまで通る (kaguya-run と Chromium) |
+| b2007_kaguya | [でるた！（体験版）](http://suezou.dyndns.org/dl2007/kaguya/delta/delta_trial.EXE) | 未確認 |  |
+| b2016_kaguya | [小悪魔発育チュ～！（体験版）](http://suezou.dyndns.org/dl2016/kaguya/koakuma/koakuma_trial.zip) | 未確認 |  |
+| s2006_kaguya_dungeon | [ダンジョンクルセイダーズ（プロローグ体験版）](http://suezou.dyndns.org/dl2006/kaguya/dungeon/dc_trial.EXE) | 未確認 |  |
+| s2006_kaguya_hitocos2 | [人妻コスプレ喫茶２(体験版)](http://suezou.dyndns.org/dl2006/kaguya/hitocos2/hitocos2_trial.EXE) | 未確認 |  |
+| s2007_kaguya_toriko | [虜ノ姫（体験版）](http://suezou.dyndns.org/dl2007/kaguya/toriko/toriko_trial.exe) | 未確認 |  |
+| s2008_kaguya_dc2 | [ダンジョンクルセイダーズ２（体験版）](http://suezou.dyndns.org/dl2008/kaguya/dc2/DC2_Trial.exe) | 未確認 |  |
 
 ### Interheart (vnrun)
 
@@ -576,6 +614,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2021_dessert_soft | [彼女は友達ですか？恋人ですか？それともトメフレですか？Second 体験版](http://suezou.dyndns.org/dl2021/dessert-soft/tomefure_second/TomefureS-trial.zip) | 本編 | 検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。Interheart でタイトル (exe のボタン表から titlechip の本物のボタン)→はじめから→スキップ確認の選択肢→本編の背景 (PNG)・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
 | b2026_dessert_soft | [どいなかガールズゆーとぴあ 体験版](http://suezou.dyndns.org/dl2026/dessert-soft/doinaka_girl/doinaka-trial.rar) | 本編 | 検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。Interheart でタイトル (exe のボタン表から titlechip の本物のボタン)→はじめから→本編の背景・立ち絵・イベント CG・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
 | b2006_interheart | [オイラは番台２ 体験版](http://suezou.dyndns.org/dl2006/interheart/bandai2/bandai2-trial.lzh) | NG | data.fpk 方式だが脚本が古い ACT_00.txt (SC_DATA 等の銭湯経営シミュレーション) で、Interheart エンジンの ACT_<letter>.TXT 方言と違う |
+| b2008_interheart | [いたずら極―リアル―　体験版](http://suezou.dyndns.org/dl2008/interheart/itazura-real/ItazuraR-Trial.zip) | 未確認 |  |
 
 ### Crowd/ANIM (vnrun)
 
@@ -590,6 +629,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2019_anim | [いつまでも息子のままじゃいられない！５ - 体験版 -](http://suezou.dyndns.org/dl2019/anim/musumama5/musu_mama5_trial.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり、<game>_sce.dat が無い。保護を外すのはコピー保護の回避にあたるため試みない |
 | b2022_anim | [愛妻Ｘ交姦妊活スワッピング - 体験版 -](http://suezou.dyndns.org/dl2022/anim/aisaikoukan/aisaikoukan_trial.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり (cg/psbpack.dat と E-mote)、<game>_sce.dat が無い。保護を外すのはコピー保護の回避にあたるため試みない |
 | b2026_anim | [ママラブ！２～俺の彼女は俺のママ☆世話焼き巨乳凛桜ママ～ - 体験版 -](http://suezou.dyndns.org/dl2026/anim/mamalove2/ANIM_mamalove2_trial.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり (cg/psbpack.dat と E-mote)、<game>_sce.dat が無い。保護を外すのはコピー保護の回避にあたるため試みない |
+| b2025_anim | [お姉ちゃんのあまエロレッスン２ ～お隣の巨乳お姉ちゃんにイッパイ甘やかされるめちゃエロライフ～  - 体験版 -](http://suezou.dyndns.org/dl2025/anim/ane_amalesson2/ANIM_amaerolesson2_trialver.zip) | 未確認 |  |
 
 ### Yuka (vnrun)
 
@@ -602,6 +642,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2011_smee | [ラブラブル 体験版 vol.01](http://suezou.dyndns.org/dl2011/smee/loveable/loverable_trial_01.zip) | 本編 | Yuka (vnrun) でタイトル (SpriteCreate のパターンのボタン、MouseCase2)→名前入力 (既定の名前で「はい」)→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium) |
 | b2012_feng | [星空へ架かる橋ＡＡ 円佳スペシャルアフター体験版](http://suezou.dyndns.org/dl2012/feng/hoshikaka-aa/hoshiaamadotry.zip) | 本編 | Yuka (vnrun) で 1280x960 の注意書き→タイトル→はじめから→本編の背景・立ち絵・文章・名前 (@gf の名前画像) まで (yuka-run と Chromium)。セーブ→タイトルのつづきから (自前のロード画面) で本編に戻る (Chromium) |
 | b2013_hooksoft | [PriministAr 体験版](http://suezou.dyndns.org/dl2013/hooksoft/priministar/primini_trial.zip) | 本編 | Yuka (vnrun) で 1280x720 のタイトル→START GAME→体験版の説明→本編の背景・立ち絵・文章まで (yuka-run と Chromium) |
+| b2009_smee | [らぶでれーしょん！ Ver1.00](http://suezou.dyndns.org/dl2009/smee/love-delation/ld_trial_100.zip) | 未確認 |  |
 
 ### System-NNN (vnrun)
 
@@ -644,6 +685,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2013_tinkerbell | [ぜったいマジラブ！あまイチャはぷにんぐ！ 体験版](http://suezou.dyndns.org/dl2013/tinkerbell/amaicha/amaicha_taiken100.zip) | 未確認 |  |
 | b2014_wendybell | [こすぷれえっち 体験版](http://suezou.dyndns.org/dl2014/wendybell/cosplay/cosplay_taiken100.zip) | 未確認 |  |
 | b2021_tinkerbell | [淫妖蟲穢 体験版](http://suezou.dyndns.org/dl2021/tinkerbell/inyou_wai/inyou_wai_taiken100.zip) | 未確認 |  |
+| s2017_wendybell_oreyome | [俺嫁！？　体験版Ver.2](http://suezou.dyndns.org/dl2017/wendybell/oreyome/oreyome_taiken200.zip) | 未確認 |  |
 
 ### LiLiM (vnrun)
 
@@ -703,6 +745,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2011_guilty | [種憑け村 序章体験版](http://suezou.dyndns.org/dl2011/guilty/tanetsukemura/tanetsukemura_taiken.zip) | 本編 | ShiinaRio (vnrun) でタイトル (SYSTITLE.S25 の絵とボタン)→はじめから→A001..A017 の背景・立ち絵・名前・文章・音声を最後まで通り、体験版の終わりでタイトルに戻る (shiina-run)。Chromium でタイトル→本編、右クリックのメニューからセーブ→タイトルのつづきからロードで本編に戻る |
 | b2017_onomatope_raspberry | [ビッチ姉妹が清純なはずがないっ！！ 体験版](http://suezou.dyndns.org/dl2017/onomatope-raspberry/bitch_sister/bitchsister_trial_101.zip) | 未確認 |  |
 | b2017_onomatope_raspberry_gakuen | [ビッチ学園が清純なはずがないっ！！？ 体験版](http://suezou.dyndns.org/dl2017/onomatope-raspberry/bitch_gakuen/bitchigakuen_trial.zip) | 未確認 |  |
+| s2008_alcot_engagekinks | [エンゲージリンクス　体験版](http://suezou.dyndns.org/dl2008/alcot/engagekinks/el_trial.exe) | 未確認 |  |
+| s2008_guilty_wana2 | [輪罠Ⅱ 体験版](http://suezou.dyndns.org/dl2008/guilty/wana2/wana2trial.exe) | 未確認 |  |
+| s2009_ensemble_hanaotome | [花と乙女に祝福を　体験版](http://suezou.dyndns.org/dl2009/ensemble/hanaotome/HANAOTO_TRIAL.EXE) | 未確認 |  |
+| s2022_onomatope_raspberry_yorozuya | [勇者を引退してよろず屋をオープンしたけど、なぜかアダルトグッズに人気が集中している件。体験版](http://suezou.dyndns.org/dl2022/onomatope-raspberry/yorozuya/yorozuya_trial.zip) | 未確認 |  |
 
 ### NekoSDK / Waffle (vnrun)
 
@@ -713,6 +759,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2014_waffle | [巨乳ファンタジー２if 体験版](http://suezou.dyndns.org/dl2014/waffle/kyonyu2if/kyonyu2if_taiken.exe) | 本編 | NekoSDK (vnrun) でタイトル (anime の背景・ロゴ)→はじめから→scr.pak の ep_* を名前順に本編の背景・立ち絵・顔窓・名前・文章 (neko-run 15000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
 | b2016_waffle | [巨乳ファンタジー外伝２after -オスタシアの野望- 体験版](http://suezou.dyndns.org/dl2016/waffle/kyonyu_if2/kyonyu_gaiden2after_taiken.exe) | 本編 | NekoSDK (vnrun) でタイトル (d007 の 10 列のボタン、d003 の絵、d005 のロゴ)→Start→flow00_000 の順に本編の背景・立ち絵・名前・文章 (neko-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
 | b2017_waffle | [隣人に壊されていく俺の妻 体験版](http://suezou.dyndns.org/dl2017/waffle/rinzin/rinjin_taiken.exe) | 本編 | NekoSDK (vnrun) で文字の序章→タイトル (obj の背景・ロゴ・ボタン)→はじめから→flow00_000 の順に本編の背景・立ち絵・CG (拡大・移動)・名前・文章 (neko-run 6000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
+| s2011_waffle_sex_friend | [都合のよいセックスフレンド？体験版](http://suezou.dyndns.org/dl2011/waffle/sex-friend/sex_friend_taiken.zip) | 未確認 |  |
 
 ### DxLib MED (vnrun)
 
