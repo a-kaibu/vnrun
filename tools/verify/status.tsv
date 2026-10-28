@@ -42,7 +42,7 @@ s2016_hooksoft_amenitys_life	本編	f81eded 以降も本編まで
 s2020_hooksoft_houkago	タイトル	c27e445 で直った
 s2010_lumpofsugar_prismrhythm	タイトル	28374cc (0009 更新) でタイトルまで。800x600 の画面が中央に小さく出る
 dl_VJ01004381	タイトル	ネイティブ (ethornell headless) で はじめから→本編の冒頭 (メッセージ枠) まで。初回は自動で環境設定が開く (戻るで閉じる)。1920x1080 でヘッドレスが遅く (4000 フレームで約 25 分)、セーブ/ロードは未確認
-s2022_hooksoft_houkago2	タイトル	f81eded (BackML 0x8E) でタイトルまで
+s2022_hooksoft_houkago2	本編	ethornell-rs 0013 (1.7x のグラデーション効果の種類 2〜5) でセーブ画面が開くようになり、Start→最初から始める→本編→S キーでセーブ、タイトルの Load からロード確認 (ネイティブ。入力は 1280x720 の座標)
 s2011_lumpofsugar_gackoh	タイトル	28374cc (0009 更新) でタイトルまで
 s2023_quince_soft_little_proncess_go	タイトル	1c16d6c でもタイトルまで
 s2019_lump_of_sugar_wakabairono_quartet	タイトル	3b42c00 で解消

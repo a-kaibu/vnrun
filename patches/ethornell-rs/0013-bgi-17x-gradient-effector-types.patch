@@ -1,0 +1,66 @@
+diff --git a/crates/ethornell-app/src/native_background_effect.rs b/crates/ethornell-app/src/native_background_effect.rs
+index a35470e..d6db140 100644
+--- a/crates/ethornell-app/src/native_background_effect.rs
++++ b/crates/ethornell-app/src/native_background_effect.rs
+@@ -378,6 +378,25 @@ impl RuntimeTraceApi {
+     }
+ }
+ 
++/// The vertical twin of [`native_horizontal_blur`] (BGI 1.7x sub_414D60).
++pub(super) fn native_vertical_blur(source: &DecodedImage, alpha: i32, clamp: bool) -> DecodedImage {
++    let transpose = |image: &DecodedImage| {
++        let (w, h) = (image.width as usize, image.height as usize);
++        let mut out = image.clone();
++        out.width = image.height;
++        out.height = image.width;
++        for y in 0..h {
++            for x in 0..w {
++                let from = (y * w + x) * 4;
++                let to = (x * h + y) * 4;
++                out.rgba[to..to + 4].copy_from_slice(&image.rgba[from..from + 4]);
++            }
++        }
++        out
++    };
++    transpose(&native_horizontal_blur(&transpose(source), alpha, clamp))
++}
++
+ pub(super) fn native_horizontal_blur(source: &DecodedImage, alpha: i32, clamp: bool) -> DecodedImage {
+     let radius = (alpha as u32).min(255) as i32;
+     if radius == 0 {
+diff --git a/crates/ethornell-app/src/native_effector.rs b/crates/ethornell-app/src/native_effector.rs
+index f75616d..3d020bb 100644
+--- a/crates/ethornell-app/src/native_effector.rs
++++ b/crates/ethornell-app/src/native_effector.rs
+@@ -35,7 +35,10 @@ impl RuntimeTraceApi {
+             0x67 => [a[1], -1],
+             _ => [-1, -1],
+         };
+-        if id == 0x66 && a[1] as u32 > 1 {
++        // BGI 1.622 has types 0/1 (a horizontal blur, black or clamped edges); 1.7x
++        // (sub_425FF0 accepts up to 5, sub_414810 picks the blur) adds 2/3 vertical and
++        // 4/5 both ways, the low bit still choosing the edges.
++        if id == 0x66 && a[1] as u32 > 5 {
+             return Err(err(format!("指定されたグラデーションタイプ [ {} ] は無効です", a[1])));
+         }
+         if id == 0x68 && (a[4] == 0 || a[5] == 0) {
+@@ -247,7 +250,18 @@ impl RuntimeTraceApi {
+                 alpha,
+                 filter.unwrap_or(p[1]) != 0,
+             )?,
+-            1 => crate::native_background_effect::native_horizontal_blur(source, alpha, p[0] != 0),
++            1 => {
++                let clamp = p[0] & 1 != 0;
++                match p[0] / 2 {
++                    0 => crate::native_background_effect::native_horizontal_blur(source, alpha, clamp),
++                    1 => crate::native_background_effect::native_vertical_blur(source, alpha, clamp),
++                    _ => crate::native_background_effect::native_vertical_blur(
++                        &crate::native_background_effect::native_horizontal_blur(source, alpha, clamp),
++                        alpha,
++                        clamp,
++                    ),
++                }
++            }
+             2 => self.effects.warp_vector_map(
+                 state.vector_maps[0],
+                 source,
