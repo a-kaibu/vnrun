@@ -1,0 +1,29 @@
+--- a/base/XP3Archive.cpp
++++ b/base/XP3Archive.cpp
+@@ -820,13 +820,24 @@
+ 	if(scheme == SchemeAkabei)
+ 	{
+ 		bool found = false;
++		// vnrun: entries up to 1 MiB in order, then the smallest larger ones (up to 16 MiB),
++		// since an event CG archive may hold no protected entry under 1 MiB.
++		std::vector<tjs_uint> order, large;
++		for(tjs_uint i=0;i<ItemVector.size();++i)
++		{
++			const auto &item=ItemVector[i];
++			if(!item.Protected || item.OrgSize<16 || item.OrgSize>16*1024*1024) continue;
++			(item.OrgSize<=1024*1024 ? order : large).push_back(i);
++		}
++		std::stable_sort(large.begin(),large.end(),[&](tjs_uint a,tjs_uint b){ return ItemVector[a].OrgSize<ItemVector[b].OrgSize; });
++		order.insert(order.end(),large.begin(),large.end());
+ 		for(unsigned period : {32u,31u})
+ 		{
+ 			unsigned valid=0;
+-			for(tjs_uint i=0;i<ItemVector.size() && valid<2;++i)
++			for(tjs_uint i : order)
+ 			{
++				if(valid>=2) break;
+ 				const auto &item=ItemVector[i];
+-				if(!item.Protected || item.OrgSize<16 || item.OrgSize>1024*1024) continue;
+ 				std::vector<tjs_uint8> bytes((size_t)item.OrgSize);
+ 				if(!ReadEntry([&]{ return CreateStreamByIndex(i); }, bytes)) continue;
+ 				vnrun::AkabeiDecrypt(key,item.FileHash,0,bytes.data(),bytes.size(),period);
