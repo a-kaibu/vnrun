@@ -140,6 +140,27 @@ impl Game {
         self.e.wheel(up);
     }
 
+    /// A name entry's text box, if one is open: [x, y, w, h] on the frame (empty: none).
+    #[wasm_bindgen(js_name = textBoxRect)]
+    pub fn text_box_rect(&self) -> Vec<i32> {
+        self.e
+            .text_box_rect()
+            .map(|r| r.to_vec())
+            .unwrap_or_default()
+    }
+
+    /// The text box's text.
+    #[wasm_bindgen(js_name = textBoxText)]
+    pub fn text_box_text(&self) -> String {
+        self.e.text_box().unwrap_or("").to_string()
+    }
+
+    /// What the player has typed into the text box.
+    #[wasm_bindgen(js_name = setTextBox)]
+    pub fn set_text_box(&mut self, text: &str) {
+        self.e.set_text_box(text);
+    }
+
     /// The pictures to draw over black, bottom first, DRAW_FIELDS numbers each: picture,
     /// its width and height, the screen positions of its top left, top right, bottom left and
     /// bottom right corners (x y each), the part of the picture (x0 y0 x1 y1), opacity (0..1),

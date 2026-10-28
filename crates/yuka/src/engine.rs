@@ -169,7 +169,20 @@ pub struct Engine {
     pub log: bool,
     seed: u64,
     message: String,
+    /// the text box of a name entry (`TextBoxSet`), which the player types into
+    text_box: Option<TextBox>,
 }
+
+/// A text box: where it is, its text colour, and what has been typed.
+#[derive(Clone)]
+struct TextBox {
+    rect: [i32; 4],
+    rgb: [u8; 3],
+    text: String,
+}
+
+/// The most characters a text box takes.
+const TEXT_BOX_MAX: usize = 12;
 
 #[derive(Clone, Copy, PartialEq)]
 enum Menu {
@@ -240,6 +253,7 @@ impl Engine {
             log: false,
             seed: 12345,
             message: String::new(),
+            text_box: None,
         };
         if let Some(ini) = e.file("default.ini") {
             let t = nexas::sjis::decode(&ini);
@@ -913,6 +927,31 @@ impl Engine {
             "FlagReset" => {
                 self.vars.retain(|k, _| k.0.starts_with("Global"));
             }
+            "TextBoxSet" => {
+                // x, y, w, h, colour; it starts with the text of the window it covers
+                let rect = [n(0) as i32, n(1) as i32, n(2) as i32, n(3) as i32];
+                let c = n(4) as u32;
+                let text = self
+                    .windows
+                    .values()
+                    .find(|w| w.rect[0] == rect[0] && w.rect[1] == rect[1])
+                    .map(|w| w.lines.iter().map(|l| visible(l)).collect::<String>())
+                    .unwrap_or_default();
+                self.text_box = Some(TextBox {
+                    rect,
+                    rgb: [(c >> 16) as u8, (c >> 8) as u8, c as u8],
+                    text,
+                });
+            }
+            "TextBoxStringGet" => {
+                ret = Value::Str(
+                    self.text_box
+                        .as_ref()
+                        .map(|b| b.text.clone())
+                        .unwrap_or_default(),
+                );
+            }
+            "TextBoxDelete" => self.text_box = None,
             _ => {}
         }
         Ok(ret)
@@ -992,14 +1031,32 @@ impl Engine {
         if w.lines.is_empty() {
             w.lines.push(String::new());
         }
-        for c in plain(text).chars() {
-            let last = w.lines.last_mut().unwrap();
-            if last.chars().count() >= width && !"、。」』）！？…".contains(c) {
-                w.lines.push(String::new());
+        for piece in pieces(text) {
+            match piece {
+                Piece::Char(c) => {
+                    let last = w.lines.last_mut().unwrap();
+                    if visible(last).chars().count() >= width && !"、。」』）！？…".contains(c)
+                    {
+                        w.lines.push(String::new());
+                    }
+                    w.lines.last_mut().unwrap().push(c);
+                }
+                // kept in the line after its base, drawn above it (see `ruby_of`)
+                Piece::Ruby(n, reading) => w
+                    .lines
+                    .last_mut()
+                    .unwrap()
+                    .push_str(&format!("{RUBY_OPEN}{n},{reading}{RUBY_CLOSE}")),
             }
-            w.lines.last_mut().unwrap().push(c);
         }
-        self.message = text.chars().take(40).collect();
+        self.message = pieces(text)
+            .into_iter()
+            .filter_map(|p| match p {
+                Piece::Char(c) => Some(c),
+                Piece::Ruby(..) => None,
+            })
+            .take(40)
+            .collect();
     }
 
     // ---- pictures ----
@@ -1114,10 +1171,29 @@ impl Engine {
                 .map(|w| (w.lines.clone(), w.rect, w.size, w.rgb))
             {
                 let mut ty = y + rect[1] as f32;
+                let lx = x + rect[0] as f32 - 2.0;
                 for l in lines {
-                    if !l.is_empty() {
-                        let t = self.text(&l, rgb, size);
-                        out.push(draw(&t, x + rect[0] as f32 - 2.0, ty - 2.0, 1.0));
+                    let (shown, rubies) = ruby_of(&l);
+                    if !shown.is_empty() {
+                        let t = self.text(&shown, rgb, size);
+                        out.push(draw(&t, lx, ty - 2.0, 1.0));
+                    }
+                    // ruby: half size, centred over its base, in the gap above the line
+                    let rsize = (size / 2).max(9);
+                    for (start, n, reading) in rubies {
+                        let chars: Vec<char> = shown.chars().collect();
+                        let end = (start + n).min(chars.len());
+                        let before: String = chars[..start.min(end)].iter().collect();
+                        let upto: String = chars[..end].iter().collect();
+                        let x0 = if before.is_empty() {
+                            2.0
+                        } else {
+                            self.text(&before, rgb, size).w as f32 - 2.0
+                        };
+                        let x1 = self.text(&upto, rgb, size).w as f32 - 2.0;
+                        let r = self.text(&reading, rgb, rsize);
+                        let rx = lx + (x0 + x1 - r.w as f32) / 2.0;
+                        out.push(draw(&r, rx, ty - r.h as f32 + 3.0, 1.0));
                     }
                     ty += size as f32 * 1.35;
                 }
@@ -1169,6 +1245,13 @@ impl Engine {
         }
         if matches!(self.wait, Wait::Cases(..)) && self.frozen.is_none() {
             self.case_draws(&mut out);
+        }
+        if let Some(b) = self.text_box.clone() {
+            let size = (b.rect[3] * 3 / 4).clamp(12, 64);
+            let caret = if (self.now / 500).is_multiple_of(2) { "｜" } else { "" };
+            let t = self.text(&format!("{}{caret}", b.text), b.rgb, size);
+            let y = b.rect[1] as f32 + (b.rect[3] - size) as f32 / 2.0 - 2.0;
+            out.push(draw(&t, b.rect[0] as f32 + 4.0, y, 1.0));
         }
         out
     }
@@ -1312,6 +1395,31 @@ impl Engine {
 
     pub fn wheel(&mut self, _up: bool) {}
 
+    /// Whether a name entry's text box is open, and its text.
+    pub fn text_box(&self) -> Option<&str> {
+        self.text_box.as_ref().map(|b| b.text.as_str())
+    }
+
+    /// Where the text box is: x, y, w, h.
+    pub fn text_box_rect(&self) -> Option<[i32; 4]> {
+        self.text_box.as_ref().map(|b| b.rect)
+    }
+
+    /// What the player typed into the text box (all of it, as it now reads); characters the
+    /// game's font cannot show are dropped.
+    pub fn set_text_box(&mut self, text: &str) {
+        if let Some(b) = &mut self.text_box {
+            b.text = text
+                .chars()
+                // (Shift-JIS writes what it cannot hold as "&#n;")
+                .filter(|&c| {
+                    !c.is_control() && (c == '&' || nexas::sjis::encode(&c.to_string())[0] != b'&')
+                })
+                .take(TEXT_BOX_MAX)
+                .collect();
+        }
+    }
+
     pub fn ended(&self) -> bool {
         self.ended
     }
@@ -1436,6 +1544,7 @@ impl Engine {
     }
 
     fn back_to_title(&mut self) {
+        self.text_box = None;
         self.stack.clear();
         self.layers.clear();
         self.frozen = None;
@@ -1717,7 +1826,82 @@ fn scan(s: &Script) -> Blocks {
     (out, closes)
 }
 
+/// Where a ruby sits in a window line: after its base, between these two characters.
+const RUBY_OPEN: char = '\u{e000}';
+const RUBY_CLOSE: char = '\u{e001}';
+
+enum Piece {
+    Char(char),
+    /// `@r(n,reading)`: the reading of the n characters before
+    Ruby(usize, String),
+}
+
+/// A text's characters and rubies; other inline commands are dropped.
+fn pieces(text: &str) -> Vec<Piece> {
+    let mut out = Vec::new();
+    let mut rest = text;
+    while let Some(i) = rest.find('@') {
+        out.extend(rest[..i].chars().map(Piece::Char));
+        let tail = &rest[i + 1..];
+        let name = tail
+            .find(|c: char| !c.is_ascii_alphabetic())
+            .unwrap_or(tail.len());
+        match (tail[name..].starts_with('('), tail[name..].find(')')) {
+            (true, Some(e)) if name > 0 => {
+                let args = &tail[name + 1..name + e];
+                if tail[..name].eq_ignore_ascii_case("r")
+                    && let Some((n, reading)) = args.split_once(',')
+                    && let Ok(n) = n.trim().parse::<usize>()
+                    && !reading.trim().is_empty()
+                {
+                    // a leading full-width space moves the reading over: kept
+                    out.push(Piece::Ruby(n, reading.trim_matches(' ').to_string()));
+                }
+                rest = &tail[name + e + 1..];
+            }
+            _ => {
+                out.push(Piece::Char('@'));
+                rest = tail;
+            }
+        }
+    }
+    out.extend(rest.chars().map(Piece::Char));
+    out
+}
+
+/// A window line without its rubies.
+fn visible(line: &str) -> String {
+    ruby_of(line).0
+}
+
+/// A window line's text, and its rubies as (first character, count, reading).
+fn ruby_of(line: &str) -> (String, Vec<(usize, usize, String)>) {
+    let mut shown = String::new();
+    let mut count = 0;
+    let mut rubies = Vec::new();
+    let mut rest = line;
+    while let Some(i) = rest.find(RUBY_OPEN) {
+        shown.push_str(&rest[..i]);
+        count += rest[..i].chars().count();
+        let tail = &rest[i + RUBY_OPEN.len_utf8()..];
+        let Some(e) = tail.find(RUBY_CLOSE) else {
+            rest = tail;
+            continue;
+        };
+        if let Some((n, reading)) = tail[..e].split_once(',')
+            && let Ok(n) = n.parse::<usize>()
+        {
+            let n = n.min(count);
+            rubies.push((count - n, n, reading.to_string()));
+        }
+        rest = &tail[e + RUBY_CLOSE.len_utf8()..];
+    }
+    shown.push_str(rest);
+    (shown, rubies)
+}
+
 /// Text without its inline commands (`@r(5,reading)` ruby and the like).
+#[cfg(test)]
 fn plain(text: &str) -> String {
     let mut out = String::new();
     let mut rest = text;
@@ -1949,6 +2133,21 @@ mod tests {
             "五光館学園、か"
         );
         assert_eq!(plain("a@b"), "a@b");
+        let line: String = pieces("五光館学園@r(5,ごこうかんがくえん)、か")
+            .into_iter()
+            .map(|p| match p {
+                Piece::Char(c) => c.to_string(),
+                Piece::Ruby(n, r) => format!("{RUBY_OPEN}{n},{r}{RUBY_CLOSE}"),
+            })
+            .collect();
+        assert_eq!(
+            ruby_of(&line),
+            (
+                "五光館学園、か".to_string(),
+                vec![(0, 5, "ごこうかんがくえん".to_string())]
+            )
+        );
+        assert_eq!(visible(&line), "五光館学園、か");
     }
 
     #[test]

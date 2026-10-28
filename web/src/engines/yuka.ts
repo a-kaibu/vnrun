@@ -16,6 +16,10 @@ interface Game {
   cancel(): void;
   wheel(up: boolean): void;
   point(x: number, y: number): void;
+  /** a name entry's text box: [x, y, w, h] on the frame, empty when none is open */
+  textBoxRect(): Int32Array;
+  textBoxText(): string;
+  setTextBox(text: string): void;
   draws(): Float32Array;
   texture(id: number): Uint8Array;
   sounds(): Sound[];
@@ -128,6 +132,54 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
     event.preventDefault();
     game.click(-1, -1);
   });
+  // A name entry's text box: the engine draws it; typing (with an IME) goes into an input
+  // laid unseen over it, whose text the engine takes on each change.
+  const box = document.createElement("input");
+  box.type = "text";
+  box.maxLength = 12;
+  box.setAttribute("aria-label", "名前");
+  Object.assign(box.style, {
+    position: "fixed",
+    opacity: "0",
+    border: "0",
+    padding: "0",
+    background: "transparent",
+  });
+  box.addEventListener("input", () => game.setTextBox(box.value));
+  box.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" || event.isComposing) return;
+    event.preventDefault();
+    canvas.focus();
+    game.click(-1, -1);
+  });
+  const placeBox = () => {
+    const r = game.textBoxRect();
+    if (r.length < 4) {
+      if (box.isConnected) {
+        box.remove();
+        canvas.focus();
+      }
+      return;
+    }
+    const bounds = canvas.getBoundingClientRect();
+    const k = Math.min(bounds.width / game.width(), bounds.height / game.height());
+    const left = bounds.left + (bounds.width - game.width() * k) / 2;
+    const top = bounds.top + (bounds.height - game.height() * k) / 2;
+    Object.assign(box.style, {
+      left: `${left + r[0] * k}px`,
+      top: `${top + r[1] * k}px`,
+      width: `${r[2] * k}px`,
+      height: `${r[3] * k}px`,
+      fontSize: `${Math.max(12, r[3] * k * 0.6)}px`,
+    });
+    if (!box.isConnected) {
+      box.value = game.textBoxText();
+      document.body.append(box);
+      box.focus();
+      // what was there is selected, so typing replaces it
+      box.select();
+    }
+  };
   ui.hide();
   canvas.focus();
 
@@ -150,7 +202,10 @@ export async function start({ fs, ui, fonts }: EngineContext): Promise<void> {
         void ui.exit();
         return;
       }
-      if (ran) presenter.showTexture(compositor.render(game));
+      if (ran) {
+        placeBox();
+        presenter.showTexture(compositor.render(game));
+      }
     } catch (error) {
       window.dispatchEvent(new ErrorEvent("error", { error }));
       return;

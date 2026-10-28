@@ -11,7 +11,8 @@ use std::path::Path;
 
 use nexas::files::Disk;
 
-type Pointer = (i32, i32, char);
+/// a click (x, y, kind) and what a "t" mark types
+type Pointer = (i32, i32, char, String);
 
 fn main() -> Result<(), String> {
     let args: Vec<String> = std::env::args().collect();
@@ -27,7 +28,13 @@ fn main() -> Result<(), String> {
         let n = |s: &str| s.parse::<i64>().map_err(|_| format!("{m}: not a number"));
         let click = if v.len() >= 3 {
             let kind = v.get(3).and_then(|k| k.chars().next()).unwrap_or('c');
-            Some((n(v[1])? as i32, n(v[2])? as i32, kind))
+            // "t<text>": type that into the text box
+            let typed = v
+                .get(3)
+                .and_then(|k| k.strip_prefix('t'))
+                .unwrap_or("")
+                .to_string();
+            Some((n(v[1])? as i32, n(v[2])? as i32, kind, typed))
         } else {
             None
         };
@@ -51,11 +58,12 @@ fn main() -> Result<(), String> {
             eprintln!("-- frame {f}");
         }
         for (_, click) in marks.iter().filter(|m| m.0 == f) {
-            if let Some((x, y, kind)) = click {
+            if let Some((x, y, kind, typed)) = click {
                 e.point(*x, *y);
                 match kind {
                     'r' => e.cancel(),
                     'm' => {}
+                    't' => e.set_text_box(typed),
                     _ => e.click(*x, *y),
                 }
             }

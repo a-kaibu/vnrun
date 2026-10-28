@@ -416,8 +416,8 @@ b2014_silkys_plus	本編	Silky's (vnrun) でロゴ・注意書き→タイトル
 b2007_feng	本編	Yuka (vnrun) でタイトル→はじめから→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium)。セーブ→ロードで本編に戻る (Chromium)
 b2008_hook	本編	Yuka (vnrun) で .dat (YKC001) からタイトル→本編の背景・立ち絵・文章まで (yuka-run と Chromium)。セーブ→タイトルからロード・メニューからロードで本編に戻る (Chromium)
 b2008_smee	本編	Yuka (vnrun) でタイトル→本編の背景・文章まで (yuka-run と Chromium)
-b2011_hook	本編	Yuka (vnrun) で自己展開 exe (zip) の DATA01..03.ykc から 1024x576 のタイトル→はじめから→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium)。ルビ (@r) は本文だけ表示
-b2011_smee	本編	Yuka (vnrun) でタイトル (SpriteCreate のパターンのボタン、MouseCase2)→名前入力 (既定の名前で「はい」)→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium)
+b2011_hook	本編	Yuka (vnrun) で自己展開 exe (zip) の DATA01..03.ykc から 1024x576 のタイトル→はじめから→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium)。ルビ (@r) を本文の上に表示 (yuka-run と Chromium)
+b2011_smee	本編	Yuka (vnrun) でタイトル (SpriteCreate のパターンのボタン、MouseCase2)→名前入力 (姓の欄を押して打ち込み、Chromium では IME の入力欄から)→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium)
 b2012_feng	本編	Yuka (vnrun) で 1280x960 の注意書き→タイトル→はじめから→本編の背景・立ち絵・文章・名前 (@gf の名前画像) まで (yuka-run と Chromium)。セーブ→タイトルのつづきから (自前のロード画面) で本編に戻る (Chromium)
 b2013_hooksoft	本編	Yuka (vnrun) で 1280x720 のタイトル→START GAME→体験版の説明→本編の背景・立ち絵・文章まで (yuka-run と Chromium)
 b2016_evoll	本編	Ivory (vnrun) で注意書き・ロゴ→タイトル (TITLE_BASE_TRIAL とボタン)→START→A01..A12_H の背景・立ち絵・イベント CG・名前・文章・選択肢 (A05_H) を進み、trial_finish の紹介→タイトルに戻る (ivory-run、31000 フレーム)。Chromium でタイトル→本編、SAVE ボタンからセーブ→LOAD でロードして保存したメッセージに戻る
