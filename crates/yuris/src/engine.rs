@@ -50,6 +50,8 @@ pub struct World {
     start: [i64; 8],
     /// commands to print with their arguments, for debugging
     pub log: Vec<String>,
+    /// 222: `ID=a NO=n` names the layer or sound `a#n`
+    numbered: bool,
 }
 
 pub struct Engine {
@@ -66,6 +68,7 @@ impl Engine {
         let prog = Program::load(&mut read)?;
         let (w, h) = (prog.config.width.max(1), prog.config.height.max(1));
         let title = prog.config.title.clone();
+        let numbered = prog.old;
         let vm = Vm::new(prog)?;
         let world = World {
             layers: Layers::new(w, h),
@@ -79,6 +82,7 @@ impl Engine {
             title,
             start: [0; 8],
             log: Vec::new(),
+            numbered,
         };
         Ok(Engine { vm, world, input: Input::new() })
     }
@@ -739,8 +743,60 @@ fn read_save(b: &[u8]) -> HashMap<u32, Vec<u8>> {
     out
 }
 
+/// 222 names a layer or sound by two keywords, ID and NO (ID2 and NO2, MID and MNO, TID and
+/// TNO): the name with `#n` after it when n is not 0, as a string expression.
+fn numbered_names(st: &State, c: &Call) -> Result<Vec<(usize, Vec<u8>)>, String> {
+    let mut out = Vec::new();
+    for (i, (k, _, e)) in c.args.iter().enumerate() {
+        let no = match k.to_ascii_uppercase().as_str() {
+            "ID" => "NO",
+            "ID2" => "NO2",
+            "MID" => "MNO",
+            "TID" => "TNO",
+            _ => continue,
+        };
+        let n = int(st, c, no)?.unwrap_or(0);
+        if n == 0 {
+            continue;
+        }
+        let mut name = st.eval(e)?.bytes();
+        name.extend(format!("#{n}").bytes());
+        let mut q = vec![b'"'];
+        q.extend(name);
+        q.push(b'"');
+        let mut x = vec![b'M'];
+        x.extend((q.len() as u16).to_le_bytes());
+        x.extend(q);
+        out.push((i, x));
+    }
+    Ok(out)
+}
+
 impl Host for World {
     fn command(&mut self, st: &mut State, c: &Call) -> Result<Flow, String> {
+        if self.numbered {
+            let names = numbered_names(st, c)?;
+            if !names.is_empty() {
+                let args = c
+                    .args
+                    .iter()
+                    .enumerate()
+                    .map(|(i, &(k, a, e))| (k, a, names.iter().find(|n| n.0 == i).map_or(e, |n| &n.1[..])))
+                    .collect();
+                return self.dispatch(st, &Call { name: c.name, args, pos: c.pos });
+            }
+        }
+        self.dispatch(st, c)
+    }
+
+    fn text(&mut self, st: &mut State, text: &[u8]) -> Result<Flow, String> {
+        self.text_out(st, text);
+        Ok(Flow::Next)
+    }
+}
+
+impl World {
+    fn dispatch(&mut self, st: &mut State, c: &Call) -> Result<Flow, String> {
         if self.log.iter().any(|n| n == c.name || n == "*") {
             let args: Vec<String> = c.args.iter().map(|(k, _, e)| format!("{k}={}", st.eval(e).map_or("?".into(), |v| v.str()))).collect();
             eprintln!("[{}] {}[{}]", st.task().id, c.name, args.join(" "));
@@ -908,11 +964,6 @@ impl Host for World {
                 Ok(Flow::Next)
             }
         }
-    }
-
-    fn text(&mut self, st: &mut State, text: &[u8]) -> Result<Flow, String> {
-        self.text_out(st, text);
-        Ok(Flow::Next)
     }
 }
 

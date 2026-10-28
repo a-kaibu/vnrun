@@ -7,6 +7,7 @@
 use std::collections::HashMap;
 
 use crate::expr::{self, Kind, Place, Value, Var, VarId};
+use crate::old;
 use crate::sjis;
 use crate::sysvar as sys;
 use crate::ybn::{self, Command, Instr, Script, VarDecl, VarType};
@@ -27,6 +28,8 @@ pub struct Program {
     /// per script and instruction: the instruction a block command goes to (see `link`)
     partner: Vec<Vec<u32>>,
     op: HashMap<&'static str, u8>,
+    /// the first format (222): layers and sounds are named by ID and NO
+    pub old: bool,
 }
 
 // Commands the VM runs itself.
@@ -43,6 +46,9 @@ impl Program {
             read(name).ok_or_else(|| format!("ysbin/{name} is missing"))
         };
         let ctx = |name: &'static str| move |e: String| format!("{name}: {e}");
+        if read("ysc.ybn").is_none() && read("yscfg.ybn").is_some_and(|b| old::is_config(&b)) {
+            return Self::load_old(read);
+        }
         let commands = ybn::commands(&need(read, "ysc.ybn")?).map_err(ctx("ysc.ybn"))?;
         let script_names = ybn::script_names(&need(read, "yst_list.ybn")?).map_err(ctx("yst_list.ybn"))?;
         let decls = ybn::variables(&need(read, "ysv.ybn")?).map_err(ctx("ysv.ybn"))?;
@@ -54,12 +60,6 @@ impl Program {
                 Some(b) => ybn::script(&b, key).map_err(|e| format!("yst{i:05}.ybn: {e}"))?,
                 None => Script::default(), // files that only declare (global.yst, macro.yst)
             });
-        }
-        let mut op = HashMap::new();
-        for name in OPS {
-            if let Some(i) = commands.iter().position(|c| c.name == name) {
-                op.insert(name, i as u8);
-            }
         }
         // the text decides how every string reads, the title included
         if let Some(word) = commands.iter().position(|c| c.name == "WORD").map(|i| i as u8) {
@@ -77,8 +77,56 @@ impl Program {
         for l in ybn::labels(&need(read, "ysl.ybn")?).map_err(ctx("ysl.ybn"))? {
             labels.insert(l.name.to_uppercase(), Pos { script: l.script as usize, ip: l.ip as usize });
         }
-        let mut p = Program { commands, scripts, script_names, labels, decls, config, partner: Vec::new(), op };
+        Ok(Self::new(commands, scripts, script_names, labels, decls, config))
+    }
+
+    fn new(
+        commands: Vec<Command>,
+        scripts: Vec<Script>,
+        script_names: Vec<String>,
+        labels: HashMap<String, Pos>,
+        decls: Vec<VarDecl>,
+        config: ybn::Config,
+    ) -> Program {
+        let mut op = HashMap::new();
+        for name in OPS {
+            if let Some(i) = commands.iter().position(|c| c.name == name) {
+                op.insert(name, i as u8);
+            }
+        }
+        let mut p = Program { commands, scripts, script_names, labels, decls, config, partner: Vec::new(), op, old: false };
         p.partner = p.scripts.iter().map(|s| p.link(s)).collect();
+        p
+    }
+
+    /// The first format (222): see [`old`].
+    fn load_old(read: &mut dyn FnMut(&str) -> Option<Vec<u8>>) -> Result<Program, String> {
+        let mut need = |name: &str| read(name).ok_or_else(|| format!("ysbin/{name} is missing"));
+        let ctx = |name: &'static str| move |e: String| format!("{name}: {e}");
+        let commands = old::commands();
+        let script_names = old::script_names(&need("yst_list.ybn")?).map_err(ctx("yst_list.ybn"))?;
+        let decls = old::variables(&need("ysv.ybn")?).map_err(ctx("ysv.ybn"))?;
+        let config = old::config(&need("yscfg.ybn")?).map_err(ctx("yscfg.ybn"))?;
+        let label_list = old::labels(&need("ysl.ybn")?).map_err(ctx("ysl.ybn"))?;
+        let mut scripts = Vec::with_capacity(script_names.len());
+        let mut offsets = Vec::with_capacity(script_names.len());
+        for i in 0..script_names.len() {
+            let (s, o) = match read(&format!("yst{i:05}.ybn")) {
+                Some(b) => old::script(&b, &commands).map_err(|e| format!("yst{i:05}.ybn: {e}"))?,
+                None => Default::default(),
+            };
+            scripts.push(s);
+            offsets.push(o);
+        }
+        let mut labels = HashMap::new();
+        for (name, script, off) in label_list {
+            let ip = offsets.get(script).map_or(0, |o| o.partition_point(|&x| x < off));
+            labels.insert(name.to_uppercase(), Pos { script, ip });
+        }
+        // the game starts at the top of the first script (system.yst)
+        labels.entry("SYSTEM_START".into()).or_insert(Pos { script: 1, ip: 0 });
+        let mut p = Self::new(commands, scripts, script_names, labels, decls, config);
+        p.old = true;
         Ok(p)
     }
 
@@ -571,7 +619,7 @@ impl Vm {
                     self.jump(to);
                 }
             }
-            "IFEND" => {}
+            "IFEND" | "LABEL" | "MACRO" => {}
             "IFBLEND" | "IFBREAK" => {
                 let to = self.prog.partner[pos.script][pos.ip];
                 if to != u32::MAX {
