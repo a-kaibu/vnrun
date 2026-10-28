@@ -47,7 +47,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Softpal (sena-rs) | 28 | 27 |  |  |  | 1 |  |  |
 | Artemis (art3m1s-core) | 6 | 1 | 5 |  |  |  |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
-| HTML (TyranoScript、RPGツクール MV/MZ) | 35 | 3 | 17 | 9 | 3 | 1 |  | 2 |
+| HTML (TyranoScript、RPGツクール MV/MZ) | 35 | 34 | 1 |  |  |  |  |  |
 | 吉里吉里 (KiriKiri SDL2) | 135 | 83 | 51 |  |  |  | 1 |  |
 | YU-RIS (vnrun) | 29 | 27 |  |  |  | 1 | 1 |  |
 | NeXAS (vnrun) | 16 | 12 | 1 |  | 1 | 1 | 1 |  |
@@ -188,41 +188,41 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
+| b2021_stick | [人妻LovelyMoment 体験版](http://suezou.dyndns.org/dl2021/stick/hitozuma_lovelymoment/hitozuma_lovelymoment-trial.zip) | 本編 | 682b666 (app.asar を vnrun-prep が展開、electron の代役) でタイトル→はじめから→名前入力→本編の背景・文章まで (Chromium) |
+| b2022_lunaprism | [羞恥隷嬢学園 体験版](http://suezou.dyndns.org/dl2022/lunaprism/reijyo_gakuen/Reijyo_trial.zip) | 本編 | 682b666 (app.asar を vnrun-prep が展開) でタイトル→はじめから→本編の契約書の場面・文章まで (Chromium) |
+| dl_RJ01529614 | [まぐわれ異世界珍道中](https://trial.dlsite.com/doujin/RJ01530000/RJ01529614_trial.zip) | 本編 | タイトル→ニューゲーム→本編のマップ・会話まで (Chromium) |
+| dl_RJ01604592 | [HEART OVERLOAD! 欲望でつながる戦術部隊](https://trial.dlsite.com/doujin/RJ01605000/RJ01604592_trial.zip) | 本編 | タイトル→ニューゲーム→本編の会話まで (Chromium) |
+| dl_RJ01612664 | [雪音の仇討ち物語](https://trial.dlsite.com/doujin/RJ01613000/RJ01612664_trial.zip) | 本編 | f41e050 (フレームに合わせて拡大) でタイトル→ニューゲーム→難易度選択→本編まで (Chromium) |
+| dl_RJ01618221 | [アリナと淫魔の呪い](https://trial.dlsite.com/doujin/RJ01619000/RJ01618221_trial.zip) | 本編 | タイトル→ニューゲーム→オープニング選択→本編の文章まで (Chromium、タイトルまで約 200 秒) |
+| dl_RJ01618747 | [スペースパトロール パニカ](https://trial.dlsite.com/doujin/RJ01619000/RJ01618747_trial.zip) | 本編 | タイトル→ニューゲーム→本編の会話まで (Chromium) |
+| dl_RJ01623688 | [まもの博物館](https://trial.dlsite.com/doujin/RJ01624000/RJ01623688_trial.zip) | 本編 | cb9b86f (MZ もフレームに合わせて拡大) でタイトル→はじめから→体験版の案内→あらすじの言語選択まで (Chromium) |
+| dl_RJ01642779 | [戦闘補習3～武闘派冒険者、魔術を学ぶ～](https://trial.dlsite.com/doujin/RJ01643000/RJ01642779_trial.zip) | 本編 | f41e050 (フレームに合わせて拡大) でタイトル→ニューゲーム→本編のマップ・会話まで (Chromium) |
 | dl_RJ01648691 | [測り難きは下心](https://trial.dlsite.com/doujin/RJ01649000/RJ01648691_trial.zip) | 本編 | 416970b (IndexedDB) 以降。クリックでマップ画面まで進む |
+| dl_RJ01650072 | [どこでもHな世界～地味子のバイト日記～](https://trial.dlsite.com/doujin/RJ01651000/RJ01650072_trial.zip) | 本編 | fcaacff (nw.gui などは代役) でタイトル→本編まで。既定の言語は中国語 (GameCreator、Chromium) |
+| dl_RJ01686418 | [秘密 女騎士NTR](https://trial.dlsite.com/doujin/RJ01687000/RJ01686418_trial.zip) | 本編 | タイトル→ニューゲーム→本編の会話まで (Chromium) |
+| dl_RJ01696742 | [サモンスピリッツ](https://trial.dlsite.com/doujin/RJ01697000/RJ01696742_trial.zip) | 本編 | タイトル→ニューゲーム→本編の会話まで (Chromium) |
 | dl_RJ01698597 | [かんもく:場面緘黙女子](https://trial.dlsite.com/doujin/RJ01699000/RJ01698597_trial.zip) | 本編 | 0df7c53 でタイトル→ニューゲーム→本編の文章 (名前入力の案内) まで (Chromium、タイトルまで約 240 秒) |
+| dl_RJ01699647 | [とろぴかる・ちぇいす！長年追っていた指名手配犯をヌーディストビーチで発見したクール系女刑事](https://trial.dlsite.com/doujin/RJ01700000/RJ01699647_trial.zip) | 本編 | タイトル→はじめから→導入の立ち絵・文章まで。「reading 'unlockInfo'」は実績プラグインがセーブ無しを読んだときのもので、プラグイン自身が拾って続行する |
+| dl_RJ01699765 | [星直しのブレイブロード -淫欲の街と堕落の聖女候補-](https://trial.dlsite.com/doujin/RJ01700000/RJ01699765_trial.zip) | 本編 | タイトル→ニューゲーム→本編の会話まで (Chromium) |
+| dl_RJ01701172 | [ラッキィ・ホール-ハズレは淫魔の搾精穴-](https://trial.dlsite.com/doujin/RJ01702000/RJ01701172_trial.zip) | 本編 | タイトル→挑戦する→導入の文章まで (Chromium) |
+| dl_RJ01701742 | [【Live2D】逃亡中～ミッションをクリアしてザーメンの放出を阻止せよ！～](https://trial.dlsite.com/doujin/RJ01702000/RJ01701742_trial.zip) | 本編 | タイトル→ニューゲーム→導入の文章まで (Chromium) |
+| dl_RJ01702392 | [いとこのお姉ちゃんに睡眠●シミュレーション](https://trial.dlsite.com/doujin/RJ01703000/RJ01702392_trial.zip) | 本編 | f41e050 (RPGツクールを NW.js と同じくフレームに合わせて拡大) でタイトル→ニューゲーム→色選択→本編の背景・文章まで (クリックで進む) |
+| dl_RJ01702800 | [ドット勇者](https://trial.dlsite.com/doujin/RJ01703000/RJ01702800_trial.zip) | 本編 | タイトル→本編の放置ゲーム画面で操作できる (Chromium) |
+| dl_RJ01703802 | [決着はバトルファックで -初回特典付き-](https://trial.dlsite.com/doujin/RJ01704000/RJ01703802_trial.zip) | 本編 | タイトル→ニューゲーム→本編のマップ・会話まで (Chromium、タイトルまで約 200 秒) |
+| dl_RJ01706991 | [ショタおねRPG 爆乳お姉さんたちと催〇でドスケベ三昧 爆乳(クソデカボイン)の桃源郷(パラダイス)](https://trial.dlsite.com/doujin/RJ01707000/RJ01706991_trial.zip) | 本編 | タイトル→ニューゲーム→名前入力→本編まで (Chromium) |
+| dl_RJ01720493 | [Moeのファンサービスリフト♡～つり出し](https://trial.dlsite.com/doujin/RJ01721000/RJ01720493_trial.zip) | 本編 | 782563a (studio_api.path、.tpatch は無いものとする) でタイトル→はじめから→本編の 3D 立ち絵・文章まで (Electron 版 Tyrano、Chromium) |
 | dl_RJ01720685 | [アイドルダークダンジョン](https://trial.dlsite.com/doujin/RJ01721000/RJ01720685_trial.zip) | 本編 | クリックで最初の会話まで |
-| dl_RJ01604592 | [HEART OVERLOAD! 欲望でつながる戦術部隊](https://trial.dlsite.com/doujin/RJ01605000/RJ01604592_trial.zip) | タイトル | 416970b (IndexedDB) でタイトルまで |
-| dl_RJ01612664 | [雪音の仇討ち物語](https://trial.dlsite.com/doujin/RJ01613000/RJ01612664_trial.zip) | タイトル | RPGツクール。画面が拡大されない |
-| dl_RJ01618747 | [スペースパトロール パニカ](https://trial.dlsite.com/doujin/RJ01619000/RJ01618747_trial.zip) | タイトル | 7b79c2c / 86e1fe3 以降のページでタイトルまで |
-| dl_RJ01642779 | [戦闘補習3～武闘派冒険者、魔術を学ぶ～](https://trial.dlsite.com/doujin/RJ01643000/RJ01642779_trial.zip) | タイトル | RPGツクール。画面が拡大されない |
-| dl_RJ01650072 | [どこでもHな世界～地味子のバイト日記～](https://trial.dlsite.com/doujin/RJ01651000/RJ01650072_trial.zip) | タイトル |  |
-| dl_RJ01686418 | [秘密 女騎士NTR](https://trial.dlsite.com/doujin/RJ01687000/RJ01686418_trial.zip) | タイトル | 7b79c2c / 86e1fe3 以降のページでタイトルまで |
-| dl_RJ01696742 | [サモンスピリッツ](https://trial.dlsite.com/doujin/RJ01697000/RJ01696742_trial.zip) | タイトル | 416970b (IndexedDB) でタイトルまで |
-| dl_RJ01699647 | [とろぴかる・ちぇいす！長年追っていた指名手配犯をヌーディストビーチで発見したクール系女刑事](https://trial.dlsite.com/doujin/RJ01700000/RJ01699647_trial.zip) | タイトル | 416970b (IndexedDB) でタイトルまで。コンソールに「Cannot read properties of null (reading 'unlockInfo')」 |
-| dl_RJ01699765 | [星直しのブレイブロード -淫欲の街と堕落の聖女候補-](https://trial.dlsite.com/doujin/RJ01700000/RJ01699765_trial.zip) | タイトル | 7b79c2c / 86e1fe3 以降のページでタイトルまで |
-| dl_RJ01702800 | [ドット勇者](https://trial.dlsite.com/doujin/RJ01703000/RJ01702800_trial.zip) | タイトル |  |
-| dl_RJ01706991 | [ショタおねRPG 爆乳お姉さんたちと催〇でドスケベ三昧 爆乳(クソデカボイン)の桃源郷(パラダイス)](https://trial.dlsite.com/doujin/RJ01707000/RJ01706991_trial.zip) | タイトル | RPGツクール |
-| dl_RJ01720958 | [魔法戦士 NANAMI 前編](https://trial.dlsite.com/doujin/RJ01721000/RJ01720958_trial.zip) | タイトル | 416970b (IndexedDB) でタイトルまで |
-| dl_RJ01722380 | [むぎゅっと☆搾精ナイトメア！](https://trial.dlsite.com/doujin/RJ01723000/RJ01722380_trial.zip) | タイトル | 416970b (IndexedDB) でタイトルまで |
-| dl_RJ01727123 | [監禁部屋から逃げれない1](https://trial.dlsite.com/doujin/RJ01728000/RJ01727123_trial.zip) | タイトル | 416970b (IndexedDB) でタイトルまで |
-| dl_RJ01730521 | [大魔法少女カサネ](https://trial.dlsite.com/doujin/RJ01731000/RJ01730521_trial.zip) | タイトル | 7b79c2c / 86e1fe3 以降のページでタイトルまで |
-| dl_RJ01731048 | [ヤリステナイメスブター 世界を救った後の ボクの日常『性』活](https://trial.dlsite.com/doujin/RJ01732000/RJ01731048_trial.zip) | タイトル | 7b79c2c / 86e1fe3 以降のページでタイトルとメニューまで。「Cannot find module ./js/libs/greenworks」は出るが続行する |
-| dl_RJ01741863 | [淫らに染めて ～叔母が堕ちるまで～](https://trial.dlsite.com/doujin/RJ01742000/RJ01741863_trial.zip) | タイトル | 7b79c2c / 86e1fe3 以降のページでタイトルまで |
-| dl_RJ01529614 | [まぐわれ異世界珍道中](https://trial.dlsite.com/doujin/RJ01530000/RJ01529614_trial.zip) | 起動 | IndexedDB のエラーは消えたが、読み込み中の表示のまま進まない (エラーなし) |
-| dl_RJ01618221 | [アリナと淫魔の呪い](https://trial.dlsite.com/doujin/RJ01619000/RJ01618221_trial.zip) | 起動 | IndexedDB のエラーは消えたが、読み込み中の表示のまま進まない (エラーなし) |
-| dl_RJ01623688 | [まもの博物館](https://trial.dlsite.com/doujin/RJ01624000/RJ01623688_trial.zip) | 起動 | 読み込み中の表示のまま (エラーなし) |
-| dl_RJ01701172 | [ラッキィ・ホール-ハズレは淫魔の搾精穴-](https://trial.dlsite.com/doujin/RJ01702000/RJ01701172_trial.zip) | 起動 | IndexedDB のエラーは消えたが、読み込み中の表示のまま進まない (エラーなし) |
-| dl_RJ01701742 | [【Live2D】逃亡中～ミッションをクリアしてザーメンの放出を阻止せよ！～](https://trial.dlsite.com/doujin/RJ01702000/RJ01701742_trial.zip) | 起動 | 読み込み中の表示のまま (エラーなし) |
-| dl_RJ01702392 | [いとこのお姉ちゃんに睡眠●シミュレーション](https://trial.dlsite.com/doujin/RJ01703000/RJ01702392_trial.zip) | 起動 | 黒画面のまま (エラーなし) |
-| dl_RJ01703802 | [決着はバトルファックで -初回特典付き-](https://trial.dlsite.com/doujin/RJ01704000/RJ01703802_trial.zip) | 起動 | IndexedDB のエラーは消えたが、読み込み中の表示のまま進まない (エラーなし) |
-| dl_RJ01720493 | [Moeのファンサービスリフト♡～つり出し](https://trial.dlsite.com/doujin/RJ01721000/RJ01720493_trial.zip) | 起動 | 7b79c2c / 86e1fe3 以降のページでも黒画面のまま (エラーなし) |
-| dl_RJ01746541 | [女魔法使いセーラは俺から逃げられない！ ～便利なエロアイテムと孕むまでヤれる封鎖村～](https://trial.dlsite.com/doujin/RJ01747000/RJ01746541_trial.zip) | 起動 | 黒画面のまま (エラーなし) |
-| dl_VJ01000810 | [エッチなお姉ちゃんが、褐色巨乳の悪魔だった件](https://trial.dlsite.com/professional/VJ01001000/VJ01000810_trial.zip) | 要再確認 | NW.js のゲームが exe に埋め込まれている (package.nw が無い) |
-| dl_VJ01001309 | [エッチなお姉ちゃんが、褐色巨乳の悪魔だった件2 ～新たな悪魔ミリス登場♪～](https://trial.dlsite.com/professional/VJ01002000/VJ01001309_trial.zip) | 要再確認 | NW.js のゲームが exe に埋め込まれている (package.nw が無い) |
-| r1_tyrano | [転生した世界で… 体験版](http://www.gocha-mix.com/gp/gxgp01/dl/gxgp001_trial.zip) | 要再確認 | NW.js のゲームが exe に埋め込まれている (package.nw が無い)。exe を zip として展開すれば読めるはず |
-| dl_RJ357058 | [Last12 - 勇者の恥ずかしい育児日記 -](https://trial.dlsite.com/doujin/RJ358000/RJ357058_trial.zip) | NG | 「Unexpected end of JSON input」のまま |
-| b2021_stick | [人妻LovelyMoment 体験版](http://suezou.dyndns.org/dl2021/stick/hitozuma_lovelymoment/hitozuma_lovelymoment-trial.zip) | 未確認 |  |
-| b2022_lunaprism | [羞恥隷嬢学園 体験版](http://suezou.dyndns.org/dl2022/lunaprism/reijyo_gakuen/Reijyo_trial.zip) | 未確認 |  |
+| dl_RJ01720958 | [魔法戦士 NANAMI 前編](https://trial.dlsite.com/doujin/RJ01721000/RJ01720958_trial.zip) | 本編 | タイトル→ニューゲーム→本編のマップまで (Chromium) |
+| dl_RJ01722380 | [むぎゅっと☆搾精ナイトメア！](https://trial.dlsite.com/doujin/RJ01723000/RJ01722380_trial.zip) | 本編 | タイトル→ニューゲーム→名前入力→本編まで (Chromium) |
+| dl_RJ01727123 | [監禁部屋から逃げれない1](https://trial.dlsite.com/doujin/RJ01728000/RJ01727123_trial.zip) | 本編 | タイトル→ニューゲーム→本編のマップまで (Chromium) |
+| dl_RJ01730521 | [大魔法少女カサネ](https://trial.dlsite.com/doujin/RJ01731000/RJ01730521_trial.zip) | 本編 | タイトル→ニューゲーム→本編の会話まで (Chromium) |
+| dl_RJ01731048 | [ヤリステナイメスブター 世界を救った後の ボクの日常『性』活](https://trial.dlsite.com/doujin/RJ01732000/RJ01731048_trial.zip) | 本編 | タイトル→ニューゲーム→本編の会話まで。「Cannot find module ./js/libs/greenworks」は出るが続行する (Chromium) |
+| dl_RJ01746541 | [女魔法使いセーラは俺から逃げられない！ ～便利なエロアイテムと孕むまでヤれる封鎖村～](https://trial.dlsite.com/doujin/RJ01747000/RJ01746541_trial.zip) | 本編 | タイトル→ニューゲーム→本編のマップ・立ち絵・会話まで (Chromium) |
+| dl_RJ357058 | [Last12 - 勇者の恥ずかしい育児日記 -](https://trial.dlsite.com/doujin/RJ358000/RJ357058_trial.zip) | 本編 | a11563d (読み込み中のプラグイン例外は警告だけ) でタイトル→ニューゲーム→序章のマップまで (Chromium) |
+| dl_VJ01000810 | [エッチなお姉ちゃんが、褐色巨乳の悪魔だった件](https://trial.dlsite.com/professional/VJ01001000/VJ01000810_trial.zip) | 本編 | exe 末尾の app を vnrun-prep が展開。タイトル→はじめから→本編の CG・文章まで (Chromium) |
+| dl_VJ01001309 | [エッチなお姉ちゃんが、褐色巨乳の悪魔だった件2 ～新たな悪魔ミリス登場♪～](https://trial.dlsite.com/professional/VJ01002000/VJ01001309_trial.zip) | 本編 | e7626d4 (EXE 基準オフセットの app zip、.tpatch を vnrun-prep が適用) でタイトル→はじめから→本編の立ち絵・文章まで (Chromium) |
+| r1_tyrano | [転生した世界で… 体験版](http://www.gocha-mix.com/gp/gxgp01/dl/gxgp001_trial.zip) | 本編 | dadce4b (exe 末尾の app を vnrun-prep が展開) でタイトル→はじめから→本編の背景・文章まで (Chromium、タイトルまで約 200 秒) |
+| dl_RJ01741863 | [淫らに染めて ～叔母が堕ちるまで～](https://trial.dlsite.com/doujin/RJ01742000/RJ01741863_trial.zip) | タイトル | タイトルは出る。はじめから後は黒画面のまま (VisuMZ EventTitleScene→Map011 の場所移動待ちで止まる、要調査) |
 
 ### 吉里吉里 (KiriKiri SDL2)
 

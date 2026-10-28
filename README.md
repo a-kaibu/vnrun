@@ -15,7 +15,7 @@ Windows 向けノベルゲームを、Wine を使わずにブラウザの中で�
 | NScripter | [ONScripter-Yuri](https://github.com/YuriSizuku/OnscripterYuri) (`third_party/onscripter-yuri`、GPL-2.0) | 組み込み済み。自作のテストスクリプトで文章・選択肢・セーブまで確認 (実物の作品は未確認) |
 | AliceSoft System4 | [xsystem4](https://github.com/nunuhara/xsystem4) (`third_party/xsystem4`、GPL-2.0-or-later) | 組み込み済み。ランス01・母娘乱館の体験版で本編の文章まで確認 (音とセーブは未確認) |
 | 吉里吉里 (KAG) | [KiriKiri SDL2](https://github.com/krkrsdl2/krkrsdl2) (`third_party/krkrsdl2`、MIT ほか) | 組み込み済み。KAG3 のテストで文章・選択肢・セーブまで確認。Akabei / Mado と検証済み cxdec の XP3 を自動復号。Pad の設定編集と保存にも対応。体験版の結果は [docs/verification.md](docs/verification.md) |
-| TyranoScript、RPGツクール MV/MZ など (NW.js) | ゲーム自身 (iframe で開くだけ) | 組み込み済み。TyranoScript の公式サンプルでタイトル・本編・セーブ・ロードまで確認 (RPGツクールは未確認、package.nw に固めた作品は未対応) |
+| TyranoScript、RPGツクール MV/MZ など (NW.js) | ゲーム自身 (iframe で開くだけ) | 組み込み済み。TyranoScript の公式サンプルでタイトル・本編・セーブ・ロードまで確認。NW.js/Electron の体験版 (exe に埋め込んだ app、app.asar、.tpatch は vnrun-prep が展開) もタイトルと本編まで (package.nw はまだ) |
 
 今後の候補は [docs/handoff.md](docs/handoff.md) の対応表を参照。
 

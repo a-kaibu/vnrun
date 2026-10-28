@@ -90,14 +90,14 @@ s2023_casket_oshitona_vtuber03	本編	Chromium (3f99c53+) で START→本編の�
 s2020_casket_ayakashi03	本編	Chromium (3f99c53+) で START→本編の文章まで
 s2011_whirlpool_maikaze	本編	Chromium (3f99c53) で START→本編の文章まで (クリック位置ずれで LOAD 画面も開く)
 s2023_milimili_onaho_yokai	本編	本文まで。F9/F11 で保存と読み込み
-r1_tyrano	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)。exe を zip として展開すれば読めるはず
-dl_VJ01000810	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)
-dl_RJ01731048	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルとメニューまで。「Cannot find module ./js/libs/greenworks」は出るが続行する
-dl_RJ01604592	タイトル	416970b (IndexedDB) でタイトルまで
+r1_tyrano	本編	dadce4b (exe 末尾の app を vnrun-prep が展開) でタイトル→はじめから→本編の背景・文章まで (Chromium、タイトルまで約 200 秒)
+dl_VJ01000810	本編	exe 末尾の app を vnrun-prep が展開。タイトル→はじめから→本編の CG・文章まで (Chromium)
+dl_RJ01731048	本編	タイトル→ニューゲーム→本編の会話まで。「Cannot find module ./js/libs/greenworks」は出るが続行する (Chromium)
+dl_RJ01604592	本編	タイトル→ニューゲーム→本編の会話まで (Chromium)
 dl_RJ01698597	本編	0df7c53 でタイトル→ニューゲーム→本編の文章 (名前入力の案内) まで (Chromium、タイトルまで約 240 秒)
-dl_RJ01730521	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
-dl_RJ01741863	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
-dl_RJ01642779	タイトル	RPGツクール。画面が拡大されない
+dl_RJ01730521	本編	タイトル→ニューゲーム→本編の会話まで (Chromium)
+dl_RJ01741863	タイトル	タイトルは出る。はじめから後は黒画面のまま (VisuMZ EventTitleScene→Map011 の場所移動待ちで止まる、要調査)
+dl_RJ01642779	本編	f41e050 (フレームに合わせて拡大) でタイトル→ニューゲーム→本編のマップ・会話まで (Chromium)
 s2019_no_strike_jyosou_jinjya	本編	Chromium (675fd0a 以降) で START→本編の文章まで、台湾版の Big5 文章も表示
 s2014_whirlpool_tearstilla	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_VJ01001386	本編	Chromium (3f99c53+) で START→本編の文章まで
@@ -105,32 +105,32 @@ dl_VJ01004582	本編	Chromium で START→本編の文章まで (名前入力 DI
 dl_VJ01000315	本編	Chromium で START→本編の文章まで (名前入力 DIALOG は既定名で進む)
 dl_VJ01002327	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_RJ01648691	本編	416970b (IndexedDB) 以降。クリックでマップ画面まで進む
-dl_RJ01618221	起動	IndexedDB のエラーは消えたが、読み込み中の表示のまま進まない (エラーなし)
-dl_RJ357058	NG	「Unexpected end of JSON input」のまま
-dl_RJ01720493	起動	7b79c2c / 86e1fe3 以降のページでも黒画面のまま (エラーなし)
-dl_RJ01722380	タイトル	416970b (IndexedDB) でタイトルまで
-dl_RJ01727123	タイトル	416970b (IndexedDB) でタイトルまで
+dl_RJ01618221	本編	タイトル→ニューゲーム→オープニング選択→本編の文章まで (Chromium、タイトルまで約 200 秒)
+dl_RJ357058	本編	a11563d (読み込み中のプラグイン例外は警告だけ) でタイトル→ニューゲーム→序章のマップまで (Chromium)
+dl_RJ01720493	本編	782563a (studio_api.path、.tpatch は無いものとする) でタイトル→はじめから→本編の 3D 立ち絵・文章まで (Electron 版 Tyrano、Chromium)
+dl_RJ01722380	本編	タイトル→ニューゲーム→名前入力→本編まで (Chromium)
+dl_RJ01727123	本編	タイトル→ニューゲーム→本編のマップまで (Chromium)
 s2016_no_strike_jyogaku	本編	Chromium (3f99c53+) で START→本編の文章まで
-dl_RJ01612664	タイトル	RPGツクール。画面が拡大されない
+dl_RJ01612664	本編	f41e050 (フレームに合わせて拡大) でタイトル→ニューゲーム→難易度選択→本編まで (Chromium)
 dl_RJ01721024	本編	Chromium (3f99c53+) で START→本編の文章まで
-dl_RJ01686418	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
-dl_RJ01706991	タイトル	RPGツクール
+dl_RJ01686418	本編	タイトル→ニューゲーム→本編の会話まで (Chromium)
+dl_RJ01706991	本編	タイトル→ニューゲーム→名前入力→本編まで (Chromium)
 s2021_casket_bellaca	本編	Chromium (3f99c53+) で START→本編の文章まで
-dl_RJ01699765	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
-dl_RJ01702392	起動	黒画面のまま (エラーなし)
-dl_RJ01618747	タイトル	7b79c2c / 86e1fe3 以降のページでタイトルまで
-dl_VJ01001309	要再確認	NW.js のゲームが exe に埋め込まれている (package.nw が無い)
-dl_RJ01720958	タイトル	416970b (IndexedDB) でタイトルまで
-dl_RJ01703802	起動	IndexedDB のエラーは消えたが、読み込み中の表示のまま進まない (エラーなし)
-dl_RJ01699647	タイトル	416970b (IndexedDB) でタイトルまで。コンソールに「Cannot read properties of null (reading 'unlockInfo')」
-dl_RJ01701172	起動	IndexedDB のエラーは消えたが、読み込み中の表示のまま進まない (エラーなし)
-dl_RJ01696742	タイトル	416970b (IndexedDB) でタイトルまで
-dl_RJ01529614	起動	IndexedDB のエラーは消えたが、読み込み中の表示のまま進まない (エラーなし)
-dl_RJ01746541	起動	黒画面のまま (エラーなし)
-dl_RJ01701742	起動	読み込み中の表示のまま (エラーなし)
-dl_RJ01623688	起動	読み込み中の表示のまま (エラーなし)
-dl_RJ01650072	タイトル	
-dl_RJ01702800	タイトル	
+dl_RJ01699765	本編	タイトル→ニューゲーム→本編の会話まで (Chromium)
+dl_RJ01702392	本編	f41e050 (RPGツクールを NW.js と同じくフレームに合わせて拡大) でタイトル→ニューゲーム→色選択→本編の背景・文章まで (クリックで進む)
+dl_RJ01618747	本編	タイトル→ニューゲーム→本編の会話まで (Chromium)
+dl_VJ01001309	本編	e7626d4 (EXE 基準オフセットの app zip、.tpatch を vnrun-prep が適用) でタイトル→はじめから→本編の立ち絵・文章まで (Chromium)
+dl_RJ01720958	本編	タイトル→ニューゲーム→本編のマップまで (Chromium)
+dl_RJ01703802	本編	タイトル→ニューゲーム→本編のマップ・会話まで (Chromium、タイトルまで約 200 秒)
+dl_RJ01699647	本編	タイトル→はじめから→導入の立ち絵・文章まで。「reading 'unlockInfo'」は実績プラグインがセーブ無しを読んだときのもので、プラグイン自身が拾って続行する
+dl_RJ01701172	本編	タイトル→挑戦する→導入の文章まで (Chromium)
+dl_RJ01696742	本編	タイトル→ニューゲーム→本編の会話まで (Chromium)
+dl_RJ01529614	本編	タイトル→ニューゲーム→本編のマップ・会話まで (Chromium)
+dl_RJ01746541	本編	タイトル→ニューゲーム→本編のマップ・立ち絵・会話まで (Chromium)
+dl_RJ01701742	本編	タイトル→ニューゲーム→導入の文章まで (Chromium)
+dl_RJ01623688	本編	cb9b86f (MZ もフレームに合わせて拡大) でタイトル→はじめから→体験版の案内→あらすじの言語選択まで (Chromium)
+dl_RJ01650072	本編	fcaacff (nw.gui などは代役) でタイトル→本編まで。既定の言語は中国語 (GameCreator、Chromium)
+dl_RJ01702800	本編	タイトル→本編の放置ゲーム画面で操作できる (Chromium)
 dl_RJ01720685	本編	クリックで最初の会話まで
 r1_kag3	本編	2026-10-26: 公式 syoukai デモ。Pad で Config を編集・保存し、再起動後に読み込み、紹介本文まで確認
 b2006_ninetail	本編	検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示
@@ -406,3 +406,5 @@ b2009_lilim	本編	LiLiM (vnrun) でタイトル→START→美夕の挨拶 (文�
 b2011_princess_sugar	本編	LiLiM (vnrun) でタイトル (1024x600)→START→体験版メニュー (slctwnd のボタン)→プロローグ (00_01..00_10) の背景・立ち絵・名前 (窓の名札)・文章・音声を最後まで通り、メニューに戻る (lilim-run)。OP ムービーは飛ばす
 b2021_princess_sugar	本編	LiLiM (vnrun) でタイトル→START→注意書き→体験版メニュー (slctwnd のボタン)→共通パート (01_01..02_08、途中のボタンの選択肢を含む) の背景・立ち絵・イベント CG・名前・文章・音声を通る (lilim-run)。Chromium でタイトル→メニュー→本編の文章まで
 b2011_guilty	本編	ShiinaRio (vnrun) でタイトル (SYSTITLE.S25 の絵とボタン)→はじめから→A001..A017 の背景・立ち絵・名前・文章・音声を最後まで通り、体験版の終わりでタイトルに戻る (shiina-run)。Chromium でタイトル→本編、右クリックのメニューからセーブ→タイトルのつづきからロードで本編に戻る
+b2021_stick	本編	682b666 (app.asar を vnrun-prep が展開、electron の代役) でタイトル→はじめから→名前入力→本編の背景・文章まで (Chromium)
+b2022_lunaprism	本編	682b666 (app.asar を vnrun-prep が展開) でタイトル→はじめから→本編の契約書の場面・文章まで (Chromium)
