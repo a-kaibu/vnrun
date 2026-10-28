@@ -302,6 +302,8 @@ pub struct Engine {
     images: HashMap<String, Rc<Image>>,
     /// 2006 animation frames by (file, frame), with their centres
     anis: HashMap<(String, i32), Option<(Rc<Image>, i32, i32)>>,
+    /// 2006 character pictures by Stand.dat row, with the centre of the body
+    stands_2006: HashMap<usize, Option<(Rc<Image>, i32)>>,
     spms: HashMap<String, Rc<Spm>>,
     fonts: HashMap<String, Option<Rc<Font>>>,
     plane: i32,
@@ -411,6 +413,7 @@ impl Engine {
             current_bgm: None,
             images: HashMap::new(),
             anis: HashMap::new(),
+            stands_2006: HashMap::new(),
             spms: HashMap::new(),
             fonts: HashMap::new(),
             plane: 0,
@@ -692,6 +695,74 @@ impl Engine {
             &p,
         );
         Some((Rc::new(img), f[4], f[5]))
+    }
+
+    /// A 2006 character picture (Stand.dat row): the body (.bmp) with the mask of its .fil (8-bit
+    /// alpha, top row first), the expression (.bmp, black left out) laid over it where the row
+    /// says on a screen with the body's centre (from its .ani) in the middle and its feet at the
+    /// bottom; and that centre.
+    fn stand_2006(&mut self, row: usize) -> Option<(Rc<Image>, i32)> {
+        if let Some(v) = self.stands_2006.get(&row) {
+            return v.clone();
+        }
+        let v = self.load_stand_2006(row);
+        self.stands_2006.insert(row, v.clone());
+        v
+    }
+
+    fn load_stand_2006(&mut self, row: usize) -> Option<(Rc<Image>, i32)> {
+        let r = self.stands.get(row)?.clone();
+        let cell = |k: usize| r.get(k).map_or("", |c| c.str()).to_string();
+        let fil = cell(1);
+        let stem = fil
+            .rsplit_once('.')
+            .map_or(fil.as_str(), |(a, _)| a)
+            .to_string();
+        let mut img = (*self.image(&format!("{stem}.bmp"))?).clone();
+        let (w, h) = (img.w as usize, img.h as usize);
+        if let Some(mask) = self.find(&fil).filter(|m| m.len() >= w * h) {
+            for (p, &a) in img.px.chunks_exact_mut(4).zip(&mask) {
+                p[3] = a;
+            }
+        }
+        let cx = self.ani(&cell(3), 0).map_or(w as i32 / 2, |(_, cx, _)| cx);
+        let expr = cell(4);
+        if !expr.is_empty()
+            && let Some(face) = self.image(&expr)
+        {
+            let at = |k: usize| r.get(k).map_or(0, |c| c.int());
+            let ox = at(5) - (self.screen.w as i32 / 2 - cx);
+            let oy = at(6) - (self.screen.h as i32 - h as i32);
+            for y in 0..face.h as i32 {
+                for x in 0..face.w as i32 {
+                    let (tx, ty) = (ox + x, oy + y);
+                    if tx < 0 || ty < 0 || tx >= w as i32 || ty >= h as i32 {
+                        continue;
+                    }
+                    let f = ((y as u32 * face.w + x as u32) * 4) as usize;
+                    let px = &face.px[f..f + 4];
+                    if px[..3] == [0, 0, 0] {
+                        continue;
+                    }
+                    let t = (ty as usize * w + tx as usize) * 4;
+                    img.px[t..t + 3].copy_from_slice(&px[..3]);
+                }
+            }
+        }
+        img.renew();
+        Some((Rc::new(img), cx))
+    }
+
+    /// Where a 2006 character picture stands: 17 left, 18 right, 19/20 between, 21 middle.
+    fn place_2006(&self, place: i32) -> i32 {
+        let w = self.screen.w as i32;
+        match place {
+            17 => -w / 4,
+            18 => w / 4,
+            19 => -w / 8,
+            20 => w / 8,
+            _ => 0,
+        }
     }
 
     fn spm(&mut self, name: &str) -> Option<Rc<Spm>> {
@@ -1715,6 +1786,51 @@ impl Host for Engine {
                 }
             }
             // 2006: wait for a click on a button (1 argument)
+            // 2006: character pictures: show (Stand.dat row, place, ?, time, no wait); move one
+            // (place, new place, time, wait). 0x8e takes one away as 0xff08.
+            0xff0e => {
+                let (row, place) = (a(0), a(1));
+                let Some((img, cx)) = usize::try_from(row).ok().and_then(|r| self.stand_2006(r))
+                else {
+                    return Err(format!("no stand {row}"));
+                };
+                let x = self.screen.w as i32 / 2 + self.place_2006(place) - cx;
+                let y = self.screen.h as i32 - img.h as i32;
+                let key = (STANDS, place);
+                // one there (not being taken away) changes at once; a new one fades in
+                let alpha = self
+                    .objs
+                    .get(&key)
+                    .filter(|o| o.alpha.to > 0.0)
+                    .map(|o| o.alpha.value(now));
+                let mut o = Obj::new(Look::Image(img), x, y);
+                o.blend = true;
+                match alpha {
+                    Some(v) => o.alpha = Tween::at(v),
+                    None => {
+                        o.alpha = Tween::at(0.0);
+                        o.alpha.go(1.0, a(3), now);
+                    }
+                }
+                self.objs.insert(key, o);
+                if a(4) == 0 {
+                    self.wait = Wait::Obj(place);
+                    flow = Flow::Yield;
+                }
+            }
+            0xff0f => {
+                let (from, to) = (a(0), a(1));
+                let dx = (self.place_2006(to) - self.place_2006(from)) as f32;
+                if let Some(mut o) = self.objs.remove(&(STANDS, from)) {
+                    let x = o.x.value(now);
+                    o.x.go(x + dx, a(2), now);
+                    self.objs.insert((STANDS, to), o);
+                    if a(3) != 0 {
+                        self.wait = Wait::Obj(to);
+                        flow = Flow::Yield;
+                    }
+                }
+            }
             0xff0d if args.len() == 1 => {
                 self.wait = Wait::Select;
                 flow = Flow::Yield;

@@ -226,7 +226,8 @@ static B2011H_BUILD: Build = Build {
 // lack the later calls' unused argument and 0x2c packs flags over the time, so they go through
 // pseudo ids that reorder them. 0x28 makes an object of an animation's frame; 0x54 with one
 // argument waits for a click on a button, which 0x9b(0) then reads (other numbers: flags); 0xa8
-// names the label that runs when the running one ends.
+// names the label that runs when the running one ends. 0x8d/0x8e/0x8f show, take away and move
+// character pictures.
 static B2006_BUILD: Build = Build {
     name: "2006 (angel breath)",
     rows: &[
@@ -245,6 +246,9 @@ static B2006_BUILD: Build = Build {
         (0x59, 0x8a, 2),
         (0x5a, 0x8a, 2),
         (0x5b, 0x8a, 2),
+        (0x8d, 0xff0e, 5),
+        (0x8e, 0xff08, 4),
+        (0x8f, 0xff0f, 4),
         (0x94, 0x64, 2),
         (0x95, 0x65, 1),
         (0x96, 0x67, 4),
@@ -411,6 +415,16 @@ mod tests {
         let build = Build::detect(&script);
         assert_eq!(build.name, B2006_BUILD.name);
         assert_eq!(build.canonical(0x96), 0x67);
+        // the rows are looked up by binary search
+        for b in [
+            &B2006_BUILD,
+            &B2007_BUILD,
+            &B2008_BUILD,
+            &B2009_BUILD,
+            &B2010_BUILD,
+        ] {
+            assert!(b.rows.windows(2).all(|w| w[0].0 < w[1].0), "{}", b.name);
+        }
         build.translate(&mut script);
         let ops: Vec<u32> = script.main.code.iter().map(|i| i.op).collect();
         assert_eq!(ops, [7, 7, 0xe, 0x1c]);
