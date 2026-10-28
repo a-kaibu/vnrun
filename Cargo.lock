@@ -267,6 +267,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "cmvs-web"
+version = "0.1.0"
+dependencies = [
+ "cmvs",
+ "js-sys",
+ "nexas",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "color_quant"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

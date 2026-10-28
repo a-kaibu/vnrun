@@ -355,6 +355,11 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("ll5.dll") && has("data") {
         // CrossOver (Adv.exe): DATA/ holds the PACK archives SCRIPT.PAC, *.GR2 and *.VIC
         Some("crossover".into())
+    } else if (has("cmvs32.exe") || has("cmvs64.exe"))
+        && game.join("data").join("pack").join("script.cpz").is_file()
+    {
+        // CMVS (Purple software): data/pack/*.cpz beside cmvs32.exe
+        Some("cmvs".into())
     } else if has("scenario.mpk") && has("system.mpk") {
         // Propeller: MPK archives (Scenario.mpk, System.mpk, BG.mpk..) beside the exe
         Some("propeller".into())

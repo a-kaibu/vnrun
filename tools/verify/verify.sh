@@ -84,6 +84,7 @@ game_root() {
     liar) m=(-iname scr.xfl) ;;
     crossover) m=(-iname ll5.dll) ;;
     propeller) m=(-iname scenario.mpk) ;;
+    cmvs) m=(-iname cmvs32.exe -o -iname cmvs64.exe) ;;
     lilim) m=(-iname scr.aos) ;;
     silkys) m=(-iname layer.arc) ;;
     ivory) m=(-ipath '*/misc/script.pk') ;;

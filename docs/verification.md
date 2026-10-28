@@ -83,6 +83,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Liar-soft XFL (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | CrossOver Adv.exe (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | Propeller MPK (vnrun) | 3 | 2 |  |  |  |  | 1 |  |
+| CMVS (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | SakanaGL (vnrun) | 3 | 3 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
@@ -810,6 +811,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2007_propeller | [『Bullet Butlers』Web体験版　ver1.1](http://suezou.dyndns.org/dl2007/propeller/bulletbutlers/BB_Trial.exe) | 本編 | Propeller MPK (vnrun) でロゴ→タイトル→本編 co001〜co007 (背景・立ち絵・イベント CG・名前・ルビ・ボイス・BGM・選択肢 3 回、体験版で塞がれた選択肢は押しても進まない)→体験版の終わりでタイトルへ (propeller-run、スキップ)。Chromium でタイトル→本編、Esc のメニューからセーブ→タイトルの LOAD でロードし保存した行に戻る |
 | s2011_propeller_sukima | [すきま桜とうその都会　体験版２](http://suezou.dyndns.org/dl2011/propeller/sukima/sukima_trial2.zip) | 本編 | Propeller MPK (vnrun、2011 の幅の広いスクリプト形式、1024x576) で注意書き→序章 (カットイン窓・名前・ルビ・BGM)→タイトル→はじめから→sa_01〜sa_10 (選択肢多数)→体験版の終わりでタイトルへ、「体験版2」の選択画面から鈴ルートの抜粋も最後まで (propeller-run、スキップ)。Chromium で序章→タイトル→本編、Esc のメニューからセーブ→タイトルの「続きから」でロードし保存した行に戻る |
 | dl_VJ01002202 | [Bullet Butlers](https://trial.dlsite.com/professional/VJ01003000/VJ01002202_trial.zip) | 対象外 | PlayDRM の製品版の体験版。PlayDRM の作品は vnbox の Wine で正規の認証を通して遊び、vnrun では動かさない (データが素の MPK でも) |
+
+### CMVS (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| s2011_purplesoftware_miranosu | [未来ノスタルジア web体験版 v2](http://suezou.dyndns.org/dl2011/purplesoftware/miranosu/miranosu_trial_v2.zip) | 本編 | CMVS (vnrun、ライブラリ関数を引き取る方式) でタイトル→はじめから→プロローグ→snky01〜snky12 (背景・イベント CG・立ち絵と表情・名前・ルビ・ボイス・BGM・効果音・選択肢 10 回)→体験版の終わりでタイトルへ (cmvs-run、スキップ)。Chromium でタイトル→本編、Esc のメニューからセーブ→タイトルの「つづきから」でロードし保存した行に戻る |
 
 ### SakanaGL (vnrun)
 
