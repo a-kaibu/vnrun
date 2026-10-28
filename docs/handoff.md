@@ -144,9 +144,9 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 
 | エンジン | 本数 | 実装 | 言語 | Web | メモ |
 |---|---|---|---|---|---|
-| SiglusEngine | 18 | [xmoezzz/siglus_rs](https://github.com/xmoezzz/siglus_rs) | Rust | あり | 組み込み済み。二次鍵は総当たりで探して key.toml に書く |
-| RealLive / AVG32 | 8 | 同上 | Rust | あり | 組み込み済み。文字にホストのフォントが要る |
-| BGI | 21 | [xmoezzz/ethornell-rs](https://github.com/xmoezzz/ethornell-rs) | Rust | あり (WebGL2) | 千の刃濤の体験版がブラウザで動いた画像あり。2026-10-23 更新 |
+| SiglusEngine | 18 | [xmoezzz/siglus_rs](https://github.com/xmoezzz/siglus_rs) | Rust | あり | 組み込み済み。二次鍵は総当たりで探して key.toml に書く。2026-10-28: プリマドールはタイトルのボタンが反応しない、サヤガタリはスタート直後に Chromium が落ちる (メモリ不足の環境で) |
+| RealLive / AVG32 | 8 | 同上 | Rust | あり | 組み込み済み。文字にホストのフォントが要る。2026-10-28: Coming×Humming!! と素直くーるで本編のセーブ/ロードを Chromium で確認 (patches/siglus_rs/0006、0007) |
+| BGI | 21 | [xmoezzz/ethornell-rs](https://github.com/xmoezzz/ethornell-rs) | Rust | あり (WebGL2) | 千の刃濤の体験版がブラウザで動いた画像あり。2026-10-23 更新。2026-10-28: 1.7x のセーブ/ロード画面を直した (patches/ethornell-rs/0010)。Lump of Sugar / HOOKSOFT / すける の 10 本で本編のセーブ/ロードを確認 (ネイティブ。どっちのiが好きですか? は Chromium でも)。1920x1080 の残りはヘッドレスが遅くて未確認 |
 | Softpal | 31 | [xmoezzz/sena-rs](https://github.com/xmoezzz/sena-rs) | Rust | あり | README に「特に『Koikake』1 作品が対象」。他作品は差分を埋める前提 |
 | FVP | 6 | [xmoezzz/rfvp](https://github.com/xmoezzz/rfvp) | Rust | あり (platform/wasm) | 全バージョン互換を目指すと記載 |
 | Artemis | 5 | [Alphaly2K/art3m1s-core](https://github.com/Alphaly2K/art3m1s-core) | Rust | 無し | Flutter 版あり。商用作品の互換表なし |

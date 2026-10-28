@@ -1,10 +1,10 @@
 b2011_catwalk	本編	
-r1_siglus_primadoll	タイトル	9fd1333 で「最初から」→エピソード選択まで進むようになった
+r1_siglus_primadoll	タイトル	2026-10-28: Chromium でタイトルのボタンが反応しない (ホバーの表示も無し)。ポインタはゲーム座標で VM に届いていて、VM は待ち状態ではない (スクリプトが自分でボタンを見ている)。未解決
 dl_VJ01000468	タイトル	プリマドール体験版と同じ中身
 b2015_hamham	本編	体験版メニュー画面まで
 dl_VJ01006181	タイトル	
 dl_VJ01006709	本編	プロローグの文章が自動で流れる
-dl_VJ01006640	タイトル	9fd1333 でクラッシュが直りタイトルまで (開発スレッドでは本編まで確認)
+dl_VJ01006640	タイトル	2026-10-28: Chromium でスタートは効くが、直後に Chromium のレンダラーが落ちる (共有メモリで空き約 1.5GB の時)。メモリに余裕のある環境で再確認
 s2017_sagaplanets_kinkoi	本編	プロローグの文章
 b2007_sagaplanets	本編	fonts/ が要る
 b2007_hadashi	本編	
@@ -26,7 +26,7 @@ s2008_sagaplanets_cominghumming	本編	Chromium で本編のセーブ/ロード�
 s2009_hadashi_cool	本編	Chromium で本編のセーブ/ロード確認 (siglus_rs 0007: 番号なしのボタンはオブジェクト番号を返す)
 r1_bgi_kudan	本編	b2019_sukerasparo と同じ作品 (クダンノフォークロア)。そちらで本編のセーブ/ロード確認
 s2010_sagaplanets_kisaragi	要再確認	展開後にエンジンの印のファイル (Seen.txt) が見つからない
-b2019_hooksoft	本編	ethornell-rs 0010 (Sprite の GetProperty 0x10) でセーブ画面が開くようになり、本編 (H シーン体験版) のセーブ/ロード確認 (ネイティブ)
+b2019_hooksoft	本編	ethornell-rs 0010 (Sprite の GetProperty 0x10) でセーブ画面が開くようになった。Chromium で Start→H シーン選択→本編→S キーでセーブ、L キーでロードを確認
 b2015_hooksoft	本編	ネイティブ (ethornell headless) で はじめから→本編→右クリックのメニューからセーブ/ロード確認
 b2020_sukerasomero	本編	ネイティブ (ethornell headless) で START→本編→右端のメニューからセーブ/ロード確認 (約 7000 フレーム、遅い)
 b2006_lumpofsugar	本編	ネイティブ (ethornell headless) で はじめから→本編→右クリックのメニューからセーブ/ロード確認
@@ -41,7 +41,7 @@ s2021_smee_pureconnect_hd	タイトル	3b42c00 で解消
 s2016_hooksoft_amenitys_life	本編	f81eded 以降も本編まで
 s2020_hooksoft_houkago	タイトル	c27e445 で直った
 s2010_lumpofsugar_prismrhythm	タイトル	28374cc (0009 更新) でタイトルまで。800x600 の画面が中央に小さく出る
-dl_VJ01004381	タイトル	28374cc (0009 更新) でタイトルまで
+dl_VJ01004381	タイトル	ネイティブ (ethornell headless) で はじめから→本編の冒頭 (メッセージ枠) まで。初回は自動で環境設定が開く (戻るで閉じる)。1920x1080 でヘッドレスが遅く (4000 フレームで約 25 分)、セーブ/ロードは未確認
 s2022_hooksoft_houkago2	タイトル	f81eded (BackML 0x8E) でタイトルまで
 s2011_lumpofsugar_gackoh	タイトル	28374cc (0009 更新) でタイトルまで
 s2023_quince_soft_little_proncess_go	タイトル	1c16d6c でもタイトルまで

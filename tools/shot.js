@@ -7,6 +7,7 @@
 //   wait:<sec>            wait
 //   shot:<name>           screenshot to <out prefix>_<name>.png
 //   at:<x>;<y>            click at page pixels (the page is 1280x800)
+//   hold:<x>;<y>[;<ms>]   like at, hovering and holding the button for ms (default 1000)
 //   key:<Key>             press a key (Playwright names: Enter, Space, ArrowDown, ...)
 //   wheel:<x>;<y>;<dy>    turn the mouse wheel over page pixels (dy < 0 is up)
 //   type:<text>           type text into the focused element
@@ -76,6 +77,14 @@ if (!url || !out) {
       await page.waitForTimeout(500);
       await page.mouse.down();
       await page.waitForTimeout(150);
+      await page.mouse.up();
+    } else if (cmd === "hold") {
+      // Like at, with a longer hover and hold (ms) for slow software-rendered frames.
+      const [x, y, ms = 1000] = arg.split(";").map(Number);
+      await page.mouse.move(x, y);
+      await page.waitForTimeout(ms);
+      await page.mouse.down();
+      await page.waitForTimeout(ms);
       await page.mouse.up();
     } else if (cmd === "key") {
       await page.keyboard.press(arg);
