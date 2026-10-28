@@ -231,6 +231,27 @@ Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softp
 - SDRS の登録時自動準備は `a76be4a`、XP3 復号とブラウザ Pad は `fee9763`、入力と PIMG の修正は `afeaba8` にコミットした。
   push とホスト CI の実行はまだ行っていない。
 
+## ShiinaRio (椎名里緒) の途中経過 (2026-10-28)
+
+- 対象: `b2011_guilty` 種憑け村 序章体験版 (`TANE_T.exe`, ini は `[椎名里緒 v2.48]`, `Arc=T1TANE_T0.WAR`, `Scn=start.SCN`, 800x600)。
+- できたこと: `crates/shiina` の `warc.rs` が WARC 1.7 の索引と全エントリ (YH1/YPK/YLZ、Decrypt/Decrypt2、helper4 の SHA-1 系と領域 CRC) を復号する。
+  `cargo run -p shiina --bin shiina-dump -- list|extract` で確認。T1TANE_*.WAR はすべて展開でき、S25 画像と .SCN が取り出せた。
+  WARC 1.2〜1.6 の Kogado レンジコーダは未実装。
+- 鍵: `tools/garbro_db.py` が GARbro の Formats.dat (MS-NRBF) を読み、`warc OUT NAME [HELPER]` で `crates/shiina/schemes/*.bin` を書く。
+  体験版の EXE は製品版と helper key の文字列が違う (種憑け村体験版は `gy||OWey|diODD`)。
+  helper4 のかからない小さいエントリだけ正しく出るときはこれを疑う。
+- まだのこと: .SCN の VM。タイトル画面は未到達。RE の道具は `tools/shiina/` (pe.py, dispatch.py, sig.py, dis.py)。
+  - インタプリタは TANE_T.exe の 0x423f20〜0x42a447。ctx は ebx で、+4 がスクリプト先頭、+0x10 が pc、+0x18 bit8 が終了、+0x20 が命令、+0xff8 が引数表、+0xffc/+0x1000 がスタック。
+  - 命令は u16 で、ハンドラは約718個。<=0x6b はバイト表 0x42a4f8 から飛び先表 0x42a450。0x78〜0x580 は飛び先表 0x42a564。0x582〜0x795 はバイト表 0x42bc30 から 0x42b988。0x6f/0x581/0x796 は個別に処理し、それより上は 0xfe39 までさらに分岐する。共通の次命令は 0x42a3d4、エラーは 0x42a410。
+  - オペランド: 読み 0x415690、書き 0x415190、アドレス 0x415500、push 0x4150f0、pop 0x415140。
+    先頭1バイト t のうち 0x40 はアドレス指定、0x80 は間接 (変数の値をスクリプト先頭からのオフセットとして使う)。
+    t&0x7f は 2/3 が c17ae8[u16]、4/5 が即値 u32、6/7 が 0x7fd0b0[u16] (7 はバイト)、8/9 がスタック局所、10/11 が 0x7fc110[u16]、12/13 が ctx+0xff8[u16]、14/15 が c17ae4[u16]、16 が C 文字列、17 が '.' 付き数値テキスト、18/19 が `}` までの名前付き変数 (`[式]` 添字、0x401600 でハッシュ表 0x5e4e58)。奇数は参照先を読む。
+  - 値は32ビットで、ポインタは実アドレス。エミュレートには平坦なメモリ空間が要る。
+  - START.SCN の末尾には x86/MMX のネイティブルーチンが埋め込まれている (`61 9d c3` = popad/popfd/ret)。スクリプトからこれを呼ぶため、その部分はハンドラごとに Rust で書き直すか x86 を解釈する必要がある。
+  - 線形の逆アセンブルは START.SCN のオフセット 0xe (op 0xa の後の `82 d3 82 aa 48 00`) で崩れる。命令ごとのオペランド数の推定は途中。
+  - 判明した命令の例: 0xa は待ち時間 (<=1000)、0x49d はグローバル c17c28 への代入、0x7ee は [v v w]、0x7ef は [v v v]。
+- 他の ShiinaRio 体験版: `b2017_onomatope_raspberry` (vnbox では NG で画面が出ない)。VM の後で試す。
+
 ## 未決のこと
 
 - Rust 側の共通 trait の具体的な形 (描画は WebGL2 か wgpu か、音声の取り回し)。最初の自作エンジンで決める。
