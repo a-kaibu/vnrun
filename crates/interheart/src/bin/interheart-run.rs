@@ -2,9 +2,9 @@
 //!
 //!     interheart-run <game folder> <frames> <out prefix> [frame[:x:y[:kind]] ...]
 //!
-//! Each `frame` is saved as `<out prefix><frame>.png`; with `:x:y`, there is also a click there
-//! on that frame (`:x:y:r` a right click, `:x:y:m` only moves the pointer there). The last frame
-//! is always saved. INTERHEART_FONT names a TrueType font for text, INTERHEART_TRACE=1 prints
+//! A bare `frame` is saved as `<out prefix><frame>.png`; `frame:x:y` clicks there on that frame
+//! instead (`:x:y:r` a right click, `:x:y:m` only moves the pointer there). The last frame is
+//! always saved. INTERHEART_FONT names a TrueType font for text, INTERHEART_TRACE=1 prints
 //! each command and INTERHEART_START=A0100_000 starts at that scene.
 
 use std::path::Path;
@@ -64,7 +64,7 @@ fn main() -> Result<(), String> {
         }
         e.frame()?;
         e.take_sounds();
-        if f == frames || marks.iter().any(|m| m.0 == f) {
+        if f == frames || marks.iter().any(|m| m.0 == f && m.1.is_none()) {
             let out = format!("{prefix}{f}.png");
             let frame = e.render();
             image::save_buffer(&out, &frame.px, frame.w, frame.h, image::ColorType::Rgba8)

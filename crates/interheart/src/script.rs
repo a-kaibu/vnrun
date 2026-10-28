@@ -31,6 +31,8 @@ pub enum Line {
     Message {
         name: Option<String>,
         voice: u32,
+        /// whose voice (the name in charaid.tbl)
+        voiced: Option<String>,
         text: Vec<String>,
     },
 }
@@ -73,18 +75,27 @@ fn number(s: &str) -> Option<u32> {
 }
 
 /// "名前　（０４２１）" (and "[n]" after it): the name and the voice.
-fn speaker(line: &str) -> Option<(String, u32)> {
-    let s = line.trim_end();
-    let s = strip_number(s);
-    let s = s.strip_suffix('）')?;
-    let open = s.rfind('（')?;
-    let voice = number(&s[open + '（'.len_utf8()..])?;
+/// "？？？　（００５８）　ゆかり": shown as ？？？ with ゆかり's voice.
+fn speaker(line: &str) -> Option<Speaker> {
+    let s = strip_number(line.trim_end());
+    let close = s.rfind('）')?;
+    let open = s[..close].rfind('（')?;
+    let voice = number(&s[open + '（'.len_utf8()..close])?;
     let name = s[..open].trim_end_matches(['　', ' ', '\t']).to_string();
-    if name.is_empty() || name.starts_with('「') {
+    let real = s[close + '）'.len_utf8()..].trim_matches(['　', ' ', '\t']);
+    if name.is_empty() || name.starts_with('「') || real.contains(['「', '」', '。', '、']) {
         return None;
     }
-    Some((name, voice))
+    let voiced = if real.is_empty() {
+        name.clone()
+    } else {
+        real.to_string()
+    };
+    Some((name, voice, voiced))
 }
+
+/// The name shown, the voice number and whose voice it is.
+type Speaker = (String, u32, String);
 
 /// Drops "[123]" from the end of a line.
 fn strip_number(s: &str) -> &str {
@@ -114,12 +125,12 @@ impl Act {
         let mut act = Act::default();
         // the lines of the text block being read, and the speaker before it
         let mut block: Vec<String> = Vec::new();
-        let mut who: Option<(String, u32)> = None;
+        let mut who: Option<Speaker> = None;
         // a choice being read: its line, and the blocks after it
         let mut select: Option<(usize, usize, Vec<Vec<String>>)> = None;
         let flush = |act: &mut Act,
                      block: &mut Vec<String>,
-                     who: &mut Option<(String, u32)>,
+                     who: &mut Option<Speaker>,
                      select: &mut Option<(usize, usize, Vec<Vec<String>>)>| {
             if block.is_empty() {
                 return;
@@ -134,11 +145,16 @@ impl Act {
                 }
                 return;
             }
-            let (name, voice) = match who.take() {
-                Some((n, v)) => (Some(n), v),
-                None => (None, 0),
+            let (name, voice, voiced) = match who.take() {
+                Some((n, v, r)) => (Some(n), v, Some(r)),
+                None => (None, 0, None),
             };
-            act.lines.push(Line::Message { name, voice, text });
+            act.lines.push(Line::Message {
+                name,
+                voice,
+                voiced,
+                text,
+            });
         };
         for raw in text.lines() {
             let line = raw.trim_end_matches('\r');
@@ -261,7 +277,9 @@ mod tests {
         ));
         assert!(matches!(&act.lines[1], Line::Command(c) if c == "EF_BLACK"));
         match &act.lines[2] {
-            Line::Message { name, voice, text } => {
+            Line::Message {
+                name, voice, text, ..
+            } => {
                 assert_eq!(name.as_deref(), Some("由香梨"));
                 assert_eq!(*voice, 421);
                 assert_eq!(text, &["「ん、ふうっ", "　あん」"]);

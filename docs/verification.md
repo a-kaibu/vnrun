@@ -61,7 +61,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Escude (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | Majiro (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | Kaguya (vnrun) | 4 | 4 |  |  |  |  |  |  |
-| Interheart (vnrun) | 11 | 2 |  |  |  |  |  | 9 |
+| Interheart (vnrun) | 11 | 10 |  |  |  | 1 |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -547,14 +547,14 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2013_inter_heart | [いたずら ～僕だけの絶対領域～ 体験版2](http://suezou.dyndns.org/dl2013/inter-heart/itazura/itazura_trial2.zip) | 本編 | Interheart (ACT_*.TXT を自前で実行) でタイトル→はじめから→キャラ選択→本編のイベント CG・文章・ボイスまで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (両方) |
+| b2016_inter_heart_glossy | [はらかつ！ ～気になるあの子と子作りエッチ～ 体験版](http://suezou.dyndns.org/dl2016/inter-heart_glossy/harakatsu/harakatsu-trial.zip) | 本編 | Interheart でタイトル→はじめから→本編の E-mote 静止画 (EMT altfile)・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
+| b2017_inter_heart_glossy | [はらかつ２ ～子作りエッチでお悩み解決～ 体験版](http://suezou.dyndns.org/dl2017/inter-heart_glossy/harakatsu2/harakatu2-trial.zip) | 本編 | Interheart でタイトル→はじめから→本編の背景・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
 | b2017_sweet_heart | [透けちゃって！！～九死に一生を得て濃密セカンドライフ～ 体験版](http://suezou.dyndns.org/dl2017/sweet-heart/sukechatte/suketyatte-trial.zip) | 本編 | Interheart でタイトル→はじめから→本編の背景・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
-| b2006_interheart | [オイラは番台２ 体験版](http://suezou.dyndns.org/dl2006/interheart/bandai2/bandai2-trial.lzh) | 未確認 |  |
-| b2016_inter_heart_glossy | [はらかつ！ ～気になるあの子と子作りエッチ～ 体験版](http://suezou.dyndns.org/dl2016/inter-heart_glossy/harakatsu/harakatsu-trial.zip) | 未確認 |  |
-| b2017_inter_heart_glossy | [はらかつ２ ～子作りエッチでお悩み解決～ 体験版](http://suezou.dyndns.org/dl2017/inter-heart_glossy/harakatsu2/harakatu2-trial.zip) | 未確認 |  |
-| b2018_hachimitsu_soft | [ノットフィクション！ 体験版](http://suezou.dyndns.org/dl2018/hachimitsu-soft/knotfc/knotfiction-trial.zip) | 未確認 |  |
-| b2019_marshmallow_soft | [lovecommu 体験版2](http://suezou.dyndns.org/dl2019/marshmallow-soft/love_commu/lovecommu-trial2.zip) | 未確認 |  |
-| b2020_marshmallow_soft | [amamama 体験版](http://suezou.dyndns.org/dl2020/marshmallow-soft/amamama/amamama-trial.zip) | 未確認 |  |
-| b2020_shiba_soft | [mamakano plus 体験版](http://suezou.dyndns.org/dl2020/shiba-soft/mamakano_plus/mamakanoPlus_trial.zip) | 未確認 |  |
-| b2021_dessert_soft | [彼女は友達ですか？恋人ですか？それともトメフレですか？Second 体験版](http://suezou.dyndns.org/dl2021/dessert-soft/tomefure_second/TomefureS-trial.zip) | 未確認 |  |
-| b2026_dessert_soft | [どいなかガールズゆーとぴあ 体験版](http://suezou.dyndns.org/dl2026/dessert-soft/doinaka_girl/doinaka-trial.rar) | 未確認 |  |
+| b2018_hachimitsu_soft | [ノットフィクション！ 体験版](http://suezou.dyndns.org/dl2018/hachimitsu-soft/knotfc/knotfiction-trial.zip) | 本編 | Interheart でタイトル (エンジン描画のボタン)→はじめから→本編の背景・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
+| b2019_marshmallow_soft | [らぶこみゅ 体験版2](http://suezou.dyndns.org/dl2019/marshmallow-soft/love_commu/lovecommu-trial2.zip) | 本編 | Interheart でタイトル (エンジン描画のボタン)→はじめから→体験版の選択肢→本編の背景・立ち絵・イベント CG・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
+| b2020_marshmallow_soft | [あまママほりっく 体験版](http://suezou.dyndns.org/dl2020/marshmallow-soft/amamama/amamama-trial.zip) | 本編 | Interheart でタイトル→はじめから→本編の背景・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium)。00.fpk は WMV のため読まない |
+| b2020_shiba_soft | [ママ×カノ＋ 体験版](http://suezou.dyndns.org/dl2020/shiba-soft/mamakano_plus/mamakanoPlus_trial.zip) | 本編 | Interheart でタイトル (エンジン描画のボタン)→はじめから→本編の背景・立ち絵・顔グラ・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
+| b2021_dessert_soft | [彼女は友達ですか？恋人ですか？それともトメフレですか？Second 体験版](http://suezou.dyndns.org/dl2021/dessert-soft/tomefure_second/TomefureS-trial.zip) | 本編 | Interheart でタイトル (エンジン描画のボタン)→はじめから→スキップ確認の選択肢→本編の背景 (PNG)・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
+| b2026_dessert_soft | [どいなかガールズゆーとぴあ 体験版](http://suezou.dyndns.org/dl2026/dessert-soft/doinaka_girl/doinaka-trial.rar) | 本編 | Interheart でタイトル (エンジン描画のボタン)→はじめから→本編の背景・立ち絵・イベント CG・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
+| b2006_interheart | [オイラは番台２ 体験版](http://suezou.dyndns.org/dl2006/interheart/bandai2/bandai2-trial.lzh) | NG | data.fpk 方式だが脚本が古い ACT_00.txt (SC_DATA 等の銭湯経営シミュレーション) で、Interheart エンジンの ACT_<letter>.TXT 方言と違う |
 <!-- /matrix -->

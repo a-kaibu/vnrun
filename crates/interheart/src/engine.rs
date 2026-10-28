@@ -113,8 +113,14 @@ struct Title {
     bg: Option<Rc<Image>>,
     chip: Option<Rc<Image>>,
     map: Option<HoverMap>,
+    /// the buttons of the hover map, or (when the chip sheet is not the usual 2 x 6 cells of
+    /// 324 x 52 in 3 rows each) plain ones of our own
     buttons: Vec<(u8, [i32; 4])>,
+    classic: bool,
 }
+
+/// Our own title buttons: what each does (as the hover map numbers them) and its label.
+const PLAIN_TITLE: [(u8, &str); 3] = [(1, "はじめから"), (2, "つづきから"), (6, "ゲーム終了")];
 
 /// The message on show, drawn.
 struct Message {
@@ -159,6 +165,8 @@ pub struct Engine {
     message: Option<Message>,
     /// the line of the message on show (where a save starts again)
     message_pc: usize,
+    /// a save starts at a scene's (or a choice's) first line rather than a message
+    message_enters: bool,
     flags: HashMap<i32, i32>,
     equal: bool,
     bgm: String,
@@ -227,6 +235,7 @@ impl Engine {
             window: false,
             message: None,
             message_pc: 0,
+            message_enters: false,
             flags: HashMap::new(),
             equal: false,
             bgm: String::new(),
@@ -355,12 +364,26 @@ impl Engine {
                 .iter()
                 .find_map(|n| self.arc.read(self.files.as_mut(), n))
                 .and_then(|b| HoverMap::parse(&b));
-            let buttons = map.as_ref().map(|m| m.boxes()).unwrap_or_default();
+            let classic = chip.as_ref().is_some_and(|c| classic_title_chip(c)) && map.is_some();
+            let buttons = if classic {
+                map.as_ref().map(|m| m.boxes()).unwrap_or_default()
+            } else {
+                let (w, h) = (self.screen.0 as i32, self.screen.1 as i32);
+                PLAIN_TITLE
+                    .iter()
+                    .enumerate()
+                    .map(|(i, (v, _))| {
+                        let y = h / 2 + i as i32 * 76;
+                        (*v, [w - 340, y, w - 60, y + 56])
+                    })
+                    .collect()
+            };
             self.title = Some(Title {
                 bg,
                 chip,
                 map,
                 buttons,
+                classic,
             });
         }
         self.fade = Some(Fade {
@@ -451,6 +474,8 @@ impl Engine {
                         self.entering = false;
                         self.scene = id;
                         self.next = next;
+                        self.message_pc = self.pc;
+                        self.message_enters = true;
                         self.pc += 1;
                     } else {
                         let n = self.next;
@@ -471,6 +496,7 @@ impl Engine {
                     self.scene = id;
                     self.present(0);
                     self.message_pc = self.pc;
+                    self.message_enters = true;
                     self.show_message(None, &question);
                     self.window = true;
                     self.wait = Wait::Choice(answers);
@@ -480,12 +506,18 @@ impl Engine {
                     self.pc += 1;
                     self.command(&c);
                 }
-                Line::Message { name, voice, text } => {
+                Line::Message {
+                    name,
+                    voice,
+                    voiced,
+                    text,
+                } => {
                     self.present(0);
                     self.message_pc = self.pc;
+                    self.message_enters = false;
                     self.pc += 1;
                     if voice > 0
-                        && let Some(n) = &name
+                        && let Some(n) = &voiced
                     {
                         self.play_voice(n, voice);
                     }
@@ -613,8 +645,9 @@ impl Engine {
                 self.goto(n);
             }
             "JUMP" => {
+                // -1: no jump, the scene goes on to its next one
                 let to = if self.equal { num(3) } else { num(4) };
-                if let Some(to) = to {
+                if let Some(to) = to.filter(|t| *t >= 0) {
                     let id = (self.scene.0, self.scene.1, to as u32);
                     self.goto(id);
                 }
@@ -657,6 +690,20 @@ impl Engine {
     }
 
     fn set_bg(&mut self, name: &str) {
+        // an E-mote picture (name.EMT): its still (altfile=) if it has one, else the picture
+        // before it stays
+        if let Some(b) = self.arc.read(self.files.as_mut(), &format!("{name}.EMT")) {
+            let alt = text_of(&b).lines().find_map(|l| {
+                l.trim()
+                    .strip_prefix("altfile=")
+                    .map(|f| f.trim().to_string())
+            });
+            if let Some(img) = alt.and_then(|f| self.picture(&f)) {
+                self.bg = Some(img);
+                self.bg_name = name.to_string();
+            }
+            return;
+        }
         match self.find_pic(name) {
             Some(img) => {
                 self.bg = Some(img);
@@ -810,16 +857,33 @@ impl Engine {
         out
     }
 
-    fn title_draws(&self) -> Vec<Draw> {
+    /// The title button at (x, y), as the hover map numbers them (0: none).
+    fn title_hit(&self, x: i32, y: i32) -> u8 {
+        let Some(t) = &self.title else { return 0 };
+        if t.classic {
+            return t.map.as_ref().map_or(0, |m| m.at(x, y));
+        }
+        t.buttons
+            .iter()
+            .find(|(_, r)| inside(*r, x, y))
+            .map_or(0, |b| b.0)
+    }
+
+    fn title_draws(&mut self) -> Vec<Draw> {
         let mut out = vec![self.solid([0, 0, 0, 255])];
         let Some(t) = &self.title else { return out };
         if let Some(bg) = &t.bg {
             out.push(draw(bg, 0.0, 0.0, 1.0));
         }
-        let hover = t
-            .map
-            .as_ref()
-            .map_or(0, |m| m.at(self.pointer.0, self.pointer.1));
+        if !t.classic {
+            let buttons = t.buttons.clone();
+            for (v, r) in buttons {
+                let label = PLAIN_TITLE.iter().find(|b| b.0 == v).map_or("", |b| b.1);
+                self.button(label, r, &mut out);
+            }
+            return out;
+        }
+        let hover = self.title_hit(self.pointer.0, self.pointer.1);
         for &(v, r) in &t.buttons {
             let state = if v == hover { 1 } else { 0 };
             match &t.chip {
@@ -853,7 +917,7 @@ impl Engine {
         let (w, h) = (self.screen.0 as f32, self.screen.1 as f32);
         let top = h - 160.0;
         if self.meschip.is_none() {
-            let chip = self.find_pic("MesChip");
+            let chip = self.find_pic("MesChip").filter(|c| classic_window_chip(c));
             self.meschip = Some(chip);
         }
         match self.meschip.clone().flatten() {
@@ -867,7 +931,11 @@ impl Engine {
                 let img = white(1, 1, [0, 0, 32, 180]);
                 let mut d = draw(&img, 0.0, 0.0, 1.0);
                 d.dst = [0.0, top, w, h];
-                out.push(d);
+                out.push(d.clone());
+                if self.message.as_ref().is_some_and(|m| m.name.is_some()) {
+                    d.dst = [0.0, top - 44.0, 300.0, top];
+                    out.push(d);
+                }
             }
         }
         if let Some((_, face)) = &self.face {
@@ -904,7 +972,7 @@ impl Engine {
             .map(|m| {
                 m.boxes()
                     .into_iter()
-                    .filter(|(v, _)| *v >= 17)
+                    .filter(|(v, r)| *v != 254 && r[2] - r[0] > 400)
                     .map(|(_, r)| r)
                     .collect()
             })
@@ -921,7 +989,7 @@ impl Engine {
 
     fn choice_draws(&mut self, answers: &[(String, SceneId)], out: &mut Vec<Draw>) {
         let boxes = self.choice_boxes(answers.len());
-        let chip = self.meschip.clone().flatten().filter(|c| c.h >= 580);
+        let chip = self.meschip.clone().flatten();
         for (r, (text, _)) in boxes.iter().zip(answers) {
             let lit = inside(*r, self.pointer.0, self.pointer.1);
             let dst = [r[0] as f32, r[1] as f32, r[2] as f32, r[3] as f32];
@@ -1318,11 +1386,7 @@ impl Engine {
     }
 
     fn title_click(&mut self, x: i32, y: i32) {
-        let v = self
-            .title
-            .as_ref()
-            .and_then(|t| t.map.as_ref())
-            .map_or(0, |m| m.at(x, y));
+        let v = self.title_hit(x, y);
         match v {
             1 => self.new_game(),
             2 => {
@@ -1425,7 +1489,10 @@ impl Engine {
     fn save(&mut self, i: usize) {
         let mut s = String::new();
         let id = |v: SceneId| format!("{},{},{}", v.0, v.1, v.2);
-        s += &format!("act={}\npc={}\n", self.letter, self.message_pc);
+        s += &format!(
+            "act={}\npc={}\nenter={}\n",
+            self.letter, self.message_pc, self.message_enters as u8
+        );
         s += &format!("scene={}\nnext={}\n", id(self.scene), id(self.next));
         s += &format!("bg={}\nwindow={}\n", self.bg_name, self.window as u8);
         for c in &self.charas {
@@ -1476,6 +1543,7 @@ impl Engine {
             ))
         };
         let mut pc = 0;
+        let mut enter = false;
         let mut bgm = String::new();
         for l in t.lines() {
             let Some((k, v)) = l.split_once('=') else {
@@ -1488,6 +1556,7 @@ impl Engine {
                     }
                 }
                 "pc" => pc = v.parse().unwrap_or(0),
+                "enter" => enter = v == "1",
                 "scene" => self.scene = parse_id(v).unwrap_or(self.scene),
                 "next" => self.next = parse_id(v).unwrap_or(self.next),
                 "bg" => match v {
@@ -1522,7 +1591,7 @@ impl Engine {
             self.play_bgm(&bgm);
         }
         self.pc = pc;
-        self.entering = false;
+        self.entering = enter;
         self.wait = Wait::None;
         self.view = Screen::Game;
         self.fade = Some(Fade {
@@ -1559,6 +1628,24 @@ fn stop_effects() -> Sound {
         fade_ms: 300,
         looped: false,
     }
+}
+
+/// Whether titlechip.kg is the usual sheet: two columns of 324 x 52 cells, a button in three
+/// looks (plain, lit, pressed) in each of 6 rows of three, with no gaps between them.
+fn classic_title_chip(c: &Image) -> bool {
+    if c.w < 648 || c.h < 936 {
+        return false;
+    }
+    (0..936)
+        .step_by(2)
+        .all(|y| (0..c.w).any(|x| c.px[((y * c.w + x) * 4 + 3) as usize] != 0))
+}
+
+/// Whether MesChip.kg is the usual sheet: the window (1024 x 160, opaque to its left edge) at
+/// the top and the bars of the choices at 437 and 485.
+fn classic_window_chip(c: &Image) -> bool {
+    let a = |x: u32, y: u32| c.px[((y * c.w + x) * 4 + 3) as usize];
+    c.w >= 1024 && c.h >= 580 && a(4, 80) > 0 && a(4, 150) > 0 && a(1000, 150) > 0 && a(10, 460) > 0
 }
 
 /// Breaks a line into pieces of at most `n` characters.
