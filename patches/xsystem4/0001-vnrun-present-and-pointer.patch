@@ -1,0 +1,183 @@
+diff --git a/src/ffi.c b/src/ffi.c
+index 17aad6c..53a0835 100644
+--- a/src/ffi.c
++++ b/src/ffi.c
+@@ -302,6 +302,11 @@ void hll_call(int libno, int fno)
+ 	struct hll_function *fun = &libraries[libno][fno];
+ 	if (!fun->fun)
+ 		VM_ERROR("Unimplemented HLL function: %s.%s", ain->libraries[libno].name, f->name);
++#ifdef __EMSCRIPTEN__
++	// vnrun: calls go through generated wrappers (engines/system4/shim/ffi.h).
++	if (!vnrun_hll_has_wrapper(fun->fun))
++		VM_ERROR("No call wrapper for HLL function: %s.%s", ain->libraries[libno].name, f->name);
++#endif
+ 
+ 	void *args[HLL_MAX_ARGS];
+ 	void *ptrs[HLL_MAX_ARGS];
+diff --git a/src/input.c b/src/input.c
+index 86bcf73..3cb0a33 100644
+--- a/src/input.c
++++ b/src/input.c
+@@ -222,17 +222,68 @@ void key_clear_flag(bool no_ctrl)
+ 	}
+ }
+ 
++#ifdef __EMSCRIPTEN__
++#include <emscripten.h>
++
++void vnrun_yield(unsigned ms);
++
++// vnrun: pointer input from the page, in window pixels (the page maps its canvas to the
++// frame). SDL never sees the pointer on its own canvas, so the position is kept here too.
++static int vnrun_mouse_x, vnrun_mouse_y;
++
++EMSCRIPTEN_KEEPALIVE void vnrun_mouse(int x, int y, int button, int down)
++{
++	SDL_Event event;
++	SDL_zero(event);
++	vnrun_mouse_x = x;
++	vnrun_mouse_y = y;
++	if (button == 0) {
++		event.type = SDL_MOUSEMOTION;
++		event.motion.x = x;
++		event.motion.y = y;
++	} else {
++		event.type = down ? SDL_MOUSEBUTTONDOWN : SDL_MOUSEBUTTONUP;
++		event.button.button = button;
++		event.button.state = down ? SDL_PRESSED : SDL_RELEASED;
++		event.button.clicks = 1;
++		event.button.x = x;
++		event.button.y = y;
++	}
++	SDL_PushEvent(&event);
++}
++
++EMSCRIPTEN_KEEPALIVE void vnrun_wheel(int dy)
++{
++	SDL_Event event;
++	SDL_zero(event);
++	event.type = SDL_MOUSEWHEEL;
++	event.wheel.y = dy;
++	SDL_PushEvent(&event);
++}
++#endif
++
+ void mouse_get_pos(int *x, int *y)
+ {
+ 	int wx, wy;
++#ifdef __EMSCRIPTEN__
++	vnrun_yield(50);
++	wx = vnrun_mouse_x;
++	wy = vnrun_mouse_y;
++#else
+ 	SDL_PumpEvents();
+ 	SDL_GetMouseState(&wx, &wy);
++#endif
+ 	*x = (wx - sdl.viewport.x) * sdl.w / sdl.viewport.w;
+ 	*y = (wy - sdl.viewport.y) * sdl.h / sdl.viewport.h;
+ }
+ 
+ void mouse_set_pos(int x, int y)
+ {
++#ifdef __EMSCRIPTEN__
++	vnrun_mouse_x = x * sdl.viewport.w / sdl.w + sdl.viewport.x;
++	vnrun_mouse_y = y * sdl.viewport.h / sdl.h + sdl.viewport.y;
++	return;
++#endif
+ 	int wx = x * sdl.viewport.w / sdl.w + sdl.viewport.x;
+ 	int wy = y * sdl.viewport.h / sdl.h + sdl.viewport.y;
+ 	SDL_WarpMouseInWindow(sdl.window, wx, wy);
+@@ -634,6 +685,9 @@ void handle_window_events(void)
+ 
+ void handle_events(void)
+ {
++#ifdef __EMSCRIPTEN__
++	vnrun_yield(50);
++#endif
+ 	fire_deferred_events();
+ 
+ 	SDL_Event e;
+diff --git a/src/video.c b/src/video.c
+index e1ebcd9..67c9123 100644
+--- a/src/video.c
++++ b/src/video.c
+@@ -32,6 +32,49 @@
+ #include "icon.h"
+ #include "xsystem4.h"
+ 
++#ifdef __EMSCRIPTEN__
++#include <emscripten.h>
++
++// vnrun: the page shows each frame itself (WebGPU), so the GL canvas is never on screen.
++extern void vnrun_present(const void *pixels, int pitch, int width, int height);
++
++// Gives the browser a turn (drawing, input, audio) at least every `ms` milliseconds; the VM
++// otherwise runs without returning to it.
++void vnrun_yield(unsigned ms)
++{
++	static uint64_t last;
++	uint64_t now = SDL_GetTicks64();
++	if (now - last >= ms) {
++		emscripten_sleep(0);
++		last = SDL_GetTicks64();
++	}
++}
++
++// Reads the view texture back through a framebuffer of its own: the GL canvas is not on the
++// page, so its size (and so the default framebuffer) means nothing.
++static void vnrun_present_frame(struct texture *t)
++{
++	static GLuint fb;
++	static uint8_t *pixels;
++	static int size;
++	int w = t->w, h = t->h;
++	if (w <= 0 || h <= 0)
++		return;
++	if (w * h * 4 > size) {
++		size = w * h * 4;
++		pixels = xrealloc(pixels, size);
++	}
++	if (!fb)
++		glGenFramebuffers(1, &fb);
++	glBindFramebuffer(GL_FRAMEBUFFER, fb);
++	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, t->handle, 0);
++	glPixelStorei(GL_PACK_ALIGNMENT, 1);
++	glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
++	// Textures hold window row 0 first, so the rows come out top first.
++	vnrun_present(pixels, w * 4, w, h);
++}
++#endif
++
+ struct sdl_private sdl;
+ 
+ static const GLchar glsl_preamble[] =
+@@ -341,6 +384,14 @@ void gfx_toggle_fullscreen(void)
+ 
+ void gfx_update_screen_scale(void)
+ {
++#ifdef __EMSCRIPTEN__
++	// The page scales the frame; input arrives in frame pixels.
++	sdl.viewport.x = 0;
++	sdl.viewport.y = 0;
++	sdl.viewport.w = sdl.w;
++	sdl.viewport.h = sdl.h;
++	return;
++#endif
+ 	int display_w, display_h;
+ 	SDL_GL_GetDrawableSize(sdl.window, &display_w, &display_h);
+ 
+@@ -423,6 +474,14 @@ static void gfx_update_frame_rate_counter(void)
+ 
+ void gfx_swap(void)
+ {
++#ifdef __EMSCRIPTEN__
++	vnrun_present_frame(view);
++	glBindFramebuffer(GL_FRAMEBUFFER, main_surface_fb);
++	glViewport(0, 0, sdl.w, sdl.h);
++	gfx_update_frame_rate_counter();
++	vnrun_yield(0);
++	return;
++#endif
+ 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+ 	glViewport(sdl.viewport.x, sdl.viewport.y, sdl.viewport.w, sdl.viewport.h);
+ 	gfx_clear();

@@ -363,3 +363,5 @@ b2007_marmalade	本編	ロゴ→タイトル (3D の演出は描かない)→STA
 b2009_cube	本編	注意書き→タイトル→初めから→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認
 b2009_marmalade	本編	タイトル→はじめから→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認
 b2024_syrup_mm	NG	.csx が無い新しい世代 (システムは exe 内、台本は xscript の .srcxml)
+b2013_alicesoft	本編	注意書き→タイトル→ゲーム開始→本編の文章 (ブラウザ)
+b2012_alicesoft	本編	タイトル (シーン選択)→琴音 純愛→本編の文章 (ブラウザ)

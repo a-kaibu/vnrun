@@ -182,6 +182,12 @@ fn detect(game: &Path) -> Option<String> {
     let has = |n: &str| names.iter().any(|x| x == n);
     if has("scene.pck") {
         Some("siglus".into())
+    } else if has("system40.ini")
+        || has("alicestart.ini")
+        || names.iter().any(|n| n.ends_with(".ain"))
+    {
+        // AliceSoft System4: the .ain code beside its start .ini
+        Some("system4".into())
     } else if has("seen.txt") {
         Some("reallive".into())
     } else if has("advhd.exe") && names.iter().any(|n| n.ends_with(".arc")) {

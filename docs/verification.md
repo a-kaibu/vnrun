@@ -56,6 +56,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | LiveMaker (vnrun) | 4 | 4 |  |  |  |  |  |  |
 | CatSystem2 (vnrun) | 3 | 3 |  |  |  |  |  |  |
 | EntisGLS (vnrun) | 5 | 4 |  |  |  | 1 |  |  |
+| AliceSoft System4 (xsystem4) | 2 | 2 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -495,4 +496,11 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2009_marmalade | [キスと魔王と紅茶 体験版](http://suezou.dyndns.org/dl2009/marmalade/kissmao/kissmao_tr.zip) | 本編 | タイトル→はじめから→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認 |
 | b2010_undermoon | [痴覚過敏 体験版](http://suezou.dyndns.org/dl2010/undermoon/tikaku/chikakukabin_trial.zip) | 本編 | ロゴ→タイトル→START→本編の文章 (entis-run とブラウザ)。検証スレッドでは cbb2054 の Chromium でタイトルまで確認 |
 | b2024_syrup_mm | [狙われた優等生 身代わりの代償 体験版](http://suezou.dyndns.org/dl2024/syrup-mm/yutosei/yutosei_taikenban.zip) | NG | .csx が無い新しい世代 (システムは exe 内、台本は xscript の .srcxml) |
+
+### AliceSoft System4 (xsystem4)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2012_alicesoft | [母娘乱館 体験版](http://suezou.dyndns.org/dl2012/alicesoft/oyakorankan/oyakorankan_trialver.zip) | 本編 | タイトル (シーン選択)→琴音 純愛→本編の文章 (ブラウザ) |
+| b2013_alicesoft | [ランス01体験版](http://suezou.dyndns.org/dl2013/alicesoft/rance01/rance01trial.zip) | 本編 | 注意書き→タイトル→ゲーム開始→本編の文章 (ブラウザ) |
 <!-- /matrix -->

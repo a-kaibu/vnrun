@@ -66,6 +66,7 @@ game_root() {
     livemaker) m=(-iname live.dll -o -iname game.ext) ;;
     catsystem2) m=(-iname scene.int) ;;
     entis) m=(-iname '*.csx' -o -iname '*.noa') ;;
+    system4) m=(-iname '*.ain') ;;
     nscripter) m=(-iname nscript.dat -o -iname 0.txt -o -iname 00.txt -o -iname '*.nsa' -o -iname '*.sar') ;;
     html) m=(-iname package.json -o -iname index.html -o -iname package.nw -o -iname nw.pak) ;;
   esac

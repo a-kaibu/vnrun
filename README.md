@@ -13,6 +13,7 @@ Windows 向けノベルゲームを、Wine を使わずにブラウザの中で�
 | FVP | [rfvp](https://github.com/xmoezzz/rfvp) (`third_party/rfvp`) | 組み込み済み。さくら、もゆ。体験版で本編の文章とセーブまで確認 |
 | Artemis | [art3m1s-core](https://github.com/Alphaly2K/art3m1s-core) (`third_party/art3m1s-core`、MPL-2.0) | 組み込み中。描画はまだ WebGL2 経由、試した体験版は E-Mote の読み込みで止まる |
 | NScripter | [ONScripter-Yuri](https://github.com/YuriSizuku/OnscripterYuri) (`third_party/onscripter-yuri`、GPL-2.0) | 組み込み済み。自作のテストスクリプトで文章・選択肢・セーブまで確認 (実物の作品は未確認) |
+| AliceSoft System4 | [xsystem4](https://github.com/nunuhara/xsystem4) (`third_party/xsystem4`、GPL-2.0-or-later) | 組み込み済み。ランス01・母娘乱館の体験版で本編の文章まで確認 (音とセーブは未確認) |
 | 吉里吉里 (KAG) | [KiriKiri SDL2](https://github.com/krkrsdl2/krkrsdl2) (`third_party/krkrsdl2`、MIT ほか) | 組み込み済み。KAG3 のテストで文章・選択肢・セーブまで確認。Akabei / Mado と検証済み cxdec の XP3 を自動復号。Pad の設定編集と保存にも対応。体験版の結果は [docs/verification.md](docs/verification.md) |
 | TyranoScript、RPGツクール MV/MZ など (NW.js) | ゲーム自身 (iframe で開くだけ) | 組み込み済み。TyranoScript の公式サンプルでタイトル・本編・セーブ・ロードまで確認 (RPGツクールは未確認、package.nw に固めた作品は未対応) |
 
@@ -48,7 +49,7 @@ cargo run --release -p vnrun-devserver -- --game ~/games/シオンの血族_体�
 # → http://127.0.0.1:8090/ をブラウザで開く。セーブは ./saves/<フォルダ名>/ に残る
 ```
 
-`--game` はエンジンのファイルがある場所 (Siglus なら `Scene.pck` と `Gameexe.dat` のあるフォルダ) を指す。エンジンは自動で判定し、外れたら `--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter|kirikiri|yuris|nexas|tmrhiro|livemaker|catsystem2|entis|advhd|html` で指定する。別の端末から開くなら `--addr 0.0.0.0:8090`。
+`--game` はエンジンのファイルがある場所 (Siglus なら `Scene.pck` と `Gameexe.dat` のあるフォルダ) を指す。エンジンは自動で判定し、外れたら `--engine siglus|reallive|avg32|uk2|bgi|softpal|fvp|artemis|nscripter|kirikiri|yuris|nexas|tmrhiro|livemaker|catsystem2|entis|system4|advhd|html` で指定する。別の端末から開くなら `--addr 0.0.0.0:8090`。
 
 `vnrun-devserver --game` は、配信を始める前に SDRS の展開、EXE 内蔵 cxdec のパラメーター抽出、Siglus の二次鍵の前処理を自動で行う。前処理が失敗した場合はエラーで止まり、配信しない。
 

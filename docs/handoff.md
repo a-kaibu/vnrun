@@ -71,6 +71,12 @@ docs/protocol.md     プレイヤーとサーバーの約束事
   - `0003`: ページがウィンドウの大きさを決めるので、スクリプトの全画面切り替えは wasm では無視する (exitFullscreen が例外で落ちた)。
   - `0004`: 直前の画面の読み戻し (セーブのサムネイル、マスク付きディゾルブ) がバッファのマップを同期で待っていて、WebGPU ではマップがフレームの間にしか終わらないのでページが固まった。読み戻しを非同期にして、終わるまでそのフレームを保留する (ゲームは進めない)。
   - ヘッドレスでは最初のクリックがフォーカス取得として捨てられる (rfvp が Focused でクリックを 1 回食う)。実ブラウザでは起動時にキャンバスにフォーカスするので問題になりにくいはず。
+- AliceSoft System4 (xsystem4、GPL-2.0-or-later、`engines/system4/`):
+  - Emscripten + Asyncify で VM をそのまま動かす (`engines/system4/build.sh`、meson は使わず upstream の meson.build のソース一覧を読む)。xsystem4 は GLES 3 で描くので、WebGL2 の文脈をページに出さない canvas に作り、毎フレーム view のテクスチャを glReadPixels で読み出して `vnrun_present` からページの Presenter (WebGPU) に渡す (`patches/xsystem4/0001`)。ページには WebGL の canvas を置かない。座標はフレームのピクセルのまま (`gfx_update_screen_scale` は等倍)。
+  - VM は SDL_Delay (Asyncify で emscripten_sleep) と、フレームごとの `vnrun_yield` でブラウザに番を返す。ポインタは `vnrun_mouse`/`vnrun_wheel` で SDL のイベントとして入れ、位置も覚えておく (SDL_GetMouseState は見ない)。
+  - libffi は使わない。WebAssembly の間接呼び出しは型が一致しないと落ちるので、`engines/system4/gen_hll.py` が HLL ライブラリ (src/hll/*.c) ごとに、表の関数と static_library_replace で差し替える関数を clang の AST から型付きで呼ぶラッパーを書き、`shim/ffi.c` の ffi_call が関数のアドレスから引く。ラッパーの無い関数は名前付きで VM_ERROR になる。
+  - libsndfile は `shim/sndfile.c` (vorbisfile と PCM の WAV)、libturbojpeg は `shim/turbojpeg.c` (stb_image) で置き換え。libwebp と cglm はビルド時に取ってくる。
+  - フォント: 作品の .fnl のほかに TrueType のゴシックと明朝を必ず読むので、ページのフォントか、無ければ build.sh が置く VL Gothic を渡す。セーブは /saves (`--save-folder`)。
 - NScripter (ONScripter-Yuri、GPL-2.0、`engines/onscripter/`):
   - Emscripten + Asyncify で SDL のループをそのまま動かす。`patches/onscripter-yuri/0001` で、合成済みの画面 (accumulation_surface、ARGB8888) をページの Presenter (WebGPU) に渡し、SDL のレンダラはソフトウェアにして何も描かせない。ポインタはページがフレームの座標に直して `vnrun_mouse` で SDL のイベントとして入れる。キーボードは SDL が window から読む。
   - ゲームのファイルは `web/src/emfs.ts` の遅延ファイル (Artemis と共用)。Windows 向けの作品はファイル名の大小文字が揃っていないので、小文字のパスでも引けるようにしている。セーブは `/saves` に書かせて GameFS に送る。
@@ -131,7 +137,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 | Artemis | 5 | [Alphaly2K/art3m1s-core](https://github.com/Alphaly2K/art3m1s-core) | Rust | 無し | Flutter 版あり。商用作品の互換表なし |
 | 吉里吉里 | 133 | krkrz / [krkrsdl2](https://github.com/krkrsdl2/krkrsdl2) (Web 版あり)、Kirikiroid2 | C++ | あり | 組み込み済み (KAG3 で確認)。krkrsdl2 は「未改変の商用ゲームは非対応」と明記。下の xmoezzz の部品が使える |
 | NScripter | 4 | [OnscripterYuri](https://github.com/YuriSizuku/OnscripterYuri)、onscripter-ru-wasm | C++ | あり | |
-| AliceSoft System4 | 3 | [xsystem4](https://github.com/kichikuou/xsystem4)、system3-sdl2 (Web 版あり) | C | System3 のみ | |
+| AliceSoft System4 | 3 | [xsystem4](https://github.com/nunuhara/xsystem4) (`third_party/xsystem4`、GPL-2.0-or-later)、system3-sdl2 (Web 版あり) | C | 組み込み済み (Emscripten、描画は WebGL2 で読み戻して WebGPU) | ランス01・母娘乱館の体験版で本編の文章まで確認 (ブラウザ)。音とセーブは未確認 |
 | YU-RIS | 29 | なし | | | 自作候補 |
 | NeXAS | 26 | 自作 (`crates/nexas`) | Rust | あり (WebGPU) | 2015 年の版 (恋愛フェイズ) と 2012 年の版 (キスベル) で本編まで。ほかの版は命令表を足す |
 | AdvHD | 18 | 自作 (`crates/advhd`, `crates/advhd-web`) | Rust | あり (WebGPU) | 2018 年の版 (Lua 5.3、僕と彼女のご奉仕同棲) でタイトルから本編の文章まで。選択肢・音・セーブ・マスク遷移はまだ。2015 年版は Lua の io、2026 年版は setCallback が足りない |

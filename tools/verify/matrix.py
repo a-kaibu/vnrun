@@ -24,6 +24,7 @@ ENGINES = {
     "livemaker": "LiveMaker (vnrun)",
     "catsystem2": "CatSystem2 (vnrun)",
     "entis": "EntisGLS (vnrun)",
+    "system4": "AliceSoft System4 (xsystem4)",
 }
 RESULTS = ["本編", "タイトル", "起動", "要再確認", "NG", "対象外", "未確認"]
 
