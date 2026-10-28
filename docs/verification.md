@@ -628,7 +628,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2007_anim | [必殺痴漢人　- TRIAL VERSION -](http://suezou.dyndns.org/dl2007/anim/chikan3/ci3_trial.lzh) | 本編 | 検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。Crowd/ANIM の 2007 年版 (番号と引数が違う別表、exe の解釈ループから。全ジャンプが命令の頭に落ちるのを確認) でタイトル (p_menu)→はじめから→本編の文章・名前・背景・立ち絵・選択肢 (anim-run と Chromium)。上 48 の帯と下 144 の枠は p_message から。タイトルのメニューは自前の文字ボタン |
+| b2007_anim | [必殺痴漢人　- TRIAL VERSION -](http://suezou.dyndns.org/dl2007/anim/chikan3/ci3_trial.lzh) | 本編 | 検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。Crowd/ANIM の 2007 年版 (番号と引数が違う別表、exe の解釈ループから。全ジャンプが命令の頭に落ちるのを確認) でタイトル (p_menu)→はじめから→本編の文章・名前・背景・立ち絵・選択肢 (anim-run と Chromium)。上 48 の帯と下 144 の枠は p_message から。タイトルのメニューは自前の文字ボタン。本編でセーブ (Esc のメニュー→セーブ→No.01)→ページを開き直してタイトルの「つづきから」でロード→同じページの文章から続きを読める (Chromium) |
 | b2008_anim | [息子の友達に犯されて - TRIAL VERSION -](http://suezou.dyndns.org/dl2008/anim/musuko/musuko_trial.lzh) | 本編 | 検証スレッドでも Chromium で START→本編の文章まで確認。Crowd/ANIM (<game>_sce.dat を自前で実行) でタイトル→START→説明文→蓉子編/一志編の選択肢→本編の背景・立ち絵・イベント CG・文章・ボイスまで、体験版の最後 (タイトルに戻る) まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (両方) |
 | b2009_anim | [愛娘という名の玩具　- TRIAL VERSION -](http://suezou.dyndns.org/dl2009/anim/eva/eve_trial.lzh) | 本編 | 検証スレッドでも Chromium で START→本編の文章まで確認。Crowd/ANIM で 1024x768 のタイトル (Start/Load/Exit)→本編の背景 (1024x576 を上下の帯の間に)・立ち絵・イベント CG・文章まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium)。メッセージ枠は自前の半透明の帯 (p_message が無い) |
 | b2010_anim | [贄姫 - TRIAL VERSION -](http://suezou.dyndns.org/dl2010/anim/niehime/nime_trial.lzh) | 本編 | Crowd/ANIM でタイトル (縦書きの 5 ボタン)→初めから→本編の背景・立ち絵・文章まで、体験版の最後まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
