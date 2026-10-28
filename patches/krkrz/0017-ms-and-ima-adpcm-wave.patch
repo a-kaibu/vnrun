@@ -1,0 +1,181 @@
+--- a/sound/WaveIntf.cpp
++++ b/sound/WaveIntf.cpp
+@@ -639,6 +639,161 @@
+ 	}
+ }
+ //---------------------------------------------------------------------------
++// vnrun: MS ADPCM (0x0002) and IMA ADPCM (0x0011) wave files, which Windows plays through the
++// ACM (wumsadp.dll in KiriKiri 2 games). The data chunk is decoded to 16-bit PCM in memory.
++// The stream stands after cbSize; next is the end of the fmt chunk.
++static tTVPWaveDecoder * TVPCreateADPCMWaveDecoder(tTVPStreamHolder & stream,
++	tjs_uint16 format_tag, tjs_uint16 channels, tjs_uint32 rate, tjs_uint16 block_align,
++	tjs_uint16 ext_size, tjs_int64 next, const tjs_uint8 *data_mark)
++{
++	static const int ms_adapt[16] =
++		{ 230, 230, 230, 230, 307, 409, 512, 614, 768, 614, 512, 409, 307, 230, 230, 230 };
++	static const int ms_coef_default[7][2] =
++		{ {256, 0}, {512, -256}, {0, 0}, {192, 64}, {240, 0}, {460, -208}, {392, -232} };
++	static const int ima_index[8] = { -1, -1, -1, -1, 2, 4, 6, 8 };
++	static const int ima_step[89] = {
++		7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
++		50, 55, 60, 66, 73, 80, 88, 97, 107, 118, 130, 143, 157, 173, 190, 209, 230, 253, 279, 307,
++		337, 371, 408, 449, 494, 544, 598, 658, 724, 796, 876, 963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066,
++		2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358, 5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899,
++		15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767 };
++
++	if(channels < 1 || channels > 2 || block_align == 0) return NULL;
++	bool ms = format_tag == 0x0002;
++	std::vector<int> coef1, coef2;
++	tjs_uint32 spb = 0;
++	if(ext_size >= 2) spb = (tjs_uint16)stream->ReadI16LE();
++	if(ms)
++	{
++		if(ext_size >= 4)
++		{
++			tjs_uint16 n = stream->ReadI16LE();
++			for(tjs_uint16 i = 0; i < n && i < 256; i++)
++			{
++				coef1.push_back((tjs_int16)stream->ReadI16LE());
++				coef2.push_back((tjs_int16)stream->ReadI16LE());
++			}
++		}
++		if(coef1.empty())
++			for(int i = 0; i < 7; i++) coef1.push_back(ms_coef_default[i][0]), coef2.push_back(ms_coef_default[i][1]);
++		if(block_align < 7 * channels) return NULL;
++		tjs_uint32 full = (block_align - 7 * channels) * 2 / channels + 2;
++		if(spb == 0 || spb > full) spb = full;
++	}
++	else
++	{
++		if(block_align < 4 * channels) return NULL;
++		tjs_uint32 full = (block_align - 4 * channels) * 2 / channels + 1;
++		if(spb == 0 || spb > full) spb = full;
++	}
++
++	if(next != (tjs_int64)stream->Seek(next, TJS_BS_SEEK_SET)) return NULL;
++	if(!TVPFindRIFFChunk(stream, data_mark)) return NULL;
++	tjs_uint32 size = stream->ReadI32LE();
++	tjs_int64 remain = stream->GetSize() - stream->GetPosition();
++	if((tjs_int64)size > remain) size = (tjs_uint32)remain;
++	std::vector<tjs_uint8> in(size);
++	if(size && size != stream->Read(&in[0], size)) return NULL;
++
++	std::vector<tjs_int16> out;
++	out.reserve((size_t)size / block_align * spb * channels + spb * channels);
++	auto clamp16 = [](int v) { return (tjs_int16)(v < -32768 ? -32768 : v > 32767 ? 32767 : v); };
++	for(tjs_uint32 pos = 0; pos < size; pos += block_align)
++	{
++		const tjs_uint8 *b = &in[pos];
++		tjs_uint32 len = std::min<tjs_uint32>(block_align, size - pos);
++		if(ms)
++		{
++			if(len < 7u * channels) break;
++			int pred[2], delta[2], s1[2], s2[2];
++			const tjs_uint8 *p = b;
++			for(int c = 0; c < channels; c++) { pred[c] = *p++; if(pred[c] >= (int)coef1.size()) pred[c] = 0; }
++			for(int c = 0; c < channels; c++) { delta[c] = (tjs_int16)(p[0] | (p[1] << 8)); p += 2; }
++			for(int c = 0; c < channels; c++) { s1[c] = (tjs_int16)(p[0] | (p[1] << 8)); p += 2; }
++			for(int c = 0; c < channels; c++) { s2[c] = (tjs_int16)(p[0] | (p[1] << 8)); p += 2; }
++			for(int c = 0; c < channels; c++) out.push_back((tjs_int16)s2[c]);
++			for(int c = 0; c < channels; c++) out.push_back((tjs_int16)s1[c]);
++			tjs_uint32 frames = 2, nib = 0;
++			tjs_uint32 total_nibbles = (len - 7 * channels) * 2;
++			while(frames < spb && nib + channels <= total_nibbles)
++			{
++				for(int c = 0; c < channels; c++, nib++)
++				{
++					int byte = p[nib >> 1];
++					int n = (nib & 1) ? (byte & 0x0f) : (byte >> 4);
++					int sn = n >= 8 ? n - 16 : n;
++					int predicted = (s1[c] * coef1[pred[c]] + s2[c] * coef2[pred[c]]) / 256;
++					int v = clamp16(predicted + sn * delta[c]);
++					s2[c] = s1[c]; s1[c] = v;
++					delta[c] = (ms_adapt[n] * delta[c]) / 256;
++					if(delta[c] < 16) delta[c] = 16;
++					out.push_back((tjs_int16)v);
++				}
++				frames++;
++			}
++		}
++		else
++		{
++			if(len < 4u * channels) break;
++			int sample[2], index[2];
++			const tjs_uint8 *p = b;
++			for(int c = 0; c < channels; c++)
++			{
++				sample[c] = (tjs_int16)(p[0] | (p[1] << 8));
++				index[c] = p[2] > 88 ? 88 : p[2];
++				p += 4;
++				out.push_back((tjs_int16)sample[c]);
++			}
++			// then 4-byte words per channel, each holding 8 samples (low nibble first)
++			tjs_uint32 words = (len - 4 * channels) / (4 * channels);
++			size_t base = out.size();
++			tjs_uint32 frames = 1 + std::min<tjs_uint32>(words * 8, spb - 1);
++			out.resize(base + (size_t)(frames - 1) * channels);
++			for(int c = 0; c < channels; c++)
++			{
++				for(tjs_uint32 w = 0; w < words; w++)
++				{
++					const tjs_uint8 *q = p + (w * channels + c) * 4;
++					for(int k = 0; k < 8; k++)
++					{
++						tjs_uint32 f = w * 8 + k;
++						if(f >= frames - 1) break;
++						int n = (k & 1) ? (q[k >> 1] >> 4) : (q[k >> 1] & 0x0f);
++						int step = ima_step[index[c]];
++						int diff = step >> 3;
++						if(n & 1) diff += step >> 2;
++						if(n & 2) diff += step >> 1;
++						if(n & 4) diff += step;
++						if(n & 8) diff = -diff;
++						sample[c] = clamp16(sample[c] + diff);
++						index[c] += ima_index[n & 7];
++						if(index[c] < 0) index[c] = 0;
++						if(index[c] > 88) index[c] = 88;
++						out[base + (size_t)f * channels + c] = (tjs_int16)sample[c];
++					}
++				}
++			}
++		}
++	}
++	if(out.empty()) return NULL;
++
++	tTVPMemoryStream *mem = new tTVPMemoryStream();
++	mem->Write(&out[0], (tjs_uint)(out.size() * sizeof(tjs_int16)));
++	mem->Seek(0, TJS_BS_SEEK_SET);
++
++	tTVPWaveFormat format;
++	format.SamplesPerSec = rate;
++	format.Channels = channels;
++	format.BitsPerSample = 16;
++	format.BytesPerSample = 2;
++	format.SpeakerConfig = 0;
++	format.IsFloat = false;
++	format.TotalSamples = out.size() / channels;
++	format.TotalTime = rate ? format.TotalSamples * 1000 / rate : 0;
++	format.Seekable = true;
++	return new tTVPWD_RIFFWave(mem, 0, format);
++}
++//---------------------------------------------------------------------------
+ tTVPWaveDecoder * tTVPWDC_RIFFWave::Create(const ttstr & storagename,
+ 	const ttstr &extension)
+ {
+@@ -684,6 +839,16 @@
+ 			// (AC3 order to WAVEFORMATEXTENSIBLE order)
+ 
+ 		tjs_uint16 format_tag = stream->ReadI16LE(); // wFormatTag
++		if(format_tag == 0x0002 || format_tag == 0x0011)
++		{
++			tjs_uint16 channels = stream->ReadI16LE();
++			tjs_uint32 rate = stream->ReadI32LE();
++			stream->ReadI32LE(); // nAvgBytesPerSec
++			tjs_uint16 align = stream->ReadI16LE();
++			stream->ReadI16LE(); // wBitsPerSample (4)
++			tjs_uint16 ext = size >= 18 ? stream->ReadI16LE() : 0;
++			return TVPCreateADPCMWaveDecoder(stream, format_tag, channels, rate, align, ext, next, data_mark);
++		}
+ 		if(format_tag != WAVE_FORMAT_PCM &&
+ 			format_tag != WAVE_FORMAT_IEEE_FLOAT &&
+ 			format_tag != WAVE_FORMAT_EXTENSIBLE) return NULL;
