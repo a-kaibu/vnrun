@@ -362,7 +362,7 @@ b2010_undermoon	本編	ロゴ→タイトル→START→本編の文章 (entis-ru
 b2007_marmalade	本編	ロゴ→タイトル (3D の演出は描かない)→START→注意書き→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認
 b2009_cube	本編	注意書き→タイトル→初めから→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認
 b2009_marmalade	本編	タイトル→はじめから→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認
-b2024_syrup_mm	NG	.csx が無い新しい世代 (システムは exe 内、台本は xscript の .srcxml)
+b2024_syrup_mm	本編	EntisGLS (vnrun) の xscript 実行 (crates/entis/src/xs.rs、システムは wm_title/wm_window のスキンで自前) でロゴ・タイトルから NEW GAME で本編 (背景・CG・差分立ち絵・顔・名前カード・選択肢)、体験版の最後まで進んでタイトルに戻る。Chromium でセーブページに保存 → 別セッションの CONTINUE で同じ行に戻る
 b2013_alicesoft	本編	Chromium で注意書き→ゲーム開始→本編の文章まで (vnrun 検証スレッドでも確認)
 b2012_alicesoft	本編	Chromium で シーン選択 (琴音 純愛)→本編の文章まで (vnrun 検証スレッドでも確認)
 b2007_clochette	本編	QLIE (vnrun) でロゴ→タイトル→Start→本編の文章・名前・背景・立ち絵まで。セーブ→タイトルからロード、バックログも (Chromium)。検証スレッドでもタイトル画面まで確認

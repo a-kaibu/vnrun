@@ -12,6 +12,9 @@ pub struct Eri {
     pub hot: (i32, i32),
     /// 8 bits a pixel (a mask or a gray picture)
     pub gray: bool,
+    /// the picture this one is a difference from ("#reference-file"): its pixels are added
+    /// byte by byte to that one's
+    pub reference: Option<String>,
 }
 
 struct Info {
@@ -43,6 +46,7 @@ pub fn decode(b: &[u8]) -> Result<Eri, String> {
     let end = 0x50 + hlen;
     let mut info = None;
     let mut hot = (0, 0);
+    let mut reference = None;
     while p + 16 <= end {
         let id = &b[p..p + 8];
         let len = u64le(b, p + 8).ok_or_else(bad)? as usize;
@@ -61,7 +65,13 @@ pub fn decode(b: &[u8]) -> Result<Eri, String> {
                 blocking: u32le(d, 52).ok_or_else(bad)?,
             });
         } else if id == b"descript" {
-            hot = hot_spot(d).unwrap_or((0, 0));
+            hot = desc_value(d, "hot-spot")
+                .and_then(|v| {
+                    let mut it = v.split(',').map(|s| s.trim().parse::<i32>());
+                    Some((it.next()?.ok()?, it.next()?.ok()?))
+                })
+                .unwrap_or((0, 0));
+            reference = desc_value(d, "reference-file").filter(|r| !r.is_empty());
         }
         p += 16 + len;
     }
@@ -96,10 +106,12 @@ pub fn decode(b: &[u8]) -> Result<Eri, String> {
         px,
         hot,
         gray: info.bpp == 8,
+        reference,
     })
 }
 
-fn hot_spot(d: &[u8]) -> Option<(i32, i32)> {
+/// The line after "#key" in a description.
+fn desc_value(d: &[u8], key: &str) -> Option<String> {
     let text = if d.starts_with(&[0xff, 0xfe]) {
         let u: Vec<u16> = d[2..]
             .chunks_exact(2)
@@ -111,10 +123,8 @@ fn hot_spot(d: &[u8]) -> Option<(i32, i32)> {
     };
     let mut lines = text.lines();
     while let Some(l) = lines.next() {
-        if l.trim().trim_start_matches('#').trim() == "hot-spot" {
-            let v = lines.next()?;
-            let mut it = v.split(',').map(|s| s.trim().parse::<i32>());
-            return Some((it.next()?.ok()?, it.next()?.ok()?));
+        if l.trim().trim_start_matches('#').trim() == key {
+            return lines.next().map(|v| v.trim().to_string());
         }
     }
     None

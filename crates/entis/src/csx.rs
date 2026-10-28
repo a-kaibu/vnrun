@@ -19,6 +19,7 @@ pub enum Init {
     Members(Vec<(String, Init)>),
 }
 
+#[derive(Default)]
 pub struct Image {
     pub code: Vec<u8>,
     pub int64: bool,

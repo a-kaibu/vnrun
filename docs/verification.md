@@ -55,7 +55,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Tmr-Hiro (vnrun) | 22 | 22 |  |  |  |  |  |  |
 | LiveMaker (vnrun) | 7 | 4 |  |  |  |  |  | 3 |
 | CatSystem2 (vnrun) | 8 | 3 |  |  |  |  |  | 5 |
-| EntisGLS (vnrun) | 9 | 4 |  |  |  | 1 |  | 4 |
+| EntisGLS (vnrun) | 9 | 5 |  |  |  |  |  | 4 |
 | AliceSoft System4 (xsystem4) | 2 | 2 |  |  |  |  |  |  |
 | QLIE (vnrun) | 5 | 3 |  |  |  |  |  | 2 |
 | Escude (vnrun) | 8 | 2 |  |  |  |  |  | 6 |
@@ -545,7 +545,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2009_cube | [夏ノ雨 体験版](http://suezou.dyndns.org/dl2009/cube/natsunoame/natsunoame_trial.zip) | 本編 | 注意書き→タイトル→初めから→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認 |
 | b2009_marmalade | [キスと魔王と紅茶 体験版](http://suezou.dyndns.org/dl2009/marmalade/kissmao/kissmao_tr.zip) | 本編 | タイトル→はじめから→本編の文章 (entis-run とブラウザ)。検証スレッドでも cbb2054 の Chromium で START→本編を確認 |
 | b2010_undermoon | [痴覚過敏 体験版](http://suezou.dyndns.org/dl2010/undermoon/tikaku/chikakukabin_trial.zip) | 本編 | ロゴ→タイトル→START→本編の文章 (entis-run とブラウザ)。検証スレッドでは cbb2054 の Chromium でタイトルまで確認 |
-| b2024_syrup_mm | [狙われた優等生 身代わりの代償 体験版](http://suezou.dyndns.org/dl2024/syrup-mm/yutosei/yutosei_taikenban.zip) | NG | .csx が無い新しい世代 (システムは exe 内、台本は xscript の .srcxml) |
+| b2024_syrup_mm | [狙われた優等生 身代わりの代償 体験版](http://suezou.dyndns.org/dl2024/syrup-mm/yutosei/yutosei_taikenban.zip) | 本編 | EntisGLS (vnrun) の xscript 実行 (crates/entis/src/xs.rs、システムは wm_title/wm_window のスキンで自前) でロゴ・タイトルから NEW GAME で本編 (背景・CG・差分立ち絵・顔・名前カード・選択肢)、体験版の最後まで進んでタイトルに戻る。Chromium でセーブページに保存 → 別セッションの CONTINUE で同じ行に戻る |
 | s2017_marmalade_mashimaro | [mashimaro_trial.zip](http://suezou.dyndns.org/dl2017/marmalade/mashimaro/mashimaro_trial.zip) | 未確認 |  |
 | s2022_marmalade_studysteady2 | [スタディ§ステディ２体験版](http://suezou.dyndns.org/dl2022/marmalade/studysteady2/stst2_trial.zip) | 未確認 |  |
 | s2025_marmalade_bakaple | [バカップル・サプリメント体験版](http://suezou.dyndns.org/dl2025/marmalade/bakaple/bakaple-trial.rar) | 未確認 |  |

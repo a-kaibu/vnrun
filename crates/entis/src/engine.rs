@@ -65,6 +65,8 @@ pub struct Engine {
     pub pending_load: Option<crate::save::Context>,
     /// the local time from the host, in ms since 1970 (save dates)
     pub clock: Option<f64>,
+    /// the system of a game with xscript scenarios instead of a Cotopha program
+    pub xs: Option<Box<crate::xs::Xs>>,
 }
 
 impl Engine {
@@ -91,33 +93,45 @@ impl Engine {
             let stem = l.trim_end_matches(".csx").to_string();
             (l != "script.csx", !exe_stems.contains(&stem))
         });
-        let name = names
-            .first()
-            .ok_or("no .csx script (no NOA archive with the script, or no password)")?
-            .clone();
-        let csx = fs
-            .read(&name)
-            .ok_or_else(|| format!("{name}: cannot read"))?;
-        let img = crate::csx::Image::parse(&csx)?;
-        let (globals, data, make) = crate::vm::variables(&img);
-        let prologue = img.prologue.clone();
-        let prog = Program::load(img)?;
-        let mut main = Thread::default();
-        for (v, c) in make {
-            main.queue.push(Start::Construct(v, c));
-        }
-        for a in prologue {
-            main.queue.push(Start::Call(prog.index(a)?));
-        }
-        main.queue.push(Start::Call(
-            *prog.funcs.get("main").ok_or("script.csx: no main")?,
-        ));
-        Ok(Engine {
+        let all: Vec<String> = fs.entries().into_iter().map(|(_, e)| e.name).collect();
+        let xscript = names.is_empty() && crate::xs::is_xscript(&all);
+        let (prog, globals, data, threads) = if xscript {
+            (
+                Program::load(crate::csx::Image::default())?,
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+            )
+        } else {
+            let name = names
+                .first()
+                .ok_or("no .csx script (no NOA archive with the script, or no password)")?
+                .clone();
+            let csx = fs
+                .read(&name)
+                .ok_or_else(|| format!("{name}: cannot read"))?;
+            let img = crate::csx::Image::parse(&csx)?;
+            let (globals, data, make) = crate::vm::variables(&img);
+            let prologue = img.prologue.clone();
+            let prog = Program::load(img)?;
+            let mut main = Thread::default();
+            for (v, c) in make {
+                main.queue.push(Start::Construct(v, c));
+            }
+            for a in prologue {
+                main.queue.push(Start::Call(prog.index(a)?));
+            }
+            main.queue.push(Start::Call(
+                *prog.funcs.get("main").ok_or("script.csx: no main")?,
+            ));
+            (prog, globals, data, vec![Some(main)])
+        };
+        let mut e = Engine {
             prog,
             globals,
             data,
             fs,
-            threads: vec![Some(main)],
+            threads,
             current: 0,
             now: 0.0,
             deadline: None,
@@ -141,7 +155,14 @@ impl Engine {
             time_polls: 0,
             pending_load: None,
             clock: None,
-        })
+            xs: None,
+        };
+        if xscript {
+            e.width = 1280;
+            e.height = 720;
+            e.xs = Some(Box::new(crate::xs::Xs::open(&mut e)?));
+        }
+        Ok(e)
     }
 
     pub fn set_font(&mut self, ttf: &[u8]) -> Result<(), String> {
@@ -207,7 +228,21 @@ impl Engine {
         for n in tries {
             if let Some(b) = self.fs.read(&n) {
                 match crate::eri::decode(&b) {
-                    Ok(e) => {
+                    Ok(mut e) => {
+                        // a difference from another picture (the expressions of a 2024
+                        // game's standing pictures): added to it byte by byte
+                        if let Some(r) = e.reference.take() {
+                            let dir = n.rfind(['/', '\\']).map_or("", |i| &n[..=i]);
+                            let base = self.pic(&format!("{dir}{r}"));
+                            match base {
+                                Some(b) if b.img.px.len() == e.px.len() => {
+                                    for (d, s) in e.px.iter_mut().zip(&b.img.px) {
+                                        *d = d.wrapping_add(*s);
+                                    }
+                                }
+                                _ => self.warn(format!("{n}: no reference picture {r}")),
+                            }
+                        }
                         let mut img = Image::new(e.w, e.h);
                         img.px = e.px;
                         found = Some(Rc::new(Pic {
@@ -299,6 +334,11 @@ impl Engine {
             return Ok(());
         }
         self.now += FRAME_MS;
+        if let Some(mut x) = self.xs.take() {
+            let r = x.frame(self);
+            self.xs = Some(x);
+            return r;
+        }
         self.time_polls = 0;
         self.animate();
         let n = self.threads.len();
@@ -345,12 +385,26 @@ impl Engine {
 
     // ---- input
 
+    /// Runs `f` on the xscript system, when the game has one.
+    fn with_xs<R>(&mut self, f: impl FnOnce(&mut crate::xs::Xs, &mut Engine) -> R) -> Option<R> {
+        let mut x = self.xs.take()?;
+        let r = f(&mut x, self);
+        self.xs = Some(x);
+        Some(r)
+    }
+
     pub fn point(&mut self, x: i32, y: i32) {
         self.mouse = (x, y);
+        if self.with_xs(|s, _| s.point(x, y)).is_some() {
+            return;
+        }
         self.update_focus();
     }
 
     pub fn click(&mut self, x: i32, y: i32) {
+        if self.with_xs(|s, e| s.click(e, x, y)).is_some() {
+            return;
+        }
         self.point(x, y);
         if !self.press_focus() {
             self.joy_pushed[4] += 1;
@@ -359,11 +413,17 @@ impl Engine {
 
     /// A right click.
     pub fn cancel(&mut self) {
+        if self.with_xs(|s, e| s.cancel(e)).is_some() {
+            return;
+        }
         self.joy_pushed[5] += 1;
     }
 
     /// A key, as the input filter maps it: 0 up, 1 down, 2 left, 3 right, 4+ buttons.
     pub fn joy(&mut self, button: usize) {
+        if self.with_xs(|s, e| s.joy(e, button)).is_some() {
+            return;
+        }
         if button < self.joy_pushed.len() {
             self.joy_pushed[button] += 1;
         }
@@ -377,6 +437,9 @@ impl Engine {
 
     /// The pictures of the screen, bottom first.
     pub fn draws(&mut self) -> Vec<Draw> {
+        if let Some(d) = self.with_xs(|s, e| s.draws(e)) {
+            return d;
+        }
         let mut out = Vec::new();
         if let Some(s) = self.screen.clone() {
             self.draw_sprite(&s, crate::natives::Aff::ID, 1.0, &mut out);
