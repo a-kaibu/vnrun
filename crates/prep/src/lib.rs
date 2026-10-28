@@ -1,6 +1,7 @@
 //! Native game preparation shared by the CLI and game server.
 //! SDRS shells are extracted before embedded cxdec and Siglus key preparation.
 
+mod asar;
 mod krkr;
 mod nwjs;
 
@@ -73,6 +74,9 @@ pub fn prepare(dir: &Path) -> Result<(), String> {
         }
     }
     executables.sort();
+    if asar::unpack(dir)? {
+        println!("asar: unpacked app.asar in {}", dir.display());
+    }
     if find(dir, "package.json").is_none() {
         for path in &executables {
             if nwjs::unpack(path, dir)? {

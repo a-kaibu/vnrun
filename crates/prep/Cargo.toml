@@ -9,6 +9,7 @@ description = "Prepares a game folder for the browser player ahead of time (work
 flate2 = "1"
 zip = { version = "2", default-features = false, features = ["deflate"] }
 sha3 = "0.10"
+serde_json = "1"
 sdrs-core = { path = "../../third_party/sdrs/sdrs-core" }
 siglus_key_recovery = { path = "../../third_party/siglus_rs/crates/siglus_key_recovery" }
 siglus_assets = { path = "../../third_party/siglus_rs/crates/siglus_assets" }

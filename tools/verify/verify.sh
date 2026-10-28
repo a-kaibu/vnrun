@@ -71,7 +71,7 @@ game_root() {
     escude) m=(-iname script.bin) ;;
     interheart) m=(-iname data.fpk) ;;
     nscripter) m=(-iname nscript.dat -o -iname 0.txt -o -iname 00.txt -o -iname '*.nsa' -o -iname '*.sar') ;;
-    html) m=(-iname package.json -o -iname index.html -o -iname package.nw -o -iname nw.pak) ;;
+    html) m=(-iname package.json -o -iname index.html -o -iname package.nw -o -iname nw.pak -o -iname app.asar) ;;
   esac
   # Older YU-RIS releases keep everything in pac/*.ypf; the game root is the folder above pac/.
   # Entis GLS keeps its archives in Data/ beside the exe and the .csx script.

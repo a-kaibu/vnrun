@@ -134,7 +134,13 @@ function nodeRequire(fs: GameFS) {
     },
   };
   // fs-extra: TyranoScript checks for an update patch with it at startup.
-  const modules: Record<string, unknown> = { fs: nodeFs, "fs-extra": nodeFs, path: nodePath };
+  // electron: older TyranoScript Electron builds (nodeIntegration) find the exe's folder for
+  // their .sav files with remote.app.getAppPath(); with none, the saves land in the game root.
+  const electron = {
+    remote: { app: { getAppPath: () => "." } },
+    shell: { openExternal: (url: string) => window.open(url, "_blank") },
+  };
+  const modules: Record<string, unknown> = { fs: nodeFs, "fs-extra": nodeFs, path: nodePath, electron };
   return (name: string) => {
     if (name in modules) return modules[name];
     throw new Error(`Cannot find module '${name}'`);

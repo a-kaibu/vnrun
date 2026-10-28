@@ -1253,6 +1253,7 @@ version = "0.1.0"
 dependencies = [
  "flate2",
  "sdrs-core",
+ "serde_json",
  "sha3",
  "siglus_assets",
  "siglus_key_recovery",
