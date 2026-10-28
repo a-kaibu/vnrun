@@ -38,6 +38,9 @@ class MenuItem
 		for (var i = 0; i < children.count; i++) children[i].index = i;
 	}
 	function popup() {}
+	// click() acts as if the player chose the item (おしおき生意気ギャル's settings reset
+	// clicks kag.windowedMenuItem); KAGMenuItem's onClick runs its command.
+	function click() { onClick(); }
 	function onClick() {}
 	function fireClick() {}
 }
