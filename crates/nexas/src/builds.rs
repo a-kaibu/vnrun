@@ -378,73 +378,6 @@ impl Build {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::script::Ins;
-
-    #[test]
-    fn identifies_the_2010_build_by_its_scene_call() {
-        let mut script = Script::default();
-        script.legacy = true;
-        script.main.code.push(Ins {
-            op: 7,
-            arg: (10 << 16) | 0x39,
-        });
-        let build = Build::detect(&script);
-        assert_eq!(build.canonical(0x39), 0x45);
-        assert_eq!(build.canonical(0x3c), 0x48);
-        assert_eq!(build.canonical(0x115), 0x137);
-        assert_eq!(build.canonical(0x116), 0x138);
-        assert_eq!(build.canonical(0x121), 0x144);
-        assert_eq!(build.canonical(0x122), 0xffff);
-        script.main.code.clear();
-        assert_ne!(Build::detect(&script).name, B2010_BUILD.name);
-    }
-
-    #[test]
-    fn identifies_the_2006_build_and_shifts_its_ops() {
-        let mut script = Script::default();
-        script.legacy = true;
-        for arg in [9 << 16 | 0xaa, 2 << 16 | 0xa6] {
-            script.main.code.push(Ins { op: 7, arg });
-        }
-        // store (0xd) and the label end (0x19)
-        script.main.code.push(Ins { op: 0xd, arg: 0 });
-        script.main.code.push(Ins { op: 0x19, arg: 0 });
-        let build = Build::detect(&script);
-        assert_eq!(build.name, B2006_BUILD.name);
-        assert_eq!(build.canonical(0x96), 0x67);
-        // the rows are looked up by binary search
-        for b in [
-            &B2006_BUILD,
-            &B2007_BUILD,
-            &B2008_BUILD,
-            &B2009_BUILD,
-            &B2010_BUILD,
-        ] {
-            assert!(b.rows.windows(2).all(|w| w[0].0 < w[1].0), "{}", b.name);
-        }
-        build.translate(&mut script);
-        let ops: Vec<u32> = script.main.code.iter().map(|i| i.op).collect();
-        assert_eq!(ops, [7, 7, 0xe, 0x1c]);
-    }
-
-    #[test]
-    fn identifies_the_2009_build_by_its_scene_call() {
-        let mut script = Script::default();
-        script.legacy = true;
-        script.main.code.push(Ins {
-            op: 7,
-            arg: (10 << 16) | 0x16a,
-        });
-        let build = Build::detect(&script);
-        assert_eq!(build.name, B2009_BUILD.name);
-        assert_eq!(build.canonical(0x44), 0x137);
-        assert_eq!(build.canonical(0x159), 0x67);
-    }
-}
-
 const B2015: &[(u16, u16, u8)] = &[
     (0x0, 0x0, 1),
     (0x1, 0x1, 0),
@@ -2692,3 +2625,76 @@ const B2013: &[(u16, u16, u8)] = &[
     (0x1be, 0x1d1, 2),
     (0x1bf, 0x1d2, 1),
 ];
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::script::Ins;
+
+    #[test]
+    fn identifies_the_2010_build_by_its_scene_call() {
+        let mut script = Script {
+            legacy: true,
+            ..Script::default()
+        };
+        script.main.code.push(Ins {
+            op: 7,
+            arg: (10 << 16) | 0x39,
+        });
+        let build = Build::detect(&script);
+        assert_eq!(build.canonical(0x39), 0x45);
+        assert_eq!(build.canonical(0x3c), 0x48);
+        assert_eq!(build.canonical(0x115), 0x137);
+        assert_eq!(build.canonical(0x116), 0x138);
+        assert_eq!(build.canonical(0x121), 0x144);
+        assert_eq!(build.canonical(0x122), 0xffff);
+        script.main.code.clear();
+        assert_ne!(Build::detect(&script).name, B2010_BUILD.name);
+    }
+
+    #[test]
+    fn identifies_the_2006_build_and_shifts_its_ops() {
+        let mut script = Script {
+            legacy: true,
+            ..Script::default()
+        };
+        for arg in [9 << 16 | 0xaa, 2 << 16 | 0xa6] {
+            script.main.code.push(Ins { op: 7, arg });
+        }
+        // store (0xd) and the label end (0x19)
+        script.main.code.push(Ins { op: 0xd, arg: 0 });
+        script.main.code.push(Ins { op: 0x19, arg: 0 });
+        let build = Build::detect(&script);
+        assert_eq!(build.name, B2006_BUILD.name);
+        assert_eq!(build.canonical(0x96), 0x67);
+        // the rows are looked up by binary search
+        for b in [
+            &B2006_BUILD,
+            &B2007_BUILD,
+            &B2008_BUILD,
+            &B2009_BUILD,
+            &B2010_BUILD,
+        ] {
+            assert!(b.rows.windows(2).all(|w| w[0].0 < w[1].0), "{}", b.name);
+        }
+        build.translate(&mut script);
+        let ops: Vec<u32> = script.main.code.iter().map(|i| i.op).collect();
+        assert_eq!(ops, [7, 7, 0xe, 0x1c]);
+    }
+
+    #[test]
+    fn identifies_the_2009_build_by_its_scene_call() {
+        let mut script = Script {
+            legacy: true,
+            ..Script::default()
+        };
+        script.main.code.push(Ins {
+            op: 7,
+            arg: (10 << 16) | 0x16a,
+        });
+        let build = Build::detect(&script);
+        assert_eq!(build.name, B2009_BUILD.name);
+        assert_eq!(build.canonical(0x44), 0x137);
+        assert_eq!(build.canonical(0x159), 0x67);
+    }
+}
