@@ -18,6 +18,7 @@ global.vnrunPlugins = %[
 		"gamepad.dll" => "gamepad.tjs",
 		"layerexalpha.dll" => "layerExAlpha.tjs",
 		"layerexrastermp.dll" => "layerExRasterMP.tjs",
+		"layereximage.dll" => "layerExImage.tjs",
 		"extrans.dll" => "extrans.tjs",
 		"extnagano.dll" => "extrans.tjs",
 		"savestruct.dll" => "saveStruct.tjs",

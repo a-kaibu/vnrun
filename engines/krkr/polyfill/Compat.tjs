@@ -30,6 +30,9 @@ global.vnrunExtransInstall = true;
 Scripts.execStorage(global.KirikiriPolyfillRoot + "plugins/extrans.tjs");
 global.vnrunExtransInstall = false;
 
+// layerExImage (Layer.light and colour filters): games load it as plugin/layerExImage.tpm.
+Scripts.execStorage(global.KirikiriPolyfillRoot + "plugins/layerExImage.tjs");
+
 // KiriKiri's text input box (KAG's [input], name entry): the browser's prompt() stands in for it.
 // Like the original, it gives void when cancelled. vnrunPrompt is in patches/krkrsdl2 0017.
 if (typeof(global.System.inputString) === "undefined" && typeof(global.vnrunPrompt) !== "undefined")

@@ -1,0 +1,19 @@
+// vnrun: layerExImage.dll (.tpm), CxImage's image adjustments as Layer methods. Games often keep it
+// in plugin/ as a .tpm, which loads without Plugins.link, so Compat.tjs runs this at startup.
+// light() maps brightness/contrast through adjustGamma; the colour filters keep the image.
+if (typeof(global.Layer.light) === "undefined") {
+	// CxImage::Light: out = (in - 128) * (100 + contrast) / 100 + 128 + brightness, clamped.
+	global.Layer.light = function(brightness = 0, contrast = 0) {
+		brightness = +brightness; contrast = +contrast;
+		if (brightness == 0 && contrast == 0) return;
+		var c = (100 + contrast) / 100;
+		var lo = int(-128 * c + 128 + brightness), hi = int(127 * c + 128 + brightness);
+		lo = lo < 0 ? 0 : lo > 255 ? 255 : lo;
+		hi = hi < 0 ? 0 : hi > 255 ? 255 : hi;
+		this.adjustGamma(1.0, lo, hi, 1.0, lo, hi, 1.0, lo, hi);
+	} incontextof null;
+	global.Layer.colorize = function(hue, sat, blend = 1) {} incontextof null;
+	global.Layer.modulate = function(hue, saturation, luminance) {} incontextof null;
+	global.Layer.noise = function(level) {} incontextof null;
+	global.Layer.generateWhiteNoise = function() {} incontextof null;
+}
