@@ -3,7 +3,7 @@
 //!     agh-run <game folder> <frames> <out prefix> [frame[:x:y[:m]] ...]
 //!
 //! A bare `frame` is saved as `<out prefix><frame>.png`; `frame:x:y` clicks there on that frame
-//! (`:x:y:m` only moves the pointer). The last frame is always saved. AGH_FONT names a TrueType
+//! (`:x:y:m` only moves the pointer, `:x:y:r` right-clicks). The last frame is always saved. AGH_FONT names a TrueType
 //! font, AGH_TRACE=1 prints each script item; the text shown and the commands not carried out
 //! are printed at the end.
 
@@ -42,8 +42,10 @@ fn main() -> Result<(), String> {
             let n = |i: usize| act.get(i).and_then(|s| s.parse::<i32>().ok()).unwrap_or(0);
             let (x, y) = (n(0), n(1));
             e.point(x, y);
-            if act.get(2).map(String::as_str) != Some("m") {
-                e.click(x, y);
+            match act.get(2).map(String::as_str) {
+                Some("m") => {}
+                Some("r") => e.cancel(),
+                _ => e.click(x, y),
             }
         }
         e.frame()?;

@@ -6,14 +6,18 @@
 //! Pictures change on the stage first; `<UpDate kind,ms>` shows the stage, fading from what was
 //! on screen before. Sound numbers: 0-1 music, 2-3 effects, 4.. voices (`<Se n>` is 2+n,
 //! `<Voice n>` is 3+n).
+//!
+//! Saving is ours (crate::save): a right click on a page opens the save screen, and at the
+//! title the load screen.
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::rc::Rc;
 
 use nexas::files::Files;
 use nexas::gfx::{Draw, Image, Place};
 
 use crate::arc::Index;
+use crate::save::{SLOTS, SaveData, slot_name};
 use crate::script::{Item, Script, cond};
 
 pub struct Sound {
@@ -32,6 +36,7 @@ const CHARS: std::ops::RangeInclusive<i32> = 1..=7;
 
 #[derive(Clone)]
 struct Layer {
+    name: String,
     img: Rc<Image>,
     x: i32,
     y: i32,
@@ -73,6 +78,12 @@ enum Mode {
     Title,
     Choice,
     Mask,
+}
+
+/// our save/load screen
+struct Menu {
+    save: bool,
+    slots: Vec<Option<SaveData>>,
 }
 
 struct Button {
@@ -141,6 +152,27 @@ pub struct Engine {
     pub log: bool,
     pub unknown: BTreeMap<String, u32>,
     pub text_log: Vec<String>,
+    face_name: String,
+    bgm: String,
+    /// the page showing (taken at each `<KW>`), what a save writes
+    page: Option<SaveData>,
+    menu: Option<Menu>,
+    cancelled: bool,
+    /// start, length, amplitude x, y
+    shake: Option<(f64, f64, i32, i32)>,
+    /// layers shown as negatives
+    nega: HashSet<i32>,
+}
+
+const MENU_TABS: [[i32; 4]; 3] = [[60, 36, 180, 48], [260, 36, 180, 48], [784, 36, 180, 48]];
+
+fn inside(r: [i32; 4], (x, y): (i32, i32)) -> bool {
+    x >= r[0] && y >= r[1] && x < r[0] + r[2] && y < r[1] + r[3]
+}
+
+fn slot_rect(k: usize) -> [i32; 4] {
+    let (col, row) = ((k % 2) as i32, (k / 2) as i32);
+    [60 + col * 464, 120 + row * 96, 440, 80]
 }
 
 fn num(s: Option<&String>) -> i32 {
@@ -236,6 +268,13 @@ impl Engine {
             log: false,
             unknown: BTreeMap::new(),
             text_log: Vec::new(),
+            face_name: String::new(),
+            bgm: String::new(),
+            page: None,
+            menu: None,
+            cancelled: false,
+            shake: None,
+            nega: HashSet::new(),
         };
         e.load_ui();
         if e.index.files.contains_key("demo.txt") {
@@ -378,8 +417,212 @@ impl Engine {
         self.fade = None;
         self.clear_text();
         self.face = None;
+        self.face_name.clear();
         self.frame_on = false;
         self.wait = Wait::None;
+        self.page = None;
+        self.shake = None;
+        self.nega.clear();
+    }
+
+    // ---- saves ----
+
+    fn save_data(&self) -> SaveData {
+        let mut vars: Vec<(String, i32)> = self.vars.iter().map(|(k, v)| (k.clone(), *v)).collect();
+        vars.sort();
+        let mut wins: Vec<[i32; 9]> = self
+            .wins
+            .iter()
+            .map(|(k, w)| {
+                [
+                    *k,
+                    w.x,
+                    w.y,
+                    w.home.0,
+                    w.home.1,
+                    w.rgb[0] as i32,
+                    w.rgb[1] as i32,
+                    w.rgb[2] as i32,
+                    w.size as i32,
+                ]
+            })
+            .collect();
+        wins.sort();
+        let mut lines = self.lines.clone();
+        if !self.line.is_empty() {
+            lines.push(self.line.clone());
+        }
+        let mut loops: Vec<(i32, bool)> = self.loops.iter().map(|(k, v)| (*k, *v)).collect();
+        loops.sort();
+        SaveData {
+            script: self.cur.name.clone(),
+            pc: self.pc,
+            calls: self
+                .calls
+                .iter()
+                .map(|(s, pc)| (s.name.clone(), *pc))
+                .collect(),
+            vars,
+            layers: self
+                .view
+                .iter()
+                .map(|(k, l)| (*k, l.name.clone(), l.x, l.y))
+                .collect(),
+            face: self.face_name.clone(),
+            frame_on: self.frame_on,
+            wins,
+            name: self.name.clone().unwrap_or_default(),
+            lines,
+            bgm: self.bgm.clone(),
+            loops,
+        }
+    }
+
+    fn open_menu(&mut self, save: bool) {
+        let slots = (0..SLOTS)
+            .map(|k| {
+                self.files
+                    .read_save(&slot_name(k))
+                    .and_then(|b| SaveData::decode(&b))
+            })
+            .collect();
+        self.menu = Some(Menu { save, slots });
+    }
+
+    fn load(&mut self, d: &SaveData) -> Result<(), String> {
+        self.back_to_title();
+        self.cur = self.script(&d.script)?;
+        self.pc = d.pc;
+        for (name, pc) in &d.calls {
+            let s = self.script(name)?;
+            self.calls.push((s, *pc));
+        }
+        self.vars = d.vars.iter().cloned().collect();
+        for (k, name, x, y) in &d.layers {
+            if let Some(img) = self.image(name) {
+                let l = Layer {
+                    name: name.clone(),
+                    img,
+                    x: *x,
+                    y: *y,
+                };
+                self.stage.insert(*k, l);
+            }
+        }
+        self.view = self.stage.clone();
+        if !d.face.is_empty() {
+            self.face = self.image(&d.face);
+            self.face_name = d.face.clone();
+        }
+        self.frame_on = d.frame_on;
+        for w in &d.wins {
+            self.wins.insert(
+                w[0],
+                Win {
+                    x: w[1],
+                    y: w[2],
+                    home: (w[3], w[4]),
+                    rgb: [w[5] as u8, w[6] as u8, w[7] as u8],
+                    size: w[8].max(8) as f32,
+                },
+            );
+        }
+        self.name = (!d.name.is_empty()).then(|| d.name.clone());
+        self.lines = d.lines.clone();
+        self.loops = d.loops.iter().cloned().collect();
+        self.stop(-1, 0);
+        if !d.bgm.is_empty() {
+            self.bgm = d.bgm.clone();
+            let f = d.bgm.clone();
+            self.sound(0, &f);
+        }
+        self.mode = Mode::Script;
+        self.wait = Wait::Click;
+        self.page = Some(d.clone());
+        Ok(())
+    }
+
+    /// The save/load screen's turn; true while it is open.
+    fn menu_frame(&mut self, click: bool, cancel: bool) -> Result<bool, String> {
+        let Some(m) = &self.menu else {
+            return Ok(false);
+        };
+        if cancel {
+            self.menu = None;
+            return Ok(true);
+        }
+        if !click {
+            return Ok(true);
+        }
+        let save = m.save;
+        let p = self.pointer;
+        if inside(MENU_TABS[0], p) && self.page.is_some() {
+            self.open_menu(true);
+        } else if inside(MENU_TABS[1], p) {
+            self.open_menu(false);
+        } else if inside(MENU_TABS[2], p) {
+            self.menu = None;
+        } else if let Some(k) = (0..SLOTS).find(|&k| inside(slot_rect(k), p)) {
+            if save {
+                if let Some(d) = self.page.clone() {
+                    self.files.write_save(&slot_name(k), &d.encode());
+                    self.open_menu(true);
+                }
+            } else if let Some(Some(d)) = self.menu.as_ref().map(|m| m.slots[k].clone()) {
+                self.menu = None;
+                self.load(&d)?;
+            }
+        }
+        Ok(true)
+    }
+
+    fn menu_draws(&mut self, out: &mut Vec<Draw>) {
+        let Some(save) = self.menu.as_ref().map(|m| m.save) else {
+            return;
+        };
+        let dim = self.solid(self.screen.0, self.screen.1, [0, 0, 0, 200]);
+        self.whole(out, &dim, 0, 0, 1.0);
+        let tabs = [("セーブ", save), ("ロード", !save), ("閉じる", false)];
+        for (i, (label, on)) in tabs.iter().enumerate() {
+            let r = MENU_TABS[i];
+            let hover = inside(r, self.pointer);
+            let bg = self.solid(
+                r[2] as u32,
+                r[3] as u32,
+                if *on {
+                    [90, 60, 130, 230]
+                } else if hover {
+                    [70, 70, 90, 230]
+                } else {
+                    [40, 40, 50, 230]
+                },
+            );
+            self.whole(out, &bg, r[0], r[1], 1.0);
+            let w = label.chars().count() as i32 * 26;
+            self.text_at(out, label, 26.0, [255; 3], r[0] + (r[2] - w) / 2, r[1] + 11);
+        }
+        for k in 0..SLOTS {
+            let r = slot_rect(k);
+            let hover = inside(r, self.pointer);
+            let bg = self.solid(
+                r[2] as u32,
+                r[3] as u32,
+                if hover {
+                    [70, 60, 100, 230]
+                } else {
+                    [30, 30, 40, 230]
+                },
+            );
+            self.whole(out, &bg, r[0], r[1], 1.0);
+            let summary = self
+                .menu
+                .as_ref()
+                .and_then(|m| m.slots[k].as_ref().map(|d| d.summary()));
+            let title = format!("No.{:02}", k + 1);
+            self.text_at(out, &title, 20.0, [255, 220, 160], r[0] + 12, r[1] + 10);
+            let text = summary.unwrap_or_else(|| "―".into());
+            self.text_at(out, &text, 20.0, [255; 3], r[0] + 12, r[1] + 44);
+        }
     }
 
     fn clear_text(&mut self) {
@@ -415,6 +658,13 @@ impl Engine {
         });
     }
 
+    fn stop_music(&mut self, ch: i32, ms: i32) {
+        if ch == 0 {
+            self.bgm.clear();
+        }
+        self.stop(ch, ms);
+    }
+
     fn stop(&mut self, ch: i32, ms: i32) {
         self.sounds.push(Sound {
             data: Vec::new(),
@@ -443,6 +693,7 @@ impl Engine {
                     self.text_log.push(text);
                 }
                 self.wait = Wait::Click;
+                self.page = Some(self.save_data());
             }
             "winclear" => self.clear_text(),
             "winrubi" => self.line.push_str(s(0)),
@@ -451,6 +702,11 @@ impl Engine {
                     None
                 } else {
                     self.image(s(0))
+                };
+                self.face_name = if self.face.is_some() {
+                    s(0).to_string()
+                } else {
+                    String::new()
                 };
             }
             "winframe" => self.frame_on = s(0).eq_ignore_ascii_case("on"),
@@ -467,7 +723,8 @@ impl Engine {
             "imageload" => {
                 if let Some(img) = self.image(s(1)) {
                     let (x, y) = self.stage.get(&n(0)).map_or((0, 0), |l| (l.x, l.y));
-                    self.stage.insert(n(0), Layer { img, x, y });
+                    let name = s(1).to_string();
+                    self.stage.insert(n(0), Layer { name, img, x, y });
                 } else {
                     self.stage.remove(&n(0));
                 }
@@ -560,7 +817,12 @@ impl Engine {
             "soundloop" => {
                 self.loops.insert(n(0), s(1).eq_ignore_ascii_case("on"));
             }
-            "bgm" => self.sound(n(0), s(1)),
+            "bgm" => {
+                if n(0) == 0 {
+                    self.bgm = s(1).to_string();
+                }
+                self.sound(n(0), s(1))
+            }
             "se" => self.sound(2 + n(0), s(1)),
             "voice" => self.sound(3 + n(0), s(1)),
             "soundload" => {
@@ -572,13 +834,24 @@ impl Engine {
                         self.sound(n(0), &f);
                     }
                 } else {
-                    self.stop(n(0), n(3));
+                    self.stop_music(n(0), n(3));
                 }
             }
-            "soundfade" => self.stop(n(0), n(2)),
+            "soundfade" => self.stop_music(n(0), n(2)),
+            "imageshake" => {
+                let ms = n(1).max(1) as f64 * FRAME_MS;
+                self.shake = Some((self.now, ms, n(2), n(3)));
+                self.wait = Wait::Until(self.now + ms);
+            }
+            "imagenegaposi" => {
+                if s(1).eq_ignore_ascii_case("on") {
+                    self.nega.insert(n(0));
+                } else {
+                    self.nega.remove(&n(0));
+                }
+            }
             "titlereturn" => self.back_to_title(),
-            "systemicon" | "titlecancel" | "imageshake" | "imagerate" | "imagenegaposi"
-            | "winimage" => {}
+            "systemicon" | "titlecancel" | "imagerate" | "winimage" => {}
             _ => *self.unknown.entry(cmd.to_string()).or_default() += 1,
         }
         Ok(())
@@ -627,6 +900,27 @@ impl Engine {
     pub fn frame(&mut self) -> Result<(), String> {
         self.now += FRAME_MS;
         let click = std::mem::take(&mut self.clicked);
+        let cancel = std::mem::take(&mut self.cancelled);
+        if self.menu_frame(click, cancel)? {
+            return Ok(());
+        }
+        if cancel {
+            match self.mode {
+                Mode::Title => self.open_menu(false),
+                Mode::Script if self.wait == Wait::Click && self.page.is_some() => {
+                    self.open_menu(true)
+                }
+                _ => {}
+            }
+            if self.menu.is_some() {
+                return Ok(());
+            }
+        }
+        if let Some((start, ms, _, _)) = self.shake
+            && self.now >= start + ms
+        {
+            self.shake = None;
+        }
         if let Some((_, start, ms)) = self.fade
             && self.now >= start + ms
         {
@@ -695,8 +989,11 @@ impl Engine {
         } else if l == "end" || l.contains("exit") || l.contains("quit") {
             self.ended = true;
             Ok(())
+        } else if l.contains("load") {
+            self.open_menu(false);
+            Ok(())
         } else {
-            // load, settings: not yet
+            // settings: not yet
             Ok(())
         }
     }
@@ -765,12 +1062,42 @@ impl Engine {
         self.put(out, img, [0, 0, img.w as i32, img.h as i32], x, y, a);
     }
 
-    fn layer_draws(&self) -> Vec<Draw> {
+    fn layer_draws(&mut self) -> Vec<Draw> {
         let mut out = Vec::new();
-        for l in self.view.values() {
-            self.whole(&mut out, &l.img, l.x, l.y, 1.0);
+        let (dx, dy) = match self.shake {
+            Some((start, ms, ax, ay)) => {
+                let t = ((self.now - start) / ms).clamp(0.0, 1.0);
+                let k = (1.0 - t) * (t * ms / 40.0 * std::f64::consts::PI).sin();
+                ((ax as f64 * k) as i32, (ay as f64 * k) as i32)
+            }
+            None => (0, 0),
+        };
+        let layers: Vec<(i32, Layer)> = self.view.iter().map(|(k, l)| (*k, l.clone())).collect();
+        for (k, l) in layers {
+            let img = if self.nega.contains(&k) {
+                self.negative(&l.img)
+            } else {
+                l.img.clone()
+            };
+            self.whole(&mut out, &img, l.x + dx, l.y + dy, 1.0);
         }
         out
+    }
+
+    fn negative(&mut self, img: &Rc<Image>) -> Rc<Image> {
+        let key = format!("#neg{}", img.id);
+        if let Some(i) = self.images.get(&key) {
+            return i.clone();
+        }
+        let mut n = (**img).clone();
+        for p in n.px.chunks_exact_mut(4) {
+            for c in &mut p[..3] {
+                *c = 255 - *c;
+            }
+        }
+        let n = Rc::new(n);
+        self.images.insert(key, n.clone());
+        n
     }
 
     fn text_at(&mut self, out: &mut Vec<Draw>, s: &str, size: f32, rgb: [u8; 3], x: i32, y: i32) {
@@ -812,9 +1139,11 @@ impl Engine {
                     );
                 }
             }
+            self.menu_draws(&mut out);
             return out;
         }
-        out.extend(self.layer_draws());
+        let layers = self.layer_draws();
+        out.extend(layers);
         if let Some((old, start, ms)) = self.fade.clone() {
             let t = ((self.now - start) / ms).clamp(0.0, 1.0) as f32;
             self.whole(&mut out, &old, 0, 0, 1.0 - t);
@@ -895,6 +1224,7 @@ impl Engine {
                 );
             }
         }
+        self.menu_draws(&mut out);
         out
     }
 
@@ -920,7 +1250,10 @@ impl Engine {
         self.clicked = true;
     }
 
-    pub fn cancel(&mut self) {}
+    /// A right click: our save screen on a page, the load screen at the title; again closes it.
+    pub fn cancel(&mut self) {
+        self.cancelled = true;
+    }
 
     /// 4 (enter) advances like a click.
     pub fn key(&mut self, k: i32) {

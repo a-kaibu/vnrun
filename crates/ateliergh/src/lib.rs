@@ -5,5 +5,6 @@
 pub mod arc;
 pub mod bmp;
 pub mod engine;
+pub mod save;
 pub mod script;
 pub mod text;
