@@ -32,7 +32,8 @@ const BGM: i32 = 0;
 const VOICE: i32 = 1;
 const SE: i32 = 2;
 /// the callback the input loops run once a tick (mouse)
-const TICK: i32 = 50;
+/// mouse callback ids with this bit run once per input poll (0x10 and 0x32 are seen)
+const TICK: i32 = 0x10;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum Ptr {
@@ -64,7 +65,7 @@ struct Frame {
     l: Vec<i32>,
     ls: HashMap<u32, String>,
     lp: HashMap<u32, Ptr>,
-    /// mouse callbacks by id (TICK: once per input poll) and pad/key callbacks
+    /// mouse callbacks by id (ids with the TICK bit: once per input poll) and pad/key callbacks
     mouse: HashMap<i32, u32>,
     joy: HashMap<i32, u32>,
 }
@@ -146,6 +147,8 @@ struct Window {
 pub struct Engine {
     files: Box<dyn Files>,
     index: Index,
+    /// the folder's file names by lower-case name
+    arcs: HashMap<String, String>,
     scripts: HashMap<usize, Rc<Script>>,
     g: Vec<i32>,
     gs: HashMap<u32, String>,
@@ -207,9 +210,14 @@ impl Engine {
                 let _ = index.add(&b);
             }
         }
+        let arcs = names
+            .iter()
+            .map(|n| (n.to_ascii_lowercase(), n.clone()))
+            .collect();
         let mut e = Engine {
             files,
             index,
+            arcs,
             scripts: HashMap::new(),
             g: Vec::new(),
             gs: HashMap::new(),
@@ -250,6 +258,28 @@ impl Engine {
         }
         let start = e.index.find("SYSTEM4.BIN").ok_or("no SYSTEM4.BIN")?;
         e.push_script(start)?;
+        // the screen is as large as the largest window SYSTEM4 opens at the top left
+        // (800x600 in the older games, 1280x720 in Sankaio)
+        let first = e.frames[0].script.clone();
+        for i in first
+            .insns
+            .iter()
+            .filter(|i| i.op == 0x70 && i.args.len() == 5)
+        {
+            let a: Vec<u32> = i
+                .args
+                .iter()
+                .map(|x| if x.t == 0 { x.v } else { u32::MAX })
+                .collect();
+            if a[3] == 0
+                && a[4] == 0
+                && (640..=4096).contains(&a[1])
+                && (480..=4096).contains(&a[2])
+            {
+                e.screen.0 = e.screen.0.max(a[1]);
+                e.screen.1 = e.screen.1.max(a[2]);
+            }
+        }
         Ok(e)
     }
 
@@ -262,16 +292,9 @@ impl Engine {
 
     fn read_file(&mut self, n: usize) -> Option<Vec<u8>> {
         let e = self.index.get(n)?.clone();
-        let size = self.files.size(&e.arc).or_else(|| {
-            let name = self
-                .files
-                .list()
-                .into_iter()
-                .find(|x| x.eq_ignore_ascii_case(&e.arc))?;
-            self.files.size(&name)
-        });
-        size?;
-        self.files.read_range(&e.arc, e.offset, e.size)
+        // the archive as the folder spells it
+        let arc = self.arcs.get(&e.arc.to_ascii_lowercase()).unwrap_or(&e.arc);
+        self.files.read_range(arc, e.offset, e.size)
     }
 
     fn file_name(&self, n: usize) -> String {
@@ -612,6 +635,23 @@ impl Engine {
                 let base = self.place_of(a[0]);
                 for (i, w) in words.into_iter().enumerate() {
                     self.write_ptr(base.add(i as i32), w as i32);
+                }
+            }
+            // 0x6c clears (start, count); 0x2d8 fills (start, value, count)
+            0x6c | 0x2d8 => {
+                let (x, n) = if op == 0x6c {
+                    (0, v(self, 1))
+                } else {
+                    (v(self, 1), v(self, 2))
+                };
+                let base = self.place_of(a[0]);
+                let mut n = n.clamp(0, 1 << 22);
+                if let (0, Ptr::G(g)) = (x, base) {
+                    // unwritten globals already read as 0
+                    n = n.min((self.g.len() as i64 - g as i64).max(0) as i32);
+                }
+                for i in 0..n {
+                    self.write_ptr(base.add(i), x);
                 }
             }
             0x135 => {
@@ -982,7 +1022,11 @@ impl Engine {
                 if key.is_some() {
                     self.keys.remove(0);
                 }
-                f.mouse.get(&TICK).copied()
+                f.mouse
+                    .iter()
+                    .filter(|(id, _)| *id & TICK != 0)
+                    .map(|(_, &t)| t)
+                    .min()
             }
         };
         if let Some(t) = target {
