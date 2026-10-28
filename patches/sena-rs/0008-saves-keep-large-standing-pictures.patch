@@ -1,0 +1,23 @@
+diff --git a/crates/pal-vm/src/runtime.rs b/crates/pal-vm/src/runtime.rs
+index 4d44b42..1937edd 100644
+--- a/crates/pal-vm/src/runtime.rs
++++ b/crates/pal-vm/src/runtime.rs
+@@ -1129,6 +1129,7 @@ struct SaveSubsystemState {
+ const SAVEPOINT_CLEAR_SLOT: i32 = 1000;
+ const SAVE_SPRITE_CAP: usize = 128;
+ const SAVE_SPRITE_BYTES_CAP: usize = 8 * 1024 * 1024;
++const SAVE_SCENE_SPRITE_BYTES_CAP: usize = 64 * 1024 * 1024;
+ const SAVE_MEMDAT_CAP: usize = 65_536;
+ const SAVE_NAME_CAP: usize = 256;
+ const PORTABLE_SAVE_VERSION: u32 = 16;
+@@ -17338,7 +17339,9 @@ fn saved_sprite_from_handle(
+     slot: i32,
+     handle: SpriteHandle,
+ ) -> Option<SavedSprite> {
+-    saved_sprite_with_limit(sprites, slot, handle, SAVE_SPRITE_BYTES_CAP)
++    // Standing pictures of later releases are 2048x2048 (16 MiB of RGBA); with the 8 MiB
++    // cap they were left out of saves and vanished on load.
++    saved_sprite_with_limit(sprites, slot, handle, SAVE_SCENE_SPRITE_BYTES_CAP)
+ }
+ 
+ fn saved_sprite_with_limit(sprites: &SpriteSystem, slot: i32, handle: SpriteHandle,

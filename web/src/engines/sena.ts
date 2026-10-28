@@ -23,6 +23,16 @@ function bind(fs: GameFS, presenter: Presenter): void {
       fs.readRange(path, Number(offset), Number(length)),
     senaListDir: (path: string) => fs.list(path),
     senaKnownFileCount: () => fs.fileCount(),
+    // saves and the system data (patches/sena-rs/0010), kept by the server
+    senaWriteFile: (path: string, bytes: Uint8Array) => fs.write(path, bytes),
+    senaRemoveFile: (path: string) => {
+      try {
+        fs.remove(path);
+        return true;
+      } catch {
+        return false;
+      }
+    },
   });
 }
 

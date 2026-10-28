@@ -1,0 +1,132 @@
+diff --git a/crates/pal-asset/src/pac.rs b/crates/pal-asset/src/pac.rs
+index c61657d..8b64c44 100644
+--- a/crates/pal-asset/src/pac.rs
++++ b/crates/pal-asset/src/pac.rs
+@@ -145,12 +145,10 @@ impl PacArchive {
+                         offset: data_offset,
+                         size: data_size,
+                     })?;
++                // A truncated download (淫落痴漢電車 体験版's ev.pac) still opens: the entries
++                // past its end are left out instead of losing the whole archive.
+                 if data_end > archive_len {
+-                    return Err(AssetError::PacDataOutOfRange {
+-                        path: path.clone(),
+-                        offset: data_offset,
+-                        size: data_size,
+-                    });
++                    continue;
+                 }
+ 
+                 let entry_index = entries.len();
+diff --git a/crates/pal-vm/src/config.rs b/crates/pal-vm/src/config.rs
+index 138b081..3d64ade 100644
+--- a/crates/pal-vm/src/config.rs
++++ b/crates/pal-vm/src/config.rs
+@@ -272,6 +272,51 @@ pub type IniFile = BTreeMap<String, IniSection>;
+ 
+ /// The screen size Game.exe hard-codes, as `push height; push width` for the window.
+ /// SYSTEM.INI's DEF_CG size is the CG canvas, which some games make larger than the
++/// The id stamped into Game.exe, which category 18 index 17 returns in the 2011-2012
++/// releases (淫落痴漢電車 体験版 compares it with 6263 and ends otherwise). Game.exe
++/// (sub_403D40 there) reads its own file, finds the last `/**/` marker, checks that the
++/// two halves of the next dword (xor 0xFEFEFDFC) agree, and mixes four of the twelve
++/// bytes after it into the value.
++pub fn exe_stamp(root: &Path) -> Option<i32> {
++    for name in vfs::list_dir(root) {
++        let lower = name.to_ascii_lowercase();
++        if !lower.ends_with(".exe") || lower.starts_with("config") {
++            continue;
++        }
++        let Ok(bytes) = vfs::read_all(&root.join(&name)) else { continue };
++        if let Some(value) = stamp_of(&bytes) {
++            return Some(value);
++        }
++    }
++    None
++}
++
++fn stamp_of(bytes: &[u8]) -> Option<i32> {
++    let at = bytes.windows(4).rposition(|w| w == b"/**/")? + 4;
++    let word = u32::from_le_bytes(bytes.get(at..at + 4)?.try_into().ok()?) ^ 0xFEFE_FDFC;
++    let (check, again) = ((word >> 16) as u16, word as u16);
++    if check != again {
++        return None;
++    }
++    let key = bytes.get(at + 4..at + 16)?;
++    let (start, turn) = ((check >> 8) as usize, (check & 0xFF) as u32);
++    let mut value = 0u32;
++    for i in 0..4 {
++        value |= u32::from(key[(start + i) % 12]) << ((3 - i) * 8);
++    }
++    value = value.rotate_left(turn & 31);
++    let mut mask = 0x1981_0419u32;
++    for _ in 0..4 {
++        value = (value & !0xFF) | ((value ^ mask) & 0xFF);
++        value = value.rotate_right(8);
++        mask = mask.rotate_right(8);
++    }
++    // swap the low and high bytes
++    let (low, high) = (value & 0xFF, value >> 24);
++    value = (value & 0x00FF_FF00) | (low << 24) | high;
++    Some(value as i32)
++}
++
+ /// screen (巨乳大魔王のドスケベクエスト: 1540x980 CGs on a 1280x720 screen).
+ pub fn exe_screen_size(root: &Path) -> Option<(u32, u32)> {
+     const SIZES: [(u32, u32); 6] = [(800, 600), (1024, 576), (1024, 768), (1280, 720), (1600, 900), (1920, 1080)];
+diff --git a/crates/pal-vm/src/engine.rs b/crates/pal-vm/src/engine.rs
+index f93ae9e..cecbc66 100644
+--- a/crates/pal-vm/src/engine.rs
++++ b/crates/pal-vm/src/engine.rs
+@@ -155,6 +155,7 @@ impl Engine {
+                         crate::config::set_ini_screen_size(ini, size);
+                     }
+                     runtime.set_screen_size(screen_size);
++                    runtime.set_exe_stamp(crate::config::exe_stamp(root));
+                     if let Some(system_ini) = startup_config.system_ini.clone() {
+                         runtime.set_system_ini(system_ini);
+                     }
+diff --git a/crates/pal-vm/src/runtime.rs b/crates/pal-vm/src/runtime.rs
+index 1937edd..819afa7 100644
+--- a/crates/pal-vm/src/runtime.rs
++++ b/crates/pal-vm/src/runtime.rs
+@@ -626,6 +625,8 @@ pub struct ScriptRuntime {
+     /// SYSTEM.INI parsed through the selected external NLS.
+     system_ini: Option<IniFile>,
+     screen_size: Option<(u32, u32)>,
++    /// Game.exe's id stamp ([`crate::config::exe_stamp`]).
++    exe_stamp: Option<i32>,
+     /// Language field read out of multi-language text records.
+     text_lang: TextLang,
+     /// TrueType faces the release ships as loose files, in path order.
+@@ -1605,6 +1606,7 @@ impl ScriptRuntime {
+             dynamic_string_cursor: 0,
+             system_ini: None,
+             screen_size: None,
++            exe_stamp: None,
+             text_lang: TextLang::default(),
+             font_face_candidates: Vec::new(),
+             loaded_face_path: None,
+@@ -1667,6 +1669,10 @@ impl ScriptRuntime {
+     }
+ 
+     /// The screen size from Game.exe, which wins over SYSTEM.INI's DEF_CG size.
++    pub fn set_exe_stamp(&mut self, stamp: Option<i32>) {
++        self.exe_stamp = stamp;
++    }
++
+     pub fn set_screen_size(&mut self, size: Option<(u32, u32)>) {
+         self.screen_size = size;
+         if let (Some(size), Some(ini)) = (size, self.system_ini.take()) {
+@@ -14997,6 +14999,11 @@ impl ScriptRuntime {
+     /// wrapper's comparison semantics instead of a silent fallback.
+     fn ext_work_process_value(&mut self) -> ExtCallOutcome {
+         let args = self.pop_ext_args(1);
++        // 2011-2012 releases push nothing and get Game.exe's id stamp back.
++        if let (true, Some(stamp)) = (args.is_empty(), self.exe_stamp) {
++            log::debug!("[trace-system] work_process_value () -> exe stamp {stamp}");
++            return ExtCallOutcome::Value(stamp);
++        }
+         if args.len() != 1 {
+             return ExtCallOutcome::Block;
+         }

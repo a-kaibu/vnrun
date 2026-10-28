@@ -1,0 +1,412 @@
+diff --git a/crates/pal-asset/src/vfs.rs b/crates/pal-asset/src/vfs.rs
+index ffbc183..c8f2d63 100644
+--- a/crates/pal-asset/src/vfs.rs
++++ b/crates/pal-asset/src/vfs.rs
+@@ -23,6 +23,21 @@ pub fn read_all(path: &Path) -> Result<Vec<u8>> {
+     std::fs::read(path).map_err(|e| AssetError::io(path, e))
+ }
+ 
++/// Writes a file the game creates (saves), making its folder first. In the browser the
++/// page keeps it (`senaWriteFile`), so saves outlive the session.
++#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
++pub fn write_file(path: &Path, bytes: &[u8]) -> std::io::Result<()> {
++    if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
++        std::fs::create_dir_all(parent)?;
++    }
++    std::fs::write(path, bytes)
++}
++
++#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
++pub fn remove_file(path: &Path) -> bool {
++    std::fs::remove_file(path).is_ok()
++}
++
+ /// Names of the entries in a directory; empty when it cannot be read.
+ #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+ pub fn list_dir(path: &Path) -> Vec<String> {
+@@ -66,6 +81,21 @@ mod wasm {
+ 
+         #[wasm_bindgen(js_name = senaListDir)]
+         fn sena_list_dir(path: &str) -> Vec<String>;
++
++        #[wasm_bindgen(js_name = senaWriteFile)]
++        fn sena_write_file(path: &str, bytes: &[u8]);
++
++        #[wasm_bindgen(js_name = senaRemoveFile)]
++        fn sena_remove_file(path: &str) -> bool;
++    }
++
++    pub fn write_file(path: &Path, bytes: &[u8]) -> std::io::Result<()> {
++        sena_write_file(&normalize_vfs_path(path), bytes);
++        Ok(())
++    }
++
++    pub fn remove_file(path: &Path) -> bool {
++        sena_remove_file(&normalize_vfs_path(path))
+     }
+ 
+     pub fn list_dir(path: &Path) -> Vec<String> {
+@@ -139,4 +169,4 @@ mod wasm {
+ }
+ 
+ #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+-pub use wasm::{file_len, is_file, list_dir, read_all, read_range};
++pub use wasm::{file_len, is_file, list_dir, read_all, read_range, remove_file, write_file};
+diff --git a/crates/pal-vm/src/lib.rs b/crates/pal-vm/src/lib.rs
+index 05b9990..6b47fb1 100644
+--- a/crates/pal-vm/src/lib.rs
++++ b/crates/pal-vm/src/lib.rs
+@@ -27,6 +27,7 @@ pub mod platform_time;
+ pub mod renderer;
+ pub mod runtime;
+ mod save_format;
++mod sfs;
+ pub mod scene;
+ pub mod sprite;
+ pub mod system;
+diff --git a/crates/pal-vm/src/sfs.rs b/crates/pal-vm/src/sfs.rs
+new file mode 100644
+index 0000000..53bbc5b
+--- /dev/null
++++ b/crates/pal-vm/src/sfs.rs
+@@ -0,0 +1,60 @@
++//! Save files through the asset VFS, so the browser build keeps them (the page stores what
++//! `pal_asset::vfs::write_file` hands it) instead of failing on `std::fs`.
++
++use std::io::{Cursor, Error, ErrorKind, Result};
++use std::path::Path;
++use std::time::SystemTime;
++
++use pal_asset::vfs;
++
++pub fn is_file(path: impl AsRef<Path>) -> bool {
++    vfs::is_file(path.as_ref())
++}
++
++pub fn read(path: impl AsRef<Path>) -> Result<Vec<u8>> {
++    vfs::read_all(path.as_ref()).map_err(|e| Error::new(ErrorKind::NotFound, e.to_string()))
++}
++
++pub fn read_to_string(path: impl AsRef<Path>) -> Result<String> {
++    String::from_utf8(read(path)?).map_err(|e| Error::new(ErrorKind::InvalidData, e))
++}
++
++pub fn write(path: impl AsRef<Path>, bytes: impl AsRef<[u8]>) -> Result<()> {
++    vfs::write_file(path.as_ref(), bytes.as_ref())
++}
++
++/// Folders come with [`write`].
++pub fn create_dir_all(_path: impl AsRef<Path>) -> Result<()> {
++    Ok(())
++}
++
++pub fn remove_file(path: impl AsRef<Path>) -> Result<()> {
++    if vfs::remove_file(path.as_ref()) {
++        Ok(())
++    } else {
++        Err(Error::new(ErrorKind::NotFound, "not removed"))
++    }
++}
++
++pub fn copy(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<u64> {
++    let bytes = read(from)?;
++    write(to, &bytes)?;
++    Ok(bytes.len() as u64)
++}
++
++/// The whole file, to read and seek in.
++pub fn open(path: impl AsRef<Path>) -> Result<Cursor<Vec<u8>>> {
++    read(path).map(Cursor::new)
++}
++
++pub fn modified(path: impl AsRef<Path>) -> Option<SystemTime> {
++    #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
++    {
++        std::fs::metadata(path.as_ref()).ok()?.modified().ok()
++    }
++    #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
++    {
++        let _ = path;
++        None
++    }
++}
+diff --git a/crates/pal-vm/src/runtime.rs b/crates/pal-vm/src/runtime.rs
+index 1937edd..819afa7 100644
+--- a/crates/pal-vm/src/runtime.rs
++++ b/crates/pal-vm/src/runtime.rs
+@@ -1,7 +1,6 @@
+ use std::sync::Arc;
+ use std::collections::{BTreeMap, BTreeSet, VecDeque};
+ use std::fmt;
+-use std::fs::File;
+ use std::io::{Read, Seek, SeekFrom, Write};
+ use std::path::{Path, PathBuf};
+ use std::time::{SystemTime, UNIX_EPOCH};
+@@ -1755,7 +1761,7 @@ impl ScriptRuntime {
+         let Some(path) = path else {
+             return false;
+         };
+-        match std::fs::read(&path) {
++        match crate::sfs::read(&path) {
+             Ok(bytes) => {
+                 if self.font_state.load_external_font(bytes) {
+                     log::debug!("[trace-text] loaded external font {}", path.display());
+@@ -1806,7 +1812,7 @@ impl ScriptRuntime {
+ 
+     pub fn load_portable_system_data(&mut self, root: &Path) {
+         let path = portable_system_data_path(root);
+-        let Ok(text) = std::fs::read_to_string(&path) else {
++        let Ok(text) = crate::sfs::read_to_string(&path) else {
+             return;
+         };
+         for line in text.lines() {
+@@ -1862,7 +1868,7 @@ impl ScriptRuntime {
+     /// state into system.dat; sena-rs stores its own portable companion file.
+     fn load_portable_system_mem(&mut self, root: &Path) {
+         let path = portable_system_mem_path(root);
+-        let Ok(bytes) = std::fs::read(&path) else {
++        let Ok(bytes) = crate::sfs::read(&path) else {
+             return;
+         };
+         match decode_portable_system_mem(&bytes) {
+@@ -1884,10 +1890,10 @@ impl ScriptRuntime {
+     fn write_portable_system_mem(&self, root: &Path) -> std::io::Result<PathBuf> {
+         let path = portable_system_mem_path(root);
+         if let Some(parent) = path.parent() {
+-            std::fs::create_dir_all(parent)?;
++            crate::sfs::create_dir_all(parent)?;
+         }
+         let bytes = encode_portable_system_mem(&self.system_mem);
+-        std::fs::write(&path, bytes)?;
++        crate::sfs::write(&path, bytes)?;
+         log::debug!(
+             "[trace-save] wrote portable system mem {} ({} words)",
+             path.display(),
+@@ -1899,10 +1905,10 @@ impl ScriptRuntime {
+     fn write_portable_read_lines(&self, root: &Path) -> std::io::Result<PathBuf> {
+         let path = portable_read_lines_path(root);
+         if let Some(parent) = path.parent() {
+-            std::fs::create_dir_all(parent)?;
++            crate::sfs::create_dir_all(parent)?;
+         }
+         let bytes = encode_portable_read_lines(&self.read_text_ids);
+-        std::fs::write(&path, bytes)?;
++        crate::sfs::write(&path, bytes)?;
+         log::debug!(
+             "[trace-save] wrote portable read lines {} ({} ids)",
+             path.display(),
+@@ -1915,7 +1921,7 @@ impl ScriptRuntime {
+     /// system.dat; sena-rs stores a portable companion file).
+     fn load_portable_read_lines(&mut self, root: &Path) {
+         let path = portable_read_lines_path(root);
+-        let Ok(bytes) = std::fs::read(&path) else {
++        let Ok(bytes) = crate::sfs::read(&path) else {
+             return;
+         };
+         match decode_portable_read_lines(&bytes) {
+@@ -1937,7 +1943,7 @@ impl ScriptRuntime {
+     fn write_portable_system_data(&self, root: &Path) -> std::io::Result<PathBuf> {
+         let path = portable_system_data_path(root);
+         if let Some(parent) = path.parent() {
+-            std::fs::create_dir_all(parent)?;
++            crate::sfs::create_dir_all(parent)?;
+         }
+         let mut text = format!(
+             "master_volume_percent={}\nmaster_muted={}\nbgm_volume_percent={}\nbgm_muted={}\nvoice_volume_percent={}\nvoice_muted={}\ntext_skip_enabled={}\ntext_auto_enabled={}\ntext_speed_percent={}\nauto_speed_percent={}\nskip_gate={}\n",
+@@ -1962,7 +1968,7 @@ impl ScriptRuntime {
+         for (slot, enabled) in &self.voice_ex_enabled {
+             text.push_str(&format!("voice_ex_enabled_{slot}={}\n", i32::from(*enabled)));
+         }
+-        std::fs::write(&path, text)?;
++        crate::sfs::write(&path, text)?;
+         log::debug!("[trace-save] wrote portable system data {}", path.display());
+         Ok(path)
+     }
+@@ -7157,7 +7163,7 @@ impl ScriptRuntime {
+                         || resource_manager
+                             .as_ref()
+                             .is_some_and(|manager| (0..=999).any(|candidate| {
+-                                portable_save_path(manager.root(), candidate).is_file()
++                                crate::sfs::is_file(&portable_save_path(manager.root(), candidate))
+                                     || find_loose_save_file(
+                                         manager.root(),
+                                         &original_save_filename(candidate),
+@@ -7169,8 +7175,7 @@ impl ScriptRuntime {
+                     let has_loose_file = resource_manager
+                         .as_ref()
+                         .and_then(|manager| {
+-                            portable_save_path(manager.root(), slot)
+-                                .is_file()
++                            crate::sfs::is_file(&portable_save_path(manager.root(), slot))
+                                 .then_some(portable_save_path(manager.root(), slot))
+                                 .or_else(|| {
+                                     find_loose_save_file(
+@@ -7451,9 +7456,9 @@ impl ScriptRuntime {
+         let bytes = encode_original_save(&prefix, &snapshot_bytes);
+         let path = original_save_path(root, slot);
+         if let Some(parent) = path.parent() {
+-            std::fs::create_dir_all(parent)?;
++            crate::sfs::create_dir_all(parent)?;
+         }
+-        std::fs::write(&path, bytes)?;
++        crate::sfs::write(&path, bytes)?;
+         Ok(path)
+     }
+ 
+@@ -7547,11 +7552,11 @@ impl ScriptRuntime {
+         let src_path = find_loose_save_file(manager.root(), &original_save_filename(src))
+             .unwrap_or_else(|| original_save_path(manager.root(), src));
+         let dest_path = original_save_path(manager.root(), dest);
+-        let copied = if src_path.is_file() {
++        let copied = if crate::sfs::is_file(&src_path) {
+             if let Some(parent) = dest_path.parent() {
+-                let _ = std::fs::create_dir_all(parent);
++                let _ = crate::sfs::create_dir_all(parent);
+             }
+-            std::fs::copy(&src_path, &dest_path).is_ok()
++            crate::sfs::copy(&src_path, &dest_path).is_ok()
+         } else {
+             false
+         };
+@@ -7638,7 +7643,7 @@ impl ScriptRuntime {
+         };
+         let path = find_loose_save_file(manager.root(), &original_save_filename(slot))
+             .unwrap_or_else(|| original_save_path(manager.root(), slot));
+-        if !path.is_file() {
++        if !crate::sfs::is_file(&path) {
+             log::debug!("[trace-save] save_lock slot={slot} missing");
+             return ExtCallOutcome::Value(1);
+         }
+@@ -7659,7 +7664,7 @@ impl ScriptRuntime {
+         self.save_state.last_slot = slot;
+         let from_file = resource_manager.as_ref().and_then(|manager| {
+             let path = find_loose_save_file(manager.root(), &original_save_filename(slot))?;
+-            let mut file = File::open(path).ok()?;
++            let mut file = crate::sfs::open(path).ok()?;
+             let mut header = [0_u8; 8];
+             file.read_exact(&mut header).ok()?;
+             Some(read_lock_dword(&header))
+@@ -7712,16 +7717,13 @@ impl ScriptRuntime {
+             );
+             return ExtCallOutcome::Value(1);
+         };
+-        let Ok(metadata) = std::fs::metadata(&path) else {
++        let Some(modified) = crate::sfs::modified(&path) else {
+             log::debug!(
+                 "[trace-save] savetimedraw slot={sprite_slot} path={} metadata failed",
+                 path.display()
+             );
+             return ExtCallOutcome::Value(1);
+         };
+-        let Ok(modified) = metadata.modified() else {
+-            return ExtCallOutcome::Value(1);
+-        };
+         let text = format_save_time(modified, format_mode);
+         let Some(sprites) = sprites else {
+             return ExtCallOutcome::Value(1);
+@@ -7912,7 +7914,7 @@ impl ScriptRuntime {
+         };
+         let path = find_loose_save_file(manager.root(), &original_save_filename(slot))
+             .unwrap_or_else(|| original_save_path(manager.root(), slot));
+-        let deleted = path.is_file() && std::fs::remove_file(&path).is_ok();
++        let deleted = crate::sfs::is_file(&path) && crate::sfs::remove_file(&path).is_ok();
+         if deleted {
+             self.save_state.snapshots.remove(&slot);
+         }
+@@ -13296,7 +13298,7 @@ impl ScriptRuntime {
+         assets: &CoreAssets,
+     ) -> Option<RuntimeSaveSnapshot> {
+         let path = find_loose_save_file(root, &original_save_filename(slot))?;
+-        let bytes = std::fs::read(path).ok()?;
++        let bytes = crate::sfs::read(path).ok()?;
+         let (prefix, trailer) = decode_original_save(&bytes)?;
+         if trailer.is_some() {
+             // A portable trailer exists but failed to parse; do not guess.
+@@ -16494,24 +16501,19 @@ fn find_loose_save_file(root: &Path, filename: &str) -> Option<PathBuf> {
+         root.join("patch").join("save").join(filename),
+         root.join("save").join(filename),
+     ];
+-    candidates.into_iter().find(|path| path.is_file())
++    candidates.into_iter().find(|path| crate::sfs::is_file(path))
+ }
+ 
+ fn write_save_lock_dword(path: &Path, value: i32) -> std::io::Result<()> {
+-    let mut file = std::fs::OpenOptions::new()
+-        .read(true)
+-        .write(true)
+-        .open(path)?;
+-    let mut header = [0_u8; 8];
+-    file.read_exact(&mut header)?;
+-    if &header == b"SENARSAV" {
++    let mut bytes = crate::sfs::read(path)?;
++    if bytes.len() < 8 || bytes.starts_with(b"SENARSAV") {
+         return Err(std::io::Error::new(
+             std::io::ErrorKind::InvalidData,
+             "portable-only save has no lock dword",
+         ));
+     }
+-    file.seek(SeekFrom::Start(0))?;
+-    file.write_all(&value.to_le_bytes())
++    bytes[..4].copy_from_slice(&value.to_le_bytes());
++    crate::sfs::write(path, &bytes)
+ }
+ 
+ fn portable_save_dir(root: &Path) -> PathBuf {
+@@ -16736,19 +16738,19 @@ fn write_runtime_save_snapshot(
+ ) -> std::io::Result<PathBuf> {
+     let path = original_save_path(root, slot);
+     if let Some(parent) = path.parent() {
+-        std::fs::create_dir_all(parent)?;
++        crate::sfs::create_dir_all(parent)?;
+     }
+     let (width, height) = (DEFAULT_THUMB_WIDTH, DEFAULT_THUMB_HEIGHT);
+     let prefix = OriginalSavePrefix::empty(width, height);
+     let snapshot_bytes = encode_runtime_save_snapshot(snapshot)?;
+-    std::fs::write(&path, encode_original_save(&prefix, &snapshot_bytes))?;
++    crate::sfs::write(&path, encode_original_save(&prefix, &snapshot_bytes))?;
+     Ok(path)
+ }
+ 
+ fn read_original_save_prefix(root: &Path, slot: i32) -> std::io::Result<OriginalSavePrefix> {
+     let path = find_loose_save_file(root, &original_save_filename(slot))
+         .unwrap_or_else(|| original_save_path(root, slot));
+-    let mut file = File::open(path)?;
++    let mut file = crate::sfs::open(path)?;
+     let mut header = [0_u8; HEADER_BEFORE_PIXELS];
+     file.read_exact(&mut header)?;
+     let prefix_len = original_prefix_len(&header).ok_or_else(|| {
+@@ -16767,14 +16769,14 @@ fn read_original_save_prefix(root: &Path, slot: i32) -> std::io::Result<Original
+ fn read_runtime_save_snapshot(root: &Path, slot: i32) -> std::io::Result<RuntimeSaveSnapshot> {
+     let original = find_loose_save_file(root, &original_save_filename(slot))
+         .unwrap_or_else(|| original_save_path(root, slot));
+-    let original_error = if original.is_file() {
++    let original_error = if crate::sfs::is_file(&original) {
+         match read_snapshot_file(&original) {
+             Ok(snapshot) => return Ok(snapshot),
+             Err(error) => Some(error),
+         }
+     } else { None };
+     let legacy = portable_save_path(root, slot);
+-    if legacy.is_file() {
++    if crate::sfs::is_file(&legacy) {
+         return read_snapshot_file(&legacy);
+     }
+     if let Some(error) = original_error { return Err(error); }
+@@ -16785,7 +16787,7 @@ fn read_runtime_save_snapshot(root: &Path, slot: i32) -> std::io::Result<Runtime
+ }
+ 
+ fn read_snapshot_file(path: &Path) -> std::io::Result<RuntimeSaveSnapshot> {
+-    let mut file = File::open(path)?;
++    let mut file = crate::sfs::open(path)?;
+     let mut magic = [0_u8; 8];
+     file.read_exact(&mut magic)?;
+     if &magic == b"SENARSAV" {
+@@ -17385,7 +17387,7 @@ fn saved_sprite_with_limit(sprites: &SpriteSystem, slot: i32, handle: SpriteHand
+ fn save_file_modified(resource_manager: Option<&ResourceManager>, slot: i32) -> Option<SystemTime> {
+     let manager = resource_manager?;
+     let path = find_loose_save_file(manager.root(), &original_save_filename(slot))?;
+-    std::fs::metadata(path).ok()?.modified().ok()
++    crate::sfs::modified(&path)
+ }
+ 
+ fn decode_save_title(bytes: &[u8], nls: Nls) -> String {
