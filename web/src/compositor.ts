@@ -1,7 +1,7 @@
 // Draws an engine's list of pictures (Game.draws in crates/nexas-web and crates/advhd-web) with
 // WebGPU: each picture is a quad from its four corners, sampling a rectangle of its texture,
 // laid over or added, clipped to a rectangle of the screen. A picture may go through a rule wipe
-// (Game.rules, nexas::gfx::Rule): a grey rule picture stretched over the screen whose dark parts
+// (Game.rules, vncommon::rule::Rule): a grey rule picture stretched over the screen whose dark parts
 // go (or come) first as the progress runs from 0 to 1, with a soft edge `vague` wide.
 
 import { TextureCache } from "./texture-cache";
@@ -10,7 +10,7 @@ import { TextureCache } from "./texture-cache";
 export interface Pictures {
   draws(): Float32Array;
   texture(id: number): Uint8Array;
-  /** RULE_FIELDS numbers per wiped draw (nexas::gfx::rule_fields), after draws(). */
+  /** RULE_FIELDS numbers per wiped draw (vncommon::rule::rule_fields), after draws(). */
   rules?(): Float32Array;
 }
 
@@ -68,7 +68,7 @@ struct Out {
 
 // Numbers per draw in Game.draws (crates/nexas-web, crates/advhd-web).
 const FIELDS = 21;
-// Numbers per rule in Game.rules (nexas::gfx::RULE_FIELDS).
+// Numbers per rule in Game.rules (vncommon::rule::RULE_FIELDS).
 const RULE_FIELDS = 7;
 // Uniform slots are 256 bytes apart (minUniformBufferOffsetAlignment).
 const SLOT = 256;

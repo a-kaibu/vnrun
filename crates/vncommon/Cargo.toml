@@ -1,0 +1,9 @@
+[package]
+name = "vncommon"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "Shared pieces of the vnrun engines: rule wipes, the BMP loader and the backlog"
+
+[dependencies]
+nexas = { path = "../nexas" }

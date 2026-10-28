@@ -31,7 +31,8 @@ use std::rc::Rc;
 
 use nexas::files::Files;
 use nexas::font::Font;
-use nexas::gfx::{Draw, Image, Place, Rule};
+use nexas::gfx::{Draw, Image, Place};
+use vncommon::rule::Rule;
 
 use crate::cpz::Cpz;
 use crate::pb3;
@@ -1393,7 +1394,7 @@ impl Engine {
         img.fill([0, 0, 0, 255]);
         for (i, d) in ds.iter().enumerate() {
             let r = rules.iter().find(|r| r.0 == i).map(|r| &r.1);
-            nexas::gfx::draw_ruled(&mut img, &d.image, d.src, d.dst, &d.place, r);
+            vncommon::rule::draw_ruled(&mut img, &d.image, d.src, d.dst, &d.place, r);
         }
         img
     }

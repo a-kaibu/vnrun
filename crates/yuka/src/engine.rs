@@ -13,10 +13,11 @@
 use std::collections::{BTreeMap, HashMap};
 use std::rc::Rc;
 
-use nexas::backlog::Backlog;
 use nexas::files::Files;
 use nexas::font::Font;
-use nexas::gfx::{Draw, Image, Place, Rule};
+use nexas::gfx::{Draw, Image, Place};
+use vncommon::backlog::Backlog;
+use vncommon::rule::Rule;
 
 use crate::ykc;
 use crate::ykg;
@@ -1837,7 +1838,7 @@ impl Engine {
         let ds = self.draws();
         for (i, d) in ds.iter().enumerate() {
             let r = self.rules.iter().find(|r| r.0 == i).map(|r| &r.1);
-            nexas::gfx::draw_ruled(&mut img, &d.image, d.src, d.dst, &d.place, r);
+            vncommon::rule::draw_ruled(&mut img, &d.image, d.src, d.dst, &d.place, r);
         }
         img
     }

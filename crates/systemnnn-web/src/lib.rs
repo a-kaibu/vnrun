@@ -135,7 +135,7 @@ impl Game {
         self.e.cancel();
     }
 
-    /// The wheel: turned up opens the backlog (nexas::backlog).
+    /// The wheel: turned up opens the backlog (vncommon::backlog).
     pub fn wheel(&mut self, up: bool) {
         self.e.wheel(up);
     }

@@ -69,7 +69,7 @@ pub fn frames(b: &[u8]) -> Vec<Vec<u8>> {
         .collect()
 }
 
-pub use nexas::gfx::bmp;
+pub use vncommon::bmp::decode as bmp;
 
 #[cfg(test)]
 mod tests {

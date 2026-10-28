@@ -6,7 +6,7 @@
 use std::collections::VecDeque;
 use std::rc::Rc;
 
-use crate::gfx::{Draw, Image, Place};
+use nexas::gfx::{Draw, Image, Place};
 
 /// How many messages the backlog keeps.
 pub const KEEP: usize = 100;

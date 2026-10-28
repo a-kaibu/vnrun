@@ -9,5 +9,6 @@ description = "A NekoSDK engine for the browser (Waffle): reads the NEKOPACK .pa
 miniz_oxide = "0.8"
 encoding_rs = "0.8"
 nexas = { path = "../nexas" }
+vncommon = { path = "../vncommon" }
 fontdue = "0.9"
 image = { version = "0.25", default-features = false, features = ["png"] }

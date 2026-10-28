@@ -7,6 +7,7 @@ description = "DebonosuWorks' engine (Lua 5.1 scripts in .pak archives) for the 
 
 [dependencies]
 nexas = { path = "../nexas" }
+vncommon = { path = "../vncommon" }
 luavm = { path = "../luavm" }
 fontdue = "0.9"
 miniz_oxide = "0.8"

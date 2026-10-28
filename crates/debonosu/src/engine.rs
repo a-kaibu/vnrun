@@ -279,7 +279,7 @@ pub struct St {
     pub msg: String,
     pub name: String,
     /// the pages read so far (the wheel turned up); a load replays them back in
-    pub backlog: nexas::backlog::Backlog,
+    pub backlog: vncommon::backlog::Backlog,
     pub shown: f64,
     pub block: Block,
     pub vars: HashMap<String, Value>,

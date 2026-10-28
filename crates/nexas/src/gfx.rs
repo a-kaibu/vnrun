@@ -64,7 +64,8 @@ impl Image {
         }
     }
 
-    fn at(&self, x: i32, y: i32) -> [u8; 4] {
+    /// The pixel at x, y (transparent outside).
+    pub fn at(&self, x: i32, y: i32) -> [u8; 4] {
         if x < 0 || y < 0 || x >= self.w as i32 || y >= self.h as i32 {
             return [0; 4];
         }
@@ -206,137 +207,20 @@ impl Draw {
     }
 }
 
-/// A wipe by a rule picture (a grey mask stretched over the screen): at `progress` 0..1 the
-/// screen pixels whose rule brightness r (0..1) is below the moving edge have gone (or, with
-/// `appear`, have come), with a soft edge `vague` wide (0 hard, 1 a whole fade). The draws of a
-/// transition that leave carry it as is; the ones that arrive carry it with `appear`.
-///
-/// The browser compositor (web/src/compositor.ts) does the same per pixel with the rule's red
-/// channel; the web crates hand rules over with [`rule_fields`].
-#[derive(Debug, Clone)]
-pub struct Rule {
-    pub image: Rc<Image>,
-    pub progress: f32,
-    pub vague: f32,
-    pub appear: bool,
-}
-
-impl Rule {
-    /// How much of a pixel with rule brightness `r` (0..1) is shown.
-    pub fn mask(&self, r: f32) -> f32 {
-        let v = self.vague.clamp(1.0 / 255.0, 1.0);
-        // the edge moves from -v (nothing gone) to 1 (all gone)
-        let edge = self.progress.clamp(0.0, 1.0) * (1.0 + v) - v;
-        let keep = ((r - edge) / v).clamp(0.0, 1.0);
-        if self.appear { 1.0 - keep } else { keep }
-    }
-
-    /// The rule brightness at a screen pixel of a `w` x `h` screen.
-    pub fn at(&self, x: u32, y: u32, w: u32, h: u32) -> f32 {
-        let i = &self.image;
-        if i.w == 0 || i.h == 0 || w == 0 || h == 0 {
-            return 1.0;
-        }
-        let (rx, ry) = (
-            (x as u64 * i.w as u64 / w as u64) as i32,
-            (y as u64 * i.h as u64 / h as u64) as i32,
-        );
-        i.at(rx, ry)[0] as f32 / 255.0
-    }
-}
-
-/// Numbers per rule in a web crate's `rules()`: the draw's index, the rule picture's id, width,
-/// height, progress, vague and appear (1 / 0).
-pub const RULE_FIELDS: usize = 7;
-
-/// A BMP (24 or 32 bits, 8 with a palette) to RGBA.
-pub fn bmp(b: &[u8]) -> Option<Image> {
-    if b.get(..2)? != b"BM" {
-        return None;
-    }
-    let off = le32(b, 10)? as usize;
-    let w = le32(b, 18)? as i32;
-    let h = le32(b, 22)? as i32;
-    let bpp = u16::from_le_bytes([*b.get(28)?, *b.get(29)?]) as usize;
-    if w <= 0 || h == 0 || w > 8192 || h.abs() > 8192 {
-        return None;
-    }
-    let (w, ah) = (w as usize, h.unsigned_abs() as usize);
-    let stride = (w * bpp / 8 + 3) & !3;
-    let hdr = le32(b, 14)? as usize;
-    let pal = 14 + hdr;
-    let mut img = Image::new(w as u32, ah as u32);
-    for y in 0..ah {
-        let sy = if h > 0 { ah - 1 - y } else { y };
-        let Some(row) = b.get(off + sy * stride..off + sy * stride + w * bpp / 8) else {
-            continue;
-        };
-        for x in 0..w {
-            let px = match bpp {
-                32 => [row[x * 4 + 2], row[x * 4 + 1], row[x * 4], row[x * 4 + 3]],
-                24 => [row[x * 3 + 2], row[x * 3 + 1], row[x * 3], 255],
-                8 => {
-                    let i = pal + row[x] as usize * 4;
-                    match b.get(i..i + 3) {
-                        Some(c) => [c[2], c[1], c[0], 255],
-                        None => [0, 0, 0, 255],
-                    }
-                }
-                _ => return None,
-            };
-            let d = (y * w + x) * 4;
-            img.px[d..d + 4].copy_from_slice(&px);
-        }
-    }
-    img.renew();
-    Some(img)
-}
-
-fn le32(b: &[u8], at: usize) -> Option<u32> {
-    Some(u32::from_le_bytes(b.get(at..at + 4)?.try_into().ok()?))
-}
-
-/// The draws on a black `w` x `h` picture, each with its rule (by draw index) if any.
-pub fn render_ruled(w: u32, h: u32, ds: &[Draw], rules: &[(usize, Rule)]) -> Image {
-    let mut img = Image::new(w, h);
-    img.fill([0, 0, 0, 255]);
-    for (i, d) in ds.iter().enumerate() {
-        let r = rules.iter().find(|r| r.0 == i).map(|r| &r.1);
-        draw_ruled(&mut img, &d.image, d.src, d.dst, &d.place, r);
-    }
-    img
-}
-
-/// The numbers [`RULE_FIELDS`] for rules of the draws (by index).
-pub fn rule_fields(rules: &[(usize, Rule)]) -> Vec<f32> {
-    let mut out = Vec::with_capacity(rules.len() * RULE_FIELDS);
-    for (i, r) in rules {
-        out.extend([
-            *i as f32,
-            r.image.id as f32,
-            r.image.w as f32,
-            r.image.h as f32,
-            r.progress,
-            r.vague,
-            r.appear as u8 as f32,
-        ]);
-    }
-    out
-}
-
 /// Draws `src[sr]` so that it covers `dst` (before scaling and turning) on `out`.
 pub fn draw(out: &mut Image, src: &Image, sr: [i32; 4], dst: [f32; 4], p: &Place) {
-    draw_ruled(out, src, sr, dst, p, None);
+    draw_masked(out, src, sr, dst, p, None);
 }
 
-/// [`draw`] through a rule wipe.
-pub fn draw_ruled(
+/// [`draw`] with each screen pixel's opacity scaled by `mask(x, y)` (0..1), as a rule wipe
+/// (vncommon::rule) does.
+pub fn draw_masked(
     out: &mut Image,
     src: &Image,
     sr: [i32; 4],
     dst: [f32; 4],
     p: &Place,
-    rule: Option<&Rule>,
+    mask: Option<&dyn Fn(u32, u32) -> f32>,
 ) {
     if p.alpha <= 0.0 || p.sx == 0.0 || p.sy == 0.0 {
         return;
@@ -421,8 +305,8 @@ pub fn draw_ruled(
                 bilinear(src, u - 0.5, v - 0.5, sr)
             };
             let mut sa = (s[3] as u32 * a) >> 8;
-            if let Some(r) = rule {
-                let m = r.mask(r.at(x as u32, y as u32, out.w, out.h));
+            if let Some(mask) = mask {
+                let m = mask(x as u32, y as u32);
                 sa = (sa as f32 * m) as u32;
             }
             if sa == 0 {
@@ -476,25 +360,4 @@ fn bilinear(img: &Image, u: f32, v: f32, sr: [i32; 4]) -> [u8; 4] {
     }
     out[3] = a.round() as u8;
     out
-}
-
-#[cfg(test)]
-mod rule_tests {
-    use super::*;
-
-    #[test]
-    fn rule_mask() {
-        let r = |p: f32, appear: bool| Rule {
-            image: Rc::new(Image::new(1, 1)),
-            progress: p,
-            vague: 0.25,
-            appear,
-        };
-        // nothing gone at the start, everything at the end
-        assert_eq!(r(0.0, false).mask(0.0), 1.0);
-        assert_eq!(r(1.0, false).mask(1.0), 0.0);
-        // dark parts go first
-        assert!(r(0.5, false).mask(0.1) < r(0.5, false).mask(0.9));
-        assert_eq!(r(0.5, true).mask(0.1), 1.0 - r(0.5, false).mask(0.1));
-    }
 }

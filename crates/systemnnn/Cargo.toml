@@ -7,5 +7,6 @@ description = "System-NNN (Black Cyc and others) for the browser: GPK/DWQ pictur
 
 [dependencies]
 nexas = { path = "../nexas" }
+vncommon = { path = "../vncommon" }
 fontdue = "0.9"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }

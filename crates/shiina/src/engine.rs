@@ -18,7 +18,8 @@ use std::rc::Rc;
 
 use nexas::files::Files;
 use nexas::font::Font;
-use nexas::gfx::{Draw, Image, Place, Rule};
+use nexas::gfx::{Draw, Image, Place};
+use vncommon::rule::Rule;
 
 use crate::arc::{self, Archives};
 use crate::s25;
@@ -703,7 +704,7 @@ impl Engine {
     /// The frame as one picture (for the native runner).
     pub fn render(&mut self) -> Image {
         let ds = self.draws();
-        nexas::gfx::render_ruled(self.width, self.height, &ds, &self.rules)
+        vncommon::rule::render_ruled(self.width, self.height, &ds, &self.rules)
     }
 
     /// The rule wipes of the last [`Engine::draws`]: (draw index, rule).

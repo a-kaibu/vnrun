@@ -7,5 +7,6 @@ description = "Bishop (BSXX) for the browser: BSA archives, BSG pictures and BSX
 
 [dependencies]
 nexas = { path = "../nexas" }
+vncommon = { path = "../vncommon" }
 fontdue = "0.9"
 image = { version = "0.25", default-features = false, features = ["png"] }

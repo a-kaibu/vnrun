@@ -11,5 +11,6 @@ crate-type = ["cdylib"]
 [dependencies]
 propeller = { path = "../propeller" }
 nexas = { path = "../nexas" }
+vncommon = { path = "../vncommon" }
 wasm-bindgen = "=0.2.129"
 js-sys = "0.3"

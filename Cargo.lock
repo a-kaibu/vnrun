@@ -145,6 +145,7 @@ dependencies = [
  "fontdue",
  "image 0.25.10",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -154,6 +155,7 @@ dependencies = [
  "bishop",
  "js-sys",
  "nexas",
+ "vncommon",
  "wasm-bindgen",
 ]
 
@@ -264,6 +266,7 @@ dependencies = [
  "fontdue",
  "image 0.25.10",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -273,6 +276,7 @@ dependencies = [
  "cmvs",
  "js-sys",
  "nexas",
+ "vncommon",
  "wasm-bindgen",
 ]
 
@@ -380,6 +384,7 @@ dependencies = [
  "luavm",
  "miniz_oxide 0.8.9",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -826,6 +831,7 @@ dependencies = [
  "fontdue",
  "image 0.25.10",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -835,6 +841,7 @@ dependencies = [
  "js-sys",
  "liar",
  "nexas",
+ "vncommon",
  "wasm-bindgen",
 ]
 
@@ -858,6 +865,7 @@ dependencies = [
  "fontdue",
  "image 0.25.10",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -867,6 +875,7 @@ dependencies = [
  "js-sys",
  "lilim",
  "nexas",
+ "vncommon",
  "wasm-bindgen",
 ]
 
@@ -937,6 +946,7 @@ dependencies = [
  "image 0.25.10",
  "nexas",
  "tmrhiro",
+ "vncommon",
 ]
 
 [[package]]
@@ -946,6 +956,7 @@ dependencies = [
  "js-sys",
  "med",
  "nexas",
+ "vncommon",
  "wasm-bindgen",
 ]
 
@@ -1013,6 +1024,7 @@ dependencies = [
  "image 0.25.10",
  "miniz_oxide 0.8.9",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -1022,6 +1034,7 @@ dependencies = [
  "js-sys",
  "neko",
  "nexas",
+ "vncommon",
  "wasm-bindgen",
 ]
 
@@ -1183,6 +1196,7 @@ dependencies = [
  "fontdue",
  "image 0.25.10",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -1192,6 +1206,7 @@ dependencies = [
  "js-sys",
  "nexas",
  "propeller",
+ "vncommon",
  "wasm-bindgen",
 ]
 
@@ -1398,6 +1413,7 @@ dependencies = [
  "image 0.25.10",
  "miniz_oxide 0.8.9",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -1407,6 +1423,7 @@ dependencies = [
  "js-sys",
  "nexas",
  "shiina",
+ "vncommon",
  "wasm-bindgen",
 ]
 
@@ -1546,6 +1563,7 @@ dependencies = [
  "fontdue",
  "image 0.25.10",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -1682,6 +1700,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
+name = "vncommon"
+version = "0.1.0"
+dependencies = [
+ "nexas",
+]
+
+[[package]]
 name = "vnrun-devserver"
 version = "0.1.0"
 dependencies = [
@@ -1781,6 +1806,7 @@ dependencies = [
  "fontdue",
  "image 0.25.10",
  "nexas",
+ "vncommon",
 ]
 
 [[package]]
@@ -1789,6 +1815,7 @@ version = "0.1.0"
 dependencies = [
  "js-sys",
  "nexas",
+ "vncommon",
  "wasm-bindgen",
  "yuka",
 ]

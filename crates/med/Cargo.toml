@@ -7,6 +7,7 @@ description = "The DxLib MED engine of fudegaki-soft and trois (md_*.med archive
 
 [dependencies]
 nexas = { path = "../nexas" }
+vncommon = { path = "../vncommon" }
 tmrhiro = { path = "../tmrhiro" }
 fontdue = "0.9"
 encoding_rs = "0.8"
