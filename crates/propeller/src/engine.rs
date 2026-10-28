@@ -50,7 +50,7 @@ use std::rc::Rc;
 
 use nexas::files::Files;
 use nexas::font::Font;
-use nexas::gfx::{Draw, Image, Place};
+use nexas::gfx::{Draw, Image, Place, Rule};
 
 use crate::mgr;
 use crate::mpk::Mpk;
@@ -218,7 +218,12 @@ struct Trans {
     from: Rc<Image>,
     start: f64,
     ms: f64,
+    /// kind 2 of 3.00: the old screen goes by this rule picture
+    rule: Option<Rc<Image>>,
 }
+
+/// The soft edge of rule wipes (BB.exe's own width not read).
+const RULE_VAGUE: f32 = 0.25;
 
 #[derive(Clone, Copy, PartialEq)]
 enum View {
@@ -280,6 +285,7 @@ pub struct Engine {
     last_voice: Option<String>,
     trans: Option<Trans>,
     last_draws: Vec<Draw>,
+    rules: Vec<(usize, Rule)>,
     sounds: Vec<SoundEvent>,
     bgm: Option<(String, bool)>,
     se_names: BTreeMap<usize, String>,
@@ -440,6 +446,7 @@ impl Engine {
             last_voice: None,
             trans: None,
             last_draws: Vec::new(),
+            rules: Vec::new(),
             sounds: Vec::new(),
             bgm: None,
             se_names: BTreeMap::new(),
@@ -1006,7 +1013,9 @@ impl Engine {
                 } else {
                     (v(self, 1), b(2))
                 };
-                self.transition(ms, keep != 0);
+                let rule = if ins.op == 0 { st(1) } else { String::new() };
+                let kind = v(self, 0);
+                self.transition(ms, keep != 0, kind, &rule);
             }
             (4, 0x00) => {
                 let id = v(self, 0) as usize;
@@ -1350,7 +1359,7 @@ impl Engine {
         }
     }
 
-    fn transition(&mut self, ms: i32, keep_window: bool) {
+    fn transition(&mut self, ms: i32, keep_window: bool, kind: i32, rule: &str) {
         if !keep_window {
             self.window = false;
         }
@@ -1359,10 +1368,16 @@ impl Engine {
             return;
         }
         let from = Rc::new(self.render_draws(&self.last_draws.clone()));
+        let rule = if kind == 2 && !rule.is_empty() {
+            self.picture(rule).and_then(|p| p.first().cloned())
+        } else {
+            None
+        };
         self.trans = Some(Trans {
             from,
             start: self.now,
             ms: ms as f64,
+            rule,
         });
         self.wait(Wait::Frames(frames(ms), false));
     }
@@ -1759,9 +1774,24 @@ impl Engine {
             }
         }
         self.last_draws = out.clone();
+        self.rules.clear();
         if let Some(t) = &self.trans {
             let p = ((self.now - t.start) / t.ms.max(1.0)).clamp(0.0, 1.0) as f32;
-            out.push(draw(&t.from, 0.0, 0.0, 1.0 - p));
+            match &t.rule {
+                Some(r) => {
+                    self.rules.push((
+                        out.len(),
+                        Rule {
+                            image: r.clone(),
+                            progress: p,
+                            vague: RULE_VAGUE,
+                            appear: false,
+                        },
+                    ));
+                    out.push(draw(&t.from, 0.0, 0.0, 1.0));
+                }
+                None => out.push(draw(&t.from, 0.0, 0.0, 1.0 - p)),
+            }
         }
         match self.view {
             View::Menu => self.menu_draws(&mut out),
@@ -1772,10 +1802,15 @@ impl Engine {
     }
 
     fn render_draws(&self, ds: &[Draw]) -> Image {
+        self.render_ruled(ds, &[])
+    }
+
+    fn render_ruled(&self, ds: &[Draw], rules: &[(usize, Rule)]) -> Image {
         let mut img = Image::new(self.width, self.height);
         img.fill([0, 0, 0, 255]);
-        for d in ds {
-            nexas::gfx::draw(&mut img, &d.image, d.src, d.dst, &d.place);
+        for (i, d) in ds.iter().enumerate() {
+            let r = rules.iter().find(|r| r.0 == i).map(|r| &r.1);
+            nexas::gfx::draw_ruled(&mut img, &d.image, d.src, d.dst, &d.place, r);
         }
         img
     }
@@ -1783,7 +1818,12 @@ impl Engine {
     /// The frame as one picture (for the native runner).
     pub fn render(&mut self) -> Image {
         let ds = self.draws();
-        self.render_draws(&ds)
+        self.render_ruled(&ds, &self.rules.clone())
+    }
+
+    /// The rule wipes of the last [`Engine::draws`]: (draw index, rule).
+    pub fn rules(&self) -> &[(usize, Rule)] {
+        &self.rules
     }
 
     pub fn take_sounds(&mut self) -> Vec<SoundEvent> {
@@ -2291,6 +2331,7 @@ impl Engine {
             from,
             start: self.now,
             ms: 400.0,
+            rule: None,
         });
     }
 }

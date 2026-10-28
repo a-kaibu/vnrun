@@ -1,6 +1,8 @@
 // Draws an engine's list of pictures (Game.draws in crates/nexas-web and crates/advhd-web) with
 // WebGPU: each picture is a quad from its four corners, sampling a rectangle of its texture,
-// laid over or added, clipped to a rectangle of the screen.
+// laid over or added, clipped to a rectangle of the screen. A picture may go through a rule wipe
+// (Game.rules, nexas::gfx::Rule): a grey rule picture stretched over the screen whose dark parts
+// go (or come) first as the progress runs from 0 to 1, with a soft edge `vague` wide.
 
 import { TextureCache } from "./texture-cache";
 
@@ -8,6 +10,8 @@ import { TextureCache } from "./texture-cache";
 export interface Pictures {
   draws(): Float32Array;
   texture(id: number): Uint8Array;
+  /** RULE_FIELDS numbers per wiped draw (nexas::gfx::rule_fields), after draws(). */
+  rules?(): Float32Array;
 }
 
 // One picture: a quad from its four corners, sampling a rectangle of its texture.
@@ -21,11 +25,14 @@ struct Draw {
   size: vec4f,
   // screen height
   screen: vec4f,
+  // rule wipe: mode (0 none, 1 going, 2 coming), progress, vague
+  rule: vec4f,
 };
 
 @group(0) @binding(0) var<uniform> d: Draw;
 @group(0) @binding(1) var tex: texture_2d<f32>;
 @group(0) @binding(2) var smp: sampler;
+@group(0) @binding(3) var ruleTex: texture_2d<f32>;
 
 struct Out {
   @builtin(position) position: vec4f,
@@ -47,12 +54,22 @@ struct Out {
 
 @fragment fn fs(in: Out) -> @location(0) vec4f {
   let c = textureSample(tex, smp, in.uv);
-  return vec4f(c.rgb, c.a * d.size.z);
+  let r = textureSample(ruleTex, smp, in.position.xy / vec2f(d.size.w, d.screen.x)).r;
+  var m = 1.0;
+  if (d.rule.x > 0.5) {
+    let v = clamp(d.rule.z, 1.0 / 255.0, 1.0);
+    let edge = clamp(d.rule.y, 0.0, 1.0) * (1.0 + v) - v;
+    let keep = clamp((r - edge) / v, 0.0, 1.0);
+    m = select(keep, 1.0 - keep, d.rule.x > 1.5);
+  }
+  return vec4f(c.rgb, c.a * d.size.z * m);
 }
 `;
 
 // Numbers per draw in Game.draws (crates/nexas-web, crates/advhd-web).
 const FIELDS = 21;
+// Numbers per rule in Game.rules (nexas::gfx::RULE_FIELDS).
+const RULE_FIELDS = 7;
 // Uniform slots are 256 bytes apart (minUniformBufferOffsetAlignment).
 const SLOT = 256;
 
@@ -62,6 +79,7 @@ export class Compositor {
   private readonly added: GPURenderPipeline;
   private readonly layout: GPUBindGroupLayout;
   private readonly sampler: GPUSampler;
+  private readonly noRule: GPUTexture;
   private uniforms: GPUBuffer;
   private frame = 0;
   readonly screen: GPUTexture;
@@ -81,11 +99,14 @@ export class Compositor {
         },
         { binding: 1, visibility: GPUShaderStage.FRAGMENT, texture: {} },
         { binding: 2, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+        { binding: 3, visibility: GPUShaderStage.FRAGMENT, texture: {} },
       ],
     });
     const pipeline = (color: GPUBlendComponent, alpha: GPUBlendComponent) =>
       device.createRenderPipeline({
-        layout: device.createPipelineLayout({ bindGroupLayouts: [this.layout] }),
+        layout: device.createPipelineLayout({
+          bindGroupLayouts: [this.layout],
+        }),
         vertex: { module, entryPoint: "vs" },
         fragment: {
           module,
@@ -102,7 +123,21 @@ export class Compositor {
       { srcFactor: "src-alpha", dstFactor: "one" },
       { srcFactor: "zero", dstFactor: "one" },
     );
-    this.sampler = device.createSampler({ magFilter: "linear", minFilter: "linear" });
+    this.sampler = device.createSampler({
+      magFilter: "linear",
+      minFilter: "linear",
+    });
+    this.noRule = device.createTexture({
+      size: [1, 1],
+      format: "rgba8unorm",
+      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+    });
+    device.queue.writeTexture(
+      { texture: this.noRule },
+      new Uint8Array([255, 255, 255, 255]),
+      { bytesPerRow: 4 },
+      [1, 1],
+    );
     this.screen = device.createTexture({
       size: [width, height],
       format: "rgba8unorm",
@@ -144,6 +179,12 @@ export class Compositor {
     this.frame += 1;
     const draws = game.draws();
     const count = draws.length / FIELDS;
+    const rules = new Map<number, Float32Array>();
+    const ruleList = game.rules?.() ?? new Float32Array();
+    for (let k = 0; k + RULE_FIELDS <= ruleList.length; k += RULE_FIELDS) {
+      const r = ruleList.subarray(k, k + RULE_FIELDS);
+      rules.set(r[0], r);
+    }
     if (this.uniforms.size < count * SLOT) {
       this.uniforms.destroy();
       this.uniforms = this.makeUniforms(Math.max(count, (this.uniforms.size / SLOT) * 2));
@@ -175,15 +216,19 @@ export class Compositor {
       data.set(f.subarray(3, 11), at);
       data.set(f.subarray(11, 15), at + 8);
       data.set([w, h, alpha, this.width, this.height], at + 12);
+      const rule = rules.get(i);
+      const ruleTex = rule ? this.texture(game, rule[1], rule[2], rule[3]) : null;
+      if (rule && ruleTex) data.set([rule[6] ? 2 : 1, rule[4], rule[5]], at + 20);
       pass.setPipeline(add ? this.added : this.normal);
       pass.setBindGroup(
         0,
         this.device.createBindGroup({
           layout: this.layout,
           entries: [
-            { binding: 0, resource: { buffer: this.uniforms, size: 80 } },
+            { binding: 0, resource: { buffer: this.uniforms, size: 96 } },
             { binding: 1, resource: src.createView() },
             { binding: 2, resource: this.sampler },
+            { binding: 3, resource: (ruleTex ?? this.noRule).createView() },
           ],
         }),
         [i * SLOT],

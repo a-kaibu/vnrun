@@ -31,7 +31,7 @@ use std::rc::Rc;
 
 use nexas::files::Files;
 use nexas::font::Font;
-use nexas::gfx::{Draw, Image, Place};
+use nexas::gfx::{Draw, Image, Place, Rule};
 
 use crate::cpz::Cpz;
 use crate::pb3;
@@ -45,6 +45,8 @@ const FOCAL: f32 = 768.0;
 const STEPS: usize = 200_000;
 const SLOTS: usize = 10;
 const CHARS: usize = 8;
+/// The soft edge of rule wipes (the engine's own width not read).
+const RULE_VAGUE: f32 = 0.3;
 const ARCHIVES: [&str; 9] = [
     "script", "bg", "event", "stand", "balloon", "chip", "se", "voice", "ps",
 ];
@@ -193,6 +195,8 @@ struct Trans {
     from: Rc<Image>,
     start: f64,
     ms: f64,
+    /// effects 21..80: the old screen goes by a rule picture (mask*.pb3)
+    rule: Option<Rc<Image>>,
 }
 
 /// What a save holds.
@@ -255,6 +259,7 @@ pub struct Engine {
     /// set by the library's end of the trial (L168)
     to_title: bool,
     ended: bool,
+    rules: Vec<(usize, Rule)>,
 }
 
 fn solid_image(rgba: [u8; 4]) -> Rc<Image> {
@@ -470,6 +475,7 @@ impl Engine {
             saved: None,
             to_title: false,
             ended: false,
+            rules: Vec::new(),
         };
         let ic = e
             .script("intcode.ps2")
@@ -768,18 +774,51 @@ impl Engine {
 
     // ---- the library, taken over ----
 
-    fn transition(&mut self, ms: i32) {
+    fn transition(&mut self, ms: i32, effect: i32) {
         if ms <= 0 || self.skip {
             self.trans = None;
             return;
         }
         let ds = self.scene_draws();
         let from = Rc::new(self.render_draws(&ds));
+        let rule = self.rule(effect);
         self.trans = Some(Trans {
             from,
             start: self.now,
             ms: ms as f64,
+            rule,
         });
+    }
+
+    /// The rule picture of a transition effect, as the library's L34 / L40 name it: 21..40
+    /// mask(n - 20)a.pb3 (command 0x22A), 41..60 the same masks the other way (0x234),
+    /// 61..70 and 71..80 again (n - 60 / n - 70). Other effects are fades.
+    fn rule(&mut self, effect: i32) -> Option<Rc<Image>> {
+        let (n, back) = match effect {
+            21..=40 => (effect - 20, false),
+            41..=60 => (effect - 40, true),
+            61..=70 => (effect - 60, false),
+            71..=80 => (effect - 70, true),
+            _ => return None,
+        };
+        let name = format!("mask{n:03}a.pb3");
+        let key = format!("{name}~");
+        if back {
+            if let Some(i) = self.images.get(&key) {
+                return i.clone();
+            }
+            let mut inv = (*self.image(&name)?).clone();
+            for p in inv.px.chunks_mut(4) {
+                for c in &mut p[..3] {
+                    *c = 255 - *c;
+                }
+            }
+            inv.renew();
+            let inv = Rc::new(inv);
+            self.images.insert(key, Some(inv.clone()));
+            return Some(inv);
+        }
+        self.image(&name)
     }
 
     fn wait_ms(&mut self, ms: f64) {
@@ -960,7 +999,7 @@ impl Engine {
             // (ms, effect, window, id): a picture over everything
             151 | 153 => {
                 let file = self.bg_file(vm, ai(3));
-                self.transition(ai(0));
+                self.transition(ai(0), ai(1));
                 self.scene.overlay = file;
                 self.scene.chars.iter_mut().for_each(|c| *c = None);
                 if id == 151 {
@@ -971,7 +1010,7 @@ impl Engine {
             }
             // (ms, effect, window): the picture goes, showing the scene
             152 => {
-                self.transition(ai(0));
+                self.transition(ai(0), ai(1));
                 self.scene.overlay = None;
                 self.wait_ms(ai(0) as f64);
             }
@@ -1275,6 +1314,7 @@ impl Engine {
 
     pub fn draws(&mut self) -> Vec<Draw> {
         let mut out = Vec::new();
+        self.rules.clear();
         if matches!(
             self.view,
             View::Title
@@ -1288,7 +1328,21 @@ impl Engine {
             out = self.scene_draws();
             if let Some(t) = &self.trans {
                 let p = ((self.now - t.start) / t.ms.max(1.0)).clamp(0.0, 1.0) as f32;
-                out.push(draw(&t.from.clone(), 0.0, 0.0, 1.0 - p));
+                match &t.rule {
+                    Some(r) => {
+                        self.rules.push((
+                            out.len(),
+                            Rule {
+                                image: r.clone(),
+                                progress: p,
+                                vague: RULE_VAGUE,
+                                appear: false,
+                            },
+                        ));
+                        out.push(draw(&t.from.clone(), 0.0, 0.0, 1.0));
+                    }
+                    None => out.push(draw(&t.from.clone(), 0.0, 0.0, 1.0 - p)),
+                }
             }
             self.window_draws(&mut out);
             if let Some(Wait::Choice(opts)) = self.wait.clone() {
@@ -1331,18 +1385,28 @@ impl Engine {
     }
 
     fn render_draws(&self, ds: &[Draw]) -> Image {
+        self.render_ruled(ds, &[])
+    }
+
+    fn render_ruled(&self, ds: &[Draw], rules: &[(usize, Rule)]) -> Image {
         let mut img = Image::new(WIDTH, HEIGHT);
         img.fill([0, 0, 0, 255]);
-        for d in ds {
-            nexas::gfx::draw(&mut img, &d.image, d.src, d.dst, &d.place);
+        for (i, d) in ds.iter().enumerate() {
+            let r = rules.iter().find(|r| r.0 == i).map(|r| &r.1);
+            nexas::gfx::draw_ruled(&mut img, &d.image, d.src, d.dst, &d.place, r);
         }
         img
+    }
+
+    /// The rule wipes of the last [`Engine::draws`]: (draw index, rule).
+    pub fn rules(&self) -> &[(usize, Rule)] {
+        &self.rules
     }
 
     /// The frame as one picture (for the native runner).
     pub fn render(&mut self) -> Image {
         let ds = self.draws();
-        self.render_draws(&ds)
+        self.render_ruled(&ds, &self.rules.clone())
     }
 
     pub fn take_sounds(&mut self) -> Vec<SoundEvent> {
@@ -1632,6 +1696,7 @@ impl Engine {
             from,
             start: self.now,
             ms: 400.0,
+            rule: None,
         });
     }
 }
