@@ -13,9 +13,10 @@
 use std::collections::{BTreeMap, HashMap};
 use std::rc::Rc;
 
+use nexas::backlog::Backlog;
 use nexas::files::Files;
 use nexas::font::Font;
-use nexas::gfx::{Draw, Image, Place};
+use nexas::gfx::{Draw, Image, Place, Rule};
 
 use crate::ykc;
 use crate::ykg;
@@ -96,7 +97,12 @@ struct Fade {
     from: Vec<Draw>,
     start: u64,
     ms: u64,
+    /// UserTransition: the old screen goes by this rule picture
+    rule: Option<Rc<Image>>,
 }
+
+/// The soft edge of rule transitions.
+const RULE_VAGUE: f32 = 0.2;
 
 #[derive(Clone, PartialEq)]
 enum Wait {
@@ -150,6 +156,12 @@ pub struct Engine {
     cases: Vec<Case>,
     windows: HashMap<i32, TextWin>,
     text_layer: i32,
+    /// the layer StrOutNWC last wrote a name to
+    name_layer: i32,
+    /// the pages read so far (the wheel turned up)
+    backlog: Backlog,
+    /// the rule wipes of the last draws
+    rules: Vec<(usize, Rule)>,
     /// the layer the last text went to (where LF breaks the line)
     last_layer: i32,
     fonts: HashMap<i32, i32>,
@@ -235,6 +247,9 @@ impl Engine {
             cases: Vec::new(),
             windows: HashMap::new(),
             text_layer: -1,
+            name_layer: -1,
+            backlog: Backlog::default(),
+            rules: Vec::new(),
             last_layer: -1,
             fonts: HashMap::new(),
             window_font: HashMap::new(),
@@ -798,6 +813,22 @@ impl Engine {
             "DrawStart" => self.frozen = None,
             "Transition" | "UserTransition" | "TTE" | "SelectTTE" => {
                 let ms = if name == "UserTransition" { n(2) } else { n(1) };
+                // UserTransition(kind, rule picture, ms); Yuka's rules change their bright
+                // parts first (ut_LR.png is white on the left), so the picture is turned over
+                let rule = if name == "UserTransition" {
+                    let file = s(1);
+                    self.ykg(&file)
+                        .and_then(|g| g.image.clone().or_else(|| g.mask.clone()))
+                        .map(|mut i| {
+                            for p in i.px.chunks_exact_mut(4) {
+                                p[0] = 255 - p[0];
+                            }
+                            i.renew();
+                            Rc::new(i)
+                        })
+                } else {
+                    None
+                };
                 if let Some(from) = self.frozen.take() {
                     let ms = ms.clamp(0, 10000) as u64;
                     if ms > 0 {
@@ -805,6 +836,7 @@ impl Engine {
                             from,
                             start: self.now,
                             ms,
+                            rule,
                         });
                         self.wait = Wait::Until(self.now + ms);
                     }
@@ -816,6 +848,7 @@ impl Engine {
             "KeyWait" => {
                 self.frozen = None;
                 self.wait = Wait::Click;
+                self.log_page();
             }
             "GraphicTextRect" | "TextWindowSet" => {
                 // a text area on a layer (left, top, right, bottom in the layer); TextWindowSet
@@ -866,6 +899,9 @@ impl Engine {
                 } else {
                     (self.text_layer, s(0))
                 };
+                if name == "StrOutNWC" && layer != self.text_layer {
+                    self.name_layer = layer;
+                }
                 self.str_out(layer, &text);
             }
             "LF" => {
@@ -1227,7 +1263,41 @@ impl Engine {
         }
     }
 
+    /// Keeps the story window's page (and the name beside it) in the backlog.
+    fn log_page(&mut self) {
+        let text_of = |w: Option<&TextWin>| {
+            w.map(|w| {
+                w.lines
+                    .iter()
+                    .map(|l| visible(l))
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            })
+            .unwrap_or_default()
+        };
+        let text = text_of(self.windows.get(&self.text_layer));
+        let name = if self.name_layer != self.text_layer {
+            text_of(self.windows.get(&self.name_layer))
+        } else {
+            String::new()
+        };
+        self.backlog.push(name.trim(), &text);
+    }
+
     pub fn draws(&mut self) -> Vec<Draw> {
+        self.rules.clear();
+        let mut out = self.draws_inner();
+        if self.backlog.is_open() {
+            let log = std::mem::take(&mut self.backlog);
+            let (w, h) = self.screen;
+            let size = (h as i32 / 27).max(16);
+            out.extend(log.draws(w, h, size, &mut |s, rgb| self.text(s, rgb, size)));
+            self.backlog = log;
+        }
+        out
+    }
+
+    fn draws_inner(&mut self) -> Vec<Draw> {
         if let Some(m) = self.menu {
             return self.menu_draws(m);
         }
@@ -1238,8 +1308,26 @@ impl Engine {
         if let Some(f) = &self.fade {
             let k = ((self.now.saturating_sub(f.start)) as f32 / f.ms.max(1) as f32).min(1.0);
             let mut from = f.from.clone();
-            for d in &mut from {
-                d.place.alpha *= 1.0 - k;
+            match &f.rule {
+                // the old screen goes by the rule, its dark parts first
+                Some(r) => {
+                    for i in 0..from.len() {
+                        self.rules.push((
+                            out.len() + i,
+                            Rule {
+                                image: r.clone(),
+                                progress: k,
+                                vague: RULE_VAGUE,
+                                appear: false,
+                            },
+                        ));
+                    }
+                }
+                None => {
+                    for d in &mut from {
+                        d.place.alpha *= 1.0 - k;
+                    }
+                }
             }
             out.extend(from);
         }
@@ -1248,7 +1336,11 @@ impl Engine {
         }
         if let Some(b) = self.text_box.clone() {
             let size = (b.rect[3] * 3 / 4).clamp(12, 64);
-            let caret = if (self.now / 500).is_multiple_of(2) { "｜" } else { "" };
+            let caret = if (self.now / 500).is_multiple_of(2) {
+                "｜"
+            } else {
+                ""
+            };
             let t = self.text(&format!("{}{caret}", b.text), b.rgb, size);
             let y = b.rect[1] as f32 + (b.rect[3] - size) as f32 / 2.0 - 2.0;
             out.push(draw(&t, b.rect[0] as f32 + 4.0, y, 1.0));
@@ -1353,6 +1445,10 @@ impl Engine {
         if x >= 0 {
             self.pointer = (x, y);
         }
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         if let Some(m) = self.menu {
             self.menu_click(m, x, y);
             return;
@@ -1385,6 +1481,10 @@ impl Engine {
 
     /// A right click: our menu (save, load, title).
     pub fn cancel(&mut self) {
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         self.menu = match self.menu {
             None if matches!(self.wait, Wait::Click | Wait::Cases(..)) => Some(Menu::Main),
             None => None,
@@ -1393,7 +1493,17 @@ impl Engine {
         };
     }
 
-    pub fn wheel(&mut self, _up: bool) {}
+    /// The wheel: the backlog (while a page waits).
+    pub fn wheel(&mut self, up: bool) {
+        if self.backlog.is_open() || (self.menu.is_none() && self.wait == Wait::Click) {
+            self.backlog.wheel(up);
+        }
+    }
+
+    /// The rule wipes of the last [`Engine::draws`]: (draw index, rule).
+    pub fn rules(&self) -> &[(usize, Rule)] {
+        &self.rules
+    }
 
     /// Whether a name entry's text box is open, and its text.
     pub fn text_box(&self) -> Option<&str> {
@@ -1648,6 +1758,7 @@ impl Engine {
         };
         let t = String::from_utf8_lossy(&b).to_string();
         self.back_to_title();
+        self.backlog.clear();
         self.layers.clear();
         self.stack.clear();
         self.vars.retain(|k, _| k.0.starts_with("Global"));
@@ -1723,8 +1834,10 @@ impl Engine {
     pub fn render(&mut self) -> Image {
         let mut img = Image::new(self.screen.0, self.screen.1);
         img.fill([0, 0, 0, 255]);
-        for d in self.draws() {
-            nexas::gfx::draw(&mut img, &d.image, d.src, d.dst, &d.place);
+        let ds = self.draws();
+        for (i, d) in ds.iter().enumerate() {
+            let r = self.rules.iter().find(|r| r.0 == i).map(|r| &r.1);
+            nexas::gfx::draw_ruled(&mut img, &d.image, d.src, d.dst, &d.place, r);
         }
         img
     }

@@ -52,6 +52,8 @@ pub struct Game {
     e: bishop::engine::Engine,
     /// the last frame's draws, which hold the pictures `texture` hands out
     draws: Vec<Draw>,
+    /// the last frame's rule wipes, whose pictures `texture` also hands out
+    rules: Vec<(usize, nexas::gfx::Rule)>,
 }
 
 #[wasm_bindgen]
@@ -66,6 +68,7 @@ impl Game {
         Ok(Game {
             e,
             draws: Vec::new(),
+            rules: Vec::new(),
         })
     }
 
@@ -135,7 +138,7 @@ impl Game {
         self.e.cancel();
     }
 
-    /// The wheel (not used yet).
+    /// The wheel: turned up opens the backlog (nexas::backlog).
     pub fn wheel(&mut self, up: bool) {
         self.e.wheel(up);
     }
@@ -166,7 +169,17 @@ impl Game {
     }
 
     /// The RGBA pixels (not premultiplied) of a picture of the last draws.
+    /// The rule wipes of the last draws, nexas::gfx::RULE_FIELDS numbers each: the draw's
+    /// index, the rule picture (its id, width and height), progress, vague and appear.
+    pub fn rules(&mut self) -> Float32Array {
+        self.rules = self.e.rules().to_vec();
+        Float32Array::from(&nexas::gfx::rule_fields(&self.rules)[..])
+    }
+
     pub fn texture(&self, id: u32) -> Uint8Array {
+        if let Some((_, r)) = self.rules.iter().find(|r| r.1.image.id == id) {
+            return Uint8Array::from(&r.image.px[..]);
+        }
         self.draws.iter().find(|d| d.image.id == id).map_or_else(
             || Uint8Array::new_with_length(0),
             |d| Uint8Array::from(&d.image.px[..]),

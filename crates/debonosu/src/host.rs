@@ -299,6 +299,8 @@ pub fn install(lua: &mut Lua, st: &Shared) {
     });
     on(st, lua, "_page", |s, _| {
         s.block = Block::Page;
+        let (name, msg) = (s.name.clone(), s.msg.clone());
+        s.backlog.push(&name, &msg);
         vec![]
     });
     on(st, lua, "_GetMsgLength", |s, _| {

@@ -12,8 +12,9 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use nexas::backlog::Backlog;
 use nexas::files::Files;
-use nexas::gfx::{Draw, Image, Place};
+use nexas::gfx::{Draw, Image, Place, Rule};
 
 use crate::bsa;
 use crate::bsg::{self, Bsg};
@@ -132,7 +133,12 @@ struct Fade {
     from: Vec<Draw>,
     start: u64,
     ms: u64,
+    /// a masked change: the new scene comes by this rule picture (mask\*.bsg)
+    rule: Option<Rc<Image>>,
 }
+
+/// The soft edge of masked changes.
+const RULE_VAGUE: f32 = 0.25;
 
 #[derive(Clone, Default)]
 struct Msg {
@@ -159,6 +165,8 @@ pub struct Engine {
     layers: Vec<Layer>,
     shown: Vec<Layer>,
     fade: Option<Fade>,
+    /// the rule wipes of the last draws
+    rules: Vec<(usize, Rule)>,
     windows: [bool; 4],
     msg: Option<Msg>,
     msg_pc: usize,
@@ -179,6 +187,8 @@ pub struct Engine {
     map_info: Option<Rc<MapInfo>>,
     /// the map is waiting for a place (also while our load screen is open over it)
     map_open: bool,
+    /// the messages read so far (the wheel turned up)
+    backlog: Backlog,
     /// the hero's family and given names (`\A`, `\B`)
     hero: (String, String),
     ended: bool,
@@ -245,6 +255,7 @@ impl Engine {
             layers: Vec::new(),
             shown: Vec::new(),
             fade: None,
+            rules: Vec::new(),
             windows: [false; 4],
             msg: None,
             msg_pc: 0,
@@ -261,6 +272,7 @@ impl Engine {
             map_choices: (0, Vec::new()),
             map_info,
             map_open: false,
+            backlog: Backlog::default(),
             hero,
             ended: false,
             log: false,
@@ -621,6 +633,7 @@ impl Engine {
             .first()
             .copied()
             .unwrap_or(22) as usize;
+        self.backlog.push(&name, &text);
         self.msg = Some(Msg {
             name,
             lines: crate::text::wrap(&text, per.max(4)),
@@ -708,7 +721,13 @@ impl Engine {
                 }
             }
             0x27 => self.present(a(2).max(0) as u64 * 100),
-            0x28 => self.present(a(2).max(0) as u64 * 100),
+            0x28 => {
+                // (?, tenths of a second, the mask picture)
+                let mask = self.sarg(3);
+                self.trace(&format!("masked change by {mask}"));
+                let rule = self.picture(&mask).map(|p| Rc::new(p.image.clone()));
+                self.present_ruled(a(2).max(0) as u64 * 100, rule);
+            }
             0x2c => {
                 let name = self.sarg(2);
                 if self.bgm.as_deref() != Some(name.as_str()) {
@@ -871,6 +890,10 @@ impl Engine {
     }
 
     fn present(&mut self, ms: u64) {
+        self.present_ruled(ms, None);
+    }
+
+    fn present_ruled(&mut self, ms: u64, rule: Option<Rc<Image>>) {
         let from = self.scene_of(&self.shown.clone());
         self.shown = self.layers.clone();
         if ms > 0 {
@@ -878,6 +901,7 @@ impl Engine {
                 from,
                 start: self.now,
                 ms,
+                rule,
             });
             self.wait = Wait::Until(self.now + ms);
         } else {
@@ -1117,6 +1141,7 @@ impl Engine {
     }
 
     pub fn draws(&mut self) -> Vec<Draw> {
+        self.rules.clear();
         if let Some(m) = self.menu {
             return self.menu_draws(m);
         }
@@ -1126,8 +1151,26 @@ impl Engine {
             let k = (self.now.saturating_sub(f.start) as f32 / f.ms.max(1) as f32).min(1.0);
             // the new scene fades in over the old one
             let mut from = f.from.clone();
-            for d in &mut out {
-                d.place.alpha *= k;
+            match &f.rule {
+                // or comes by the mask, its dark parts first
+                Some(r) => {
+                    for i in 0..out.len() {
+                        self.rules.push((
+                            from.len() + i,
+                            Rule {
+                                image: r.clone(),
+                                progress: k,
+                                vague: RULE_VAGUE,
+                                appear: true,
+                            },
+                        ));
+                    }
+                }
+                None => {
+                    for d in &mut out {
+                        d.place.alpha *= k;
+                    }
+                }
             }
             from.extend(out);
             out = from;
@@ -1149,16 +1192,30 @@ impl Engine {
         } else {
             self.window_draws(&mut out);
         }
+        if self.backlog.is_open() {
+            let log = std::mem::take(&mut self.backlog);
+            let (w, h) = self.screen;
+            let size = (h / 27).max(16);
+            out.extend(log.draws(w, h, size as i32, &mut |s, rgb| self.text(s, rgb, size)));
+            self.backlog = log;
+        }
         out
     }
 
     pub fn render(&mut self) -> Image {
         let mut img = Image::new(self.screen.0, self.screen.1);
         img.fill([0, 0, 0, 255]);
-        for d in self.draws() {
-            nexas::gfx::draw(&mut img, &d.image, d.src, d.dst, &d.place);
+        let ds = self.draws();
+        for (i, d) in ds.iter().enumerate() {
+            let r = self.rules.iter().find(|r| r.0 == i).map(|r| &r.1);
+            nexas::gfx::draw_ruled(&mut img, &d.image, d.src, d.dst, &d.place, r);
         }
         img
+    }
+
+    /// The rule wipes of the last [`Engine::draws`]: (draw index, rule).
+    pub fn rules(&self) -> &[(usize, Rule)] {
+        &self.rules
     }
 
     // ---- input ----
@@ -1170,6 +1227,10 @@ impl Engine {
     pub fn click(&mut self, x: i32, y: i32) {
         if x >= 0 {
             self.pointer = (x, y);
+        }
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
         }
         if let Some(m) = self.menu {
             self.menu_click(m, x, y);
@@ -1208,6 +1269,10 @@ impl Engine {
     }
 
     pub fn cancel(&mut self) {
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         self.menu = match self.menu {
             None if self.wait == Wait::Click => Some(Menu::Main),
             None => None,
@@ -1218,7 +1283,12 @@ impl Engine {
         };
     }
 
-    pub fn wheel(&mut self, _up: bool) {}
+    /// The wheel: the backlog (while a message waits).
+    pub fn wheel(&mut self, up: bool) {
+        if self.backlog.is_open() || (self.menu.is_none() && self.wait == Wait::Click) {
+            self.backlog.wheel(up);
+        }
+    }
 
     pub fn ended(&self) -> bool {
         self.ended
@@ -1577,6 +1647,7 @@ impl Engine {
     fn load_slot(&mut self, i: usize) {
         let Some(t) = self.read_slot(i) else { return };
         self.map_open = false;
+        self.backlog.clear();
         self.stop_all(200);
         self.layers.clear();
         let mut bgm = None;

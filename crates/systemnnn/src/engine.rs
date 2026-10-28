@@ -13,6 +13,7 @@
 use std::collections::{BTreeMap, HashMap};
 use std::rc::Rc;
 
+use nexas::backlog::Backlog;
 use nexas::files::Files;
 use nexas::font::Font;
 use nexas::gfx::{Draw, Image, Place};
@@ -139,6 +140,8 @@ pub struct Engine {
     fade: Option<Fade>,
     in_command: bool,
     msg: Option<Msg>,
+    /// the messages read so far (the wheel turned up)
+    backlog: Backlog,
     /// where the shown message's record is (a save starts there)
     msg_pc: usize,
     voice: Option<String>,
@@ -201,6 +204,7 @@ impl Engine {
             fade: None,
             in_command: false,
             msg: None,
+            backlog: Backlog::default(),
             msg_pc: 0,
             voice: None,
             wait: Wait::None,
@@ -642,6 +646,7 @@ impl Engine {
                             }
                         }
                         0x2222_0005 => {
+                            self.trace(&format!("change {} {}", arg(1), arg(2)));
                             let n = arg(2).max(0) as u64;
                             let ms = n * self.frame_ms;
                             if let Some(from) = self.kept.take()
@@ -967,6 +972,7 @@ impl Engine {
                 let layer = at(1);
                 let kind = at(2);
                 let p: Vec<i32> = a.get(3..).unwrap_or(&[]).to_vec();
+                self.trace(&format!("effect {kind} on {layer} {p:?}"));
                 self.set_effect(layer, kind, p);
             }
             0x3333_0014 => {
@@ -1221,6 +1227,7 @@ impl Engine {
                 lines.remove(0);
             }
         }
+        self.backlog.push(&name, &lines.join("\n"));
         self.msg = Some(Msg { name, lines });
         if let Some(v) = self.voice.take() {
             self.play_voice(&v);
@@ -1454,6 +1461,18 @@ impl Engine {
     }
 
     pub fn draws(&mut self) -> Vec<Draw> {
+        let mut out = self.draws_inner();
+        if self.backlog.is_open() {
+            let log = std::mem::take(&mut self.backlog);
+            let (w, h) = self.screen;
+            let size = (h as i32 / 27).max(16);
+            out.extend(log.draws(w, h, size, &mut |s, rgb| self.text(s, rgb, size)));
+            self.backlog = log;
+        }
+        out
+    }
+
+    fn draws_inner(&mut self) -> Vec<Draw> {
         if let Some(m) = self.menu {
             return self.menu_draws(m);
         }
@@ -1538,6 +1557,10 @@ impl Engine {
         if x >= 0 {
             self.pointer = (x, y);
         }
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         if let Some(m) = self.menu {
             self.menu_click(m, x, y);
             return;
@@ -1595,6 +1618,10 @@ impl Engine {
 
     /// A right click: our menu (save, load, title).
     pub fn cancel(&mut self) {
+        if self.backlog.is_open() {
+            self.backlog.close();
+            return;
+        }
         self.menu = match self.menu {
             None if self.mode == Mode::Game
                 && matches!(self.wait, Wait::Click | Wait::Select(_)) =>
@@ -1608,7 +1635,14 @@ impl Engine {
         };
     }
 
-    pub fn wheel(&mut self, _up: bool) {}
+    /// The wheel: the backlog (while a message waits in the story).
+    pub fn wheel(&mut self, up: bool) {
+        if self.backlog.is_open()
+            || (self.menu.is_none() && self.mode == Mode::Game && self.wait == Wait::Click)
+        {
+            self.backlog.wheel(up);
+        }
+    }
 
     pub fn ended(&self) -> bool {
         self.ended
@@ -1782,6 +1816,7 @@ impl Engine {
     fn load(&mut self, i: usize) {
         let Some(t) = self.read_slot(i) else { return };
         self.stop_all(200);
+        self.backlog.clear();
         self.reset_screen();
         self.mode = Mode::Game;
         self.calls.clear();

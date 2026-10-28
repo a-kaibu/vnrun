@@ -140,7 +140,7 @@ impl Game {
         self.e.key(k);
     }
 
-    /// The wheel (not used yet).
+    /// The wheel: turned up opens the backlog (nexas::backlog).
     pub fn wheel(&mut self, up: bool) {
         self.e.wheel(up);
     }

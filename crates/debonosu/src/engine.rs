@@ -278,6 +278,8 @@ pub struct St {
     pub cursor: f64,
     pub msg: String,
     pub name: String,
+    /// the pages read so far (the wheel turned up); a load replays them back in
+    pub backlog: nexas::backlog::Backlog,
     pub shown: f64,
     pub block: Block,
     pub vars: HashMap<String, Value>,
@@ -678,6 +680,7 @@ impl Engine {
             cursor: 0.0,
             msg: String::new(),
             name: String::new(),
+            backlog: Default::default(),
             shown: 0.0,
             block: Block::None,
             vars: HashMap::new(),
@@ -1087,6 +1090,15 @@ impl Engine {
         let mut out = self.screen_draws();
         let st = self.st.clone();
         self.menu_draws(&mut st.borrow_mut(), &mut out);
+        let mut st = st.borrow_mut();
+        if st.backlog.is_open() {
+            let log = std::mem::take(&mut st.backlog);
+            out.extend(log.draws(W, H, 26, &mut |s, _| {
+                st.text_image(s, 26.0)
+                    .unwrap_or_else(|| Rc::new(Image::new(1, 1)))
+            }));
+            st.backlog = log;
+        }
         out
     }
 
@@ -1217,8 +1229,14 @@ impl Engine {
     }
 
     pub fn click(&mut self, x: i32, y: i32) {
+        let mut st = self.st.borrow_mut();
         if x >= 0 {
-            self.st.borrow_mut().pointer = (x, y);
+            st.pointer = (x, y);
+        }
+        // closing the backlog is not an input of the game (saves replay those)
+        if st.backlog.is_open() {
+            st.backlog.close();
+            return;
         }
         self.clicked = true;
     }
@@ -1226,6 +1244,11 @@ impl Engine {
     /// A right click (or Escape): our save screen on a page, the load screen at the title;
     /// again closes it.
     pub fn cancel(&mut self) {
+        let mut st = self.st.borrow_mut();
+        if st.backlog.is_open() {
+            st.backlog.close();
+            return;
+        }
         self.cancelled = true;
     }
 
@@ -1236,7 +1259,13 @@ impl Engine {
         }
     }
 
-    pub fn wheel(&mut self, _up: bool) {}
+    /// The wheel: the backlog (on a page).
+    pub fn wheel(&mut self, up: bool) {
+        let mut st = self.st.borrow_mut();
+        if st.backlog.is_open() || (self.menu.is_none() && st.block == Block::Page) {
+            st.backlog.wheel(up);
+        }
+    }
 
     pub fn take_sounds(&mut self) -> Vec<Sound> {
         std::mem::take(&mut self.st.borrow_mut().sounds)
