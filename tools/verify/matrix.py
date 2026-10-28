@@ -35,6 +35,7 @@ ENGINES = {
     "systemnnn": "System-NNN (vnrun)",
     "bishop": "Bishop (vnrun)",
     "eushully": "Eushully AGE (vnrun)",
+    "ateliergh": "Atelier G/H (vnrun)",
     "cyberworks": "Cyberworks (vnrun)",
     "lilim": "LiLiM (vnrun)",
     "silkys": "Silky's (vnrun)",

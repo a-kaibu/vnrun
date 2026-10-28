@@ -290,6 +290,9 @@ fn detect(game: &Path) -> Option<String> {
         Some("system4".into())
     } else if has("seen.txt") {
         Some("reallive".into())
+    } else if has("msg.arc") && has("sys.arc") && has("dat.arc") {
+        // Atelier G/H: masked-index .arc archives, the scripts in msg.arc, settings in sys.arc
+        Some("ateliergh".into())
     } else if has("advhd.exe") && names.iter().any(|n| n.ends_with(".arc")) {
         Some("advhd".into())
     } else if (has("scr.arc") && has("tblstr.arc"))

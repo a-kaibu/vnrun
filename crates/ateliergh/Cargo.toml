@@ -1,0 +1,11 @@
+[package]
+name = "ateliergh"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "Atelier G/H's ADV system for the browser: .arc archives, BMP pictures and the tag scripts"
+
+[dependencies]
+nexas = { path = "../nexas" }
+fontdue = "0.9"
+image = { version = "0.25", default-features = false, features = ["png"] }
