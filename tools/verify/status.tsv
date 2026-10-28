@@ -404,26 +404,26 @@ b2007_lilim	本編	検証スレッドでも Chromium で START→本編の文章
 b2007_lilim_darkness	本編	検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。LiLiM (vnrun) の AOS 版 1 でタイトル→START→0001..0008 の背景・立ち絵・顔窓・イベント CG・名前・文章・音声・アイキャッチを最後まで通り、タイトルに戻る (lilim-run)
 b2009_lilim	本編	検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。LiLiM (vnrun) でタイトル→START→美夕の挨拶 (文字の選択肢 /...//)→体験版メニュー→プロローグ (00pro01, 00pro02, 010101) の背景・立ち絵・顔窓・名前・文章・音声→「体験版は、ここで終了です」→メニューに戻る (lilim-run)。OP ムービーは飛ばす
 b2011_princess_sugar	本編	検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。LiLiM (vnrun) でタイトル (1024x600)→START→体験版メニュー (slctwnd のボタン)→プロローグ (00_01..00_10) の背景・立ち絵・名前 (窓の名札)・文章・音声を最後まで通り、メニューに戻る (lilim-run)。OP ムービーは飛ばす
-b2021_princess_sugar	本編	LiLiM (vnrun) でタイトル→START→注意書き→体験版メニュー (slctwnd のボタン)→共通パート (01_01..02_08、途中のボタンの選択肢を含む) の背景・立ち絵・イベント CG・名前・文章・音声を通る (lilim-run)。Chromium でタイトル→メニュー→本編の文章まで
-b2011_guilty	本編	ShiinaRio (vnrun) でタイトル (SYSTITLE.S25 の絵とボタン)→はじめから→A001..A017 の背景・立ち絵・名前・文章・音声を最後まで通り、体験版の終わりでタイトルに戻る (shiina-run)。Chromium でタイトル→本編、右クリックのメニューからセーブ→タイトルのつづきからロードで本編に戻る
-b2021_stick	本編	682b666 (app.asar を vnrun-prep が展開、electron の代役) でタイトル→はじめから→名前入力→本編の背景・文章まで (Chromium)
-b2022_lunaprism	本編	682b666 (app.asar を vnrun-prep が展開) でタイトル→はじめから→本編の契約書の場面・文章まで (Chromium)
-b2023_wendybell	本編	Cyberworks 新形式 (Resources/Data00.dat の索引と DataNNN.dat の絵、UTF-16 の文章) で警告→タイトル (初めから)→本編の背景・立ち絵・表情差分・文章・音声 (cyberworks-run と Chromium)。セーブ→タイトルの続きからロードで本編に戻る (Chromium)
-b2026_tinkerbell	本編	Cyberworks 新形式 (1920x1080) で警告→タイトル (NEW GAME)→本編の背景・立ち絵・顔窓 (サイズ付きの差分)・名前・文章 (cyberworks-run と Chromium)。下のバーの SAVE でセーブ→新しいセッションのタイトルの LOAD GAME からロードで同じ行に戻る (Chromium)
-b2026_wendybell	本編	Cyberworks 新形式 (1920x1080、全画面の窓) で警告→タイトル (初めから)→本編の CG・背景・文章を数場面 (cyberworks-run と Chromium)。右のバーの Save でセーブ→新しいセッションのタイトルの続きからロードで同じ行に戻る (Chromium)
+b2021_princess_sugar	本編	検証スレッドでも Chromium でタイトル画面まで確認。LiLiM (vnrun) でタイトル→START→注意書き→体験版メニュー (slctwnd のボタン)→共通パート (01_01..02_08、途中のボタンの選択肢を含む) の背景・立ち絵・イベント CG・名前・文章・音声を通る (lilim-run)。Chromium でタイトル→メニュー→本編の文章まで
+b2011_guilty	本編	検証スレッドでも Chromium でタイトル画面まで確認。ShiinaRio (vnrun) でタイトル (SYSTITLE.S25 の絵とボタン)→はじめから→A001..A017 の背景・立ち絵・名前・文章・音声を最後まで通り、体験版の終わりでタイトルに戻る (shiina-run)。Chromium でタイトル→本編、右クリックのメニューからセーブ→タイトルのつづきからロードで本編に戻る
+b2021_stick	本編	検証スレッドでも Chromium でタイトル画面まで確認。682b666 (app.asar を vnrun-prep が展開、electron の代役) でタイトル→はじめから→名前入力→本編の背景・文章まで (Chromium)
+b2022_lunaprism	本編	検証スレッドでも Chromium でタイトル画面まで確認。682b666 (app.asar を vnrun-prep が展開) でタイトル→はじめから→本編の契約書の場面・文章まで (Chromium)
+b2023_wendybell	本編	検証スレッドでも Chromium でタイトル画面まで確認。Cyberworks 新形式 (Resources/Data00.dat の索引と DataNNN.dat の絵、UTF-16 の文章) で警告→タイトル (初めから)→本編の背景・立ち絵・表情差分・文章・音声 (cyberworks-run と Chromium)。セーブ→タイトルの続きからロードで本編に戻る (Chromium)
+b2026_tinkerbell	本編	検証スレッドでも Chromium でタイトル画面まで確認。Cyberworks 新形式 (1920x1080) で警告→タイトル (NEW GAME)→本編の背景・立ち絵・顔窓 (サイズ付きの差分)・名前・文章 (cyberworks-run と Chromium)。下のバーの SAVE でセーブ→新しいセッションのタイトルの LOAD GAME からロードで同じ行に戻る (Chromium)
+b2026_wendybell	本編	検証スレッドでも Chromium でタイトル画面まで確認。Cyberworks 新形式 (1920x1080、全画面の窓) で警告→タイトル (初めから)→本編の CG・背景・文章を数場面 (cyberworks-run と Chromium)。右のバーの Save でセーブ→新しいセッションのタイトルの続きからロードで同じ行に戻る (Chromium)
 b2016_silkys_sakura	本編	Silky's (vnrun) でロゴ・注意書き→タイトル (Title_scroll のスクロール、trial_Title_p のボタン)→はじめから→mmsc_000..006 の背景・立ち絵・イベント CG・名前・文章を最後まで進む (silkys-run、45000 フレーム)。Chromium でタイトル→本編、SAVE ボタンからセーブ→タイトルの「続きから始める」でロードして本編 (背景・イベント CG・立ち絵込み) に戻る
 b2014_silkys_plus	本編	Silky's (vnrun) でロゴ・注意書き→タイトル (title.akb のボタン)→はじめから→nanairo_01..03 の背景・立ち絵・名前・文章・選択肢を進む (silkys-run、70000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→タイトルの「つづきから」でロードして本編に戻る
-b2007_feng	本編	Yuka (vnrun) でタイトル→はじめから→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium)。セーブ→ロードで本編に戻る (Chromium)
-b2008_hook	本編	Yuka (vnrun) で .dat (YKC001) からタイトル→本編の背景・立ち絵・文章まで (yuka-run と Chromium)。セーブ→タイトルからロード・メニューからロードで本編に戻る (Chromium)
-b2008_smee	本編	Yuka (vnrun) でタイトル→本編の背景・文章まで (yuka-run と Chromium)
-b2011_hook	本編	Yuka (vnrun) で自己展開 exe (zip) の DATA01..03.ykc から 1024x576 のタイトル→はじめから→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium)。ルビ (@r) を本文の上に表示 (yuka-run と Chromium)
-b2011_smee	本編	Yuka (vnrun) でタイトル (SpriteCreate のパターンのボタン、MouseCase2)→名前入力 (姓の欄を押して打ち込み、Chromium では IME の入力欄から)→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium)
-b2012_feng	本編	Yuka (vnrun) で 1280x960 の注意書き→タイトル→はじめから→本編の背景・立ち絵・文章・名前 (@gf の名前画像) まで (yuka-run と Chromium)。セーブ→タイトルのつづきから (自前のロード画面) で本編に戻る (Chromium)
-b2013_hooksoft	本編	Yuka (vnrun) で 1280x720 のタイトル→START GAME→体験版の説明→本編の背景・立ち絵・文章まで (yuka-run と Chromium)
+b2007_feng	本編	検証スレッドでも Chromium でタイトル画面まで確認。Yuka (vnrun) でタイトル→はじめから→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium)。セーブ→ロードで本編に戻る (Chromium)
+b2008_hook	本編	検証スレッドでも Chromium でタイトル画面まで確認。Yuka (vnrun) で .dat (YKC001) からタイトル→本編の背景・立ち絵・文章まで (yuka-run と Chromium)。セーブ→タイトルからロード・メニューからロードで本編に戻る (Chromium)
+b2008_smee	本編	検証スレッドでも Chromium でタイトル画面まで確認。Yuka (vnrun) でタイトル→本編の背景・文章まで (yuka-run と Chromium)
+b2011_hook	本編	検証スレッドでも Chromium でタイトル画面まで確認。Yuka (vnrun) で自己展開 exe (zip) の DATA01..03.ykc から 1024x576 のタイトル→はじめから→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium)。ルビ (@r) を本文の上に表示 (yuka-run と Chromium)
+b2011_smee	本編	検証スレッドでも Chromium でタイトル画面まで確認。Yuka (vnrun) でタイトル (SpriteCreate のパターンのボタン、MouseCase2)→名前入力 (姓の欄を押して打ち込み、Chromium では IME の入力欄から)→本編の背景・立ち絵・文章・名前まで (yuka-run と Chromium)
+b2012_feng	本編	検証スレッドでも Chromium でタイトル画面まで確認。Yuka (vnrun) で 1280x960 の注意書き→タイトル→はじめから→本編の背景・立ち絵・文章・名前 (@gf の名前画像) まで (yuka-run と Chromium)。セーブ→タイトルのつづきから (自前のロード画面) で本編に戻る (Chromium)
+b2013_hooksoft	本編	検証スレッドでも Chromium でタイトル画面まで確認。Yuka (vnrun) で 1280x720 のタイトル→START GAME→体験版の説明→本編の背景・立ち絵・文章まで (yuka-run と Chromium)
 b2016_evoll	本編	Ivory (vnrun) で注意書き・ロゴ→タイトル (TITLE_BASE_TRIAL とボタン)→START→A01..A12_H の背景・立ち絵・イベント CG・名前・文章・選択肢 (A05_H) を進み、trial_finish の紹介→タイトルに戻る (ivory-run、31000 フレーム)。Chromium でタイトル→本編、SAVE ボタンからセーブ→LOAD でロードして保存したメッセージに戻る
 b2020_caramel_box_strawberry	本編	Ivory (vnrun) でブランド・注意書き→タイトル (横並びのボタン)→NEW GAME→00_CM_01..09 (アイキャッチの呼び出し、2 択・3 択の選択肢)→02_YN_01→02_YN_01_H01→タイトルに戻る (ivory-run、49000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る
-b2017_waffle	本編	NekoSDK (vnrun) で文字の序章→タイトル (obj の背景・ロゴ・ボタン)→はじめから→flow00_000 の順に本編の背景・立ち絵・CG (拡大・移動)・名前・文章 (neko-run 6000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
-b2014_waffle	本編	NekoSDK (vnrun) でタイトル (anime の背景・ロゴ)→はじめから→scr.pak の ep_* を名前順に本編の背景・立ち絵・顔窓・名前・文章 (neko-run 15000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
+b2017_waffle	本編	検証スレッドでも Chromium でタイトル画面まで確認。NekoSDK (vnrun) で文字の序章→タイトル (obj の背景・ロゴ・ボタン)→はじめから→flow00_000 の順に本編の背景・立ち絵・CG (拡大・移動)・名前・文章 (neko-run 6000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
+b2014_waffle	本編	検証スレッドでも Chromium でタイトル画面まで確認。NekoSDK (vnrun) でタイトル (anime の背景・ロゴ)→はじめから→scr.pak の ep_* を名前順に本編の背景・立ち絵・顔窓・名前・文章 (neko-run 15000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
 b2006_blackcyc	本編	System-NNN (vnrun) で自己展開 exe (LZH) からオープニング→タイトル→はじめから→チャート (chart/*.xtx のスロット選択)→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium)
 b2008_blackcyc	本編	System-NNN (vnrun) でオープニング→タイトル→はじめから→依頼の掲示板 (bdd/irailist.xtx)→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium)。セーブ→ロードで本編に戻る (Chromium)
 b2011_blackcyc	本編	System-NNN (vnrun) でオープニング→タイトル→はじめから→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium)
@@ -432,12 +432,12 @@ b2021_metalogiq	本編	System-NNN (vnrun) で 1280x720 のロゴ→タイトル�
 b2023_cyc_rose	本編	System-NNN (vnrun) で zip 内の自己展開 exe (RAR5) からオープニング→タイトル→本編の背景 (dwq/<xx>/ のばらの dwq)・文章・名前まで (nnn-run と Chromium)
 b2018_mirai	本編	NonColor (vnrun) でタイトル (sys/title の絵とボタン)→START→B01A_180502_0..B02B_180728_0 の背景・立ち絵 (顔 + 体の合成)・CG・名前・文章・ボイス・選択肢 (3 択・2 択) を進み、B07B_180927_1→X02A のおまけトーク (rand のガチャ分岐)→予約する→バナー→TL でタイトルに戻る (noncolor-run、23000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る
 b2015_minato_carnival	本編	NonColor (vnrun) でタイトル (縦のボタン)→スタート→A1_151013_0..A1_151016_3 の背景・立ち絵 (ST2 の位置表)・CG・名前欄・文章・ボイス (複数同時も)・選択肢 (4 択・3 択・5 択) を進み、体験版ラストの絵→TL でタイトルに戻る (noncolor-run、36500 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る
-b2016_waffle	本編	NekoSDK (vnrun) でタイトル (d007 の 10 列のボタン、d003 の絵、d005 のロゴ)→Start→flow00_000 の順に本編の背景・立ち絵・名前・文章 (neko-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
-b2012_waffle	本編	NekoSDK (vnrun) でタイトル (d001 の丸いボタン、d000_101 のロゴ)→はじめから→cfg\chapter_file.ini の最初の脚本の背景・CG・名前・文章 (neko-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
-b2010_waffle	本編	zip の中のセットアップ.EXE は LHa の SFX で、7z で展開すると .pak が直に出る (800x600)。NekoSDK (vnrun) でタイトル (obj\a000 の机、c001 の 5 列のボタン)→始めから→scr.pak の ep_00_00_* を名前順に本編の背景・立ち絵・名前・文章 (neko-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
+b2016_waffle	本編	検証スレッドでも Chromium でタイトル画面まで確認。NekoSDK (vnrun) でタイトル (d007 の 10 列のボタン、d003 の絵、d005 のロゴ)→Start→flow00_000 の順に本編の背景・立ち絵・名前・文章 (neko-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
+b2012_waffle	本編	検証スレッドでも Chromium でタイトル画面まで確認。NekoSDK (vnrun) でタイトル (d001 の丸いボタン、d000_101 のロゴ)→はじめから→cfg\chapter_file.ini の最初の脚本の背景・CG・名前・文章 (neko-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
+b2010_waffle	本編	検証スレッドでも Chromium でタイトル画面まで確認。zip の中のセットアップ.EXE は LHa の SFX で、7z で展開すると .pak が直に出る (800x600)。NekoSDK (vnrun) でタイトル (obj\a000 の机、c001 の 5 列のボタン)→始めから→scr.pak の ep_00_00_* を名前順に本編の背景・立ち絵・名前・文章 (neko-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
 b2006_alcot	本編	AZ System (vnrun) でタイトル (title_bg_tr とボタン 6 個)→Prologue (tr_01) の背景 (縦長の絵のパン)・立ち絵 (体 + 目 + 口の合成)・名前・文章・ボイス・BGM・SE を最後まで進めてタイトルに戻る。Digest1 (tr_02)・Digest2 (tr_03)・H scene (tr_04) も最後まで (azsys-run、各 9000〜18000 フレーム)。Chromium でタイトル→Prologue、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る
-b2018_fudegaki_soft	本編	DxLib MED (vnrun) で注意書き→ロゴ・ブランドコール→タイトル (STITLE のクリックマップ、MENU03_N/F)→NEW GAME→SMAIN から 000_PRO000A..E の背景・立ち絵 (体 + 顔)・名前・文章・選択肢・ボイス・BGM (med-run 20000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
-b2012_fudegaki_soft	本編	DxLib MED (vnrun) で 1024x768 のロゴ→タイトル (CBLMAP_TITLE_MENU)→はじめから→体験版メニュー (CBLMAP_TRIAL_MENU)→P_001→R_001 の背景・CG・名前・文章 (med-run 6000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
+b2018_fudegaki_soft	本編	検証スレッドでも Chromium でタイトル画面まで確認。DxLib MED (vnrun) で注意書き→ロゴ・ブランドコール→タイトル (STITLE のクリックマップ、MENU03_N/F)→NEW GAME→SMAIN から 000_PRO000A..E の背景・立ち絵 (体 + 顔)・名前・文章・選択肢・ボイス・BGM (med-run 20000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
+b2012_fudegaki_soft	本編	検証スレッドでも Chromium でタイトル画面まで確認。DxLib MED (vnrun) で 1024x768 のロゴ→タイトル (CBLMAP_TITLE_MENU)→はじめから→体験版メニュー (CBLMAP_TRIAL_MENU)→P_001→R_001 の背景・CG・名前・文章 (med-run 6000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
 b2012_trois	本編	DxLib MED (vnrun) でロゴ→タイトル (TITLE のクリックマップ)→START→M2TMAIN→MOP2-T のプロローグ (md_jpg の絵、立ち絵・名前・文章)→選択肢→MA02XX (med-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
 b2006_unisonshift	本編	PJADV (vnrun) でロゴ→注意書き→タイトル (はじめから)→体験版の挨拶・予告→本編の背景・立ち絵・顔・イベント絵 (拡大と移動)・名前・文章・ボイス・BGM・SE を最後まで進めてタイトルに戻る (pjadv-run、スキップで 4357 メッセージ)。窓の SAVE / LOAD から自前のスロットでセーブ→ロードして同じメッセージに戻る (ネイティブと Chromium)
 b2007_bishop	本編	Bishop (vnrun) で BSScript Rev.6 (bsx.dat、Shift-JIS) のロゴ→タイトル→はじめから→本編の背景・立ち絵・文章・名前→マップ (map.dat から本来の城の画面とヒロインのアイコン、エステル・ミレーユのどちらを選んでもそのイベントへ、LOAD でロード画面、右クリックでマップに戻る)→エステルのイベントまで (bsx-run と Chromium)。イベント中でセーブ→ページを開き直してタイトルの「続きから」でロード→続きを読める (Chromium)
