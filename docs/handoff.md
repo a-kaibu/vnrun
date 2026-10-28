@@ -236,3 +236,4 @@ Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softp
 - エンジンの wasm をどこで配るか。今は `./build.sh` で手元ビルド。GitHub Actions でビルドして Releases に置く形が候補。
 - vnrun のサーバーの形 (ゲームの取り込み、一覧、セーブの保存先とバックアップ)。
 - ゲームのファイルの大きいものを丸ごと読む問題 (上記)。
+- 描画は WebGPU だけ、という決まりに対する残り: AliceSoft System4 (xsystem4) と Artemis (art3m1s-core) は GLES を見えない canvas の WebGL2 で描き、読み戻した画素を Presenter (WebGPU) で出している。つなぎの間の措置で、GLES の描画を WebGPU に移す (または CPU で描く) のが残りの作業。
