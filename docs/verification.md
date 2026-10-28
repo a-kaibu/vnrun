@@ -48,7 +48,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Artemis (art3m1s-core) | 6 | 1 | 5 |  |  |  |  |  |
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 43 | 42 | 1 |  |  |  |  |  |
-| 吉里吉里 (KiriKiri SDL2) | 135 | 121 | 13 |  |  |  | 1 |  |
+| 吉里吉里 (KiriKiri SDL2) | 135 | 134 |  |  |  |  | 1 |  |
 | YU-RIS (vnrun) | 29 | 28 |  |  |  |  | 1 |  |
 | NeXAS (vnrun) | 15 | 13 |  |  | 1 |  | 1 |  |
 | AdvHD (vnrun) | 35 | 30 |  |  |  |  |  | 5 |
@@ -317,6 +317,19 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2025_at_sakura | [学生会長・紫藤喜那の淫鬱 体験版](http://suezou.dyndns.org/dl2025/at-sakura/seito_sidou/aspc-0161_taiken_ver1.0.zip) | 本編 | 検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | b2025_monoceros_plus | [Vanilla Android　シコ猿DT大学生の俺と美少女アンドロイドがいろんなプレイでハメパコミッション　体験版](http://suezou.dyndns.org/dl2025/monoceros_plus/vanilla_android/VanillaAndroid-trial.zip) | 本編 | 検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
 | dl_RJ01677912 | [とける風花とシロうさぎ](https://trial.dlsite.com/doujin/RJ01678000/RJ01677912_trial.zip) | 本編 | 1929e7a で START から本編テキストまで (立ち絵・名前欄・文章) |
+| dl_VJ01000429 | [【DLsite限定版】進軍ゴブリン軍団2 ～淫獣軍VS.INTRUDER～](https://trial.dlsite.com/professional/VJ01001000/VJ01000429_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
+| dl_VJ01000497 | [【DLsite限定版】性感エステ 灯 -AKARI- マキ（28）](https://trial.dlsite.com/professional/VJ01001000/VJ01000497_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
+| dl_VJ01000502 | [堕とされていくお姉ちゃんと、何もできないボク ～憧れの彼女は、淫落し痴態をさらけ出す～](https://trial.dlsite.com/professional/VJ01001000/VJ01000502_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示 |
+| dl_VJ01000564 | [VenusBlood GAIA International R-18版](https://trial.dlsite.com/professional/VJ01001000/VJ01000564_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
+| dl_VJ01000639 | [【デラックス版】調教カテイ ～性開発された肢体は元カレを忘れられない～](https://trial.dlsite.com/professional/VJ01001000/VJ01000639_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
+| dl_VJ01000679 | [居座りカノジョとのドキドキ同居生活 ～ねぇねぇ、おじさんしたいでしょ♪～](https://trial.dlsite.com/professional/VJ01001000/VJ01000679_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
+| dl_VJ01001109 | [最強の人妻ヒロインが寝取られるまで ～お願い！夫にはバラさないで…～](https://trial.dlsite.com/professional/VJ01002000/VJ01001109_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
+| dl_VJ01002065 | [快楽セックスで堕とされていた愛する妻 ～他の男の手で身も心もイキ狂っていく最愛妻](https://trial.dlsite.com/professional/VJ01003000/VJ01002065_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
+| dl_VJ01003070 | [夏色果実 ～えっちなカノジョと溶け合う心～](https://trial.dlsite.com/professional/VJ01004000/VJ01003070_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
+| dl_VJ01003347 | [【DLsite限定版】NEW BREEDER ～エッチな獣娘を狩って⾃分好みに調教！～](https://trial.dlsite.com/professional/VJ01004000/VJ01003347_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
+| dl_VJ01004136 | [早乙女結衣の淫らな隠しごと ～隠されたアイドルのビッチな裏事情～](https://trial.dlsite.com/professional/VJ01005000/VJ01004136_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
+| dl_VJ01004598 | [女王社長の僕争奪戦 ～カラダもリードも譲らない！ で、どっちのが好きなのっ！？～](https://trial.dlsite.com/professional/VJ01005000/VJ01004598_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 5d1348e でタイトル画面まで表示 |
+| dl_VJ01006612 | [背徳の母乳 ～そんなに出しちゃダメぇ～](https://trial.dlsite.com/professional/VJ01007000/VJ01006612_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d51f3e8 系のページでタイトル画面まで表示 |
 | r1_kag3 | [KAG3 紹介デモ](https://krkrz.github.io/download/kr2_232r2.zip) | 本編 | 2026-10-26: 公式 syoukai デモ。Pad で Config を編集・保存し、再起動後に読み込み、紹介本文まで確認 |
 | r1_krkr_apt306 | [先輩、好きです……押忍！ 体験版](https://www.appetite-game.com/apt306/image/apt306_tr.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: e7d5b88 でタイトル画面まで表示 |
 | s2006_akabeesoft_conboku | [こんな娘がいたら僕はもう～web体験版第2弾～](http://suezou.dyndns.org/dl2006/akabeesoft/conboku/conboku_taiken_02.zip) | 本編 | 検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: bd7853c でインストーラ (Inno) 展開後に注意書き→タイトルメニューまで表示 |
@@ -376,19 +389,6 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2026_no_strike_jyosou_yuriarashi | [Jyosou Yuriarasi Trial](http://suezou.dyndns.org/dl2026/no-strike/jyosou_yuriarashi/jyosouyuriarashi_trial.zip) | 本編 | 検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: 2026-10-27: 平文 UTF-8 の誤判定と、補助ウィンドウへの入力誤配送を修正。言語選択からタイトルメニューへの遷移を確認 |
 | s2026_poison_motion_sxs2_me | [姉妹X催眠２ - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2026/poison-motion/sxs2-me/sxs2me_trial.zip) | 本編 | 検証スレッドでも Chromium で本編の文章まで確認。2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
 | s2026_poison_motion_sxs_me | [姉妹X催眠 - MOTION EDITION - 体験版](http://suezou.dyndns.org/dl2026/poison-motion/sxs-me/sxsme_trial.zip) | 本編 | 2026-10-28: タイトル→開始→本編の文章を数ページ送るまで Chromium で確認 (手順は vnrun-checks/kirikiri_story_steps.txt)。以前: d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
-| dl_VJ01000429 | [【DLsite限定版】進軍ゴブリン軍団2 ～淫獣軍VS.INTRUDER～](https://trial.dlsite.com/professional/VJ01001000/VJ01000429_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| dl_VJ01000497 | [【DLsite限定版】性感エステ 灯 -AKARI- マキ（28）](https://trial.dlsite.com/professional/VJ01001000/VJ01000497_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| dl_VJ01000502 | [堕とされていくお姉ちゃんと、何もできないボク ～憧れの彼女は、淫落し痴態をさらけ出す～](https://trial.dlsite.com/professional/VJ01001000/VJ01000502_trial.zip) | タイトル | d51f3e8 系のページでタイトル画面まで表示 |
-| dl_VJ01000564 | [VenusBlood GAIA International R-18版](https://trial.dlsite.com/professional/VJ01001000/VJ01000564_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| dl_VJ01000639 | [【デラックス版】調教カテイ ～性開発された肢体は元カレを忘れられない～](https://trial.dlsite.com/professional/VJ01001000/VJ01000639_trial.zip) | タイトル | d40622e で注意書き・ロゴをクリックで送るとタイトル画面まで表示 |
-| dl_VJ01000679 | [居座りカノジョとのドキドキ同居生活 ～ねぇねぇ、おじさんしたいでしょ♪～](https://trial.dlsite.com/professional/VJ01001000/VJ01000679_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| dl_VJ01001109 | [最強の人妻ヒロインが寝取られるまで ～お願い！夫にはバラさないで…～](https://trial.dlsite.com/professional/VJ01002000/VJ01001109_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| dl_VJ01002065 | [快楽セックスで堕とされていた愛する妻 ～他の男の手で身も心もイキ狂っていく最愛妻](https://trial.dlsite.com/professional/VJ01003000/VJ01002065_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| dl_VJ01003070 | [夏色果実 ～えっちなカノジョと溶け合う心～](https://trial.dlsite.com/professional/VJ01004000/VJ01003070_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| dl_VJ01003347 | [【DLsite限定版】NEW BREEDER ～エッチな獣娘を狩って⾃分好みに調教！～](https://trial.dlsite.com/professional/VJ01004000/VJ01003347_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| dl_VJ01004136 | [早乙女結衣の淫らな隠しごと ～隠されたアイドルのビッチな裏事情～](https://trial.dlsite.com/professional/VJ01005000/VJ01004136_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| dl_VJ01004598 | [女王社長の僕争奪戦 ～カラダもリードも譲らない！ で、どっちのが好きなのっ！？～](https://trial.dlsite.com/professional/VJ01005000/VJ01004598_trial.zip) | タイトル | 5d1348e でタイトル画面まで表示 |
-| dl_VJ01006612 | [背徳の母乳 ～そんなに出しちゃダメぇ～](https://trial.dlsite.com/professional/VJ01007000/VJ01006612_trial.zip) | タイトル | d51f3e8 系のページでタイトル画面まで表示 |
 | s2019_parasol_renran_p | [恋嵐スピリッチュ 体験版](https://trial.dlsite.com/professional/VJ013000/VJ012599_trial.zip http://suezou.dyndns.org/dl2019/parasol/renran-p/renran_trial_101.zip) | 対象外 | 2026-10-26: 配布 URL は体験版の差分パッチのみ。起動用 EXE/startup と本体が含まれない |
 
 ### YU-RIS (vnrun)
