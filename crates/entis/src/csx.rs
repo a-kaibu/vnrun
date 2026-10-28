@@ -93,7 +93,25 @@ impl R<'_> {
             }),
             5 => Init::Real(f64::from_bits(self.u64()?)),
             6 => Init::String(self.wstr()?),
-            t => return Err(format!("csx: object type {t}")),
+            // the 2017+ images: a boolean-like 8-byte value (g_fReplayMode), and a typed
+            // variable wrapping its initial object
+            10 => Init::Integer(self.u64()? as i64),
+            18 => self.object(int64)?,
+            // a typed array: its element (as an object), its dimensions, its elements
+            17 => {
+                self.object(int64)?;
+                let dims = self.u32()? as usize;
+                for _ in 0..dims {
+                    self.u32()?;
+                }
+                let n = self.u32()? as usize;
+                Init::Array(
+                    (0..n)
+                        .map(|_| self.object(int64))
+                        .collect::<Result<_, _>>()?,
+                )
+            }
+            t =>return Err(format!("csx: object type {t}")),
         })
     }
 }
