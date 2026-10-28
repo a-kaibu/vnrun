@@ -80,6 +80,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | DxLib MED (vnrun) | 3 | 3 |  |  |  |  |  |  |
 | Liar-soft XFL (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | CrossOver Adv.exe (vnrun) | 1 | 1 |  |  |  |  |  |  |
+| Propeller MPK (vnrun) | 3 | 1 |  |  |  |  | 1 | 1 |
 
 ### SiglusEngine (siglus_rs)
 
@@ -778,4 +779,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2009_crossover | [美乳淫妹 遥「私にイヤらしいコスプレさせるなんて……この変態！」](http://suezou.dyndns.org/dl2009/crossover/haruka/bnharuka_trial.zip) | 本編 | CrossOver Adv.exe (vnrun) でロゴ→注意書き→タイトル (SYSMENU.SCD のホットスポットとホバー絵)→始めから→OP_01..OP_04 の背景・立ち絵 (形の画像)・イベント CG・名前・文章・ボイス・効果音・BGM・選択肢 2 回→体験版の終わりでタイトルへ (crossover-run 9000 フレーム、スキップ)。Chromium でタイトル→本編、Esc のメニューからセーブ→タイトルの「続きから」でロードし保存した行に戻る |
+
+### Propeller MPK (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2007_propeller | [『Bullet Butlers』Web体験版　ver1.1](http://suezou.dyndns.org/dl2007/propeller/bulletbutlers/BB_Trial.exe) | 本編 | Propeller MPK (vnrun) でロゴ→タイトル→本編 co001〜co007 (背景・立ち絵・イベント CG・名前・ルビ・ボイス・BGM・選択肢 3 回、体験版で塞がれた選択肢は押しても進まない)→体験版の終わりでタイトルへ (propeller-run、スキップ)。Chromium でタイトル→本編、Esc のメニューからセーブ→タイトルの LOAD でロードし保存した行に戻る |
+| dl_VJ01002202 | [Bullet Butlers](https://trial.dlsite.com/professional/VJ01003000/VJ01002202_trial.zip) | 対象外 | PlayDRM の製品版の体験版。PlayDRM の作品は vnbox の Wine で正規の認証を通して遊び、vnrun では動かさない (データが素の MPK でも) |
+| s2011_propeller_sukima | [すきま桜とうその都会　体験版２](http://suezou.dyndns.org/dl2011/propeller/sukima/sukima_trial2.zip) | 未確認 |  |
 <!-- /matrix -->

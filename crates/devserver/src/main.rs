@@ -349,6 +349,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("ll5.dll") && has("data") {
         // CrossOver (Adv.exe): DATA/ holds the PACK archives SCRIPT.PAC, *.GR2 and *.VIC
         Some("crossover".into())
+    } else if has("scenario.mpk") && has("system.mpk") {
+        // Propeller: MPK archives (Scenario.mpk, System.mpk, BG.mpk..) beside the exe
+        Some("propeller".into())
     } else if has("scr.xfl") && names.iter().any(|n| n.starts_with("grp") && n.ends_with(".xfl")) {
         // Liar-soft: scr.xfl beside the grp*.xfl pictures
         Some("liar".into())

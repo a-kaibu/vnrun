@@ -1,0 +1,12 @@
+[package]
+name = "propeller"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "Propeller's script engine (MPK archives, MGR pictures, MSC scripts) for the browser"
+
+[dependencies]
+nexas = { path = "../nexas" }
+fontdue = "0.9"
+encoding_rs = "0.8"
+image = { version = "0.25", default-features = false, features = ["png"] }

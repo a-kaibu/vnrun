@@ -32,6 +32,7 @@ const ENGINES: Record<string, () => Promise<EngineModule>> = {
   med: () => import("./engines/med"),
   liar: () => import("./engines/liar"),
   crossover: () => import("./engines/crossover"),
+  propeller: () => import("./engines/propeller"),
   lilim: () => import("./engines/lilim"),
   silkys: () => import("./engines/silkys"),
   ivory: () => import("./engines/ivory"),
