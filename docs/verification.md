@@ -83,6 +83,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Liar-soft XFL (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | CrossOver Adv.exe (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | Propeller MPK (vnrun) | 3 | 2 |  |  |  |  | 1 |  |
+| SakanaGL (vnrun) | 3 | 3 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -809,4 +810,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2007_propeller | [『Bullet Butlers』Web体験版　ver1.1](http://suezou.dyndns.org/dl2007/propeller/bulletbutlers/BB_Trial.exe) | 本編 | Propeller MPK (vnrun) でロゴ→タイトル→本編 co001〜co007 (背景・立ち絵・イベント CG・名前・ルビ・ボイス・BGM・選択肢 3 回、体験版で塞がれた選択肢は押しても進まない)→体験版の終わりでタイトルへ (propeller-run、スキップ)。Chromium でタイトル→本編、Esc のメニューからセーブ→タイトルの LOAD でロードし保存した行に戻る |
 | s2011_propeller_sukima | [すきま桜とうその都会　体験版２](http://suezou.dyndns.org/dl2011/propeller/sukima/sukima_trial2.zip) | 本編 | Propeller MPK (vnrun、2011 の幅の広いスクリプト形式、1024x576) で注意書き→序章 (カットイン窓・名前・ルビ・BGM)→タイトル→はじめから→sa_01〜sa_10 (選択肢多数)→体験版の終わりでタイトルへ、「体験版2」の選択画面から鈴ルートの抜粋も最後まで (propeller-run、スキップ)。Chromium で序章→タイトル→本編、Esc のメニューからセーブ→タイトルの「続きから」でロードし保存した行に戻る |
 | dl_VJ01002202 | [Bullet Butlers](https://trial.dlsite.com/professional/VJ01003000/VJ01002202_trial.zip) | 対象外 | PlayDRM の製品版の体験版。PlayDRM の作品は vnbox の Wine で正規の認証を通して遊び、vnrun では動かさない (データが素の MPK でも) |
+
+### SakanaGL (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| dl_VJ01002468 | [異世界娘と秘密のコンカフェえっち](https://trial.dlsite.com/professional/VJ01003000/VJ01002468_trial.zip) | 本編 | SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し .ui のビューと .ks の脚本を実行) でタイトル→Start→本編 (背景・名前・メッセージ窓・BGM・ボイス)。Chromium でタイトル→本編、クイックセーブ / セーブ欄に保存→ページを開き直してタイトルの Continue でロードし保存したページに戻る |
+| dl_VJ01004064 | [俺の電脳SEX性活 ‐ビッチな君となんちゃって恋愛‐](https://trial.dlsite.com/professional/VJ01005000/VJ01004064_trial.zip) | 本編 | SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し .ui のビューと .ks の脚本を実行) でタイトル→Start→本編 (背景・メッセージ窓・BGM)。Chromium でタイトル→本編、クイックセーブ / セーブ欄に保存→ページを開き直してタイトルの Continue でロードし保存したページに戻る |
+| r1_sakana | [でか乳巫女と巨乳シスター 体験版](http://calcite-soft.com/momohanasoft/mikosister/image/dekamikosistry.zip) | 本編 | SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し .ui のビューと .ks の脚本を実行) でタイトル→Start→本編 (背景・立ち絵・表情・名前・メッセージ窓・BGM・ボイス・選択肢)。Chromium でタイトル→本編、クイックセーブ / セーブ欄に保存→ページを開き直してタイトルの Continue でロードし保存したページに戻る |
 <!-- /matrix -->

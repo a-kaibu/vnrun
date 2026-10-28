@@ -398,6 +398,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("sys4ini.bin") || has("sys5ini.bin") {
         // Eushully AGE: the sys4ini.bin index of the .alf archives
         Some("eushully".into())
+    } else if has("sakanagl.dll") && has("pkg") {
+        // SakanaGL: the exe and sakanagl.dll beside pkg/<name>-001(00).sx and its .sxstorage files
+        Some("sakanagl".into())
     } else if has("data.fpk") {
         // Interheart / Candy Soft: data.fpk (the scenario) beside the other .fpk archives
         Some("interheart".into())

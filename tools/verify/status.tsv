@@ -466,3 +466,6 @@ dl_RJ01735938	本編	Electron の HTML ゲーム (app/index.html を開く) で�
 dl_RJ01744242	本編	Electron の GDevelop ゲーム (app/index.html を開く) でタイトル→NEW GAME→はじめる→PLAY→本編の会話まで (Chromium)。ゲームにセーブ機能が無い (イベントに storage 系の命令が無い)
 dl_RJ01747016	本編	Electron の HTML ゲーム (dist/index.html を開く) で導入→冒険者の町のマップ→案内さんとの会話まで。localStorage の自動セーブ (ffcards_adventure_v1) がサーバーに残り、別セッションで同じ位置から再開 (Chromium)
 dl_VJ01000787	本編	DebonosuWorks (vnrun、crates/debonosu) でロゴ→注意書き→タイトル→最初から始める→プロローグ (01.scb) の背景・名前・文章・声・BGM まで (deb-run と Chromium)。ダンジョン (map) に入る所で止まり、Live2D の立ち絵・3D・戦闘はなし。自前のセーブ・ロード (Esc で保存、タイトルの「続きから始める」で読み込み) も Chromium で確認
+r1_sakana	本編	SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し .ui のビューと .ks の脚本を実行) でタイトル→Start→本編 (背景・立ち絵・表情・名前・メッセージ窓・BGM・ボイス・選択肢)。Chromium でタイトル→本編、クイックセーブ / セーブ欄に保存→ページを開き直してタイトルの Continue でロードし保存したページに戻る
+dl_VJ01002468	本編	SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し .ui のビューと .ks の脚本を実行) でタイトル→Start→本編 (背景・名前・メッセージ窓・BGM・ボイス)。Chromium でタイトル→本編、クイックセーブ / セーブ欄に保存→ページを開き直してタイトルの Continue でロードし保存したページに戻る
+dl_VJ01004064	本編	SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し .ui のビューと .ks の脚本を実行) でタイトル→Start→本編 (背景・メッセージ窓・BGM)。Chromium でタイトル→本編、クイックセーブ / セーブ欄に保存→ページを開き直してタイトルの Continue でロードし保存したページに戻る

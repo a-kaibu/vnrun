@@ -44,6 +44,7 @@ const ENGINES: Record<string, () => Promise<EngineModule>> = {
   system4: () => import("./engines/system4"),
   escude: () => import("./engines/escude"),
   interheart: () => import("./engines/interheart"),
+  sakanagl: () => import("./engines/sakanagl"),
   anim: () => import("./engines/anim"),
   yuka: () => import("./engines/yuka"),
   systemnnn: () => import("./engines/systemnnn"),

@@ -70,6 +70,7 @@ game_root() {
     qlie) m=(-ipath '*/gamedata/data0.pack') ;;
     escude) m=(-iname script.bin) ;;
     interheart) m=(-iname data.fpk) ;;
+    sakanagl) m=(-iname sakanagl.dll) ;;
     anim) m=(-iname '*_sce.dat') ;;
     yuka) m=(-iname '*.ykc' -o -iname '*01.dat') ;;
     systemnnn) m=(-ipath '*/spt/*.spt') ;;

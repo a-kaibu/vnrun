@@ -1,0 +1,11 @@
+[package]
+name = "sakanagl"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "A SakanaGL engine for the browser: reads the SSXX packages and storages, the .ui views and the .ks scenario, and runs them"
+
+[dependencies]
+ruzstd = "0.8"
+fontdue = "0.9"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp"] }
