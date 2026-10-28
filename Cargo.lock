@@ -1095,6 +1095,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "silkys"
+version = "0.1.0"
+dependencies = [
+ "encoding_rs",
+ "fontdue",
+ "image 0.25.10",
+ "nexas",
+]
+
+[[package]]
+name = "silkys-web"
+version = "0.1.0"
+dependencies = [
+ "js-sys",
+ "nexas",
+ "silkys",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "simd-adler32"
 version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"

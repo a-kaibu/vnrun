@@ -266,6 +266,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if names.iter().any(|n| n.ends_with(".war")) {
         // ShiinaRio: WARC archives (.WAR) beside the exe and its [椎名里緒] .ini
         Some("shiina".into())
+    } else if has("script.arc") && has("layer.arc") {
+        // Silky's (the AI6WIN generation): Script.arc beside data.arc, layer.arc, music.arc
+        Some("silkys".into())
     } else if majiro_arc(game, &names) {
         // Majiro: MajiroArc archives (scenario.arc, data.arc, ...) beside the exe
         Some("majiro".into())

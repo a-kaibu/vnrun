@@ -65,6 +65,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | Crowd/ANIM (vnrun) | 9 | 5 |  |  |  | 4 |  |  |
 | Cyberworks (vnrun) | 8 | 4 |  |  |  |  |  | 4 |
 | LiLiM (vnrun) | 7 | 7 |  |  |  |  |  |  |
+| Silky's (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | ShiinaRio (vnrun) | 1 | 1 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
@@ -416,7 +417,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2011_giga_hinataterrace | [ひなたテラス -We don't abandon you.- web体験版２](http://suezou.dyndns.org/dl2011/giga/hinataterrace/hinata_webtrial02c.zip) | 本編 | Chromium (3f99c53) で START→本編の文章まで |
 | s2015_giga_renaiphase | [恋愛フェイズ 体験版](http://suezou.dyndns.org/dl2015/giga/renaiphase/RP_trial.zip) | 本編 | d98165b で確認。タイトルの「Digest Story」→「Digest-1」から 共通00.bin のチャット画面と本文まで (Chromium) |
 | s2006_giga_cheerfull | [チアフル！ ～cheerfull!～ 【 体験版 】](http://suezou.dyndns.org/dl2006/giga/cheerfull/cheerfull_trial.exe) | 要再確認 | ダウンロードはできるが、自己展開 exe が GIGA 独自の暗号化形式 (GFL SecureCryptograph) で 7z・unar では展開できない |
-| b2009_crossover | [美乳淫妹 遥「私にイヤらしいコスプレさせるなんて……この変態！」](http://suezou.dyndns.org/dl2009/crossover/haruka/bnharuka_trial.zip) | 対象外 | NeXAS ではない (Adv.exe と DATA/ の .GR2・.VIC、SCRIPT.PAC は "PACK" 形式の .SCD。vnbox の NeXAS 判定が誤り) |
+| b2009_crossover | [美乳淫妹 遥「私にイヤらしいコスプレさせるなんて……この変態！」](http://suezou.dyndns.org/dl2009/crossover/haruka/bnharuka_trial.zip) | 対象外 | NeXAS ではない。CrossOver 自社の Adv.exe (DATA/ の PACK 形式に LL5 圧縮の GR2 画像、*Pola* 圧縮の .SCD スクリプト、.VIC 音声)。スクリプト VM が未知で新エンジンが要る (docs/handoff.md) |
 | s2025_milimili_hanako | [ちょっとナマイキなトイレの花子さん ～えっちぃ学園のおばけとエロエロ搾精性活～ 【体験版】](http://suezou.dyndns.org/dl2025/milimili/hanako/hanako_try2.zip) | 対象外 | 中身は Unity 製 (vnbox の NeXAS 判定が誤り) |
 
 ### AdvHD (vnrun)
@@ -602,6 +603,13 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2011_princess_sugar | [姫様限定！～PrincessLimited～ web体験版ver1.0](http://suezou.dyndns.org/dl2011/princess-sugar/princess/hime_trial_1.zip) | 本編 | LiLiM (vnrun) でタイトル (1024x600)→START→体験版メニュー (slctwnd のボタン)→プロローグ (00_01..00_10) の背景・立ち絵・名前 (窓の名札)・文章・音声を最後まで通り、メニューに戻る (lilim-run)。OP ムービーは飛ばす |
 | b2019_lilim_darkness | [WhiteBlue web体験版ver2.0](http://suezou.dyndns.org/dl2019/lilim-darkness/whiteblue/WhiteBlue_trial_2.zip) | 本編 | LiLiM (vnrun) でタイトル (btn_play などの画像ボタン)→START→注意書き→体験版メニュー (slctwnd の選択肢)→旭ルートのダイジェスト (D_07..D_09) の背景・立ち絵・イベント CG・名前・文章・音声・回想のセピアを最後まで通り、メニューに戻る (lilim-run)。Chromium でタイトル→本編、右クリックのメニューからセーブ→タイトルの LOAD からロードで本編に戻る |
 | b2021_princess_sugar | [プリンセス☆シスターズ！～四姉妹は全員あなたの許嫁～ web体験版ver1.0](http://suezou.dyndns.org/dl2021/princess-sugar/prista/PriSta_trial_1.zip) | 本編 | LiLiM (vnrun) でタイトル→START→注意書き→体験版メニュー (slctwnd のボタン)→共通パート (01_01..02_08、途中のボタンの選択肢を含む) の背景・立ち絵・イベント CG・名前・文章・音声を通る (lilim-run)。Chromium でタイトル→メニュー→本編の文章まで |
+
+### Silky's (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2014_silkys_plus | [なないろリンカネーション 体験版 ver.1.2](http://suezou.dyndns.org/dl2014/silkys-plus/nanairo/nanairo_trial1.2.zip) | 本編 | Silky's (vnrun) でロゴ・注意書き→タイトル (title.akb のボタン)→はじめから→nanairo_01..03 の背景・立ち絵・名前・文章・選択肢を進む (silkys-run、70000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→タイトルの「つづきから」でロードして本編に戻る |
+| b2016_silkys_sakura | [ママのおっぱい～俺の童貞ミルクが搾り取られた件～ 体験版](http://suezou.dyndns.org/dl2016/silkys-sakura/mama_oppai/oppai_trial.zip) | 本編 | Silky's (vnrun) でロゴ・注意書き→タイトル (Title_scroll のスクロール、trial_Title_p のボタン)→はじめから→mmsc_000..006 の背景・立ち絵・イベント CG・名前・文章を最後まで進む (silkys-run、45000 フレーム)。Chromium でタイトル→本編、SAVE ボタンからセーブ→タイトルの「続きから始める」でロードして本編 (背景・イベント CG・立ち絵込み) に戻る |
 
 ### ShiinaRio (vnrun)
 

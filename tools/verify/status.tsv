@@ -411,3 +411,5 @@ b2022_lunaprism	本編	682b666 (app.asar を vnrun-prep が展開) でタイト�
 b2023_wendybell	本編	Cyberworks 新形式 (Resources/Data00.dat の索引と DataNNN.dat の絵、UTF-16 の文章) で警告→タイトル (初めから)→本編の背景・立ち絵・表情差分・文章・音声 (cyberworks-run と Chromium)。セーブ→タイトルの続きからロードで本編に戻る (Chromium)
 b2026_tinkerbell	本編	Cyberworks 新形式 (1920x1080) で警告→タイトル (NEW GAME)→本編の背景・立ち絵・顔窓 (サイズ付きの差分)・名前・文章 (cyberworks-run と Chromium)。下のバーの SAVE でセーブ→新しいセッションのタイトルの LOAD GAME からロードで同じ行に戻る (Chromium)
 b2026_wendybell	本編	Cyberworks 新形式 (1920x1080、全画面の窓) で警告→タイトル (初めから)→本編の CG・背景・文章を数場面 (cyberworks-run と Chromium)。右のバーの Save でセーブ→新しいセッションのタイトルの続きからロードで同じ行に戻る (Chromium)
+b2016_silkys_sakura	本編	Silky's (vnrun) でロゴ・注意書き→タイトル (Title_scroll のスクロール、trial_Title_p のボタン)→はじめから→mmsc_000..006 の背景・立ち絵・イベント CG・名前・文章を最後まで進む (silkys-run、45000 フレーム)。Chromium でタイトル→本編、SAVE ボタンからセーブ→タイトルの「続きから始める」でロードして本編 (背景・イベント CG・立ち絵込み) に戻る
+b2014_silkys_plus	本編	Silky's (vnrun) でロゴ・注意書き→タイトル (title.akb のボタン)→はじめから→nanairo_01..03 の背景・立ち絵・名前・文章・選択肢を進む (silkys-run、70000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→タイトルの「つづきから」でロードして本編に戻る

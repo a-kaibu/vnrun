@@ -165,6 +165,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 | Cyberworks / TinkerBell (Arc0x.dat) | 8 | 自作 (`crates/cyberworks`, `crates/cyberworks-web`) | Rust | あり (WebGPU) | 索引と中身の組 (Arc01→04, 02→05, 03→06, 07→08)。索引は 10 進の桁 (^0x7f) の大きさ + LZSS。種類の文字ごとの 0 始まりの番号で参照。'a'/'d' 画像 (GetInt 符号の見出し、d は直前の土台との差分)、'b'/'c' は末尾の PNG、音声は先頭 "Tink" の Ogg を exe の鍵で XOR。脚本 'a' は文 (M# 命令 / M$ レイヤー命令 / S 文章) を直接解釈し、e0 (ボタン組) と f0 (レイヤー表) からタイトル・ウィンドウ・立ち絵の位置を組む。メッセージ窓の文字・選択肢・セーブ (10 スロット) はエンジンが描く。グランギニョルの夜 体験版 (2018) で警告→タイトル→本編、セーブ/ロード (cyberworks-run と Chromium)。2023 年以降の ChakraCore 入りの世代 (Resources/DataNNN.dat の絵、UTF-16 の文章) もモラトリアム・ムジナ・臭・友恵の探偵物語の体験版で本編とセーブ/ロードまで |
 | LiLiM (AOS) | 7 | 自作 (`crates/lilim`, `crates/lilim-web`) | Rust | あり (WebGPU) | .aos アーカイブ (2009 年以降の版 2 と 2006〜2007 年の版 1)、.scr と .cmp のハフマン符号、BMP / ABM 画像 (ABM の詰めた行は上から)。脚本は平文 (Shift-JIS) のテキストで、行ごとに解釈する (^gsb/^go/^jp/^if/^sw、%変数、bgon/cgon/chon/ud/btnset/btnenable/cvon/bgmon など)。ボタンは画像の 3 段 (通常・ポインタの下・押下)。タイトルと選択肢はゲームの脚本のボタンそのもの、メッセージ窓は wnd(0, ...) の設定 (msgwnd1 と窓のボタン) で描く。セーブ・ロードの画面と右クリックのメニューはエンジンが描く。体験版 7 本 (2006〜2021) すべてでタイトルから本編まで (lilim-run、うち 3 本は Chromium も)。ud(2) のマスクはフェードで代用 |
 | ShiinaRio (椎名里緒) | 2 | 自作 (`crates/shiina`, `crates/shiina-web`) | Rust | あり (WebGPU) | WARC 1.7 アーカイブ (GARbro の鍵を `schemes/*.bin` に)、S25 画像 (複数フレーム・各フレームに置き場所、差分行)、OGV (Ogg の前に見出し)。ゲームの .SCN は VM で動かさず、シナリオ (A001.TXT.. の平文) を直接解釈する: `$L_BG` `$L_CHR` `$DRAW` `$DRAW_EX` `$VOICE` `$SE` `$MUSIC` `$MUSIC_FADE` `$EX,5`、`【名前】` と文章の段落、`;￥ジャンプ＜a002＞へ` で次のファイル。タイトル (SYSTITLE.S25) とメッセージ窓 (SYS_SYS.S25) はゲームの絵をエンジンが並べる。種憑け村 序章体験版 (2011) でタイトル→本編→体験版の終わり→タイトル (shiina-run と Chromium、セーブ/ロードも)。マスクのワイプはフェードで代用、EFECT (揺れ・フラッシュ) はまだ |
+| Silky's (AI6WIN 世代) | 2 | 自作 (`crates/silkys`, `crates/silkys-web`) | Rust | あり (WebGPU) | Script/data/effect/layer/music/voice.arc (索引の大きさ + 名前を n-i ずらした項目、LZSS)、AKB 画像 (下の行から、左と上の差分)、.mes のスタック VM (LIBLARY.LIB の関数、システムコール 1..29 は exe の CFunc の番号)。スプライト・BG・立ち絵・イベント CG はスクリプトの命令どおり、タイトル (29/18)・メッセージ窓・選択肢・セーブ画面はエンジンが描く (窓とボタンの位置はゲームごとの表)。ママのおっぱい 体験版 (2016) と なないろリンカネーション 体験版 (2014) でタイトルから本編、Chromium でセーブ→ロード |
 
 Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softpal 31、FVP 6、Artemis 5)。
 
@@ -323,6 +324,19 @@ Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softp
 - 画面: bgon/cgon が背景、chon(n, 絵, x [, y] | NON | CENTER) が番号つきの絵 (ch(n, PNT, 1) の番号は x が中心)。ch(n, SYS, 1) の絵はメッセージ窓の一部 (窓と一緒に出る。顔窓など)、SYS 2 はボタンの上。fnt の 1 つ目が文字の大きさ、wnd(0, TXT, x, y, 行数, -, 行間, 1 行の字数)。名前は文字の左に場所があれば左 (WhiteBlue)、なければ 1 行上 (窓の名札の位置)。変更は ud で一度に見せる (0 即時、1 フェード、2 マスク = 今はフェード)。mono(1) でセピア。btnset/btnon/btnenable がゲームのボタン (押した番号が %reg)。float(2) をロード画面にした (タイトルの LOAD)。
 - 音: cvon (cv.aos)、seon、bgmon/bgmoff、envon/envoff (環境音のループ)。すべて素の Ogg。
 - 残り: マスクのワイプ、ef (揺れなど)、バックログ (wbl)、コンフィグ、オート、クイックセーブ (今はセーブ画面を開く)。efex (絵の動き) は飛ばしている。
+
+## Silky's (AI6WIN 世代) の実装メモ (2026-10-28)
+
+- 対象: targets.tsv の 2 本 (b2016_silkys_sakura ママのおっぱい、b2014_silkys_plus なないろリンカネーション、どちらも 1280x720)。アーカイブと AKB は GARbro (MIT) の `Silky/ArcAi6Win.cs`・`ImageAKB.cs`、命令の並びは VNTextPatch (MIT) の `SilkysPlusDisassembler.cs` に従う。システムコールの意味は oppai.exe を Ghidra で読んだ (CFunc* の vtable と各 switch)。
+- .arc: 先頭 u32 が索引の大きさ。項目は名前の長さ n、名前 (i 文字目 + (n - i))、BE の詰めた大きさ・大きさ・位置。大きさが違えば LZSS (4K 窓、0xfee、フラグは下位ビットから、1 が素のバイト)。
+- AKB: "AKB " / "AKB+" (土台の名前 0x20 バイトつきの差分)、幅・高さ、フラグ (bit30 = 24 ビット、bit31 = アルファ)、背景色、内側の矩形。行は下から LZSS、左と上の差分を足す。
+- .mes: u32 メッセージ数、u32 特別数、その数の u32 (メッセージの印の位置)。オペランドは BE。0a は詰めた文字 (SJIS の先頭バイト以外は b - 0x7d62)。定数は Int(10)+Int(n) の足し算で書かれる。システムコールは番号、サブ番号の順に取り、引数は後に積んだものが先 (ライブラリ関数の引数も同じで args[0] が最後に積んだもの)。システムコールは自分の文で積んだものをすべて取る (エンジンが読まない引数も捨て、結果だけ残す)。
+- 番号: 1 選択肢 (0 で後に続く `Int(n) Choice(next) 文字 Yield` を集め、2 で待つ。答えは g3[18] に番号 + 1)、2 窓、14 フラグ、15/16/17/18 音、19 スプライト (0 作成、1 読み込み、3 転写、16..28 フェード)、20 画面の色 (時間はフレーム数)、21 スクリプト (0 移る、2 ライブラリ)、25 設定、26 待ち、27 セーブ (4 で g4 の先頭を場面の記録として (種類, 番号) に覚え、2 で読み戻す。ロード時は lib 45 がこれで背景・立ち絵・CG を戻し、27/10 で保存したメッセージの印へ)、29 ゲーム (13 立ち絵、14 BG (4..9 で BG を画面へ、14 で読み込み)、15 名前、18 タイトル、23 タイトル絵のスクロール、3 終了)。
+- タイトル: 29/18 の返り値はボタン番号 + 1。ママのおっぱいは trial_Title_p の 400x42 の 3 列 (表で位置)、なないろは title.akb にボタンの絵が TITLE_T.AREA の順に詰めてある (幅に入る最初の段に置く、段の高さは 4 状態分)。2 つ目と 3 つ目のボタン (前回の続き・続きから) はエンジンのロード。
+- 窓: ゲームごとの Skin (MESSAGE_P.AKB / MESWAKU.AKB) で、背景のアルファを設定の色で塗り、MES.AREA の各ボタンの絵の位置と働き (SAVE/LOAD/Q.SAVE/Q.LOAD/Skip) を表に持つ。ハートは全角 ＠。
+- セーブ: 自前の形式 (SILKYSAV1: スクリプト名、メッセージ番号、g1..g5、場面の記録)。ロードは g3[55] の 0x1000 を立ててスクリプトを頭から動かす (ゲーム自身の復元処理)。
+- 確認: `SILKYS_FONT=ipag.ttf silkys-run <game> <frames> <out> [frame:x:y ...]` (SILKYS_LOG=1 でシステムコール)。
+- 残り: バックログ・コンフィグ・オート、Q.SAVE は 1 番に保存、ムービー (movie.arc)、スプライトの効果のうちフェード以外、立ち絵の位置は 1280 幅の式 (他の解像度は未確認)。
 
 ## 未決のこと
 
