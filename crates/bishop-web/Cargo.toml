@@ -1,0 +1,15 @@
+[package]
+name = "bishop-web"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "Bishop (BSXX) for the browser: wasm-bindgen exports for web/src/engines/bishop.ts"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+bishop = { path = "../bishop" }
+nexas = { path = "../nexas" }
+wasm-bindgen = "=0.2.129"
+js-sys = "0.3"

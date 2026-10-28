@@ -120,6 +120,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "bishop"
+version = "0.1.0"
+dependencies = [
+ "fontdue",
+ "image 0.25.10",
+ "nexas",
+]
+
+[[package]]
+name = "bishop-web"
+version = "0.1.0"
+dependencies = [
+ "bishop",
+ "js-sys",
+ "nexas",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"

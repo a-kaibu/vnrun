@@ -370,6 +370,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("spt") && has("dwq") {
         // System-NNN (Black Cyc and others): spt/*.spt scripts beside dwq/*.gpk picture packs
         Some("systemnnn".into())
+    } else if has("bsxx.dat") || (has("bsx.dat") && names.iter().any(|n| n.ends_with(".bsa"))) {
+        // Bishop: bsxx.dat (BSXScript) or the older bsx.dat beside the .bsa archives
+        Some("bishop".into())
     } else if has("data.fpk") {
         // Interheart / Candy Soft: data.fpk (the scenario) beside the other .fpk archives
         Some("interheart".into())

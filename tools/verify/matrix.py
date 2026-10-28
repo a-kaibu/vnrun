@@ -33,6 +33,7 @@ ENGINES = {
     "anim": "Crowd/ANIM (vnrun)",
     "yuka": "Yuka (vnrun)",
     "systemnnn": "System-NNN (vnrun)",
+    "bishop": "Bishop (vnrun)",
     "cyberworks": "Cyberworks (vnrun)",
     "lilim": "LiLiM (vnrun)",
     "silkys": "Silky's (vnrun)",
