@@ -151,7 +151,7 @@ b2013_anim	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_VJ01002863	タイトル	Chromium で START 後、体験版の挨拶文 1 行のあと (または直後から) 画面が黒いまま進まない
 dl_VJ01001385	本編	Chromium (3f99c53+) で START→本編の文章まで
 dl_VJ01000407	本編	Chromium (3f99c53+) で START→本編の文章まで
-s2021_casket_bellaca02	タイトル	3e4a888 のビルドでタイトルまで
+s2021_casket_bellaca02	本編	Chromium で Hシーン体験版→本編の文章まで
 dl_RJ01708454	本編	Chromium で はじめから→本編の文章まで
 b2007_whirlpool	NG	pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」
 b2006_whirlpool	NG	pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」

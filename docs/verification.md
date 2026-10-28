@@ -49,7 +49,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | NScripter (ONScripter-Yuri) | 5 |  | 2 |  |  | 1 | 2 |  |
 | HTML (TyranoScript、RPGツクール MV/MZ) | 35 | 3 | 17 | 9 | 3 | 1 |  | 2 |
 | 吉里吉里 (KiriKiri SDL2) | 135 | 5 | 129 |  |  |  | 1 |  |
-| YU-RIS (vnrun) | 29 | 20 | 4 |  |  | 4 | 1 |  |
+| YU-RIS (vnrun) | 29 | 21 | 3 |  |  | 4 | 1 |  |
 | NeXAS (vnrun) | 16 | 11 | 1 |  | 1 | 2 | 1 |  |
 | AdvHD (vnrun) | 30 | 30 |  |  |  |  |  |  |
 | Tmr-Hiro (vnrun) | 22 | 22 |  |  |  |  |  |  |
@@ -382,12 +382,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | s2019_no_strike_jyosou_jinjya | [josou jinjya_trial](http://suezou.dyndns.org/dl2019/no-strike/jyosou_jinjya/josou_jinjya_trial_TW.zip) | 本編 | Chromium (3f99c53) で START→本編の場面 (背景・立ち絵) は進むが、台湾版の Big5 文章が描画されない |
 | s2020_casket_ayakashi03 | [あやかし遊郭～花魁アマビエ民譚集～体験版](http://suezou.dyndns.org/dl2020/casket/ayakashi03/ayakashi03_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | s2021_casket_bellaca | [リンカーベル・アカデミア～落第魔女とヒミツの儀式～体験版](http://suezou.dyndns.org/dl2021/casket/bellaca/bellaca01_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
+| s2021_casket_bellaca02 | [リンカーベル・アカデミア～龍族のフィアンセ～Hシーン体験版](http://suezou.dyndns.org/dl2021/casket/bellaca02/bellaca02_trial.zip) | 本編 | Chromium で Hシーン体験版→本編の文章まで |
 | s2023_casket_oshitona_vtuber02 | [画面から出てきた推しVtuberとHな同棲生活 ～庶民派吸血鬼お嬢様は契約したい～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber02/oshitona02_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | s2023_casket_oshitona_vtuber03 | [画面から出てきた推しVtuberとHな同棲生活 ～夢魔かわASMR配信者は地雷系？～体験版](http://suezou.dyndns.org/dl2023/casket/oshitona_vtuber03/oshitona03_trial.zip) | 本編 | Chromium (3f99c53+) で START→本編の文章まで |
 | dl_VJ01000315 | [【限定版】エルフェンキング](https://trial.dlsite.com/professional/VJ01001000/VJ01000315_trial.zip) | タイトル | Chromium で START 後、体験版の挨拶文 1 行のあと (または直後から) 画面が黒いまま進まない |
 | dl_VJ01002863 | [【限定版】巨乳軍人支配催眠「私の任務は貴方にご奉仕する事です。色んな穴をご自由にお使い下さい」](https://trial.dlsite.com/professional/VJ01003000/VJ01002863_trial.zip) | タイトル | Chromium で START 後、体験版の挨拶文 1 行のあと (または直後から) 画面が黒いまま進まない |
 | dl_VJ01004582 | [【豪華版】家族は（俺以外）サキュバスでした ～二人の姉と母との性活で精液を搾り取られます～](https://trial.dlsite.com/professional/VJ01005000/VJ01004582_trial.zip) | タイトル | Chromium で START 後、体験版の挨拶文 1 行のあと (または直後から) 画面が黒いまま進まない |
-| s2021_casket_bellaca02 | [リンカーベル・アカデミア～龍族のフィアンセ～Hシーン体験版](http://suezou.dyndns.org/dl2021/casket/bellaca02/bellaca02_trial.zip) | タイトル | 3e4a888 のビルドでタイトルまで |
 | b2006_whirlpool | [いな☆こい！ ～お稲荷さまとモテモテのたたり～ 体験版 ver 1.00](http://suezou.dyndns.org/dl2006/whirlpool/inakoi/inakoi_trial_100.exe) | NG | pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」 |
 | b2007_whirlpool | [magus_trial.exe](http://suezou.dyndns.org/dl2007/whirlpool/magus/magus_trial.exe) | NG | pac/*.ypf だけの古い形。3e4a888 でも「ysbin/ysc.ybn is missing」 |
 | b2021_whirlpool | [けもの道☆ガーリッシュスクエア　体験版](http://suezou.dyndns.org/dl2021/whirlpool/kemonomichi-gs/kemonomichi-gs_trial.zip) | NG | 3e4a888 で「yst00067.ybn: short arguments」 |
