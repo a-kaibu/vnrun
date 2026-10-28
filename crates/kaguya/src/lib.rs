@@ -3,6 +3,7 @@
 //! runtime is our own.
 pub mod arc;
 pub mod engine;
+pub mod exe;
 pub mod pic;
 pub mod scr;
 pub mod text;

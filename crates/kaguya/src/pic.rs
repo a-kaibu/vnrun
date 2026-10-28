@@ -35,9 +35,58 @@ fn i32le(b: &[u8], at: usize) -> Option<i32> {
     Some(u32le(b, at)? as i32)
 }
 
+/// The parts of 2008 (no magic): u16 count of source files, each a u32 length and a path;
+/// u16 count of patterns, each a u32 length, a name and 68 bytes (u16 0, u16 2, u32 index,
+/// i32 -1, the source rectangle x0 y0 x1 y1, ...); then u16 packed, u32 packed length,
+/// u32 length and the AP. The places on the screen are not in the file.
+fn parts_2008(b: &[u8]) -> Result<Parts, String> {
+    let u16at = |at: usize| -> Option<usize> {
+        Some(u16::from_le_bytes(b.get(at..at + 2)?.try_into().unwrap()) as usize)
+    };
+    let short = || "short parts".to_string();
+    let n = u16at(0).ok_or_else(short)?;
+    let mut at = 2;
+    for _ in 0..n {
+        at += 4 + u32le(b, at).ok_or_else(short)? as usize;
+    }
+    let n = u16at(at).ok_or_else(short)?;
+    at += 2;
+    let mut parts = Vec::new();
+    for k in 0..n {
+        let len = u32le(b, at).ok_or_else(short)? as usize;
+        let name = encoding_rs::SHIFT_JIS
+            .decode(b.get(at + 4..at + 4 + len).ok_or_else(short)?)
+            .0
+            .into_owned();
+        at += 4 + len;
+        let src = [12, 16, 20, 24].map(|o| i32le(b, at + o).unwrap_or(0));
+        parts.push(Part {
+            state: k as i32,
+            name,
+            src,
+            x: 0,
+            y: 0,
+        });
+        at += 68;
+    }
+    let comp = u16at(at).ok_or_else(short)?;
+    let packed = u32le(b, at + 2).ok_or_else(short)? as usize;
+    let unpacked = u32le(b, at + 6).ok_or_else(short)? as usize;
+    let raw = b.get(at + 10..at + 10 + packed).ok_or_else(short)?;
+    let data = if comp == 1 {
+        crate::arc::unpack(raw, unpacked)
+    } else {
+        raw.to_vec()
+    };
+    Ok(Parts {
+        atlas: decode(&data)?.img,
+        parts,
+    })
+}
+
 pub fn parts(b: &[u8]) -> Result<Parts, String> {
     if !b.starts_with(b"\x04APS3") {
-        return Err("not APS3".into());
+        return parts_2008(b).map_err(|_| "not APS3".to_string());
     }
     let n = i32le(b, 5).ok_or("short APS3")?;
     let mut at = 9;

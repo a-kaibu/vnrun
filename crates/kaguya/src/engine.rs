@@ -168,7 +168,7 @@ pub struct Engine {
     text: Text,
     pub width: u32,
     pub height: u32,
-    /// 1: the 2006 engine, 2: the GAME_SYS.exe of 2009 and 2013
+    /// the instruction set: 1 the 2006 engine (and 2008), 2 the GAME_SYS.exe of 2009 and 2013
     version: u8,
     /// the table of string lengths the scripts decode with (scr.rs): 1 (2006), 2 (2013) or
     /// 3 (2009, the 2006 lengths with the later instructions)
@@ -177,6 +177,8 @@ pub struct Engine {
     /// return addresses of GOSUB
     locals: Vec<i32>,
     labels: Vec<(String, usize)>,
+    /// 2008: the characters the program builds (exe.rs)
+    exe_chars: crate::exe::Characters,
     stack: Vec<(Script, usize)>,
     /// generation 2: where characters move by (center.scr, op 0x91)
     offsets: HashMap<String, (i32, i32)>,
@@ -307,6 +309,7 @@ impl Engine {
             table: 1,
             locals: vec![0; 4096],
             labels: Vec::new(),
+            exe_chars: Default::default(),
             stack: Vec::new(),
             offsets: HashMap::new(),
             font: None,
@@ -344,6 +347,15 @@ impl Engine {
             said: Vec::new(),
         };
         e.detect();
+        if e.version == 1 && e.table != 1 {
+            let exe = e.files.list().into_iter().find(|n| {
+                let n = n.to_lowercase();
+                n.ends_with(".exe") && n != "uninst.exe"
+            });
+            if let Some(b) = exe.and_then(|n| e.files.read(&n)) {
+                e.exe_chars = crate::exe::characters(&b);
+            }
+        }
         e.skin = e.make_skin();
         if e.version == 1 {
             // set by the program before the logo; otherwise the logo goes to a debug script
@@ -362,6 +374,7 @@ impl Engine {
             .filter(|n| n.to_lowercase().ends_with(".scr"))
             .collect();
         let mut score = [0, 0, 0];
+        let mut scripts = Vec::new();
         for n in &names {
             let Some(b) = self.read("scr", n) else {
                 continue;
@@ -374,11 +387,25 @@ impl Engine {
                     score[v as usize - 1] += 1;
                 }
             }
+            scripts.push(sc);
         }
         // the first of the best (2009 decodes in 3 only where it uses GOSUB)
         self.table = (1..=3).max_by_key(|&v| (score[v - 1], 3 - v)).unwrap_or(1) as u8;
-        self.version = if self.table == 1 { 1 } else { 2 };
-        if self.version == 2 {
+        // the instructions: op 0x00 is 8 bytes long in 2006 and 2008, 12 from 2009
+        let (mut short, mut long) = (0, 0);
+        for sc in &scripts {
+            let mut pc = 0;
+            while let Some(i) = sc.decode(pc, self.table) {
+                match (i.op, i.f.len()) {
+                    (0, 8) => short += 1,
+                    (0, 12) => long += 1,
+                    _ => {}
+                }
+                pc = i.next;
+            }
+        }
+        self.version = if long > short { 2 } else { 1 };
+        if self.table != 1 {
             // label.tbl (label.scr in 2009): (u32 length, script name, u32 length, label,
             // u32 offset) each
             if let Some(b) = self
@@ -394,7 +421,7 @@ impl Engine {
                     let Some(file) = b.get(at + 4..at + 4 + n) else {
                         break;
                     };
-                    let file = String::from_utf8_lossy(file).into_owned();
+                    let file = encoding_rs::SHIFT_JIS.decode(file).0.into_owned();
                     at += 4 + n;
                     let Some(n) = u32at(at) else { break };
                     at += 4 + n;
@@ -413,8 +440,9 @@ impl Engine {
         }
         if self.log {
             eprintln!(
-                "kaguya: generation {} ({}x{}), {} labels",
+                "kaguya: generation {}, strings {} ({}x{}), {} labels",
                 self.version,
+                self.table,
                 self.width,
                 self.height,
                 self.labels.len()
@@ -430,32 +458,46 @@ impl Engine {
 
     /// Generation 2: the title picture of parts.arc.
     fn title_bg(&mut self) -> Option<Placed> {
-        ["title_bg_01_t", "title_back_trial", "title_back"]
-            .into_iter()
-            .find_map(|n| {
-                let p = self.parts(n)?;
-                let q = p.parts.first()?;
-                Some((Rc::new(crop(&p.atlas, q.src)), q.x, q.y))
-            })
-            .or_else(|| self.placed("parts", "title_bg_01_t"))
+        [
+            "title_bg_01_t",
+            "title_back_trial",
+            "title_back_trial_02",
+            "title_back",
+        ]
+        .into_iter()
+        .find_map(|n| {
+            let p = self.parts(n)?;
+            let q = p.parts.first()?;
+            Some((Rc::new(crop(&p.atlas, q.src)), q.x, q.y))
+        })
+        .or_else(|| self.placed("parts", "title_bg_01_t"))
     }
 
     fn make_skin(&mut self) -> Skin {
         let mut k = Skin::default();
-        if self.version == 2 {
+        if self.table != 1 {
             k.title_bg = self.title_bg();
-            for (name, choice) in [("title_start", Choice::New), ("title_exit", Choice::Exit)] {
+            // 2008's parts have no places: there the items go in the box at the right
+            let unplaced = [(536, 250), (536, 460)];
+            for (n, (name, choice)) in [("title_start", Choice::New), ("title_exit", Choice::Exit)]
+                .into_iter()
+                .enumerate()
+            {
                 let Some(p) = self.parts(name) else { continue };
                 let img = Rc::new(p.atlas);
                 let state = |s: i32| p.parts.iter().find(|q| q.state == s);
                 let Some(normal) = state(0) else { continue };
                 let hover = state(1).unwrap_or(normal);
+                let (mut at, mut hover_at) = ((normal.x, normal.y), (hover.x, hover.y));
+                if at == (0, 0) && hover_at == (0, 0) {
+                    (at, hover_at) = (unplaced[n], unplaced[n]);
+                }
                 k.buttons.push(Button {
                     img: img.clone(),
                     src: normal.src,
-                    at: (normal.x, normal.y),
+                    at,
                     hover_src: hover.src,
-                    hover_at: (hover.x, hover.y),
+                    hover_at,
                     choice,
                 });
             }
@@ -467,8 +509,20 @@ impl Engine {
             k.window = one(self, "avg_mes_window");
             k.name_plate = one(self, "avg_namebg");
             if k.window.is_none() {
-                // 2009: message_window, with a round place for the name at its left
                 k.window = one(self, "message_window");
+                if let Some(w) = &mut k.window
+                    && w.2 == 0
+                {
+                    // 2008: at the bottom, the name in the bar along its top
+                    w.2 = self.height as i32 - w.0.h as i32;
+                    let wy = w.2;
+                    k.name_size = 18.0;
+                    k.name_box = (64, wy + 4, 316);
+                    k.text_at = (40, wy + 44);
+                    k.text_size = 21.0;
+                    return k;
+                }
+                // 2009: message_window, with a round place for the name at its left
                 let wy = k.window.as_ref().map_or(470, |w| w.2);
                 k.name_size = 18.0;
                 k.name_box = (8, wy + 22, 116);
@@ -622,7 +676,14 @@ impl Engine {
     /// it; without such a body the name is a whole picture, or the face goes on the plain body
     /// "nat000". Generation 2: "body|face" (op 0x79), moved by the body's entry of center.scr.
     fn character(&mut self, name: &str) -> Vec<Placed> {
-        if self.version == 2
+        if let Some((body, face, x, y)) = self.exe_chars.get(&name.to_lowercase()).cloned() {
+            let mut out: Vec<Placed> = self.placed("sp_", &body).into_iter().collect();
+            if let Some((img, _, _)) = self.placed("sp_", &face) {
+                out.push((img, x, y));
+            }
+            return out;
+        }
+        if self.table != 1
             && !name.contains('|')
             && let Some(b) = self.read("stand", name)
         {
@@ -950,7 +1011,9 @@ impl Engine {
     }
 
     fn exec(&mut self, i: &Ins) -> Result<(), String> {
-        if self.version == 2 && self.exec2(i) {
+        // 2008 has the 2006 instructions with the later choices and GOSUB
+        let later = self.table != 1 && matches!(i.op, 0x09..=0x0b | 0x70..=0x73 | 0x75);
+        if (self.version == 2 || later) && self.exec2(i) {
             return Ok(());
         }
         match i.op {
