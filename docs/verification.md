@@ -73,6 +73,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | AZ System (vnrun) | 1 | 1 |  |  |  |  |  |  |
 | ShiinaRio (vnrun) | 3 | 1 |  |  |  |  |  | 2 |
 | NekoSDK / Waffle (vnrun) | 5 | 5 |  |  |  |  |  |  |
+| DxLib MED (vnrun) | 3 | 3 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -677,4 +678,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2014_waffle | [巨乳ファンタジー２if 体験版](http://suezou.dyndns.org/dl2014/waffle/kyonyu2if/kyonyu2if_taiken.exe) | 本編 | NekoSDK (vnrun) でタイトル (anime の背景・ロゴ)→はじめから→scr.pak の ep_* を名前順に本編の背景・立ち絵・顔窓・名前・文章 (neko-run 15000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
 | b2016_waffle | [巨乳ファンタジー外伝２after -オスタシアの野望- 体験版](http://suezou.dyndns.org/dl2016/waffle/kyonyu_if2/kyonyu_gaiden2after_taiken.exe) | 本編 | NekoSDK (vnrun) でタイトル (d007 の 10 列のボタン、d003 の絵、d005 のロゴ)→Start→flow00_000 の順に本編の背景・立ち絵・名前・文章 (neko-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
 | b2017_waffle | [隣人に壊されていく俺の妻 体験版](http://suezou.dyndns.org/dl2017/waffle/rinzin/rinjin_taiken.exe) | 本編 | NekoSDK (vnrun) で文字の序章→タイトル (obj の背景・ロゴ・ボタン)→はじめから→flow00_000 の順に本編の背景・立ち絵・CG (拡大・移動)・名前・文章 (neko-run 6000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
+
+### DxLib MED (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2012_fudegaki_soft | [つぼい君のスイッチ！ 体験版](http://suezou.dyndns.org/dl2012/fudegaki-soft/tsuboi/TSUBOIKUN_NO_SWITCH_trial.zip) | 本編 | DxLib MED (vnrun) で 1024x768 のロゴ→タイトル (CBLMAP_TITLE_MENU)→はじめから→体験版メニュー (CBLMAP_TRIAL_MENU)→P_001→R_001 の背景・CG・名前・文章 (med-run 6000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
+| b2012_trois | [モンスターパーク２ ～神々を宿した乙女～ 体験版](http://suezou.dyndns.org/dl2012/trois/mop2/MOP2_TRIAL.zip) | 本編 | DxLib MED (vnrun) でロゴ→タイトル (TITLE のクリックマップ)→START→M2TMAIN→MOP2-T のプロローグ (md_jpg の絵、立ち絵・名前・文章)→選択肢→MA02XX (med-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
+| b2018_fudegaki_soft | [催眠学園１年生 体験版](http://suezou.dyndns.org/dl2018/fudegaki-soft/saimin1nen/SG1nensei_trial.zip) | 本編 | DxLib MED (vnrun) で注意書き→ロゴ・ブランドコール→タイトル (STITLE のクリックマップ、MENU03_N/F)→NEW GAME→SMAIN から 000_PRO000A..E の背景・立ち絵 (体 + 顔)・名前・文章・選択肢・ボイス・BGM (med-run 20000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
 <!-- /matrix -->

@@ -758,6 +758,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "med"
+version = "0.1.0"
+dependencies = [
+ "encoding_rs",
+ "fontdue",
+ "image 0.25.10",
+ "nexas",
+ "tmrhiro",
+]
+
+[[package]]
+name = "med-web"
+version = "0.1.0"
+dependencies = [
+ "js-sys",
+ "med",
+ "nexas",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "memchr"
 version = "2.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

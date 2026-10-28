@@ -337,6 +337,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("cs2.exe") || names.iter().any(|n| n == "scene.int") {
         // CatSystem2: cs2.exe beside the .int archives
         Some("catsystem2".into())
+    } else if has("md_scr.med") {
+        // DxLib MED (fudegaki-soft, trois): md_scr.med beside md_gra.med and the others
+        Some("med".into())
     } else if (has("scr.pak") && has("cfg.pak"))
         || (has("gamedata") && game.join("gamedata").join("scr.pak").is_file())
     {
