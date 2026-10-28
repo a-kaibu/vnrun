@@ -615,10 +615,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2007_bishop | [姫奴隷 体験版](http://suezou.dyndns.org/dl2007/bishop/hd/hd_trial2.zip) | 本編 | Bishop (vnrun) で BSScript Rev.6 (bsx.dat、Shift-JIS) のロゴ→タイトル→はじめから→本編の背景・立ち絵・文章・名前→マップ (#result の分岐を一覧で選ぶ)→エステルのイベントまで (bsx-run と Chromium) |
+| b2007_bishop | [姫奴隷 体験版](http://suezou.dyndns.org/dl2007/bishop/hd/hd_trial2.zip) | 本編 | Bishop (vnrun) で BSScript Rev.6 (bsx.dat、Shift-JIS) のロゴ→タイトル→はじめから→本編の背景・立ち絵・文章・名前→マップ (#result の分岐を一覧で選ぶ)→エステルのイベントまで (bsx-run と Chromium)。イベント中でセーブ→ページを開き直してタイトルの「続きから」でロード→続きを読める (Chromium) |
 | b2008_bishop | [毎日けだものっ!! WEB体験版](http://suezou.dyndns.org/dl2008/bishop/kedamono/kedamono_web_trial.zip) | 本編 | Bishop (vnrun) で BSScript Rev.6 のロゴ→タイトル (ボタンの位置は画像側)→はじめから→本編の背景・立ち絵・文章・名前まで (bsx-run と Chromium)。movie を除いて展開して確認 |
 | b2010_bishop | [学園3～華麗なる悦辱～ 体験版 WEB edition](http://suezou.dyndns.org/dl2010/bishop/gk3/gk3_trial.zip) | 本編 | Bishop (vnrun) で BSXScript 2.0 の注意書き→タイトル→始めから→本編の背景・CG・立ち絵・文章・名前、体験版の最後まで (bsx-run と Chromium) |
-| b2011_bishop | [裏教師～背徳の淫悦授業～ WEB体験版](http://suezou.dyndns.org/dl2011/bishop/uk/uk_trial.zip) | 本編 | Bishop (vnrun) で BSXScript 2.0 の注意書き→タイトル→始めから→本編の背景・CG・立ち絵 (体と顔の合成)・文章・名前、体験版の最後からタイトルへ (bsx-run と Chromium) |
+| b2011_bishop | [裏教師～背徳の淫悦授業～ WEB体験版](http://suezou.dyndns.org/dl2011/bishop/uk/uk_trial.zip) | 本編 | Bishop (vnrun) で BSXScript 2.0 の注意書き→タイトル→始めから→本編の背景・CG・立ち絵 (体と顔の合成)・文章・名前、体験版の最後からタイトルへ (bsx-run と Chromium)。セーブ→ページを開き直してタイトルの「続きから」でロード→同じ CG・文章に戻る (Chromium) |
 | b2012_bishop | [しりこん☆まじっく WEB体験版](http://suezou.dyndns.org/dl2012/bishop/sl/silimagi_trial.zip) | 本編 | Bishop (vnrun) で BSXScript 2.0 の 1024x576 の注意書き→タイトル→始めから→本編の背景・CG・立ち絵・文章・名前まで (bsx-run と Chromium)。movie を除いて展開して確認 |
 | b2021_bishop | [屈辱3 体験版](http://suezou.dyndns.org/dl2021/bishop/ktjk3/ktjk3_trial.zip) | 本編 | Bishop (vnrun) で BSXScript 3.3 の 1024x768 の注意書き→タイトル→最初から始める→本編の背景・CG・立ち絵 (命令 39、近景の x -663)・文章・名前まで (bsx-run と Chromium)。movie を除いて展開して確認 |
 
