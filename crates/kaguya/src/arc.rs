@@ -26,8 +26,9 @@ fn u32le(b: &[u8], at: usize) -> Option<u32> {
     Some(u32::from_le_bytes(b.get(at..at + 4)?.try_into().ok()?))
 }
 
-/// Strips the extension and folds the case: the names the scripts use.
+/// Strips the folder and the extension and folds the case: the names the scripts use.
 pub fn key(name: &str) -> String {
+    let name = name.rsplit(['\\', '/']).next().unwrap_or(name);
     let base = name.rsplit_once('.').map_or(name, |(b, _)| b);
     base.to_lowercase()
 }
@@ -39,7 +40,11 @@ impl Arc {
         if head != b"WFL1" {
             return Err(format!("{file}: not a WFL1 archive"));
         }
-        let ari = format!("{}.ari", &file[..file.len() - 4]);
+        let stem = &file[..file.len() - 4];
+        let ari = [format!("{stem}.ari"), format!("{stem}.ARI")]
+            .into_iter()
+            .find(|a| files.size(a).is_some())
+            .unwrap_or_default();
         let mut entries = Vec::new();
         let parse = |b: &[u8], at: &mut usize, data: &mut u64, from_ari: bool| -> Option<Entry> {
             let n = u32le(b, *at)? as usize;

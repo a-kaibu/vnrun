@@ -374,3 +374,4 @@ b2015_empress	本編	Majiro (vnrun) でロゴ→タイトル→New Game→本編
 b2006_kaguya	本編	Kaguya (vnrun) でロゴ→タイトル→最初から→プロローグ→本編の背景・立ち絵・名前・文章・カットインまで、体験版の最後まで通る (kaguya-run と Chromium)
 b2013_inter_heart	本編	Interheart (ACT_*.TXT を自前で実行) でタイトル→はじめから→キャラ選択→本編のイベント CG・文章・ボイスまで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (両方)
 b2017_sweet_heart	本編	Interheart でタイトル→はじめから→本編の背景・立ち絵・文章まで (interheart-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium)
+b2013_kaguya	本編	Kaguya (vnrun) の 2013 年世代 (GAME_SYS.exe + ARC/) でロゴ→タイトル→初めから→導入→本編の背景・立ち絵・名前・文章・音声、場面選択の 6 項目 (5 人の場面と製品告知) まで (kaguya-run と Chromium)。場面の後のマップ (op 54 1 0) は未実装で選択に戻る

@@ -1,7 +1,8 @@
 //! kaguya-run GAME_DIR FONT.ttf FRAMES [OUT_DIR]: runs the game headless, clicking on its
 //! own (on the title, the first item), and prints the messages; every 60th frame goes to
 //! OUT_DIR as a PNG when given (KAGUYA_EVERY changes that; KAGUYA_CLICK, every how many
-//! frames it clicks: 20).
+//! frames it clicks: 20; KAGUYA_AT=x,y, where; KAGUYA_PICK=0,2,1: the choices to take in
+//! turn, counting from 0, then the first).
 
 use kaguya::engine::Engine;
 use nexas::files::Disk;
@@ -25,11 +26,32 @@ fn main() {
         .ok()
         .and_then(|v| v.parse().ok())
         .unwrap_or(20);
+    // where it clicks: by default on the first item of the 2006 title menu
+    let at: (i32, i32) = std::env::var("KAGUYA_AT")
+        .ok()
+        .and_then(|v| {
+            let (x, y) = v.split_once(',')?;
+            Some((x.parse().ok()?, y.parse().ok()?))
+        })
+        .unwrap_or((660, 480));
+    let picks: Vec<usize> = std::env::var("KAGUYA_PICK")
+        .map(|v| v.split(',').filter_map(|n| n.parse().ok()).collect())
+        .unwrap_or_default();
+    let mut picked = 0;
     for f in 0..frames {
         e.frame().unwrap();
         e.take_sounds();
         if f % click == click - 1 {
-            e.click(660, 480);
+            if e.choosing() {
+                let n = picks.get(picked).copied().unwrap_or(0);
+                picked += 1;
+                for _ in 0..=n {
+                    e.key(1);
+                }
+                e.key(4);
+            } else {
+                e.click(at.0, at.1);
+            }
         }
         if e.ended() {
             break;

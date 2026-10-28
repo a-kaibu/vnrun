@@ -21,19 +21,64 @@ pub struct SoundEvent {
     pub fade_ms: f32,
 }
 
-const W: u32 = 800;
-const H: u32 = 600;
 /// how long a letter takes to appear
 const LETTER_MS: f64 = 25.0;
-/// the message window: its part of vram02 and where it goes
-const WINDOW: [i32; 4] = [0, 0, 800, 128];
-const WINDOW_Y: i32 = 600 - 128;
-/// the title menu: (part of vram01's rows, what it does)
-const MENU: [(i32, Choice); 2] = [(602, Choice::New), (782, Choice::Exit)];
-const MENU_X: i32 = 580;
-const MENU_Y: i32 = 470;
-const MENU_STEP: i32 = 36;
-const BUTTON: (i32, i32) = (196, 30);
+/// A button of the title menu: the picture, its part and place, and the same when the
+/// pointer is over it.
+#[derive(Clone)]
+struct Button {
+    img: Rc<Image>,
+    src: [i32; 4],
+    at: (i32, i32),
+    hover_src: [i32; 4],
+    hover_at: (i32, i32),
+    choice: Choice,
+}
+
+impl Button {
+    fn hit(&self, x: i32, y: i32) -> bool {
+        let inside = |src: [i32; 4], at: (i32, i32)| {
+            x >= at.0 && y >= at.1 && x < at.0 + src[2] - src[0] && y < at.1 + src[3] - src[1]
+        };
+        inside(self.src, self.at)
+    }
+}
+
+/// What the program draws itself, from the game's parts: the title menu and the message
+/// window (generation 1: vram01/vram02 of bg_.arc; 2: the APS3 parts of parts.arc).
+#[derive(Default)]
+struct Skin {
+    title_bg: Option<Placed>,
+    buttons: Vec<Button>,
+    window: Option<Placed>,
+    name_plate: Option<Placed>,
+    /// where the name goes: left, top, width
+    name_box: (i32, i32, i32),
+    name_size: f32,
+    text_at: (i32, i32),
+    text_size: f32,
+}
+
+/// Cuts `src` (x0, y0, x1, y1) out of `img`.
+fn crop(img: &Image, src: [i32; 4]) -> Image {
+    let (w, h) = (
+        (src[2] - src[0]).max(1) as u32,
+        (src[3] - src[1]).max(1) as u32,
+    );
+    let mut out = Image::new(w, h);
+    for y in 0..h as i32 {
+        for x in 0..w as i32 {
+            let (sx, sy) = (src[0] + x, src[1] + y);
+            if sx < 0 || sy < 0 || sx >= img.w as i32 || sy >= img.h as i32 {
+                continue;
+            }
+            let s = ((sy as u32 * img.w + sx as u32) * 4) as usize;
+            let d = ((y as u32 * w + x as u32) * 4) as usize;
+            out.px[d..d + 4].copy_from_slice(&img.px[s..s + 4]);
+        }
+    }
+    out
+}
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum Choice {
@@ -51,6 +96,8 @@ enum Wait {
     Shown,
     /// the moving pictures (op 0x64)
     Objects,
+    /// generation 2: a choice (op 0x0b); the answer goes to var 0 (1 the first)
+    Choice,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -117,6 +164,15 @@ pub struct Engine {
     text: Text,
     pub width: u32,
     pub height: u32,
+    /// 1: the 2006 engine, 2: the GAME_SYS.exe of 2013 (see scr.rs)
+    version: u8,
+    /// generation 2: the script-local variables, label.tbl (script, offset) and the
+    /// return addresses of GOSUB
+    locals: Vec<i32>,
+    labels: Vec<(String, usize)>,
+    stack: Vec<(Script, usize)>,
+    /// generation 2: where characters move by (center.scr, op 0x91)
+    offsets: HashMap<String, (i32, i32)>,
     font: Option<fontdue::Font>,
     pub log: bool,
     pub now: f64,
@@ -136,16 +192,36 @@ pub struct Engine {
     msg: Option<Message>,
     /// the window as drawn: (letters shown, picture)
     window_img: Option<(usize, Rc<Image>)>,
-    pics: HashMap<String, Rc<Image>>,
+    pics: HashMap<String, Placed>,
     sounds: Vec<SoundEvent>,
     se_next: usize,
     skip: bool,
     clicked: bool,
     pointer: (i32, i32),
     hover: Option<usize>,
+    skin: Skin,
+    /// generation 2: the choices being shown (op 0x0a), their pictures
+    choices: Vec<String>,
+    choice_imgs: Vec<Placed>,
     warned: std::collections::HashSet<String>,
     /// every message shown, for the log
     pub said: Vec<String>,
+}
+
+/// Where a file of the game is: at the top or in ARC/, in lower or upper case.
+fn locate(files: &mut dyn Files, stem: &str, ext: &str) -> Option<String> {
+    for dir in ["", "ARC/", "arc/", "Arc/"] {
+        for name in [
+            format!("{stem}.{ext}"),
+            format!("{}.{}", stem.to_uppercase(), ext.to_uppercase()),
+        ] {
+            let path = format!("{dir}{name}");
+            if files.size(&path).is_some() {
+                return Some(path);
+            }
+        }
+    }
+    None
 }
 
 fn solid(rgb: [u8; 3]) -> Rc<Image> {
@@ -154,18 +230,30 @@ fn solid(rgb: [u8; 3]) -> Rc<Image> {
     Rc::new(img)
 }
 
-fn black_screen() -> Rc<Image> {
-    let mut img = Image::new(W, H);
+fn black_screen(w: u32, h: u32) -> Rc<Image> {
+    let mut img = Image::new(w, h);
     img.fill([0, 0, 0, 255]);
     Rc::new(img)
 }
 
-/// Lays `src` over `dst` (both the screen's size, or `src` smaller at the top left).
-fn over(dst: &mut Image, src: &Image, tint: Option<[u8; 3]>) {
-    let (w, h) = (src.w.min(dst.w) as usize, src.h.min(dst.h) as usize);
-    for y in 0..h {
-        let s = &src.px[y * src.w as usize * 4..][..w * 4];
-        let d = &mut dst.px[y * dst.w as usize * 4..][..w * 4];
+/// A picture and where its top left goes on the screen.
+type Placed = (Rc<Image>, i32, i32);
+
+/// Lays `src` over `dst` with its top left at (x, y).
+fn over(dst: &mut Image, src: &Image, x: i32, y: i32, tint: Option<[u8; 3]>) {
+    let x0 = x.max(0);
+    let x1 = (x + src.w as i32).min(dst.w as i32);
+    if x1 <= x0 {
+        return;
+    }
+    let w = (x1 - x0) as usize;
+    for sy in 0..src.h as i32 {
+        let dy = y + sy;
+        if dy < 0 || dy >= dst.h as i32 {
+            continue;
+        }
+        let s = &src.px[(sy as usize * src.w as usize + (x0 - x) as usize) * 4..][..w * 4];
+        let d = &mut dst.px[(dy as usize * dst.w as usize + x0 as usize) * 4..][..w * 4];
         for (d, s) in d.chunks_exact_mut(4).zip(s.chunks_exact(4)) {
             let a = s[3] as u32;
             if a == 0 {
@@ -187,26 +275,32 @@ impl Engine {
     pub fn open(mut files: Box<dyn Files>) -> Result<Engine, String> {
         let mut arcs = HashMap::new();
         for name in [
-            "scr", "bg_", "sp_", "cg_", "cgw", "bgm", "wav", "vo1", "vo2",
+            "scr", "bg_", "sp_", "cg_", "cgw", "bgm", "wav", "vo1", "vo2", "parts",
         ] {
-            let file = format!("{name}.arc");
-            if files.size(&file).is_some() {
+            if let Some(file) = locate(files.as_mut(), name, "arc") {
                 arcs.insert(name, Arc::open(files.as_mut(), &file)?);
             }
         }
         if !arcs.contains_key("scr") {
             return Err("no scr.arc".into());
         }
+        let tbl = locate(files.as_mut(), "tblstr", "arc").ok_or("no tblstr.arc")?;
+        let tbi = locate(files.as_mut(), "tblstr", "ari").ok_or("no tblstr.ari")?;
         let text = Text::new(
-            files.read("tblstr.arc").ok_or("no tblstr.arc")?,
-            files.read("tblstr.ari").ok_or("no tblstr.ari")?,
+            files.read(&tbl).ok_or("no tblstr.arc")?,
+            files.read(&tbi).ok_or("no tblstr.ari")?,
         );
         let mut e = Engine {
             files,
             arcs,
             text,
-            width: W,
-            height: H,
+            width: 800,
+            height: 600,
+            version: 1,
+            locals: vec![0; 4096],
+            labels: Vec::new(),
+            stack: Vec::new(),
+            offsets: HashMap::new(),
             font: None,
             log: false,
             now: 0.0,
@@ -219,7 +313,7 @@ impl Engine {
             vars: vec![0; 4096],
             wait: Wait::None,
             back: Scene::default(),
-            screen: black_screen(),
+            screen: black_screen(800, 600),
             trans: None,
             rule: None,
             flash: None,
@@ -235,13 +329,155 @@ impl Engine {
             clicked: false,
             pointer: (0, 0),
             hover: None,
+            skin: Skin::default(),
+            choices: Vec::new(),
+            choice_imgs: Vec::new(),
             warned: Default::default(),
             said: Vec::new(),
         };
-        // set by the program before the logo; otherwise the logo goes to a debug script
-        e.vars[2] = 1;
+        e.detect();
+        e.skin = e.make_skin();
+        if e.version == 1 {
+            // set by the program before the logo; otherwise the logo goes to a debug script
+            e.vars[2] = 1;
+        }
         e.load_script("logo")?;
         Ok(e)
+    }
+
+    /// Which generation the scripts are: the one that decodes more of them.
+    fn detect(&mut self) {
+        let names: Vec<String> = self.arcs["scr"]
+            .entries
+            .iter()
+            .map(|e| e.name.clone())
+            .filter(|n| n.to_lowercase().ends_with(".scr"))
+            .collect();
+        let mut score = [0, 0];
+        for n in &names {
+            let Some(b) = self.read("scr", n) else {
+                continue;
+            };
+            let Ok(sc) = Script::parse(n, &b) else {
+                continue;
+            };
+            for v in [1u8, 2] {
+                if sc.decodes(v) {
+                    score[v as usize - 1] += 1;
+                }
+            }
+        }
+        self.version = if score[1] > score[0] { 2 } else { 1 };
+        if self.version == 2 {
+            // label.tbl: (u32 length, script name, u32 length, label, u32 offset) each
+            if let Some(b) = self.read("scr", "label.tbl") {
+                let mut at = 0;
+                let u32at = |at: usize| {
+                    b.get(at..at + 4)
+                        .map(|x| u32::from_le_bytes(x.try_into().unwrap()) as usize)
+                };
+                while let Some(n) = u32at(at) {
+                    let Some(file) = b.get(at + 4..at + 4 + n) else {
+                        break;
+                    };
+                    let file = String::from_utf8_lossy(file).into_owned();
+                    at += 4 + n;
+                    let Some(n) = u32at(at) else { break };
+                    at += 4 + n;
+                    let Some(off) = u32at(at) else { break };
+                    at += 4;
+                    self.labels.push((file, off));
+                }
+            }
+            if let Some((img, _, _)) = self.placed("parts", "title_bg_01_t") {
+                self.width = img.w;
+                self.height = img.h;
+            } else {
+                (self.width, self.height) = (1024, 600);
+            }
+            self.screen = black_screen(self.width, self.height);
+        }
+        if self.log {
+            eprintln!(
+                "kaguya: generation {} ({}x{}), {} labels",
+                self.version,
+                self.width,
+                self.height,
+                self.labels.len()
+            );
+        }
+    }
+
+    /// An APS3 of parts.arc.
+    fn parts(&mut self, name: &str) -> Option<crate::pic::Parts> {
+        let b = self.read("parts", name)?;
+        crate::pic::parts(&b).ok()
+    }
+
+    fn make_skin(&mut self) -> Skin {
+        let mut k = Skin::default();
+        if self.version == 2 {
+            k.title_bg = self.placed("parts", "title_bg_01_t");
+            for (name, choice) in [("title_start", Choice::New), ("title_exit", Choice::Exit)] {
+                let Some(p) = self.parts(name) else { continue };
+                let img = Rc::new(p.atlas);
+                let state = |s: i32| p.parts.iter().find(|q| q.state == s);
+                let Some(normal) = state(0) else { continue };
+                let hover = state(1).unwrap_or(normal);
+                k.buttons.push(Button {
+                    img: img.clone(),
+                    src: normal.src,
+                    at: (normal.x, normal.y),
+                    hover_src: hover.src,
+                    hover_at: (hover.x, hover.y),
+                    choice,
+                });
+            }
+            let one = |e: &mut Engine, name: &str| -> Option<Placed> {
+                let p = e.parts(name)?;
+                let q = p.parts.first()?;
+                Some((Rc::new(crop(&p.atlas, q.src)), q.x, q.y))
+            };
+            k.window = one(self, "avg_mes_window");
+            k.name_plate = one(self, "avg_namebg");
+            let (wy, (px, py, pw, ph)) = (
+                k.window.as_ref().map_or(450, |w| w.2),
+                k.name_plate.as_ref().map_or((100, 444, 465, 35), |p| {
+                    (p.1, p.2, p.0.w as i32, p.0.h as i32)
+                }),
+            );
+            k.name_size = 22.0;
+            k.name_box = (px, py + (ph - 22) / 2 - 2, pw);
+            k.text_at = (150, wy + 48);
+            k.text_size = 24.0;
+            return k;
+        }
+        k.title_bg = self.placed("bg_", "タイトル画面");
+        if let Some(atlas) = self.pic("bg_", "vram01") {
+            // the menu items of vram01: the plain one, the lit one 196 to the right
+            for (k2, (row, choice)) in [(602, Choice::New), (782, Choice::Exit)]
+                .into_iter()
+                .enumerate()
+            {
+                let at = (580, 470 + k2 as i32 * 36);
+                k.buttons.push(Button {
+                    img: atlas.clone(),
+                    src: [0, row, 196, row + 30],
+                    at,
+                    hover_src: [196, row, 392, row + 30],
+                    hover_at: at,
+                    choice,
+                });
+            }
+        }
+        if let Some(parts) = self.pic("bg_", "vram02") {
+            k.window = Some((Rc::new(crop(&parts, [0, 0, 800, 128])), 0, 472));
+        }
+        k.name_box = (122, 472 + 9, 268);
+        k.name_size = 20.0;
+        k.text_at = (120, 472 + 46);
+        k.text_size = 22.0;
+        k
     }
 
     pub fn set_font(&mut self, ttf: &[u8]) -> Result<(), String> {
@@ -277,6 +513,10 @@ impl Engine {
     }
 
     fn pic(&mut self, arc: &str, name: &str) -> Option<Rc<Image>> {
+        self.placed(arc, name).map(|p| p.0)
+    }
+
+    fn placed(&mut self, arc: &str, name: &str) -> Option<Placed> {
         let k = format!("{arc}/{name}");
         if let Some(p) = self.pics.get(&k) {
             return Some(p.clone());
@@ -286,13 +526,13 @@ impl Engine {
             return None;
         };
         match crate::pic::decode(&b) {
-            Ok(img) => {
+            Ok(p) => {
                 if self.pics.len() > 40 {
                     self.pics.clear();
                 }
-                let img = Rc::new(img);
-                self.pics.insert(k, img.clone());
-                Some(img)
+                let placed = (Rc::new(p.img), p.x, p.y);
+                self.pics.insert(k, placed.clone());
+                Some(placed)
             }
             Err(err) => {
                 self.warn(format!("{k}: {err}"));
@@ -305,32 +545,47 @@ impl Engine {
         self.arcs.get(arc).is_some_and(|a| a.find(name).is_some())
     }
 
-    /// A character: "nata13" is the body "nata00" with the face "nat013" over it. Without
-    /// such a body the name is a whole picture, or the face goes on the plain body "nat000".
-    fn character(&mut self, name: &str) -> Vec<Rc<Image>> {
+    /// A character. Generation 1: "nata13" is the body "nata00" with the face "nat013" over
+    /// it; without such a body the name is a whole picture, or the face goes on the plain body
+    /// "nat000". Generation 2: "body|face" (op 0x79), moved by the body's entry of center.scr.
+    fn character(&mut self, name: &str) -> Vec<Placed> {
+        if self.version == 2 {
+            let (body, face) = name.split_once('|').unwrap_or((name, ""));
+            let (dx, dy) = self
+                .offsets
+                .get(&body.to_lowercase())
+                .copied()
+                .unwrap_or((0, 0));
+            return [body, face]
+                .into_iter()
+                .filter(|n| !n.is_empty())
+                .filter_map(|n| self.placed("sp_", n))
+                .map(|(img, x, y)| (img, x + dx, y + dy))
+                .collect();
+        }
         let c: Vec<char> = name.chars().collect();
         if c.len() != 6 {
-            return self.pic("sp_", name).into_iter().collect();
+            return self.placed("sp_", name).into_iter().collect();
         }
         let base: String = c[..3].iter().collect();
         let mut body = format!("{base}{}00", c[3]);
         let face = format!("{base}0{}{}", c[4], c[5]);
         if !self.has("sp_", &body) {
             if self.has("sp_", name) {
-                return self.pic("sp_", name).into_iter().collect();
+                return self.placed("sp_", name).into_iter().collect();
             } else {
                 body = format!("{base}000");
             }
         }
         let mut out = Vec::new();
         if self.has("sp_", &body)
-            && let Some(b) = self.pic("sp_", &body)
+            && let Some(b) = self.placed("sp_", &body)
         {
             out.push(b);
         }
         if face != body
             && self.has("sp_", &face)
-            && let Some(f) = self.pic("sp_", &face)
+            && let Some(f) = self.placed("sp_", &face)
         {
             out.push(f);
         }
@@ -342,23 +597,23 @@ impl Engine {
 
     fn compose(&mut self) -> Rc<Image> {
         let s = self.back.clone();
-        let mut out = Image::new(W, H);
+        let mut out = Image::new(self.width, self.height);
         out.fill([0, 0, 0, 255]);
         if let Some(bg) = &s.bg
-            && let Some(p) = self.pic("bg_", bg)
+            && let Some((p, x, y)) = self.placed("bg_", bg)
         {
-            over(&mut out, &p, s.tint[0]);
+            over(&mut out, &p, x, y, s.tint[0]);
         }
         if let Some(cg) = &s.cg
-            && let Some(p) = self.pic("cg_", cg).or_else(|| self.pic("bg_", cg))
+            && let Some((p, x, y)) = self.placed("cg_", cg).or_else(|| self.placed("bg_", cg))
         {
-            over(&mut out, &p, s.tint[7]);
+            over(&mut out, &p, x, y, s.tint[7]);
         }
         // the load types 3, 4, 5 and 2 are the program's slots 1 to 4
         for t in [3usize, 4, 5, 2] {
             if let Some(name) = &s.chars[t - 2] {
-                for p in self.character(name) {
-                    over(&mut out, &p, s.tint[t]);
+                for (p, x, y) in self.character(name) {
+                    over(&mut out, &p, x, y, s.tint[t]);
                 }
             }
         }
@@ -369,7 +624,7 @@ impl Engine {
     fn show(&mut self, kind: Option<TransKind>, ms: f64) {
         let to = match &kind {
             Some(TransKind::Out(c)) => {
-                let mut img = Image::new(W, H);
+                let mut img = Image::new(self.width, self.height);
                 img.fill([c[0], c[1], c[2], 255]);
                 Rc::new(img)
             }
@@ -424,7 +679,7 @@ impl Engine {
             if self.mode != Mode::Run || self.wait != Wait::None {
                 return Ok(());
             }
-            let Some(ins) = self.script.decode(self.pc) else {
+            let Some(ins) = self.script.decode(self.pc, self.version) else {
                 self.warn(format!("{}: bad code at {:#x}", self.script.name, self.pc));
                 self.back_to_title();
                 return Ok(());
@@ -443,7 +698,163 @@ impl Engine {
         }
     }
 
+    /// Generation 2: a variable (`local`: of the persistent table) or a constant.
+    fn val2(&self, v: i32, local: bool, var: bool) -> i32 {
+        let table = if local { &self.locals } else { &self.vars };
+        if local || var {
+            table.get(v as usize).copied().unwrap_or(0)
+        } else {
+            v
+        }
+    }
+
+    fn set2(&mut self, local: bool, at: usize, f: impl FnOnce(i32) -> i32) {
+        let table = if local {
+            &mut self.locals
+        } else {
+            &mut self.vars
+        };
+        if let Some(x) = table.get_mut(at) {
+            *x = f(*x);
+        }
+    }
+
+    /// Jumps to entry `k` of label.tbl.
+    fn goto_label(&mut self, k: usize) {
+        let Some((file, at)) = self.labels.get(k).cloned() else {
+            self.warn(format!("no label {k}"));
+            return;
+        };
+        let stem = file
+            .rsplit_once('.')
+            .map_or(file.as_str(), |(b, _)| b)
+            .to_string();
+        if stem.to_lowercase() != self.script.name.to_lowercase()
+            && self.load_script(&stem).is_err()
+        {
+            self.warn(format!("no script {stem}"));
+            return;
+        }
+        self.pc = at;
+    }
+
+    /// The instructions that differ in generation 2; false: not one of them.
+    fn exec2(&mut self, i: &Ins) -> bool {
+        let flags = i.u8(2);
+        match i.op {
+            0x00 => {
+                let v = i.i32(8);
+                self.set2(flags & 4 != 0, i.u16(6), |_| v);
+            }
+            0x01 => {
+                let v = i.i32(8);
+                self.set2(flags & 4 != 0, i.u16(6), |x| x.wrapping_add(v));
+            }
+            0x5b => {
+                let v = self.val2(i.u16(6) as i32, flags & 8 != 0, true);
+                self.set2(flags & 4 != 0, i.u16(4), |_| v);
+            }
+            0x03..=0x08 => {
+                let a = self.val2(i.i32(4), flags & 4 != 0, flags & 1 != 0);
+                let b = self.val2(i.i32(8), flags & 8 != 0, flags & 2 != 0);
+                let jump = match i.op {
+                    0x03 => a == b,
+                    0x04 => a != b,
+                    0x05 => a > b,
+                    0x06 => a < b,
+                    0x07 => a >= b,
+                    _ => a <= b,
+                };
+                if jump {
+                    self.pc = i.i32(12) as usize;
+                }
+            }
+            // GOSUB and RETURN (to a label of label.tbl), far_goto
+            0x70 => {
+                self.stack.push((self.script.clone(), self.pc));
+                self.goto_label(i.i32(4) as usize);
+            }
+            0x71 => match self.stack.pop() {
+                Some((script, pc)) => {
+                    self.script = script;
+                    self.pc = pc;
+                }
+                None => self.back_to_title(),
+            },
+            0x5e => self.goto_label(i.i32(4) as usize),
+            0x16 => {
+                let kind = match self.rule.take() {
+                    Some(r) => TransKind::Rule(r),
+                    None => TransKind::Cross,
+                };
+                let ms = match i.i32(4) {
+                    ms if ms > 0 => ms as f64,
+                    _ if matches!(kind, TransKind::Rule(_)) => 700.0,
+                    _ => 400.0,
+                };
+                self.show(Some(kind), ms);
+            }
+            0x79 => {
+                let slot = flags as usize;
+                if (2..=5).contains(&slot) {
+                    self.back.chars[slot - 2] = Some(format!("{}|{}", i.s(0), i.s(1)));
+                    self.back.tint[slot] = None;
+                }
+            }
+            0x7a => match flags {
+                0 => self.back.chars = Default::default(),
+                t @ 2..=5 => self.back.chars[t as usize - 2] = None,
+                _ => {}
+            },
+            0x91 => {
+                self.offsets
+                    .insert(i.s(0).to_lowercase(), (i.i32(4), i.i32(8)));
+            }
+            0x52 | 0x0f => {
+                let name = i.s(0).to_string();
+                let data = self.read("wav", &name);
+                if data.is_none() {
+                    self.warn(format!("no sound {name}"));
+                }
+                if i.op == 0x52 && flags != 1 {
+                    self.sound("seloop", data, true, 0.0);
+                } else if !self.skip {
+                    let ch = format!("se{}", self.se_next);
+                    self.se_next = (self.se_next + 1) % 4;
+                    self.sound(&ch, data, false, 0.0);
+                }
+            }
+            // the title (54 0 0); the other scenes of 54 are not shown
+            0x54 => {
+                if flags == 0 && i.u8(3) == 0 {
+                    self.enter_title();
+                }
+            }
+            0x09 => self.choices.clear(),
+            0x0a => {
+                let t = self.text.at(i.i32(4) as usize).unwrap_or_default();
+                self.choices.push(t);
+            }
+            0x0b => {
+                if self.choices.is_empty() {
+                    self.vars[0] = 1;
+                } else {
+                    self.window = false;
+                    self.hover = None;
+                    self.wait = Wait::Choice;
+                }
+            }
+            0x75 | 0x86 | 0x87 | 0x88 | 0x8d | 0x8e | 0x8f | 0x90 | 0x3d | 0x4a | 0x74 | 0x72
+            | 0x73 => {}
+            _ => return false,
+        }
+        true
+    }
+
     fn exec(&mut self, i: &Ins) -> Result<(), String> {
+        if self.version == 2 && self.exec2(i) {
+            return Ok(());
+        }
         match i.op {
             0x00 => {
                 let v = i.u16(2);
@@ -708,10 +1119,11 @@ impl Engine {
     fn back_to_title(&mut self) {
         self.sound("voice", None, false, 0.0);
         self.stop_se();
-        if self.load_script("title").is_err() {
-            self.mode = Mode::Ended;
-        }
         self.wait = Wait::None;
+        if self.load_script("title").is_err() {
+            // generation 2 has no title script: prog.scr asks for the title (op 0x54)
+            self.enter_title();
+        }
         self.window = false;
         self.msg = None;
         self.objs = [None, None, None];
@@ -720,24 +1132,33 @@ impl Engine {
 
     fn enter_title(&mut self) {
         self.mode = Mode::Title;
-        self.back = Scene {
-            bg: Some("タイトル画面".into()),
-            ..Scene::default()
-        };
-        self.show(Some(TransKind::In([0; 3])), 600.0);
+        self.back = Scene::default();
+        let mut img = Image::new(self.width, self.height);
+        img.fill([0, 0, 0, 255]);
+        if let Some((bg, x, y)) = self.skin.title_bg.clone() {
+            over(&mut img, &bg, x, y, None);
+        }
+        self.finish_trans();
+        self.trans = Some(Trans {
+            from: self.screen.clone(),
+            to: Rc::new(img),
+            kind: TransKind::In([0; 3]),
+            start: self.now,
+            ms: 600.0,
+        });
         let data = self.read("bgm", "タイトル");
         self.sound("bgm", data, true, 0.0);
     }
 
     fn menu_at(&self, x: i32, y: i32) -> Option<usize> {
-        (0..MENU.len()).find(|&k| {
-            let top = MENU_Y + k as i32 * MENU_STEP;
-            x >= MENU_X && x < MENU_X + BUTTON.0 && y >= top && y < top + BUTTON.1
-        })
+        self.skin.buttons.iter().position(|b| b.hit(x, y))
     }
 
     fn choose(&mut self, k: usize) {
-        match MENU[k].1 {
+        let Some(choice) = self.skin.buttons.get(k).map(|b| b.choice) else {
+            return;
+        };
+        match choice {
             Choice::New => {
                 self.sound("bgm", None, false, 500.0);
                 self.vars = vec![0; 4096];
@@ -818,6 +1239,7 @@ impl Engine {
             {
                 Wait::Objects
             }
+            Wait::Choice => Wait::Choice,
             Wait::Click => {
                 if self.message_done() {
                     if clicked || self.skip {
@@ -849,11 +1271,32 @@ impl Engine {
         self.pointer = (x, y);
         if self.mode == Mode::Title {
             self.hover = self.menu_at(x, y);
+        } else if self.wait == Wait::Choice {
+            self.hover = self.choice_at(x, y);
         }
+    }
+
+    fn answer(&mut self, k: usize) {
+        if self.log {
+            eprintln!("kaguya: choice {k}");
+        }
+        if let Some(v) = self.vars.get_mut(0) {
+            *v = k as i32 + 1;
+        }
+        self.choices.clear();
+        self.choice_imgs.clear();
+        self.hover = None;
+        self.wait = Wait::None;
     }
 
     pub fn click(&mut self, x: i32, y: i32) {
         self.point(x, y);
+        if self.wait == Wait::Choice {
+            if let Some(k) = self.choice_at(x, y) {
+                self.answer(k);
+            }
+            return;
+        }
         if self.mode == Mode::Title {
             if self.trans.is_some() {
                 self.finish_trans();
@@ -873,12 +1316,26 @@ impl Engine {
     pub fn key(&mut self, k: usize) {
         match (self.mode, k) {
             (Mode::Title, 0) => {
-                self.hover = Some(self.hover.map_or(0, |h| (h + MENU.len() - 1) % MENU.len()))
+                let n = self.skin.buttons.len().max(1);
+                self.hover = Some(self.hover.map_or(0, |h| (h + n - 1) % n))
             }
-            (Mode::Title, 1) => self.hover = Some(self.hover.map_or(0, |h| (h + 1) % MENU.len())),
+            (Mode::Title, 1) => {
+                let n = self.skin.buttons.len().max(1);
+                self.hover = Some(self.hover.map_or(0, |h| (h + 1) % n))
+            }
             (Mode::Title, 4) => {
                 if let Some(h) = self.hover {
                     self.choose(h);
+                }
+            }
+            (Mode::Run, 0 | 1) if self.wait == Wait::Choice => {
+                let n = self.choices.len().max(1);
+                let d = if k == 0 { n - 1 } else { 1 };
+                self.hover = Some(self.hover.map_or(0, |h| (h + d) % n));
+            }
+            (Mode::Run, 4) if self.wait == Wait::Choice => {
+                if let Some(h) = self.hover {
+                    self.answer(h);
                 }
             }
             (Mode::Run, 4) => self.clicked = true,
@@ -892,6 +1349,11 @@ impl Engine {
         if !up {
             self.clicked = true;
         }
+    }
+
+    /// Whether a choice is waiting for an answer.
+    pub fn choosing(&self) -> bool {
+        self.wait == Wait::Choice
     }
 
     pub fn ended(&self) -> bool {
@@ -914,7 +1376,7 @@ impl Engine {
                 // dark parts of the rule first, with a soft edge
                 let edge = 32.0;
                 let level = p * (255.0 + edge);
-                let (w, h) = (W as usize, H as usize);
+                let (w, h) = (self.width as usize, self.height as usize);
                 for y in 0..h {
                     for x in 0..w {
                         let r = if (x as u32) < rule.w && (y as u32) < rule.h {
@@ -938,47 +1400,103 @@ impl Engine {
         }
     }
 
-    fn window_picture(&mut self) -> Option<Rc<Image>> {
+    /// The letters of the message (and the name), on a clear picture as wide as the screen
+    /// from the top of the window or name plate, and where that goes.
+    fn message_picture(&mut self) -> Option<(Rc<Image>, i32)> {
         let m = self.msg.as_ref()?;
         let shown = if self.message_done() {
             usize::MAX
         } else {
             ((self.now - m.start) / LETTER_MS) as usize
         };
+        let top = [&self.skin.window, &self.skin.name_plate]
+            .into_iter()
+            .flatten()
+            .map(|p| p.2)
+            .min()
+            .unwrap_or(self.skin.text_at.1);
         if let Some((n, img)) = &self.window_img
             && *n == shown
         {
-            return Some(img.clone());
+            return Some((img.clone(), top));
         }
-        let parts = self.pic("bg_", "vram02")?;
-        let (ww, wh) = (
-            (WINDOW[2] - WINDOW[0]) as u32,
-            (WINDOW[3] - WINDOW[1]) as u32,
-        );
-        let mut img = Image::new(ww, wh);
-        for y in 0..wh as usize {
-            let s = &parts.px
-                [((WINDOW[1] as usize + y) * parts.w as usize + WINDOW[0] as usize) * 4..]
-                [..ww as usize * 4];
-            img.px[y * ww as usize * 4..][..ww as usize * 4].copy_from_slice(s);
-        }
-        let m = self.msg.as_ref()?;
+        let mut img = Image::new(self.width, (self.height as i32 - top).max(1) as u32);
+        img.fill([0, 0, 0, 0]);
+        let k = &self.skin;
         if let Some(font) = &self.font {
             if let Some(n) = &m.name {
-                let width: f32 = n.chars().map(|c| font.metrics(c, 20.0).advance_width).sum();
-                let x = 122.0 + (268.0 - width) / 2.0;
-                text(&mut img, font, n, x, 9.0, 20.0, usize::MAX);
+                let size = k.name_size;
+                let width: f32 = n.chars().map(|c| font.metrics(c, size).advance_width).sum();
+                let x = k.name_box.0 as f32 + (k.name_box.2 as f32 - width) / 2.0;
+                text(
+                    &mut img,
+                    font,
+                    n,
+                    x,
+                    (k.name_box.1 - top) as f32,
+                    size,
+                    usize::MAX,
+                );
             }
-            text(&mut img, font, &m.text, 120.0, 46.0, 22.0, shown);
+            let (tx, ty) = k.text_at;
+            text(
+                &mut img,
+                font,
+                &m.text,
+                tx as f32,
+                (ty - top) as f32,
+                k.text_size,
+                shown,
+            );
         }
         let img = Rc::new(img);
         self.window_img = Some((shown, img.clone()));
-        Some(img)
+        Some((img, top))
+    }
+
+    /// The choices as pictures, stacked in the middle of the screen.
+    fn choice_pictures(&mut self) -> Vec<Placed> {
+        if self.choice_imgs.len() == self.choices.len() {
+            return self.choice_imgs.clone();
+        }
+        let (w, h, gap) = (self.width as i32 * 3 / 5, 44, 16);
+        let total = self.choices.len() as i32 * (h + gap) - gap;
+        let mut out = Vec::new();
+        for (k, c) in self.choices.iter().enumerate() {
+            let mut img = Image::new(w as u32, h as u32);
+            img.fill([20, 20, 40, 200]);
+            if let Some(font) = &self.font {
+                let width: f32 = c
+                    .chars()
+                    .map(|ch| font.metrics(ch, 24.0).advance_width)
+                    .sum();
+                text(
+                    &mut img,
+                    font,
+                    c,
+                    (w as f32 - width) / 2.0,
+                    8.0,
+                    24.0,
+                    usize::MAX,
+                );
+            }
+            let x = (self.width as i32 - w) / 2;
+            let y = (self.height as i32 - total) / 2 - 40 + k as i32 * (h + gap);
+            out.push((Rc::new(img), x, y));
+        }
+        self.choice_imgs = out.clone();
+        out
+    }
+
+    fn choice_at(&mut self, x: i32, y: i32) -> Option<usize> {
+        self.choice_pictures().iter().position(|(img, cx, cy)| {
+            x >= *cx && y >= *cy && x < cx + img.w as i32 && y < cy + img.h as i32
+        })
     }
 
     /// The pictures to draw, bottom first.
     pub fn draws(&mut self) -> Vec<Draw> {
-        let full = [0.0, 0.0, W as f32, H as f32];
+        let full = [0.0, 0.0, self.width as f32, self.height as f32];
         let place = |x: f32, y: f32, alpha: f32| Place {
             x,
             y,
@@ -1036,23 +1554,40 @@ impl Engine {
                 place: place(0.0, 0.0, a),
             });
         }
-        if self.window
-            && self.mode == Mode::Run
-            && let Some(w) = self.window_picture()
-        {
-            out.push(whole(w, 0.0, WINDOW_Y as f32, 1.0));
+        if self.window && self.mode == Mode::Run && self.msg.is_some() {
+            for (img, x, y) in [self.skin.window.clone(), self.skin.name_plate.clone()]
+                .into_iter()
+                .flatten()
+            {
+                out.push(whole(img, x as f32, y as f32, 1.0));
+            }
+            if let Some((img, top)) = self.message_picture() {
+                out.push(whole(img, 0.0, top as f32, 1.0));
+            }
         }
-        if self.mode == Mode::Title
-            && self.trans.is_none()
-            && let Some(parts) = self.pic("bg_", "vram01")
-        {
-            for (k, (row, _)) in MENU.iter().enumerate() {
-                let x0 = if self.hover == Some(k) { BUTTON.0 } else { 0 };
-                let (x, y) = (MENU_X as f32, (MENU_Y + k as i32 * MENU_STEP) as f32);
+        if self.wait == Wait::Choice {
+            for (k, (img, x, y)) in self.choice_pictures().into_iter().enumerate() {
+                let a = if self.hover == Some(k) { 1.0 } else { 0.75 };
+                out.push(whole(img, x as f32, y as f32, a));
+            }
+        }
+        if self.mode == Mode::Title && self.trans.is_none() {
+            for (k, b) in self.skin.buttons.iter().enumerate() {
+                let (src, at) = if self.hover == Some(k) {
+                    (b.hover_src, b.hover_at)
+                } else {
+                    (b.src, b.at)
+                };
+                let (x, y) = (at.0 as f32, at.1 as f32);
                 out.push(Draw {
-                    image: parts.clone(),
-                    src: [x0, *row, x0 + BUTTON.0, row + BUTTON.1],
-                    dst: [x, y, x + BUTTON.0 as f32, y + BUTTON.1 as f32],
+                    image: b.img.clone(),
+                    src,
+                    dst: [
+                        x,
+                        y,
+                        x + (src[2] - src[0]) as f32,
+                        y + (src[3] - src[1]) as f32,
+                    ],
                     place: place(x, y, 1.0),
                 });
             }

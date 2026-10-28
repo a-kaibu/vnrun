@@ -60,7 +60,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | QLIE (vnrun) | 3 | 2 |  |  |  | 1 |  |  |
 | Escude (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | Majiro (vnrun) | 1 | 1 |  |  |  |  |  |  |
-| Kaguya (vnrun) | 1 | 1 |  |  |  |  |  |  |
+| Kaguya (vnrun) | 2 | 2 |  |  |  |  |  |  |
 | Interheart (vnrun) | 11 | 2 |  |  |  |  |  | 9 |
 
 ### SiglusEngine (siglus_rs)
@@ -538,6 +538,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2006_kaguya | [淫皇覇伝アマツ ～白濁の呪印～ 体験版](http://suezou.dyndns.org/dl2006/kaguya/amatsu/amatu_trial.EXE) | 本編 | Kaguya (vnrun) でロゴ→タイトル→最初から→プロローグ→本編の背景・立ち絵・名前・文章・カットインまで、体験版の最後まで通る (kaguya-run と Chromium) |
+| b2013_kaguya | [肉牝R30 ～肉欲に堕ちた牝たち～ 体験版](http://suezou.dyndns.org/dl2013/kaguya/r30/nikumesu_R30_trial.zip) | 本編 | Kaguya (vnrun) の 2013 年世代 (GAME_SYS.exe + ARC/) でロゴ→タイトル→初めから→導入→本編の背景・立ち絵・名前・文章・音声、場面選択の 6 項目 (5 人の場面と製品告知) まで (kaguya-run と Chromium)。場面の後のマップ (op 54 1 0) は未実装で選択に戻る |
 
 ### Interheart (vnrun)
 
