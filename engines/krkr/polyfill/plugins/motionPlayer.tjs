@@ -1,10 +1,12 @@
-// vnrun: motionplayer.dll (E-mote). Motions are not played: a player shows nothing and is never
-// playing, so scripts that set up E-mote support (KAGEX AnimKAGLayer, AffineLayer) go on.
+// vnrun: motionplayer.dll and emoteplayer.dll (E-mote). Motions are not played: a player shows
+// nothing and is never playing, so scripts that set up E-mote support (KAGEX AnimKAGLayer,
+// AffineLayer, emoteplayer.ks's [emotestart]) go on without the characters' animation.
 if (typeof(global.Motion) === "undefined") {
 	class vnrunMotionResourceManager {
 		function vnrunMotionResourceManager(window, cacheSize) {}
 		function finalize() {}
-		function load(path) {}
+		// emoteplayer.ks reads data.metadata.base.chara and .motion
+		function load(path) { return %[ metadata: %[ base: %[ chara: "", motion: "" ] ] ]; }
 		function unload(path) {}
 		function clearCache() {}
 	}
@@ -26,16 +28,55 @@ if (typeof(global.Motion) === "undefined") {
 		function setVariable(name, value) {}
 		function getVariable(name) { return 0; }
 	}
+	// emoteplayer.dll's player: it also moves, scales and colours the character over time and
+	// plays timelines. Every setter takes effect at once; nothing is ever animating.
+	class vnrunEmotePlayer extends vnrunMotionPlayer {
+		var maskMode = 0, motionKey = "", useD3D = false, animating = false;
+		var meshDivisionRatio = 1, hairScale = 1, bustScale = 1, partsScale = 1;
+		function vnrunEmotePlayer(resourceManager) { super.vnrunMotionPlayer(resourceManager); }
+		function finalize() { super.finalize(); }
+		function skip() {}
+		function initPhysics(metadata) {}
+		function serialize() { return %[]; }
+		function unserialize(state) {}
+		function setCameraOffset(x, y) {}
+		function setCoord(x, y, time = 0, easing = 0) {}
+		function setRotate(rot, time = 0, easing = 0) {}
+		function setScale(scale, time = 0, easing = 0) {}
+		function setColor(color, time = 0, easing = 0) {}
+		function setCameraCoord(x, y, time = 0, easing = 0) {}
+		function setCameraRotate(rot, time = 0, easing = 0) {}
+		function setCameraScale(scale, time = 0, easing = 0) {}
+		function setVariable(name, value, time = 0, easing = 0) {}
+		function getVariableRange(name) { return void; }
+		function getMainTimelineLabelList() { return []; }
+		function getDiffTimelineLabelList() { return []; }
+		function playTimeline(name, flags = 0) {}
+		function stopTimeline(name = "") {}
+		function fadeInTimeline(name, time = 0, easing = 0) {}
+		function fadeOutTimeline(name, time = 0, easing = 0) {}
+		function setTimelineBlendRatio(name, ratio, time = 0, easing = 0) {}
+	}
+	vnrunEmotePlayer.TimelinePlayFlagParallel = 1;
+	vnrunEmotePlayer.TimelinePlayFlagDifference = 2;
 	class vnrunMotionSeparateLayerAdaptor {
+		var absolute = 0;
 		function vnrunMotionSeparateLayerAdaptor(layer) {}
 		function finalize() {}
+		function assign(src) { absolute = src.absolute; }
+		function clear() {}
 	}
 	global.Motion = %[
 		ResourceManager: vnrunMotionResourceManager,
 		Player: vnrunMotionPlayer,
+		EmotePlayer: vnrunEmotePlayer,
 		SeparateLayerAdaptor: vnrunMotionSeparateLayerAdaptor,
+		getD3DAvailable: function() { return false; },
 		PlayFlagForce: 1,
 		PlayFlagAsCan: 2,
 		PlayFlagStealth: 4,
+		MaskModeStencil: 0,
+		MaskModeAlpha: 1,
+		MaskModeAddAlpha: 2,
 	];
 }

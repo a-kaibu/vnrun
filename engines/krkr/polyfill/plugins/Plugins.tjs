@@ -26,6 +26,7 @@ global.vnrunPlugins = %[
 		"alphamovie.dll" => "alphaMovie.tjs",
 		"proxyfs.dll" => "proxyFs.tjs",
 		"motionplayer.dll" => "motionPlayer.tjs",
+		"emoteplayer.dll" => "motionPlayer.tjs",
 	],
 ];
 global.Plugins.link = function(name) {
