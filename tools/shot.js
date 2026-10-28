@@ -12,6 +12,7 @@
 //   type:<text>           type text into the focused element
 //   files:<sel>=<path>    put a file or folder into an <input type=file> (upstream launcher pages)
 //   eval:<js>             log the JSON of a page expression (no commas)
+//   dialog:yes|no         how later alert/confirm dialogs are answered (no by default)
 // The console log (page and workers) goes to <out prefix>.log.
 const { chromium } = require("playwright");
 const fs = require("fs");
@@ -44,11 +45,14 @@ if (!url || !out) {
   page.on("console", (m) => log.push(`[${m.type()}] ${m.text()}`));
   page.on("pageerror", (e) => log.push(`[pageerror] ${e.stack || e.message}`));
   page.on("response", (r) => r.status() >= 400 && log.push(`[http ${r.status()}] ${r.url()}`));
-  // alert/confirm from the game (KiriKiri's System.inform, yes/no dialogs): logged, answered no.
-  // prompt (AdvHD name entry): accepted with its default, or a placeholder name when it has none.
+  // alert/confirm from the game (KiriKiri's System.inform, yes/no dialogs): logged, answered no
+  // (or yes after a dialog:yes step). prompt (AdvHD name entry): accepted with its default, or a
+  // placeholder name when it has none.
+  let answerYes = false;
   page.on("dialog", (d) => {
     log.push(`[dialog ${d.type()}] ${d.message()}`);
-    (d.type() === "prompt" ? d.accept(d.defaultValue() || "テスト") : d.dismiss()).catch(() => {});
+    if (d.type() === "prompt") d.accept(d.defaultValue() || "テスト").catch(() => {});
+    else (answerYes ? d.accept() : d.dismiss()).catch(() => {});
   });
   page.on("worker", (w) => w.on("console", (m) => log.push(`[worker ${m.type()}] ${m.text()}`)));
   process.on("exit", () => fs.writeFileSync(`${out}.log`, log.join("\n")));
@@ -84,6 +88,8 @@ if (!url || !out) {
     } else if (cmd === "files") {
       const [sel, path] = arg.split("=");
       await page.setInputFiles(sel, path);
+    } else if (cmd === "dialog") {
+      answerYes = arg === "yes";
     } else if (cmd === "eval") {
       log.push(`[eval] ${JSON.stringify(await page.evaluate(arg))}`);
     } else {
