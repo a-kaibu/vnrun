@@ -147,6 +147,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 | EntisGLS | 8 | 自作 (`crates/entis`, `crates/entis-web`) | Rust | あり (WebGPU) | NOA アーカイブ (exe の鍵、入れ子の .noa、ゲームフォルダのばらの .csx)、ERI 画像 (Nemesis 圧縮を含む)、Cotopha の実行イメージ (.csx) をそのまま動かす VM。スキン (system.inf の XML: 絵・スタイル・ページ・ボタン)、スプライトの合成と BeginActivation の変化、MessageSprite の文章、InputFilter のジョイボタン、Window のコマンド。痴覚過敏 (2010)、リリカル♪りりっく (2007)、夏ノ雨 (2009)、キスと魔王と紅茶 (2009) の体験版でタイトルから本編の文章まで。MIO の音 (ロスレスと LOT/DCT、ERINA 符号) は初めて鳴らすときに WAV にする。セーブは File::SaveContext がグローバル変数・全スレッドのスタック・それらが指すエンジンのオブジェクト (絵は名前、スキンはファイルで) を書き、LoadContext でセーブした呼び出しの直後から再開する (data 変数は今の値のまま、data が持つオブジェクトは子スプライトだけ戻す)。サムネイル・セーブ日時・ボタンの文字も。痴覚過敏・夏ノ雨・キスと魔王と紅茶でクイックセーブ/ロードを確認。3D (RenderSprite/ModelJoint/ParticleModel) は描かない、アニメーション ERI は 1 枚目だけ。2024 年の狙われた優等生はシステムが exe 内のネイティブ、台本が xscript (.srcxml) の新しい世代で未対応 |
 | QLIE | 4 | 自作 (`crates/qlie`, `crates/qlie-web`) | Rust | あり (WebGPU) | GameData の .pack アーカイブ (1.0/2.0/3.0/3.1、3.1 は exe の RESKEY か key.fkey の鍵)、.b (ABMP のモーション付き画像)、.s スクリプト (`@@` ラベル、`\` 命令、`^` のストーリー命令は rep の置き換え)。ゲームスレッドとシステムスレッド (メニューは `$$$GameThreadImage` の上に開く)、`\stop` のハンドラ、オブジェクト (img/btn/sbtn/msg/snd/list/bar と sys/eff/cam/inp/dat などの組み込み)。かみぱに！体験版でタイトルから本編 (背景・立ち絵・名前・ルビ) まで。アナベル・メイドガーデン体験版は ImoScripter (`^bg01,file:...` のような命令を table/list オブジェクトで解釈するスクリプト側のライブラリ) で本編まで: table の `\v` `\?v` `\comb` `\asn` `\brep` `\bpos` など、`\exop` と rep の `\?r`、テンプレートのラベルはそれを置いたスクリプトで探す、`\p4` `\alg2` `\col` の位置・拡大・揃え、.b の `*MesSurface` 画像の位置に本文、`\thrd,1,label` でシステムスレッドのメニュー、`mdat` `tdat` はメモリ上のセーブ。セーブ・ロードは `\scp,dat` を自前の形式で (シナリオのファイルと最後の本文の行と変数、ロードはシナリオの @@TOP からゲームのスキップで進める)、バックログはゲームの画面で log オブジェクトから。3.0 の key.fkey は GARbro どおり (pack_keyfile を先に解く、exe の TFORM1 の IconKeyImage があればゲーム鍵も) だが、シグナルハート体験版 (3.0 + key.fkey、IconKeyImage なし) はこれで解けず未対応。音声・効果のマスクは簡略、OnFrame や動画はまだ |
 | Escude | 8 | 自作 (`crates/escude`, `crates/escude-web`) | Rust | あり (WebGPU) | ESC-ARC アーカイブ、ゲームの C ソース (ACPX) をコンパイルして自前の VM で実行 (構造体は詰めて配置、unsigned の昇格、setjmp/longjmp)。プレーン (8/16/24/32 bit の DIB) と 36 種の合成モード、スプライト (回転・拡大・子)、gtext、ogg の音、getkey/getpoint の入力。ヴェルディア幻奏曲体験版と Re;Lord 体験版でタイトルから本編まで。セーブ・ロードはゲーム自身の画面のまま (`dir_get` の文書フォルダ以下をセーブとして保存、`file_gettime` の日時は `vnrun-times.txt` に持つ) で、両作品ともセーブ→タイトルからロードで本編に戻る。パターンワイプ (BLT_PATTERN / BLT_PATBLEND) も描く。角度は 1 周 2048 |
+| Majiro | ? | 自作 (`crates/majiro`, `crates/majiro-web`) | Rust | あり (WebGPU) | MajiroArc V1〜V3 アーカイブ、.mjo (暗号化を含む) をそのまま動かす VM (スレッド、イベントフック、setskip/デストラクタ)、RCT/RC8 画像 (TC01 の差分、`_.rc8` マスク)、ページ・スプライト (中心基準の _ext)、`$console_*` の文字をページに描いて CONSOLE_WROTE などのイベントで console.mjo に渡す。Closed GAME 体験版 (2015) でタイトルから本編の文章まで (majiro-run と Chromium)。スプライトアニメ・選択肢以降・セーブはまだ |
 
 Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softpal 31、FVP 6、Artemis 5)。
 
@@ -251,6 +252,16 @@ Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softp
   - 線形の逆アセンブルは START.SCN のオフセット 0xe (op 0xa の後の `82 d3 82 aa 48 00`) で崩れる。命令ごとのオペランド数の推定は途中。
   - 判明した命令の例: 0xa は待ち時間 (<=1000)、0x49d はグローバル c17c28 への代入、0x7ee は [v v w]、0x7ef は [v v v]。
 - 他の ShiinaRio 体験版: `b2017_onomatope_raspberry` (vnbox では NG で画面が出ない)。VM の後で試す。
+
+## Majiro の実装メモ (2026-10-28)
+
+`crates/majiro`。命令表は majiro-py (MIT) の docs と data/mjs (console.mjs の古いソース) が頼り。exe の syscall 表は `cmp edx, hash` の二分探索から引いた。
+
+- 透明度は Majiro の値では「透明さ」(255 で見えない): `$sprite_alfa_set`/`define`、アルファページ (`$get_alfapage`)、`$page_set_antidata` の相手ページ (色の下位バイト = 青が透明さ) がそう。エンジン内部は普通の不透明度で持ち、出入り口で反転する。
+- `$grp_copy`/`$grp_extcopy`/`$grp_modcopy` は (src, x, y, w, h, dst, x, y) の順。extcopy の 9 番目は写す側の透明さ。
+- 文章: エンジンは `$console_set` のページに文字を描き (`$console_font` の xl は半角の幅、全角は 2 倍)、CONSOLE_WROTE(page, x, y, w, h, 0) で console.mjo に渡す (console.mjo が少しずつ表示ページへ写す)。改ページ待ちは PAUSE のフック (pause_inter) が自分で待つ。`【名前】` で始まる文は NAME_DISP。`$console_color` の上位バイトは影 (1) / 縁取り (2)。
+- `$reset_exec` (新しいゲーム) で HOT_RESET(0, "", 1) を送る (console.mjo が窓の色や絵を作り直す)。
+- 終わるスレッド (`$thread_end`) も各フレームのデストラクタ (bsel.5) を実行してから消える (遷移の絵がこれで片付く)。
 
 ## 未決のこと
 

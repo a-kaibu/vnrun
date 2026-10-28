@@ -600,6 +600,26 @@ name = "luavm"
 version = "0.1.0"
 
 [[package]]
+name = "majiro"
+version = "0.1.0"
+dependencies = [
+ "encoding_rs",
+ "fontdue",
+ "image 0.25.10",
+ "nexas",
+]
+
+[[package]]
+name = "majiro-web"
+version = "0.1.0"
+dependencies = [
+ "js-sys",
+ "majiro",
+ "nexas",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "memchr"
 version = "2.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

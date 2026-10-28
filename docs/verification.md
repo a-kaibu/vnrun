@@ -59,6 +59,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | AliceSoft System4 (xsystem4) | 2 | 2 |  |  |  |  |  |  |
 | QLIE (vnrun) | 3 | 2 |  |  |  | 1 |  |  |
 | Escude (vnrun) | 2 | 2 |  |  |  |  |  |  |
+| Majiro (vnrun) | 1 | 1 |  |  |  |  |  |  |
 
 ### SiglusEngine (siglus_rs)
 
@@ -520,4 +521,10 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 |---|---|---|---|
 | b2008_escude | [ヴェルディア幻奏曲体験版](http://suezou.dyndns.org/dl2008/escude/verdia/verdia_trial.zip) | 本編 | Escu:de (ACPX の C を自前 VM で実行) でタイトル→NEW GAME→本編の背景・文章まで (escude-run と Chromium)。セーブ (スロットの日時・サムネイル)→タイトルからロードで本編に戻る (escude-run) |
 | b2014_escude | [Re;Lord ～ヘルフォルトの魔女とぬいぐるみ～ 体験版](http://suezou.dyndns.org/dl2014/escude/relord/ReLord_Trial.zip) | 本編 | Escu:de でロゴ→タイトル→はじめから→プロローグの文章まで (Chromium)、CG と文章ウィンドウの場面まで (escude-run)。セーブ→タイトルからロードでプロローグに戻る (Chromium と escude-run) |
+
+### Majiro (vnrun)
+
+| ID | 作品 | 結果 | メモ |
+|---|---|---|---|
+| b2015_empress | [Closed GAME 体験版](http://suezou.dyndns.org/dl2015/empress/closed_game/ClosedGameTrial.zip) | 本編 | Majiro (vnrun) でロゴ→タイトル→New Game→本編の背景・立ち絵・名前・文章まで (majiro-run と Chromium) |
 <!-- /matrix -->

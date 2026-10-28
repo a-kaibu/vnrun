@@ -52,6 +52,12 @@ impl Image {
         })
     }
 
+    /// Gives the image a new id, for pixels changed in place (so a texture made from the old
+    /// ones is not reused).
+    pub fn renew(&mut self) {
+        self.id = next_id();
+    }
+
     pub fn fill(&mut self, rgba: [u8; 4]) {
         for p in self.px.chunks_exact_mut(4) {
             p.copy_from_slice(&rgba);

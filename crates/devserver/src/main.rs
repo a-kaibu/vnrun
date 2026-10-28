@@ -172,6 +172,27 @@ fn noa_in_data(game: &Path) -> bool {
         })
 }
 
+/// Whether scenario.arc at the top of the game folder is a MajiroArc archive.
+fn majiro_arc(game: &Path, names: &[String]) -> bool {
+    if !names.iter().any(|n| n == "scenario.arc") {
+        return false;
+    }
+    fs::read_dir(game).into_iter().flatten().flatten().any(|e| {
+        if !e
+            .file_name()
+            .to_string_lossy()
+            .eq_ignore_ascii_case("scenario.arc")
+        {
+            return false;
+        }
+        let mut head = [0u8; 10];
+        fs::File::open(e.path())
+            .and_then(|mut f| std::io::Read::read_exact(&mut f, &mut head))
+            .is_ok()
+            && &head == b"MajiroArcV"
+    })
+}
+
 /// Whether a .bin file at the top of the game folder is an ESC-ARC archive.
 fn esc_arc(game: &Path, names: &[String]) -> bool {
     if !names.iter().any(|n| n.ends_with(".bin")) {
@@ -214,6 +235,9 @@ fn detect(game: &Path) -> Option<String> {
         Some("reallive".into())
     } else if has("advhd.exe") && names.iter().any(|n| n.ends_with(".arc")) {
         Some("advhd".into())
+    } else if majiro_arc(game, &names) {
+        // Majiro: MajiroArc archives (scenario.arc, data.arc, ...) beside the exe
+        Some("majiro".into())
     } else if has("system.arc") {
         Some("bgi".into())
     } else if has("ysbin.ypf") || has("ysbin") || has("yscfg.dat") {
