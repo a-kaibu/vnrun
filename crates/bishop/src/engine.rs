@@ -18,6 +18,7 @@ use nexas::gfx::{Draw, Image, Place};
 use crate::bsa;
 use crate::bsg::{self, Bsg};
 use crate::cfg::Cfg;
+use crate::mapinfo::MapInfo;
 use crate::script::Script;
 
 /// A sound to start or stop.
@@ -174,11 +175,18 @@ pub struct Engine {
     window_pic: Option<(String, Rc<Image>, i32, i32)>,
     /// the map's global and its choices (value, label)
     map_choices: (usize, Vec<(i32, String)>),
+    /// map.dat (Rev.6): the map screen's icons and where they go
+    map_info: Option<Rc<MapInfo>>,
+    /// the map is waiting for a place (also while our load screen is open over it)
+    map_open: bool,
     /// the hero's family and given names (`\A`, `\B`)
     hero: (String, String),
     ended: bool,
     pub log: bool,
 }
+
+/// An event's icon on the map: the value it gives, its picture, its place.
+type MapIcon = (i32, String, [i32; 4]);
 
 fn solid(w: u32, h: u32, rgba: [u8; 4]) -> Rc<Image> {
     let mut i = Image::new(w, h);
@@ -216,6 +224,10 @@ impl Engine {
                 .map(|b| hero_names_rev6(&b))
                 .unwrap_or_default(),
         };
+        let map_info = files
+            .read("map.dat")
+            .and_then(|b| MapInfo::parse(&b))
+            .map(Rc::new);
         let mut e = Engine {
             files,
             screen: (w as u32, h as u32),
@@ -247,6 +259,8 @@ impl Engine {
             text_cache: HashMap::new(),
             window_pic: None,
             map_choices: (0, Vec::new()),
+            map_info,
+            map_open: false,
             hero,
             ended: false,
             log: false,
@@ -1199,6 +1213,7 @@ impl Engine {
             None => None,
             // the map waits for a place
             Some(Menu::Map) => Some(Menu::Map),
+            Some(Menu::Load) if self.map_open => Some(Menu::Map),
             Some(_) => None,
         };
     }
@@ -1311,10 +1326,22 @@ impl Engine {
                 _ => 1,
             };
         }
-        self.trace(&format!("map: {choices:?}"));
+        self.trace(&format!("map: {choices:?} var {var:?}"));
+        if self.log {
+            let named: Vec<String> = self
+                .s
+                .global_names
+                .iter()
+                .enumerate()
+                .filter(|(_, n)| !n.is_empty())
+                .map(|(i, n)| format!("{i}:{n}={}", self.globals.get(i).copied().unwrap_or(0)))
+                .collect();
+            self.trace(&format!("map globals: {}", named.join(" ")));
+        }
         if let (Some(v), false) = (var, choices.is_empty()) {
             self.map_choices = (v as usize, choices);
             self.menu = Some(Menu::Map);
+            self.map_open = true;
         }
     }
 
@@ -1327,7 +1354,89 @@ impl Engine {
             .collect()
     }
 
+    /// The map screen from map.dat: (value, icon picture, its place) for each event of a
+    /// heroine, and the place of our 次へ button (the choice that is not an event).
+    fn map_icons(&self) -> Option<(Vec<MapIcon>, Option<i32>)> {
+        let info = self.map_info.as_ref()?;
+        let mut per_area: HashMap<u8, usize> = HashMap::new();
+        let mut found = Vec::new();
+        let mut next = None;
+        for (value, label) in &self.map_choices.1 {
+            match info.heroine_of(label) {
+                Some(h) => {
+                    let k = per_area.entry(h.area).or_default();
+                    found.push((*value, h, *k));
+                    *k += 1;
+                }
+                None => next = Some(*value),
+            }
+        }
+        let icons: Vec<MapIcon> = found
+            .into_iter()
+            .filter_map(|(value, h, i)| {
+                let (x, y) = info.place(h.area, i, per_area[&h.area])?;
+                let name = info.names.get(h.icon)?.clone();
+                Some((value, name, [x, y, x + 100, y + 100]))
+            })
+            .collect();
+        (!icons.is_empty()).then_some((icons, next))
+    }
+
+    /// The bottom bar's buttons (QSAVE QLOAD SAVE LOAD CONFIG LOG; the places of map_hit).
+    fn map_bar(&self) -> Vec<[i32; 4]> {
+        (0..6)
+            .map(|i| {
+                let x = 40 + i * 128;
+                [x, 560, x + 80, 592]
+            })
+            .collect()
+    }
+
+    const MAP_NEXT: [i32; 4] = [590, 16, 783, 48];
+
+    fn map_draws(&mut self, out: &mut Vec<Draw>) -> bool {
+        let Some((icons, next)) = self.map_icons() else {
+            return false;
+        };
+        let p = self.pointer;
+        if let Some(b) = self.picture("map_base1") {
+            let img = Rc::new(b.image.clone());
+            out.push(draw(&img, b.x as f32, b.y as f32, 1.0));
+        }
+        if let Some(b) = self.picture("map_menu_base") {
+            let img = Rc::new(b.image.clone());
+            out.push(draw(&img, b.x as f32, b.y as f32, 1.0));
+        }
+        if let Some(b) = self.picture("map_menu_button") {
+            let img = Rc::new(b.image.clone());
+            for (i, r) in self.map_bar().into_iter().enumerate() {
+                // only LOAD works on the map
+                let mut d = part(&img, [0, i as i32 * 32, 80, 32], r[0] as f32, r[1] as f32);
+                d.place.alpha = if i == 3 { 1.0 } else { 0.45 };
+                out.push(d);
+            }
+        }
+        for (_, name, r) in icons {
+            if let Some(b) = self.picture(&name) {
+                let img = Rc::new(b.image.clone());
+                let lit = inside(r, p.0, p.1);
+                let sy = if lit { 100 } else { 0 };
+                out.push(part(&img, [0, sy, 100, 100], r[0] as f32, r[1] as f32));
+            }
+        }
+        if next.is_some() {
+            self.button("次へ", Self::MAP_NEXT, out);
+        }
+        true
+    }
+
     fn menu_draws(&mut self, m: Menu) -> Vec<Draw> {
+        if m == Menu::Map {
+            let mut out = Vec::new();
+            if self.map_draws(&mut out) {
+                return out;
+            }
+        }
         let shown = self.shown.clone();
         let mut out = self.scene_of(&shown);
         let mut d = draw(&solid(1, 1, [0, 0, 0, 150]), 0.0, 0.0, 1.0);
@@ -1361,13 +1470,31 @@ impl Engine {
     fn menu_click(&mut self, m: Menu, x: i32, y: i32) {
         match m {
             Menu::Map => {
-                if let Some(i) = self.map_rects().into_iter().position(|r| inside(r, x, y)) {
-                    let (var, choices) = &self.map_choices;
-                    let n = choices[i].0;
-                    if let Some(g) = self.globals.get_mut(*var) {
+                let pick = match self.map_icons() {
+                    Some((icons, next)) => {
+                        let bar = self.map_bar();
+                        if inside(bar[3], x, y) {
+                            self.menu = Some(Menu::Load);
+                            return;
+                        }
+                        icons
+                            .iter()
+                            .find(|i| inside(i.2, x, y))
+                            .map(|i| i.0)
+                            .or(next.filter(|_| inside(Self::MAP_NEXT, x, y)))
+                    }
+                    None => self
+                        .map_rects()
+                        .into_iter()
+                        .position(|r| inside(r, x, y))
+                        .map(|i| self.map_choices.1[i].0),
+                };
+                if let Some(n) = pick {
+                    if let Some(g) = self.globals.get_mut(self.map_choices.0) {
                         *g = n;
                     }
                     self.menu = None;
+                    self.map_open = false;
                 }
             }
             Menu::Main => {
@@ -1449,6 +1576,7 @@ impl Engine {
 
     fn load_slot(&mut self, i: usize) {
         let Some(t) = self.read_slot(i) else { return };
+        self.map_open = false;
         self.stop_all(200);
         self.layers.clear();
         let mut bgm = None;

@@ -440,7 +440,7 @@ b2018_fudegaki_soft	本編	DxLib MED (vnrun) で注意書き→ロゴ・ブラ�
 b2012_fudegaki_soft	本編	DxLib MED (vnrun) で 1024x768 のロゴ→タイトル (CBLMAP_TITLE_MENU)→はじめから→体験版メニュー (CBLMAP_TRIAL_MENU)→P_001→R_001 の背景・CG・名前・文章 (med-run 6000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
 b2012_trois	本編	DxLib MED (vnrun) でロゴ→タイトル (TITLE のクリックマップ)→START→M2TMAIN→MOP2-T のプロローグ (md_jpg の絵、立ち絵・名前・文章)→選択肢→MA02XX (med-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る
 b2006_unisonshift	本編	PJADV (vnrun) でロゴ→注意書き→タイトル (はじめから)→体験版の挨拶・予告→本編の背景・立ち絵・顔・イベント絵 (拡大と移動)・名前・文章・ボイス・BGM・SE を最後まで進めてタイトルに戻る (pjadv-run、スキップで 4357 メッセージ)。窓の SAVE / LOAD から自前のスロットでセーブ→ロードして同じメッセージに戻る (ネイティブと Chromium)
-b2007_bishop	本編	Bishop (vnrun) で BSScript Rev.6 (bsx.dat、Shift-JIS) のロゴ→タイトル→はじめから→本編の背景・立ち絵・文章・名前→マップ (#result の分岐を一覧で選ぶ)→エステルのイベントまで (bsx-run と Chromium)。イベント中でセーブ→ページを開き直してタイトルの「続きから」でロード→続きを読める (Chromium)
+b2007_bishop	本編	Bishop (vnrun) で BSScript Rev.6 (bsx.dat、Shift-JIS) のロゴ→タイトル→はじめから→本編の背景・立ち絵・文章・名前→マップ (map.dat から本来の城の画面とヒロインのアイコン、エステル・ミレーユのどちらを選んでもそのイベントへ、LOAD でロード画面、右クリックでマップに戻る)→エステルのイベントまで (bsx-run と Chromium)。イベント中でセーブ→ページを開き直してタイトルの「続きから」でロード→続きを読める (Chromium)
 b2008_bishop	本編	Bishop (vnrun) で BSScript Rev.6 のロゴ→タイトル (ボタンの位置は画像側)→はじめから→本編の背景・立ち絵・文章・名前まで (bsx-run と Chromium)。movie を除いて展開して確認
 b2010_bishop	本編	Bishop (vnrun) で BSXScript 2.0 の注意書き→タイトル→始めから→本編の背景・CG・立ち絵・文章・名前、体験版の最後まで (bsx-run と Chromium)
 b2011_bishop	本編	Bishop (vnrun) で BSXScript 2.0 の注意書き→タイトル→始めから→本編の背景・CG・立ち絵 (体と顔の合成)・文章・名前、体験版の最後からタイトルへ (bsx-run と Chromium)。セーブ→ページを開き直してタイトルの「続きから」でロード→同じ CG・文章に戻る (Chromium)
