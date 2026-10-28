@@ -389,15 +389,15 @@ b2026_dessert_soft	本編	検証スレッドでも Chromium で START→本編�
 b2015_kaguya	本編	検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。Kaguya (vnrun) の LINK 世代 (Start.exe + params.dat + message.dat) でタイトル→はじめから→プロローグ (A0000..A0070) の背景・立ち絵・名前・文章・音声→共通→マップ (文字の選択肢で代用)→各ルート①→体験版の終わりまで通る (kaguya-run と Chromium)。セーブ→タイトルの「つづきから」でロードして同じ文章に戻る (kaguya-run と Chromium)
 b2018_kaguya	本編	検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。Kaguya (vnrun) の LINK 世代 (params v05.7) でタイトル→はじめから→オープニング (A0000..A0070) の背景・立ち絵・名前 (主人公名の置き換え)・文章・音声→共通→行き先 (文字の選択肢で代用)→紅音ルート→体験版の終わりまで通る (kaguya-run と Chromium)
 b2007_anim	本編	検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。Crowd/ANIM の 2007 年版 (番号と引数が違う別表、exe の解釈ループから。全ジャンプが命令の頭に落ちるのを確認) でタイトル (p_menu)→はじめから→本編の文章・名前・背景・立ち絵・選択肢 (anim-run と Chromium)。上 48 の帯と下 144 の枠は p_message から。タイトルのメニューは自前の文字ボタン
-b2008_anim	本編	Crowd/ANIM (<game>_sce.dat を自前で実行) でタイトル→START→説明文→蓉子編/一志編の選択肢→本編の背景・立ち絵・イベント CG・文章・ボイスまで、体験版の最後 (タイトルに戻る) まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (両方)
-b2009_anim	本編	Crowd/ANIM で 1024x768 のタイトル (Start/Load/Exit)→本編の背景 (1024x576 を上下の帯の間に)・立ち絵・イベント CG・文章まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium)。メッセージ枠は自前の半透明の帯 (p_message が無い)
+b2008_anim	本編	検証スレッドでも Chromium で START→本編の文章まで確認。Crowd/ANIM (<game>_sce.dat を自前で実行) でタイトル→START→説明文→蓉子編/一志編の選択肢→本編の背景・立ち絵・イベント CG・文章・ボイスまで、体験版の最後 (タイトルに戻る) まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (両方)
+b2009_anim	本編	検証スレッドでも Chromium で START→本編の文章まで確認。Crowd/ANIM で 1024x768 のタイトル (Start/Load/Exit)→本編の背景 (1024x576 を上下の帯の間に)・立ち絵・イベント CG・文章まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium)。メッセージ枠は自前の半透明の帯 (p_message が無い)
 b2010_anim	本編	Crowd/ANIM でタイトル (縦書きの 5 ボタン)→初めから→本編の背景・立ち絵・文章まで、体験版の最後まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium)
-b2011_anim_team_mm	本編	Crowd/ANIM の 2011 年版 (命令の番号が付け直された別表、exe の解釈ループから) でタイトル (pMenuTrial と pMenuTrialButton、位置は exe の数値)→はじめから→本編の背景・立ち絵 (GAX)・文章・ボイス・選択肢まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium)
+b2011_anim_team_mm	本編	検証スレッドでも Chromium で START→本編の文章まで確認。Crowd/ANIM の 2011 年版 (命令の番号が付け直された別表、exe の解釈ループから) でタイトル (pMenuTrial と pMenuTrialButton、位置は exe の数値)→はじめから→本編の背景・立ち絵 (GAX)・文章・ボイス・選択肢まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium)
 b2017_anim	NG	シナリオが Enigma Protector で包まれた exe の中にあり、<game>_sce.dat が無い。保護を外すのはコピー保護の回避にあたるため試みない
 b2019_anim	NG	シナリオが Enigma Protector で包まれた exe の中にあり、<game>_sce.dat が無い。保護を外すのはコピー保護の回避にあたるため試みない
 b2022_anim	NG	シナリオが Enigma Protector で包まれた exe の中にあり (cg/psbpack.dat と E-mote)、<game>_sce.dat が無い。保護を外すのはコピー保護の回避にあたるため試みない
 b2026_anim	NG	シナリオが Enigma Protector で包まれた exe の中にあり (cg/psbpack.dat と E-mote)、<game>_sce.dat が無い。保護を外すのはコピー保護の回避にあたるため試みない
-b2018_tinkerbell	本編	Cyberworks (vnrun) で警告→タイトル (e0 のボタン)→Game Start→プロローグの背景 (移動)・立ち絵 (表情差分)・名前・文章・回想のセピアまで (cyberworks-run と Chromium)。右クリックのメニューからセーブ→タイトルの Load Game からロードで本編に戻る (Chromium)
+b2018_tinkerbell	本編	検証スレッドでも Chromium で START→本編の文章まで確認。Cyberworks (vnrun) で警告→タイトル (e0 のボタン)→Game Start→プロローグの背景 (移動)・立ち絵 (表情差分)・名前・文章・回想のセピアまで (cyberworks-run と Chromium)。右クリックのメニューからセーブ→タイトルの Load Game からロードで本編に戻る (Chromium)
 b2019_lilim_darkness	本編	検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。LiLiM (vnrun) でタイトル (btn_play などの画像ボタン)→START→注意書き→体験版メニュー (slctwnd の選択肢)→旭ルートのダイジェスト (D_07..D_09) の背景・立ち絵・イベント CG・名前・文章・音声・回想のセピアを最後まで通り、メニューに戻る (lilim-run)。Chromium でタイトル→本編、右クリックのメニューからセーブ→タイトルの LOAD からロードで本編に戻る
 b2006_lilim	本編	検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。LiLiM (vnrun) の AOS 版 1 (sfa9.exe、800x600、音は bgm/・se/ のファイル) でタイトル→START→0001..0008 の背景・立ち絵・イベント CG・名前・文章・音声を最後まで通り、タイトルに戻る (lilim-run)。Chromium でタイトル→本編の文章まで
 b2007_lilim	本編	検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。LiLiM (vnrun) でタイトル→START→体験版の場面 (22_04 から s22_21r/b/g、バッドエンド) の背景・立ち絵・名前・文章・音声を最後まで通り、タイトルに戻る (lilim-run)
