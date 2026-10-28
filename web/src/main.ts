@@ -28,6 +28,7 @@ const ENGINES: Record<string, () => Promise<EngineModule>> = {
   majiro: () => import("./engines/majiro"),
   kaguya: () => import("./engines/kaguya"),
   cyberworks: () => import("./engines/cyberworks"),
+  lilim: () => import("./engines/lilim"),
   system4: () => import("./engines/system4"),
   escude: () => import("./engines/escude"),
   interheart: () => import("./engines/interheart"),

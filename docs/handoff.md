@@ -161,6 +161,7 @@ docs/protocol.md     プレイヤーとサーバーの約束事
 | Majiro | ? | 自作 (`crates/majiro`, `crates/majiro-web`) | Rust | あり (WebGPU) | MajiroArc V1〜V3 アーカイブ、.mjo (暗号化を含む) をそのまま動かす VM (スレッド、イベントフック、setskip/デストラクタ)、RCT/RC8 画像 (TC01 の差分、`_.rc8` マスク)、ページ・スプライト (中心基準の _ext)、`$console_*` の文字をページに描いて CONSOLE_WROTE などのイベントで console.mjo に渡す。Closed GAME 体験版 (2015) でタイトルから本編の文章まで (majiro-run と Chromium)。スプライトアニメ・選択肢以降・セーブはまだ |
 | Kaguya | ? | 自作 (`crates/kaguya`, `crates/kaguya-web`) | Rust | あり (WebGPU) | 2006 年頃の世代 (GAME_SYS/AMATU.exe + WFL1 の .arc/.ari)。WFL1 アーカイブ (LZSS)、AP/BMP 画像、tblstr の文章と名前、.scr バイトコードの VM (変数・条件分岐・スクリプト移動)、背景・立ち絵 (胴体+表情の合成)・イベント CG・色かけ、ルール画像トランジション・フェード・フラッシュ・揺れ・カットイン、BGM/効果音/音声 (Ogg)、メッセージ窓とタイトルメニューは exe の代わりに vram01/02 の部品で自前描画。アマツ体験版 (2006) が最後まで通る (kaguya-run と Chromium)。2013 年頃の世代 (GAME_SYS.exe + ARC/、1024x600、label.tbl の GOSUB、ローカル変数、選択肢、APS3 部品画像、AO 立ち絵) も肉牝R30 体験版で本編と場面選択まで。2009 年の GAME_SYS.exe (さらさらささら体験版) も最後まで。2008 年 (夏神 体験版２) も場面選択と各場面まで。LINK の世代 (Start.exe + params.dat + message.dat + LINK6 の .arc、`kaguya::link`) もハラミタマ体験版 (2015) がタイトル→はじめから→プロローグ (A0000..A0070)→共通→マップ (4 人から選ぶ、文字の選択肢で代用)→各ルート①→体験版の終わりまで通る。LoveHolic 体験版 (2018、params v05.7) も同じ実装で最後まで。セーブ・2013 年のマップ画面 (op 54 1 0)・LINK の他の年 (2010/2011/2014/2019) は未確認 |
 | Cyberworks / TinkerBell (Arc0x.dat) | 8 | 自作 (`crates/cyberworks`, `crates/cyberworks-web`) | Rust | あり (WebGPU) | 索引と中身の組 (Arc01→04, 02→05, 03→06, 07→08)。索引は 10 進の桁 (^0x7f) の大きさ + LZSS。種類の文字ごとの 0 始まりの番号で参照。'a'/'d' 画像 (GetInt 符号の見出し、d は直前の土台との差分)、'b'/'c' は末尾の PNG、音声は先頭 "Tink" の Ogg を exe の鍵で XOR。脚本 'a' は文 (M# 命令 / M$ レイヤー命令 / S 文章) を直接解釈し、e0 (ボタン組) と f0 (レイヤー表) からタイトル・ウィンドウ・立ち絵の位置を組む。メッセージ窓の文字・選択肢・セーブ (10 スロット) はエンジンが描く。グランギニョルの夜 体験版 (2018) で警告→タイトル→本編、セーブ/ロード (cyberworks-run と Chromium)。2023 年以降の TinkerBell は ChakraCore 入りの別世代 |
+| LiLiM (AOS) | 7 | 自作 (`crates/lilim`, `crates/lilim-web`) | Rust | あり (WebGPU) | .aos アーカイブ (2009 年以降の版 2 と 2006〜2007 年の版 1)、.scr と .cmp のハフマン符号、BMP / ABM 画像 (ABM の詰めた行は上から)。脚本は平文 (Shift-JIS) のテキストで、行ごとに解釈する (^gsb/^go/^jp/^if/^sw、%変数、bgon/cgon/chon/ud/btnset/btnenable/cvon/bgmon など)。ボタンは画像の 3 段 (通常・ポインタの下・押下)。タイトルと選択肢はゲームの脚本のボタンそのもの、メッセージ窓は wnd(0, ...) の設定 (msgwnd1 と窓のボタン) で描く。セーブ・ロードの画面と右クリックのメニューはエンジンが描く。WhiteBlue web体験版 (2019) が最後まで (lilim-run と Chromium)。ud(2) のマスクはフェードで代用 |
 
 Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softpal 31、FVP 6、Artemis 5)。
 
@@ -287,6 +288,17 @@ Rust の土台があるのは計 89 本 (Siglus 18、RealLive 8、BGI 21、Softp
 - 脚本: 文 = u32 長さ + トークン。M# 命令番号、M$ レイヤー命令 (exe 内部では 9999)、S 文章 (長さの下位バイトで XOR、0xFE で終わり、ルビは ff ff n 読み m 語)。主な命令は `engine.rs` 冒頭の表。35 は全レイヤーを消して変更の溜め込みを始め、13 (ウィンドウ表示) か効果付きの $ で一度に見せる。
 - レイヤー命令の絵番号は 1 始まり (e0 のボタンの絵は 0 始まり)。種類 2 はセピア (回想)。
 - 残り: ムービー、$ L 9 / 5 (モーション)、コンフィグ・バックログ・オート・スキップ、Arc00 の題名 (展開すると空)。他の TinkerBell / WendyBell 体験版 (targets.tsv の 7 本) は未確認 (2013/2014 の URL はエラーページ)。
+
+
+## LiLiM (AOS) の実装メモ (2026-10-28)
+
+- 対象: WhiteBlue web体験版ver2.0 (b2019_lilim_darkness、1280x720)。形式は GARbro (MIT) の `Lilim/ArcAOS.cs`・`ImageABM.cs`・`ArcABM.cs`・`HuffmanCompression.cs` に従う。exe は読んでいない。
+- アーカイブ: 版 2 は u32 0、データの始まり、索引の大きさ、名前、0x111 から 0x28 バイトの項目 (名前 0x20、データの始まりからの位置、大きさ)。版 1 (2006〜2007) は 0x20 バイトの項目 (名前 0x10、位置、大きさ) と中身が続き、16 個の 0xff の項目が次の項目までの距離を持つ。.scr と .cmp は u32 の展開後の大きさ + ハフマン (1 ビット目が 1 なら節、0 なら 8 ビットの葉。上位ビットから)。
+- 画像: 素の BMP (24 ビット、8 ビットのマスク .msk) は下の行から。ABM は BMP の見出しのビット数の欄が種類 (32/24: ランレングス、32 は画素ごとの不透明度つき。1/2: 複数枚。8/-8: パレット) で、詰めた行は上から。.cmp は展開すると BMP か ABM。ボタンの絵は縦 3 段 (通常・ポインタの下・押下)。
+- 脚本: start.scr から。`::START`..`::END`、`:ラベル`、`^gsb(名前)` は同名の .scr を呼ぶ (無ければラベル)、`^go` は移る、`^jp` はラベルへ。`^if/^elif/^else/^endi`、`^sw/^case/^df/^ends` (case は次の case で抜ける)、`^macro..^endm` は飛ばす。`[名前]「...」` が台詞、それ以外の行は地の文。どちらも 1 行で 1 クリック。
+- 画面: bgon/cgon が背景、chon(n, 絵, x, y | NON | CENTER) が番号つきの絵 (ch(n, PNT, 1) の番号は x が中心)。変更は ud で一度に見せる (0 即時、1 フェード、2 マスク = 今はフェード)。26 番以降はシステム用でボタンより上。mono(1) でセピア。btnset/btnon/btnenable がゲームのボタン (押した番号が %reg)。float(2) をロード画面にした (タイトルの LOAD)。
+- 音: cvon (cv.aos)、seon、bgmon/bgmoff、envon/envoff (環境音のループ)。すべて素の Ogg。
+- 残り: マスクのワイプ、ef (揺れなど)、バックログ (wbl)、コンフィグ、オート、クイックセーブ (今はセーブ画面を開く)。ほかの 6 本 (targets.tsv) は未確認。
 
 ## 未決のこと
 

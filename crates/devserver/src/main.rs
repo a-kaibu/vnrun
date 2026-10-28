@@ -260,6 +260,9 @@ fn detect(game: &Path) -> Option<String> {
     } else if has("arc01.dat") && has("arc04.dat") && has("arc05.dat") {
         // Cyberworks / TinkerBell: index files Arc01..03 beside the data Arc04..06
         Some("cyberworks".into())
+    } else if has("scr.aos") && has("grp.aos") {
+        // LiLiM: scr.aos (text scripts) beside grp.aos, cv.aos and the sfaNN.exe
+        Some("lilim".into())
     } else if majiro_arc(game, &names) {
         // Majiro: MajiroArc archives (scenario.arc, data.arc, ...) beside the exe
         Some("majiro".into())
