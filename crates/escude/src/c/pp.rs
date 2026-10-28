@@ -53,7 +53,13 @@ impl<'a> Pre<'a> {
         Ok(out)
     }
 
-    fn file(&mut self, path: &str, base: &str, out: &mut Vec<Token>, depth: u32) -> Result<(), String> {
+    fn file(
+        &mut self,
+        path: &str,
+        base: &str,
+        out: &mut Vec<Token>,
+        depth: u32,
+    ) -> Result<(), String> {
         if depth > 32 {
             return Err(format!("{path}: includes nest too deep"));
         }
@@ -89,7 +95,8 @@ impl<'a> Pre<'a> {
                     }
                     "if" => {
                         // only #if 0 / #if 1 and the like
-                        let take = matches!(line.get(1).map(|t| &t.tok), Some(Tok::Int(v, _)) if *v != 0);
+                        let take =
+                            matches!(line.get(1).map(|t| &t.tok), Some(Tok::Int(v, _)) if *v != 0);
                         conds.push((take && active(&conds), take));
                         continue;
                     }
@@ -120,7 +127,11 @@ impl<'a> Pre<'a> {
                             return Err(format!("{path}:{}: #include needs a name", t.line));
                         };
                         let inc = nexas::sjis::decode(s);
-                        let tries = [format!("{}{inc}", dir_of(path)), format!("{base}{inc}"), inc.clone()];
+                        let tries = [
+                            format!("{}{inc}", dir_of(path)),
+                            format!("{base}{inc}"),
+                            inc.clone(),
+                        ];
                         let found = tries.iter().find(|p| (self.load)(p).is_some()).cloned();
                         let Some(p) = found else {
                             return Err(format!("{path}:{}: {inc} not found", t.line));
@@ -155,7 +166,10 @@ impl<'a> Pre<'a> {
         };
         let mut at = 1;
         let mut params = None;
-        if line.get(1).is_some_and(|t| t.tok == Tok::Punct("(") && !t.space) {
+        if line
+            .get(1)
+            .is_some_and(|t| t.tok == Tok::Punct("(") && !t.space)
+        {
             let mut ps = Vec::new();
             at = 2;
             while at < line.len() && line[at].tok != Tok::Punct(")") {
@@ -261,7 +275,8 @@ impl<'a> Pre<'a> {
                             Item::Tok(_) => break,
                         }
                     }
-                    let is_call = k > 0 && matches!(&input[k - 1], Item::Tok(x) if x.tok == Tok::Punct("("));
+                    let is_call =
+                        k > 0 && matches!(&input[k - 1], Item::Tok(x) if x.tok == Tok::Punct("("));
                     if !is_call {
                         out.push(t);
                         continue;
@@ -364,7 +379,9 @@ impl<'a> Pre<'a> {
                 i += 1;
                 continue;
             }
-            if body.get(i + 1).is_some_and(|n| n.tok == Tok::Punct("##")) || (i > 0 && body[i - 1].tok == Tok::Punct("##")) {
+            if body.get(i + 1).is_some_and(|n| n.tok == Tok::Punct("##"))
+                || (i > 0 && body[i - 1].tok == Tok::Punct("##"))
+            {
                 // an operand of ## is not expanded
                 let piece = match index(t) {
                     Some(p) => arg(p),
@@ -454,7 +471,10 @@ mod tests {
         let mut load = move |p: &str| (p == "a.c").then(|| src.clone().into_bytes());
         let mut pre = Pre::new(&mut load);
         let toks = pre.run("a.c", "").unwrap();
-        let v: Vec<String> = toks.iter().map(|t| String::from_utf8(spell(&t.tok)).unwrap()).collect();
+        let v: Vec<String> = toks
+            .iter()
+            .map(|t| String::from_utf8(spell(&t.tok)).unwrap())
+            .collect();
         v.join(" ")
     }
 
@@ -467,7 +487,9 @@ mod tests {
         assert_eq!(run("#define G F\n#define F(x) x+1\nG(2)"), "2 + 1");
         assert_eq!(run("#define R R+1\nR"), "R + 1");
         assert_eq!(
-            run("#define BEGIN switch(m){\n#define CASE(a,b) case a: f(b); break;\nBEGIN CASE(1, \"x\") }"),
+            run(
+                "#define BEGIN switch(m){\n#define CASE(a,b) case a: f(b); break;\nBEGIN CASE(1, \"x\") }"
+            ),
             "switch ( m ) { case 1 : f ( \"x\" ) ; break ; }"
         );
     }

@@ -76,15 +76,14 @@ impl Types {
         self.structs[s].fields.iter().find(|f| f.name == name)
     }
 
-    /// Lays out a struct's fields (natural alignment, as MSVC does).
+    /// Lays out a struct's fields. ACPX packs them: no padding (a .mot file's 26-byte
+    /// pattern records are a WORD then a RECT).
     pub fn layout(&mut self, s: usize, fields: Vec<(String, Ty)>, union: bool) {
         let mut out = Vec::new();
-        let (mut off, mut size, mut align) = (0u32, 0u32, 1u32);
+        let (mut off, mut size, align) = (0u32, 0u32, 1u32);
         for (name, ty) in fields {
-            let a = self.align(&ty);
             let sz = self.size(&ty);
-            align = align.max(a);
-            let at = if union { 0 } else { off.div_ceil(a) * a };
+            let at = if union { 0 } else { off };
             out.push(Field { name, ty, off: at });
             off = at + sz;
             size = size.max(off);
@@ -109,7 +108,10 @@ impl Ty {
     }
 
     pub fn is_int(&self) -> bool {
-        matches!(self, Ty::I8 | Ty::U8 | Ty::I16 | Ty::U16 | Ty::I32 | Ty::U32)
+        matches!(
+            self,
+            Ty::I8 | Ty::U8 | Ty::I16 | Ty::U16 | Ty::I32 | Ty::U32
+        )
     }
 
     pub fn is_scalar(&self) -> bool {
@@ -117,7 +119,10 @@ impl Ty {
     }
 
     pub fn unsigned(&self) -> bool {
-        matches!(self, Ty::U8 | Ty::U16 | Ty::U32 | Ty::Ptr(_) | Ty::Array(..) | Ty::Func(_))
+        matches!(
+            self,
+            Ty::U8 | Ty::U16 | Ty::U32 | Ty::Ptr(_) | Ty::Array(..) | Ty::Func(_)
+        )
     }
 
     /// What a pointer or array points at.
@@ -212,7 +217,13 @@ pub enum Stmt {
     If(Expr, Box<Stmt>, Option<Box<Stmt>>, u32),
     While(Expr, Box<Stmt>, u32),
     Do(Box<Stmt>, Expr, u32),
-    For(Option<Box<Stmt>>, Option<Expr>, Option<Expr>, Box<Stmt>, u32),
+    For(
+        Option<Box<Stmt>>,
+        Option<Expr>,
+        Option<Expr>,
+        Box<Stmt>,
+        u32,
+    ),
     Switch(Expr, Box<Stmt>, u32),
     Case(Expr, u32),
     Default,

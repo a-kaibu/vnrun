@@ -55,7 +55,9 @@ fn escape(b: &[u8], i: &mut usize) -> u8 {
         b'x' => {
             let mut v = 0u32;
             while let Some(&d) = b.get(*i) {
-                let Some(h) = (d as char).to_digit(16) else { break };
+                let Some(h) = (d as char).to_digit(16) else {
+                    break;
+                };
                 v = v * 16 + h;
                 *i += 1;
             }
@@ -137,7 +139,8 @@ pub fn lex(b: &[u8], file: u32) -> Result<Vec<Token>, String> {
                 i += 1;
             }
             Tok::Ident(String::from_utf8_lossy(&b[s..i]).into_owned())
-        } else if c.is_ascii_digit() || (c == b'.' && b.get(i + 1).is_some_and(|d| d.is_ascii_digit()))
+        } else if c.is_ascii_digit()
+            || (c == b'.' && b.get(i + 1).is_some_and(|d| d.is_ascii_digit()))
         {
             let s = i;
             if c == b'0' && matches!(b.get(i + 1), Some(b'x') | Some(b'X')) {
@@ -181,7 +184,11 @@ pub fn lex(b: &[u8], file: u32) -> Result<Vec<Token>, String> {
                     if matches!(b.get(i), Some(b'f') | Some(b'F') | Some(b'l') | Some(b'L')) {
                         i += 1;
                     }
-                    Tok::Float(text.parse::<f64>().map_err(|e| format!("line {line}: {e}"))? as f32)
+                    Tok::Float(
+                        text.parse::<f64>()
+                            .map_err(|e| format!("line {line}: {e}"))?
+                            as f32,
+                    )
                 } else {
                     let v: u64 = if text.len() > 1 && text.starts_with('0') {
                         u64::from_str_radix(&text[1..], 8).unwrap_or(0)

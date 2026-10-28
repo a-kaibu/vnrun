@@ -6,6 +6,8 @@ pub mod compile;
 pub mod lex;
 pub mod parse;
 pub mod pp;
+#[cfg(test)]
+mod tests;
 
 use std::collections::HashMap;
 

@@ -51,6 +51,7 @@ pub enum Op {
     FSub,
     FMul,
     FDiv,
+    FMod,
     FNeg,
     FEq,
     FNe,
@@ -80,8 +81,16 @@ pub enum Op {
     /// [value] -> returns it
     Ret,
     /// [addr] -> [old value], adding delta to a value of `width` bytes (signed)
-    IncDec { width: u8, signed: bool, delta: i32, post: bool },
-    FIncDec { delta: i8, post: bool },
+    IncDec {
+        width: u8,
+        signed: bool,
+        delta: i32,
+        post: bool,
+    },
+    FIncDec {
+        delta: i8,
+        post: bool,
+    },
     /// [a, b] -> [b, a]
     Swap,
 }

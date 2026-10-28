@@ -67,7 +67,10 @@ impl Parser {
     }
 
     fn line(&self) -> u32 {
-        self.toks.get(self.at).or(self.toks.last()).map_or(0, |t| t.line)
+        self.toks
+            .get(self.at)
+            .or(self.toks.last())
+            .map_or(0, |t| t.line)
     }
 
     fn here(&self) -> String {
@@ -87,7 +90,11 @@ impl Parser {
             .take(6)
             .map(|t| String::from_utf8_lossy(&super::pp::spell(&t.tok)).into_owned())
             .collect();
-        Err(format!("{}: {what} (near: {})", self.here(), near.join(" ")))
+        Err(format!(
+            "{}: {what} (near: {})",
+            self.here(),
+            near.join(" ")
+        ))
     }
 
     fn is(&self, p: &str) -> bool {
@@ -132,9 +139,25 @@ impl Parser {
             Some(Tok::Ident(n)) => {
                 matches!(
                     n.as_str(),
-                    "void" | "char" | "short" | "int" | "long" | "float" | "double" | "signed"
-                        | "unsigned" | "struct" | "union" | "const" | "volatile" | "register"
-                        | "static" | "extern" | "typedef" | "inline" | "enum"
+                    "void"
+                        | "char"
+                        | "short"
+                        | "int"
+                        | "long"
+                        | "float"
+                        | "double"
+                        | "signed"
+                        | "unsigned"
+                        | "struct"
+                        | "union"
+                        | "const"
+                        | "volatile"
+                        | "register"
+                        | "static"
+                        | "extern"
+                        | "typedef"
+                        | "inline"
+                        | "enum"
                 ) || self.typedefs.contains_key(n)
             }
             _ => false,
@@ -145,11 +168,21 @@ impl Parser {
 
     fn specifiers(&mut self) -> Result<(Ty, Storage), String> {
         let mut st = Storage::default();
-        let (mut unsigned, mut signed, mut short, mut long, mut char_, mut int, mut float, mut void) =
-            (false, false, false, 0, false, false, false, false);
+        let (
+            mut unsigned,
+            mut signed,
+            mut short,
+            mut long,
+            mut char_,
+            mut int,
+            mut float,
+            mut void,
+        ) = (false, false, false, 0, false, false, false, false);
         let mut named: Option<Ty> = None;
         loop {
-            let Some(Tok::Ident(n)) = self.peek() else { break };
+            let Some(Tok::Ident(n)) = self.peek() else {
+                break;
+            };
             let n = n.clone();
             match n.as_str() {
                 "typedef" => st.typedef = true,
@@ -176,7 +209,15 @@ impl Parser {
                     continue;
                 }
                 _ => {
-                    let any = unsigned || signed || short || long > 0 || char_ || int || float || void || named.is_some();
+                    let any = unsigned
+                        || signed
+                        || short
+                        || long > 0
+                        || char_
+                        || int
+                        || float
+                        || void
+                        || named.is_some();
                     match self.typedefs.get(&n) {
                         Some(t) if !any => named = Some(t.clone()),
                         _ => break,
@@ -215,7 +256,9 @@ impl Parser {
                 let name = self.ident()?;
                 if self.eat("=") {
                     let e = self.conditional()?;
-                    v = self.const_eval(&e).ok_or_else(|| format!("{}: enum value not constant", self.here()))?;
+                    v = self
+                        .const_eval(&e)
+                        .ok_or_else(|| format!("{}: enum value not constant", self.here()))?;
                 }
                 self.enums.insert(name, v);
                 v += 1;
@@ -285,7 +328,10 @@ impl Parser {
 
     /// pointers, a name (or a nested declarator), then arrays and parameter lists.
     #[allow(clippy::type_complexity)]
-    fn declarator(&mut self, base: Ty) -> Result<(Option<String>, Ty, Option<Vec<(String, Ty)>>), String> {
+    fn declarator(
+        &mut self,
+        base: Ty,
+    ) -> Result<(Option<String>, Ty, Option<Vec<(String, Ty)>>), String> {
         let mut t = base;
         loop {
             if self.eat("*") {
@@ -299,7 +345,12 @@ impl Parser {
         let mut name = None;
         let mut inner: Option<Ty> = None;
         let mut inner_params = None;
-        if self.is("(") && (matches!(self.peek_at(1), Some(Tok::Punct("*")) | Some(Tok::Punct("("))) || (matches!(self.peek_at(1), Some(Tok::Ident(_))) && !self.type_start(1))) {
+        if self.is("(")
+            && (matches!(
+                self.peek_at(1),
+                Some(Tok::Punct("*")) | Some(Tok::Punct("("))
+            ) || (matches!(self.peek_at(1), Some(Tok::Ident(_))) && !self.type_start(1)))
+        {
             self.at += 1;
             let (n, it, ps) = self.declarator(Ty::Struct(HOLE))?;
             self.expect(")")?;
@@ -324,7 +375,9 @@ impl Parser {
                     0
                 } else {
                     let e = self.conditional()?;
-                    self.const_eval(&e).ok_or_else(|| format!("{}: array size not constant", self.here()))? as u32
+                    self.const_eval(&e)
+                        .ok_or_else(|| format!("{}: array size not constant", self.here()))?
+                        as u32
                 };
                 self.expect("]")?;
                 sufs.push(Suf::Arr(n));
@@ -447,7 +500,10 @@ impl Parser {
                 Ty::I32
             });
         }
-        let variadic = trap.params.last().is_some_and(|p| p.iter().any(|t| matches!(t, Tok::Ident(n) if n == "nArgs")));
+        let variadic = trap
+            .params
+            .last()
+            .is_some_and(|p| p.iter().any(|t| matches!(t, Tok::Ident(n) if n == "nArgs")));
         if variadic {
             params.pop();
         }
@@ -511,7 +567,11 @@ impl Parser {
                 }
                 self.protos.push((name, f.clone()));
             } else {
-                let init = if self.eat("=") { Some(self.initializer()?) } else { None };
+                let init = if self.eat("=") {
+                    Some(self.initializer()?)
+                } else {
+                    None
+                };
                 let ty = self.size_from_init(ty, &init);
                 self.items.push(Item::Var(Decl {
                     name,
@@ -585,7 +645,11 @@ impl Parser {
             } else if let Ty::Func(f) = &ty {
                 self.protos.push((name, f.clone()));
             } else {
-                let init = if self.eat("=") { Some(self.initializer()?) } else { None };
+                let init = if self.eat("=") {
+                    Some(self.initializer()?)
+                } else {
+                    None
+                };
                 let ty = self.size_from_init(ty, &init);
                 v.push(Decl {
                     name,
@@ -613,7 +677,10 @@ impl Parser {
         }
         if let Some(Tok::Ident(n)) = self.peek() {
             let n = n.clone();
-            if matches!(self.peek_at(1), Some(Tok::Punct(":"))) && !self.typedefs.contains_key(&n) && n != "default" {
+            if matches!(self.peek_at(1), Some(Tok::Punct(":")))
+                && !self.typedefs.contains_key(&n)
+                && n != "default"
+            {
                 self.at += 2;
                 return Ok(Stmt::Label(n));
             }
@@ -665,9 +732,17 @@ impl Parser {
                         self.expect(";")?;
                         Some(Box::new(Stmt::Expr(e, line)))
                     };
-                    let cond = if self.is(";") { None } else { Some(self.expr()?) };
+                    let cond = if self.is(";") {
+                        None
+                    } else {
+                        Some(self.expr()?)
+                    };
                     self.expect(";")?;
-                    let step = if self.is(")") { None } else { Some(self.expr()?) };
+                    let step = if self.is(")") {
+                        None
+                    } else {
+                        Some(self.expr()?)
+                    };
                     self.expect(")")?;
                     let body = self.statement()?;
                     return Ok(Stmt::For(init, cond, step, Box::new(body), line));
@@ -703,7 +778,11 @@ impl Parser {
                 }
                 "return" => {
                     self.at += 1;
-                    let e = if self.is(";") { None } else { Some(self.expr()?) };
+                    let e = if self.is(";") {
+                        None
+                    } else {
+                        Some(self.expr()?)
+                    };
                     self.expect(";")?;
                     return Ok(Stmt::Return(e, line));
                 }
@@ -716,7 +795,9 @@ impl Parser {
                 _ => {}
             }
         }
-        if self.type_start(0) && !(matches!(self.peek(), Some(Tok::Ident(n)) if self.typedefs.contains_key(n)) && matches!(self.peek_at(1), Some(Tok::Punct(p)) if ["=", "(", ".", "->", "[", "+=", "-=", "++", "--"].contains(p)))
+        if self.type_start(0)
+            && !(matches!(self.peek(), Some(Tok::Ident(n)) if self.typedefs.contains_key(n))
+                && matches!(self.peek_at(1), Some(Tok::Punct(p)) if ["=", "(", ".", "->", "[", "+=", "-=", "++", "--"].contains(p)))
         {
             return self.local_decls();
         }
@@ -850,7 +931,11 @@ impl Parser {
         };
         if let Some(op) = op {
             self.at += 1;
-            let e = if matches!(op, UOp::PreInc | UOp::PreDec) { self.unary()? } else { self.cast()? };
+            let e = if matches!(op, UOp::PreInc | UOp::PreDec) {
+                self.unary()?
+            } else {
+                self.cast()?
+            };
             return Ok(Expr::Unary(op, Box::new(e)));
         }
         self.postfix()
@@ -1000,8 +1085,8 @@ pub fn const_eval(e: &Expr, types: &Types) -> Option<i64> {
 /// Built-in functions that take floats, by name and parameter.
 fn float_param(func: &str, k: usize, pname: &str) -> bool {
     match func {
-        "fabs" | "sqrt" | "pow" | "log" | "exp" | "floor" | "ceil" | "sin" | "cos" | "tan" | "asin"
-        | "acos" | "atan" | "bezier" | "neville" | "linear" | "p3d_env" => true,
+        "fabs" | "sqrt" | "pow" | "log" | "exp" | "floor" | "ceil" | "sin" | "cos" | "tan"
+        | "asin" | "acos" | "atan" | "bezier" | "neville" | "linear" | "p3d_env" => true,
         "ftoa" => k == 1,
         "kf_set" => k >= 1,
         "kf_getkey" => k == 2,

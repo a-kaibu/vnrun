@@ -75,7 +75,11 @@ fn translate(t: &Ty, from: &Types, to: &Types) -> Ty {
     match t {
         Ty::Struct(i) => {
             let name = &from.structs[*i].name;
-            match to.structs.iter().position(|s| !name.is_empty() && &s.name == name) {
+            match to
+                .structs
+                .iter()
+                .position(|s| !name.is_empty() && &s.name == name)
+            {
                 Some(j) => Ty::Struct(j),
                 None => Ty::U8,
             }
@@ -135,6 +139,7 @@ pub fn compile(unit: &super::ast::Unit, t: &mut dyn Target, root: Option<&Export
     }
     // globals: storage for each definition; extern ones are this program's or the root's
     let mut externs = Vec::new();
+    let mut own: Vec<(u32, u32)> = Vec::new();
     for item in &unit.items {
         let Item::Var(d) = item else { continue };
         if d.is_extern && d.init.is_none() {
@@ -154,6 +159,7 @@ pub fn compile(unit: &super::ast::Unit, t: &mut dyn Target, root: Option<&Export
         let size = u.types.size(&ty).max(1);
         let addr = u.t.alloc(size, u.types.align(&ty).max(4));
         u.globals.insert(d.name.clone(), (addr, ty));
+        own.push((addr, size));
     }
     for d in externs {
         if u.globals.contains_key(&d.name) {
@@ -187,16 +193,28 @@ pub fn compile(unit: &super::ast::Unit, t: &mut dyn Target, root: Option<&Export
     for item in &unit.items {
         if let Item::Func(func) = item {
             let (index, _) = u.funcs[&func.name];
-            let f = u.function(func).map_err(|e| format!("{}: {e}", func.name))?;
+            let f = u
+                .function(func)
+                .map_err(|e| format!("{}: {e}", func.name))?;
             u.t.set_function(index, f);
         }
     }
     // the start: initializers, then main
     let start = u.t.new_function("<start>");
-    let mut code: Vec<Op> = u.init.iter().map(|p| p.0).collect();
-    let mut lines: Vec<u32> = u.init.iter().map(|p| p.1).collect();
+    // a program starts with zeroed globals, each time it is called
+    let mut code: Vec<Op> = Vec::new();
+    for (addr, size) in &own {
+        code.extend([Op::Push(*addr), Op::Zero(*size)]);
+    }
+    let mut lines: Vec<u32> = vec![0; code.len()];
+    code.extend(u.init.iter().map(|p| p.0));
+    lines.extend(u.init.iter().map(|p| p.1));
     match u.funcs.get("main") {
-        Some((i, _)) if !u.root.is_some_and(|r| r.funcs.get("main").is_some_and(|m| m.0 == *i)) => {
+        Some((i, _))
+            if !u
+                .root
+                .is_some_and(|r| r.funcs.get("main").is_some_and(|m| m.0 == *i)) =>
+        {
             code.push(Op::Call(*i, 0));
         }
         _ => code.push(Op::Push(0)),
@@ -291,11 +309,13 @@ fn store_op(t: &Ty) -> Op {
     }
 }
 
-/// The type of an arithmetic result.
+/// The type of an arithmetic result. Unsigned types stay unsigned when promoted (as in K&R C:
+/// Verdia's ISKANJI(x), ((x ^ 0x20) - 0xa1) <= 0x3b, needs a BYTE to promote to unsigned).
 fn arith(a: &Ty, b: &Ty) -> Ty {
+    let uns = |t: &Ty| matches!(t, Ty::U8 | Ty::U16 | Ty::U32);
     if a.is_float() || b.is_float() {
         Ty::F32
-    } else if *a == Ty::U32 || *b == Ty::U32 {
+    } else if uns(a) || uns(b) {
         Ty::U32
     } else {
         Ty::I32
@@ -561,8 +581,16 @@ impl<'a> Unit<'a> {
     fn local_decl(&mut self, f: &mut Fun, d: &Decl) -> R<()> {
         if d.is_extern {
             // a global seen from here
-            if let Some((addr, _)) = self.globals.get(&d.name).cloned().or_else(|| self.root.and_then(|r| r.globals.get(&d.name).cloned())) {
-                f.scopes.last_mut().unwrap().insert(d.name.clone(), Var::Global(addr, d.ty.clone()));
+            if let Some((addr, _)) = self
+                .globals
+                .get(&d.name)
+                .cloned()
+                .or_else(|| self.root.and_then(|r| r.globals.get(&d.name).cloned()))
+            {
+                f.scopes
+                    .last_mut()
+                    .unwrap()
+                    .insert(d.name.clone(), Var::Global(addr, d.ty.clone()));
             }
             return Ok(());
         }
@@ -578,12 +606,18 @@ impl<'a> Unit<'a> {
                     self.init.push((op, line));
                 }
             }
-            f.scopes.last_mut().unwrap().insert(d.name.clone(), Var::Global(addr, d.ty.clone()));
+            f.scopes
+                .last_mut()
+                .unwrap()
+                .insert(d.name.clone(), Var::Global(addr, d.ty.clone()));
             return Ok(());
         }
         let size = self.size(&d.ty).max(1);
         let off = f.local(size, self.types.align(&d.ty));
-        f.scopes.last_mut().unwrap().insert(d.name.clone(), Var::Local(off, d.ty.clone()));
+        f.scopes
+            .last_mut()
+            .unwrap()
+            .insert(d.name.clone(), Var::Local(off, d.ty.clone()));
         if let Some(init) = &d.init {
             match (&d.ty, init) {
                 (t, Init::Expr(e)) if !matches!(t, Ty::Array(..)) => {
@@ -595,9 +629,15 @@ impl<'a> Unit<'a> {
                 _ => {
                     f.emit(Op::Fp(off));
                     f.emit(Op::Zero(size));
-                    self.init_at(f, &|f: &mut Fun, o| {
-                        f.emit(Op::Fp(off + o));
-                    }, 0, &d.ty, init)?;
+                    self.init_at(
+                        f,
+                        &|f: &mut Fun, o| {
+                            f.emit(Op::Fp(off + o));
+                        },
+                        0,
+                        &d.ty,
+                        init,
+                    )?;
                 }
             }
         }
@@ -605,13 +645,26 @@ impl<'a> Unit<'a> {
     }
 
     fn init_global(&mut self, f: &mut Fun, addr: u32, ty: &Ty, init: &Init) -> R<()> {
-        self.init_at(f, &|f: &mut Fun, o| {
-            f.emit(Op::Push(addr + o));
-        }, 0, ty, init)
+        self.init_at(
+            f,
+            &|f: &mut Fun, o| {
+                f.emit(Op::Push(addr + o));
+            },
+            0,
+            ty,
+            init,
+        )
     }
 
     /// Code storing an initializer into an object at `base` + `off`.
-    fn init_at(&mut self, f: &mut Fun, base: &dyn Fn(&mut Fun, u32), off: u32, ty: &Ty, init: &Init) -> R<()> {
+    fn init_at(
+        &mut self,
+        f: &mut Fun,
+        base: &dyn Fn(&mut Fun, u32),
+        off: u32,
+        ty: &Ty,
+        init: &Init,
+    ) -> R<()> {
         match init {
             Init::List(items) => {
                 let mut it = items.iter().peekable();
@@ -729,7 +782,9 @@ impl<'a> Unit<'a> {
                 self.narrow(f, to);
             }
             (false, false) => {
-                if self.size(&from) > self.size(to) || (from.unsigned() != to.unsigned() && self.size(to) < 4) {
+                if self.size(&from) > self.size(to)
+                    || (from.unsigned() != to.unsigned() && self.size(to) < 4)
+                {
                     self.narrow(f, to);
                 }
             }
@@ -808,7 +863,11 @@ impl<'a> Unit<'a> {
             }
             Expr::Index(a, i) => {
                 let (pa, pi) = (decay(self.type_of(f, a)?), decay(self.type_of(f, i)?));
-                let (a, i) = if pa.is_ptr() || !pi.is_ptr() { (a, i) } else { (i, a) };
+                let (a, i) = if pa.is_ptr() || !pi.is_ptr() {
+                    (a, i)
+                } else {
+                    (i, a)
+                };
                 let t = self.expr(f, a)?;
                 let elem = match t {
                     Ty::Ptr(b) => *b,
@@ -839,7 +898,10 @@ impl<'a> Unit<'a> {
                     return self.err(f, format!(".{name} of something not a struct"));
                 };
                 let Some(fl) = self.types.field(s, name).cloned() else {
-                    return self.err(f, format!("no field {name} in {}", self.types.structs[s].name));
+                    return self.err(
+                        f,
+                        format!("no field {name} in {}", self.types.structs[s].name),
+                    );
                 };
                 if fl.off != 0 {
                     f.emit(Op::Push(fl.off));
@@ -1009,7 +1071,9 @@ impl<'a> Unit<'a> {
     fn object_type(&mut self, f: &mut Fun, e: &Expr) -> R<Ty> {
         let (n, l) = (f.code.len(), f.lines.len());
         let t = match e {
-            Expr::Name(_) | Expr::Index(..) | Expr::Member(..) | Expr::Unary(UOp::Deref, _) => self.addr(f, e),
+            Expr::Name(_) | Expr::Index(..) | Expr::Member(..) | Expr::Unary(UOp::Deref, _) => {
+                self.addr(f, e)
+            }
             _ => self.expr(f, e),
         };
         f.code.truncate(n);
@@ -1081,7 +1145,10 @@ impl<'a> Unit<'a> {
                 let up = matches!(op, UOp::PreInc | UOp::PostInc);
                 let post = matches!(op, UOp::PostInc | UOp::PostDec);
                 if t.is_float() {
-                    f.emit(Op::FIncDec { delta: if up { 1 } else { -1 }, post });
+                    f.emit(Op::FIncDec {
+                        delta: if up { 1 } else { -1 },
+                        post,
+                    });
                 } else {
                     let step = match &t {
                         Ty::Ptr(b) => self.size(b).max(1) as i32,
@@ -1108,7 +1175,11 @@ impl<'a> Unit<'a> {
         match op {
             BOp::LAnd | BOp::LOr => {
                 self.cond(f, a)?;
-                let j = f.emit(if op == BOp::LAnd { Op::Jz(0) } else { Op::Jnz(0) });
+                let j = f.emit(if op == BOp::LAnd {
+                    Op::Jz(0)
+                } else {
+                    Op::Jnz(0)
+                });
                 self.cond(f, b)?;
                 f.emit(Op::LNot);
                 f.emit(Op::LNot);
@@ -1129,7 +1200,11 @@ impl<'a> Unit<'a> {
                     self.convert(f, &ta, &Ty::F32);
                 }
                 let tb = self.expr(f, b)?;
-                let ta2 = if res.is_float() && !ta.is_ptr() { Ty::F32 } else { ta };
+                let ta2 = if res.is_float() && !ta.is_ptr() {
+                    Ty::F32
+                } else {
+                    ta
+                };
                 self.arith_op(f, op, &ta2, &tb)
             }
         }
@@ -1188,6 +1263,7 @@ impl<'a> Unit<'a> {
                 BOp::Sub => Op::FSub,
                 BOp::Mul => Op::FMul,
                 BOp::Div => Op::FDiv,
+                BOp::Mod => Op::FMod,
                 BOp::Eq => Op::FEq,
                 BOp::Ne => Op::FNe,
                 BOp::Lt => Op::FLt,
@@ -1197,11 +1273,16 @@ impl<'a> Unit<'a> {
                 _ => return self.err(f, format!("{op:?} on floats")),
             };
             f.emit(o);
-            return Ok(if matches!(op, BOp::Eq | BOp::Ne | BOp::Lt | BOp::Le | BOp::Gt | BOp::Ge) {
-                Ty::I32
-            } else {
-                Ty::F32
-            });
+            return Ok(
+                if matches!(
+                    op,
+                    BOp::Eq | BOp::Ne | BOp::Lt | BOp::Le | BOp::Gt | BOp::Ge
+                ) {
+                    Ty::I32
+                } else {
+                    Ty::F32
+                },
+            );
         }
         let uns = res == Ty::U32 || ta.is_ptr() || tb.is_ptr();
         let o = match op {

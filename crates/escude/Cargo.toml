@@ -8,3 +8,4 @@ description = "An Escu:de engine for the browser: reads the ESC-ARC archives, sc
 [dependencies]
 nexas = { path = "../nexas" }
 image = { version = "0.25", default-features = false, features = ["png", "bmp", "jpeg"] }
+fontdue = "0.9"
