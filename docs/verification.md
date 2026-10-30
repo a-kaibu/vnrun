@@ -631,7 +631,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2007_anim | [必殺痴漢人　- TRIAL VERSION -](http://suezou.dyndns.org/dl2007/anim/chikan3/ci3_trial.lzh) | 本編 | 検証スレッドでも Chromium で START→本編の文章 (または体験版メニュー) まで確認。Crowd/ANIM の 2007 年版 (番号と引数が違う別表、exe の解釈ループから。全ジャンプが命令の頭に落ちるのを確認) でタイトル (p_menu)→はじめから→本編の文章・名前・背景・立ち絵・選択肢 (anim-run と Chromium)。上 48 の帯と下 144 の枠は p_message から。タイトルのメニューは自前の文字ボタン。本編でセーブ (Esc のメニュー→セーブ→No.01)→ページを開き直してタイトルの「つづきから」でロード→同じページの文章から続きを読める (Chromium) |
 | b2008_anim | [息子の友達に犯されて - TRIAL VERSION -](http://suezou.dyndns.org/dl2008/anim/musuko/musuko_trial.lzh) | 本編 | 検証スレッドでも Chromium で START→本編の文章まで確認。Crowd/ANIM (<game>_sce.dat を自前で実行) でタイトル→START→説明文→蓉子編/一志編の選択肢→本編の背景・立ち絵・イベント CG・文章・ボイスまで、体験版の最後 (タイトルに戻る) まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (両方) |
 | b2009_anim | [愛娘という名の玩具　- TRIAL VERSION -](http://suezou.dyndns.org/dl2009/anim/eva/eve_trial.lzh) | 本編 | 検証スレッドでも Chromium で START→本編の文章まで確認。Crowd/ANIM で 1024x768 のタイトル (Start/Load/Exit)→本編の背景 (1024x576 を上下の帯の間に)・立ち絵・イベント CG・文章まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium)。メッセージ枠は自前の半透明の帯 (p_message が無い) |
-| b2010_anim | [贄姫 - TRIAL VERSION -](http://suezou.dyndns.org/dl2010/anim/niehime/nime_trial.lzh) | 本編 | Crowd/ANIM でタイトル (縦書きの 5 ボタン)→初めから→本編の背景・立ち絵・文章まで、体験版の最後まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
+| b2010_anim | [贄姫 - TRIAL VERSION -](http://suezou.dyndns.org/dl2010/anim/niehime/nime_trial.lzh) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。Crowd/ANIM でタイトル (縦書きの 5 ボタン)→初めから→本編の背景・立ち絵・文章まで、体験版の最後まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
 | b2011_anim_team_mm | [NTR彼女はいじめられっ娘 - TRIAL VERSION -](http://suezou.dyndns.org/dl2011/anim-team-mm/ntr/ntr_trial_02.zip) | 本編 | 検証スレッドでも Chromium で START→本編の文章まで確認。Crowd/ANIM の 2011 年版 (命令の番号が付け直された別表、exe の解釈ループから) でタイトル (pMenuTrial と pMenuTrialButton、位置は exe の数値)→はじめから→本編の背景・立ち絵 (GAX)・文章・ボイス・選択肢まで (anim-run と Chromium)。セーブ→タイトルからロードで本編に戻る (Chromium) |
 | b2017_anim | [いつまでも俺は母に恋してる！ - 体験版２ -](http://suezou.dyndns.org/dl2017/anim/mamakoi/mamakoi_trial_v2.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり、<game>_sce.dat が無い。保護を外すのはコピー保護の回避にあたるため試みない |
 | b2019_anim | [いつまでも息子のままじゃいられない！５ - 体験版 -](http://suezou.dyndns.org/dl2019/anim/musumama5/musu_mama5_trial.zip) | NG | シナリオが Enigma Protector で包まれた exe の中にあり、<game>_sce.dat が無い。保護を外すのはコピー保護の回避にあたるため試みない |
@@ -656,9 +656,9 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2006_blackcyc | [EXTRAVAGANZA ～蟲愛でる少女～ 体験版2](http://suezou.dyndns.org/dl2006/blackcyc/extravaga/extravaganza_trial2.exe) | 本編 | System-NNN (vnrun) で自己展開 exe (LZH) からオープニング→タイトル→はじめから→チャート (chart/*.xtx のスロット選択)→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium) |
-| b2008_blackcyc | [ＢＤＤ 体験版Ⅱ](http://suezou.dyndns.org/dl2008/blackcyc/bdd/bdd_taiken2.exe) | 本編 | System-NNN (vnrun) でオープニング→タイトル→はじめから→依頼の掲示板 (bdd/irailist.xtx)→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium)。セーブ→ロードで本編に戻る (Chromium) |
-| b2011_blackcyc | [獄淫の尖塔 体験版](http://suezou.dyndns.org/dl2011/blackcyc/gokuin/gokuin_trial.exe) | 本編 | System-NNN (vnrun) でオープニング→タイトル→はじめから→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium) |
+| b2006_blackcyc | [EXTRAVAGANZA ～蟲愛でる少女～ 体験版2](http://suezou.dyndns.org/dl2006/blackcyc/extravaga/extravaganza_trial2.exe) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。System-NNN (vnrun) で自己展開 exe (LZH) からオープニング→タイトル→はじめから→チャート (chart/*.xtx のスロット選択)→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium) |
+| b2008_blackcyc | [ＢＤＤ 体験版Ⅱ](http://suezou.dyndns.org/dl2008/blackcyc/bdd/bdd_taiken2.exe) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。System-NNN (vnrun) でオープニング→タイトル→はじめから→依頼の掲示板 (bdd/irailist.xtx)→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium)。セーブ→ロードで本編に戻る (Chromium) |
+| b2011_blackcyc | [獄淫の尖塔 体験版](http://suezou.dyndns.org/dl2011/blackcyc/gokuin/gokuin_trial.exe) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。System-NNN (vnrun) でオープニング→タイトル→はじめから→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium) |
 | b2016_blackcyc | [EXTRAVAGANZA ～蟲愛でる少女～ 体験版 (幼虫)](http://suezou.dyndns.org/dl2016/blackcyc/extravaganza/EXTRAVAGANZA_trial_youtyu.zip) | 本編 | System-NNN (vnrun) で zip 内の自己展開 exe (RAR) からオープニング→タイトル→NEW GAME→チャート (chart/*.fxf)→Prologue の背景・文章・名前まで (nnn-run と Chromium) |
 | b2021_metalogiq | [魔法少女消耗戦線 DEADΩAEGIS 体験版](http://suezou.dyndns.org/dl2021/metalogiq/dead_end_aegis/DeadendAegis_trial.exe) | 本編 | System-NNN (vnrun) で 1280x720 のロゴ→タイトル→新規スタート→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium)。ディスク容量のため ev0.gpk・cdvaw・movie を除いて展開して確認 |
 | b2023_cyc_rose | [薔薇ノ木ニ薔薇ノ花咲ク 体験版](http://suezou.dyndns.org/dl2023/cyc-rose/bara_re/baraRe_trial.zip) | 本編 | System-NNN (vnrun) で zip 内の自己展開 exe (RAR5) からオープニング→タイトル→本編の背景 (dwq/<xx>/ のばらの dwq)・文章・名前まで (nnn-run と Chromium) |
@@ -667,12 +667,12 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2007_bishop | [姫奴隷 体験版](http://suezou.dyndns.org/dl2007/bishop/hd/hd_trial2.zip) | 本編 | Bishop (vnrun) で BSScript Rev.6 (bsx.dat、Shift-JIS) のロゴ→タイトル→はじめから→本編の背景・立ち絵・文章・名前→マップ (map.dat から本来の城の画面とヒロインのアイコン、エステル・ミレーユのどちらを選んでもそのイベントへ、LOAD でロード画面、右クリックでマップに戻る)→エステルのイベントまで (bsx-run と Chromium)。イベント中でセーブ→ページを開き直してタイトルの「続きから」でロード→続きを読める (Chromium) |
-| b2008_bishop | [毎日けだものっ!! WEB体験版](http://suezou.dyndns.org/dl2008/bishop/kedamono/kedamono_web_trial.zip) | 本編 | Bishop (vnrun) で BSScript Rev.6 のロゴ→タイトル (ボタンの位置は画像側)→はじめから→本編の背景・立ち絵・文章・名前まで (bsx-run と Chromium)。movie を除いて展開して確認 |
-| b2010_bishop | [学園3～華麗なる悦辱～ 体験版 WEB edition](http://suezou.dyndns.org/dl2010/bishop/gk3/gk3_trial.zip) | 本編 | Bishop (vnrun) で BSXScript 2.0 の注意書き→タイトル→始めから→本編の背景・CG・立ち絵・文章・名前、体験版の最後まで (bsx-run と Chromium) |
-| b2011_bishop | [裏教師～背徳の淫悦授業～ WEB体験版](http://suezou.dyndns.org/dl2011/bishop/uk/uk_trial.zip) | 本編 | Bishop (vnrun) で BSXScript 2.0 の注意書き→タイトル→始めから→本編の背景・CG・立ち絵 (体と顔の合成)・文章・名前、体験版の最後からタイトルへ (bsx-run と Chromium)。セーブ→ページを開き直してタイトルの「続きから」でロード→同じ CG・文章に戻る (Chromium) |
-| b2012_bishop | [しりこん☆まじっく WEB体験版](http://suezou.dyndns.org/dl2012/bishop/sl/silimagi_trial.zip) | 本編 | Bishop (vnrun) で BSXScript 2.0 の 1024x576 の注意書き→タイトル→始めから→本編の背景・CG・立ち絵・文章・名前まで (bsx-run と Chromium)。movie を除いて展開して確認 |
-| b2021_bishop | [屈辱3 体験版](http://suezou.dyndns.org/dl2021/bishop/ktjk3/ktjk3_trial.zip) | 本編 | Bishop (vnrun) で BSXScript 3.3 の 1024x768 の注意書き→タイトル→最初から始める→本編の背景・CG・立ち絵 (命令 39、近景の x -663)・文章・名前まで (bsx-run と Chromium)。movie を除いて展開して確認 |
+| b2007_bishop | [姫奴隷 体験版](http://suezou.dyndns.org/dl2007/bishop/hd/hd_trial2.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。Bishop (vnrun) で BSScript Rev.6 (bsx.dat、Shift-JIS) のロゴ→タイトル→はじめから→本編の背景・立ち絵・文章・名前→マップ (map.dat から本来の城の画面とヒロインのアイコン、エステル・ミレーユのどちらを選んでもそのイベントへ、LOAD でロード画面、右クリックでマップに戻る)→エステルのイベントまで (bsx-run と Chromium)。イベント中でセーブ→ページを開き直してタイトルの「続きから」でロード→続きを読める (Chromium) |
+| b2008_bishop | [毎日けだものっ!! WEB体験版](http://suezou.dyndns.org/dl2008/bishop/kedamono/kedamono_web_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。Bishop (vnrun) で BSScript Rev.6 のロゴ→タイトル (ボタンの位置は画像側)→はじめから→本編の背景・立ち絵・文章・名前まで (bsx-run と Chromium)。movie を除いて展開して確認 |
+| b2010_bishop | [学園3～華麗なる悦辱～ 体験版 WEB edition](http://suezou.dyndns.org/dl2010/bishop/gk3/gk3_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。Bishop (vnrun) で BSXScript 2.0 の注意書き→タイトル→始めから→本編の背景・CG・立ち絵・文章・名前、体験版の最後まで (bsx-run と Chromium) |
+| b2011_bishop | [裏教師～背徳の淫悦授業～ WEB体験版](http://suezou.dyndns.org/dl2011/bishop/uk/uk_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。Bishop (vnrun) で BSXScript 2.0 の注意書き→タイトル→始めから→本編の背景・CG・立ち絵 (体と顔の合成)・文章・名前、体験版の最後からタイトルへ (bsx-run と Chromium)。セーブ→ページを開き直してタイトルの「続きから」でロード→同じ CG・文章に戻る (Chromium) |
+| b2012_bishop | [しりこん☆まじっく WEB体験版](http://suezou.dyndns.org/dl2012/bishop/sl/silimagi_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。Bishop (vnrun) で BSXScript 2.0 の 1024x576 の注意書き→タイトル→始めから→本編の背景・CG・立ち絵・文章・名前まで (bsx-run と Chromium)。movie を除いて展開して確認 |
+| b2021_bishop | [屈辱3 体験版](http://suezou.dyndns.org/dl2021/bishop/ktjk3/ktjk3_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。Bishop (vnrun) で BSXScript 3.3 の 1024x768 の注意書き→タイトル→最初から始める→本編の背景・CG・立ち絵 (命令 39、近景の x -663)・文章・名前まで (bsx-run と Chromium)。movie を除いて展開して確認 |
 
 ### Eushully AGE (vnrun)
 
@@ -726,34 +726,34 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2014_silkys_plus | [なないろリンカネーション 体験版 ver.1.2](http://suezou.dyndns.org/dl2014/silkys-plus/nanairo/nanairo_trial1.2.zip) | 本編 | Silky's (vnrun) でロゴ・注意書き→タイトル (title.akb のボタン)→はじめから→nanairo_01..03 の背景・立ち絵・名前・文章・選択肢を進む (silkys-run、70000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→タイトルの「つづきから」でロードして本編に戻る |
-| b2016_silkys_sakura | [ママのおっぱい～俺の童貞ミルクが搾り取られた件～ 体験版](http://suezou.dyndns.org/dl2016/silkys-sakura/mama_oppai/oppai_trial.zip) | 本編 | Silky's (vnrun) でロゴ・注意書き→タイトル (Title_scroll のスクロール、trial_Title_p のボタン)→はじめから→mmsc_000..006 の背景・立ち絵・イベント CG・名前・文章を最後まで進む (silkys-run、45000 フレーム)。Chromium でタイトル→本編、SAVE ボタンからセーブ→タイトルの「続きから始める」でロードして本編 (背景・イベント CG・立ち絵込み) に戻る |
+| b2014_silkys_plus | [なないろリンカネーション 体験版 ver.1.2](http://suezou.dyndns.org/dl2014/silkys-plus/nanairo/nanairo_trial1.2.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。Silky's (vnrun) でロゴ・注意書き→タイトル (title.akb のボタン)→はじめから→nanairo_01..03 の背景・立ち絵・名前・文章・選択肢を進む (silkys-run、70000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→タイトルの「つづきから」でロードして本編に戻る |
+| b2016_silkys_sakura | [ママのおっぱい～俺の童貞ミルクが搾り取られた件～ 体験版](http://suezou.dyndns.org/dl2016/silkys-sakura/mama_oppai/oppai_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。Silky's (vnrun) でロゴ・注意書き→タイトル (Title_scroll のスクロール、trial_Title_p のボタン)→はじめから→mmsc_000..006 の背景・立ち絵・イベント CG・名前・文章を最後まで進む (silkys-run、45000 フレーム)。Chromium でタイトル→本編、SAVE ボタンからセーブ→タイトルの「続きから始める」でロードして本編 (背景・イベント CG・立ち絵込み) に戻る |
 
 ### Ivory (vnrun)
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2016_evoll | [お嬢様はイイナリみたいです！？ 体験版](http://suezou.dyndns.org/dl2016/evoll/oinari/trial_oinari.zip) | 本編 | Ivory (vnrun) で注意書き・ロゴ→タイトル (TITLE_BASE_TRIAL とボタン)→START→A01..A12_H の背景・立ち絵・イベント CG・名前・文章・選択肢 (A05_H) を進み、trial_finish の紹介→タイトルに戻る (ivory-run、31000 フレーム)。Chromium でタイトル→本編、SAVE ボタンからセーブ→LOAD でロードして保存したメッセージに戻る |
-| b2020_caramel_box_strawberry | [はじカノ 体験版](http://suezou.dyndns.org/dl2020/caramel-box-strawberry/hajikano/hk_trial.zip) | 本編 | Ivory (vnrun) でブランド・注意書き→タイトル (横並びのボタン)→NEW GAME→00_CM_01..09 (アイキャッチの呼び出し、2 択・3 択の選択肢)→02_YN_01→02_YN_01_H01→タイトルに戻る (ivory-run、49000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る |
+| b2016_evoll | [お嬢様はイイナリみたいです！？ 体験版](http://suezou.dyndns.org/dl2016/evoll/oinari/trial_oinari.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。Ivory (vnrun) で注意書き・ロゴ→タイトル (TITLE_BASE_TRIAL とボタン)→START→A01..A12_H の背景・立ち絵・イベント CG・名前・文章・選択肢 (A05_H) を進み、trial_finish の紹介→タイトルに戻る (ivory-run、31000 フレーム)。Chromium でタイトル→本編、SAVE ボタンからセーブ→LOAD でロードして保存したメッセージに戻る |
+| b2020_caramel_box_strawberry | [はじカノ 体験版](http://suezou.dyndns.org/dl2020/caramel-box-strawberry/hajikano/hk_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。Ivory (vnrun) でブランド・注意書き→タイトル (横並びのボタン)→NEW GAME→00_CM_01..09 (アイキャッチの呼び出し、2 択・3 択の選択肢)→02_YN_01→02_YN_01_H01→タイトルに戻る (ivory-run、49000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る |
 
 ### NonColor (vnrun)
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2015_minato_carnival | [姉小路直子と銀色の死神 体験版](http://suezou.dyndns.org/dl2015/minato-carnival/anekouji/anegin_trial.zip) | 本編 | NonColor (vnrun) でタイトル (縦のボタン)→スタート→A1_151013_0..A1_151016_3 の背景・立ち絵 (ST2 の位置表)・CG・名前欄・文章・ボイス (複数同時も)・選択肢 (4 択・3 択・5 択) を進み、体験版ラストの絵→TL でタイトルに戻る (noncolor-run、36500 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る |
-| b2018_mirai | [宿星のガールフレンド２ 体験版](http://suezou.dyndns.org/dl2018/mirai/syukugar2/syukugar2_trialedition.zip) | 本編 | NonColor (vnrun) でタイトル (sys/title の絵とボタン)→START→B01A_180502_0..B02B_180728_0 の背景・立ち絵 (顔 + 体の合成)・CG・名前・文章・ボイス・選択肢 (3 択・2 択) を進み、B07B_180927_1→X02A のおまけトーク (rand のガチャ分岐)→予約する→バナー→TL でタイトルに戻る (noncolor-run、23000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る |
+| b2015_minato_carnival | [姉小路直子と銀色の死神 体験版](http://suezou.dyndns.org/dl2015/minato-carnival/anekouji/anegin_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。NonColor (vnrun) でタイトル (縦のボタン)→スタート→A1_151013_0..A1_151016_3 の背景・立ち絵 (ST2 の位置表)・CG・名前欄・文章・ボイス (複数同時も)・選択肢 (4 択・3 択・5 択) を進み、体験版ラストの絵→TL でタイトルに戻る (noncolor-run、36500 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る |
+| b2018_mirai | [宿星のガールフレンド２ 体験版](http://suezou.dyndns.org/dl2018/mirai/syukugar2/syukugar2_trialedition.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。NonColor (vnrun) でタイトル (sys/title の絵とボタン)→START→B01A_180502_0..B02B_180728_0 の背景・立ち絵 (顔 + 体の合成)・CG・名前・文章・ボイス・選択肢 (3 択・2 択) を進み、B07B_180927_1→X02A のおまけトーク (rand のガチャ分岐)→予約する→バナー→TL でタイトルに戻る (noncolor-run、23000 フレーム)。Chromium でタイトル→本編、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る |
 
 ### AZ System (vnrun)
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2006_alcot | [Triptych -トリプティック- 体験版](http://suezou.dyndns.org/dl2006/alcot/triptych/tri_trial100.exe) | 本編 | AZ System (vnrun) でタイトル (title_bg_tr とボタン 6 個)→Prologue (tr_01) の背景 (縦長の絵のパン)・立ち絵 (体 + 目 + 口の合成)・名前・文章・ボイス・BGM・SE を最後まで進めてタイトルに戻る。Digest1 (tr_02)・Digest2 (tr_03)・H scene (tr_04) も最後まで (azsys-run、各 9000〜18000 フレーム)。Chromium でタイトル→Prologue、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る |
+| b2006_alcot | [Triptych -トリプティック- 体験版](http://suezou.dyndns.org/dl2006/alcot/triptych/tri_trial100.exe) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。AZ System (vnrun) でタイトル (title_bg_tr とボタン 6 個)→Prologue (tr_01) の背景 (縦長の絵のパン)・立ち絵 (体 + 目 + 口の合成)・名前・文章・ボイス・BGM・SE を最後まで進めてタイトルに戻る。Digest1 (tr_02)・Digest2 (tr_03)・H scene (tr_04) も最後まで (azsys-run、各 9000〜18000 フレーム)。Chromium でタイトル→Prologue、SAVE からセーブ→LOAD でロードして保存したメッセージに戻る |
 
 ### PJADV (vnrun)
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2006_unisonshift | [ななついろ★ドロップス 体験版](http://suezou.dyndns.org/dl2006/unisonshift/nanatsuiro/nanatsuiro_trial.zip) | 本編 | PJADV (vnrun) でロゴ→注意書き→タイトル (はじめから)→体験版の挨拶・予告→本編の背景・立ち絵・顔・イベント絵 (拡大と移動)・名前・文章・ボイス・BGM・SE を最後まで進めてタイトルに戻る (pjadv-run、スキップで 4357 メッセージ)。窓の SAVE / LOAD から自前のスロットでセーブ→ロードして同じメッセージに戻る (ネイティブと Chromium) |
+| b2006_unisonshift | [ななついろ★ドロップス 体験版](http://suezou.dyndns.org/dl2006/unisonshift/nanatsuiro/nanatsuiro_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。PJADV (vnrun) でロゴ→注意書き→タイトル (はじめから)→体験版の挨拶・予告→本編の背景・立ち絵・顔・イベント絵 (拡大と移動)・名前・文章・ボイス・BGM・SE を最後まで進めてタイトルに戻る (pjadv-run、スキップで 4357 メッセージ)。窓の SAVE / LOAD から自前のスロットでセーブ→ロードして同じメッセージに戻る (ネイティブと Chromium) |
 
 ### Eomaia (vnrun)
 
@@ -789,7 +789,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
 | b2012_fudegaki_soft | [つぼい君のスイッチ！ 体験版](http://suezou.dyndns.org/dl2012/fudegaki-soft/tsuboi/TSUBOIKUN_NO_SWITCH_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。DxLib MED (vnrun) で 1024x768 のロゴ→タイトル (CBLMAP_TITLE_MENU)→はじめから→体験版メニュー (CBLMAP_TRIAL_MENU)→P_001→R_001 の背景・CG・名前・文章 (med-run 6000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
-| b2012_trois | [モンスターパーク２ ～神々を宿した乙女～ 体験版](http://suezou.dyndns.org/dl2012/trois/mop2/MOP2_TRIAL.zip) | 本編 | DxLib MED (vnrun) でロゴ→タイトル (TITLE のクリックマップ)→START→M2TMAIN→MOP2-T のプロローグ (md_jpg の絵、立ち絵・名前・文章)→選択肢→MA02XX (med-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
+| b2012_trois | [モンスターパーク２ ～神々を宿した乙女～ 体験版](http://suezou.dyndns.org/dl2012/trois/mop2/MOP2_TRIAL.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。DxLib MED (vnrun) でロゴ→タイトル (TITLE のクリックマップ)→START→M2TMAIN→MOP2-T のプロローグ (md_jpg の絵、立ち絵・名前・文章)→選択肢→MA02XX (med-run 8000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
 | b2018_fudegaki_soft | [催眠学園１年生 体験版](http://suezou.dyndns.org/dl2018/fudegaki-soft/saimin1nen/SG1nensei_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。DxLib MED (vnrun) で注意書き→ロゴ・ブランドコール→タイトル (STITLE のクリックマップ、MENU03_N/F)→NEW GAME→SMAIN から 000_PRO000A..E の背景・立ち絵 (体 + 顔)・名前・文章・選択肢・ボイス・BGM (med-run 20000 フレーム)。Chromium でタイトル→本編、Esc のメニューからセーブ→ロードで保存した行に戻る |
 
 ### Liar-soft XFL (vnrun)
