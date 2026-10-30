@@ -117,8 +117,8 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2007_hadashi | [ハーレム×すくらっち体験版](http://suezou.dyndns.org/dl2007/hadashi/scratch/scratch_taiken.zip) | 本編 |  |
 | b2007_sagaplanets | [聖炎天使エレアノール 体験版](http://suezou.dyndns.org/dl2007/sagaplanets/eleanor/EleanorTrial.lzh) | 本編 | fonts/ が要る |
 | b2008_hadashi | [お姉さん×すくらっち体験版](http://suezou.dyndns.org/dl2008/hadashi/scratch2/trial.lzh) | 本編 |  |
-| s2008_sagaplanets_cominghumming | [Coming×Humming!! -カミング・ハミング- （体験版）](http://suezou.dyndns.org/dl2008/sagaplanets/cominghumming/ComingHumming_Trial.zip) | 本編 | Chromium で本編のセーブ/ロード確認 (siglus_rs 0006: 選択肢の間の行番号を読み飛ばす) |
-| s2009_hadashi_cool | [素直くーる体験版](http://suezou.dyndns.org/dl2009/hadashi/cool/trial.lzh) | 本編 | Chromium で本編のセーブ/ロード確認 (siglus_rs 0007: 番号なしのボタンはオブジェクト番号を返す) |
+| s2008_sagaplanets_cominghumming | [Coming×Humming!! -カミング・ハミング- （体験版）](http://suezou.dyndns.org/dl2008/sagaplanets/cominghumming/ComingHumming_Trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。Chromium で本編のセーブ/ロード確認 (siglus_rs 0006: 選択肢の間の行番号を読み飛ばす) |
+| s2009_hadashi_cool | [素直くーる体験版](http://suezou.dyndns.org/dl2009/hadashi/cool/trial.lzh) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。Chromium で本編のセーブ/ロード確認 (siglus_rs 0007: 番号なしのボタンはオブジェクト番号を返す) |
 | s2014_hadashi_3pl | [3Ping Lovers!☆一夫二妻の世界へようこそ♪　体験版](http://suezou.dyndns.org/dl2014/hadashi/3pl/trial.zip) | 本編 | 最初の選択肢まで |
 | s2010_sagaplanets_kisaragi | [キサラギGOLD★STAR](http://suezou.dyndns.org/dl2010/sagaplanets/kisaragi/kisaragi_goldstar_trial.zip) | 要再確認 | 展開後にエンジンの印のファイル (Seen.txt) が見つからない |
 | r1_reallive_five | [5 -ファイブ- 体験版](http://ram.product.co.jp/5/DL/Five_trial_setup.exe) | 対象外 | インストーラ形式 (展開できない) |
@@ -127,16 +127,16 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| b2006_lumpofsugar | [いつか、届く、あの空に。【体験版】](http://suezou.dyndns.org/dl2006/lumpofsugar/itsusora/itsusora_trial.lzh) | 本編 | ネイティブ (ethornell headless) で はじめから→本編→右クリックのメニューからセーブ/ロード確認 |
-| b2010_lumpofsugar | [Hello,good-bye 体験版](http://suezou.dyndns.org/dl2010/lumpofsugar/hello_good-bye/Hello_goodbye_trial_web.zip) | 本編 | ネイティブ (ethornell headless) で 最初から→本編→ウィンドウの「記録」でセーブ、「読込」でロード確認 |
-| b2011_lumpofsugar | [DiamicDays_Trial.zip](http://suezou.dyndns.org/dl2011/lumpofsugar/diamicdays/DiamicDays_Trial.zip) | 本編 | ネイティブ (ethornell headless) で はじめから→本編→セーブ/ロード確認 |
-| b2013_lumpofsugar | [sekachu_trial_WEB2.zip](http://suezou.dyndns.org/dl2013/lumpofsugar/sekachu/sekachu_trial_WEB2.zip) | 本編 | ethornell-rs 0010 (解放済みスプライトのフェード、VM メモリ 512MB) でセーブ/ロード画面が開くようになり、本編のセーブ/ロード確認 (ネイティブ) |
-| b2015_hooksoft | [トラベリングスターズ 体験版02 Ver1.00](http://suezou.dyndns.org/dl2015/hooksoft/traveling_stars/travelingstars_trial_02.zip) | 本編 | ネイティブ (ethornell headless) で はじめから→本編→右クリックのメニューからセーブ/ロード確認 |
-| b2015_lump_of_sugar | [rensou_trial_WEB.zip](http://suezou.dyndns.org/dl2015/lump-of-sugar/rensourelation/rensou_trial_WEB.zip) | 本編 | ethornell-rs 0010 (ネイティブの絶対パス) で 最初から→本編→歯車のメニューからセーブ/ロード確認 (ネイティブ) |
-| b2019_hooksoft | [どっちのｉが好きですか？　Ｈシーン体験版　Ver1.00](http://suezou.dyndns.org/dl2019/hooksoft/isuki/isuki_h_trial.zip) | 本編 | ethornell-rs 0010 (Sprite の GetProperty 0x10) でセーブ画面が開くようになった。Chromium で Start→H シーン選択→本編→S キーでセーブ、L キーでロードを確認 |
-| b2019_sukerasparo | [kudan_trial.zip](http://suezou.dyndns.org/dl2019/sukerasparo/kudan/kudan_trial.zip) | 本編 | ネイティブ (ethornell headless) で START→本編→SAVE&LOAD でセーブ/ロード確認 |
-| b2020_sukerasomero | [oshilove_trial.zip](http://suezou.dyndns.org/dl2020/sukerasomero/oshi_love/oshilove_trial.zip) | 本編 | ネイティブ (ethornell headless) で START→本編→右端のメニューからセーブ/ロード確認 (約 7000 フレーム、遅い) |
-| r1_bgi_kudan | [クダンノフォークロア 体験版](http://sukerasparo.com/data/kudan_trial.zip) | 本編 | b2019_sukerasparo と同じ作品 (クダンノフォークロア)。そちらで本編のセーブ/ロード確認 |
+| b2006_lumpofsugar | [いつか、届く、あの空に。【体験版】](http://suezou.dyndns.org/dl2006/lumpofsugar/itsusora/itsusora_trial.lzh) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。ネイティブ (ethornell headless) で はじめから→本編→右クリックのメニューからセーブ/ロード確認 |
+| b2010_lumpofsugar | [Hello,good-bye 体験版](http://suezou.dyndns.org/dl2010/lumpofsugar/hello_good-bye/Hello_goodbye_trial_web.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。ネイティブ (ethornell headless) で 最初から→本編→ウィンドウの「記録」でセーブ、「読込」でロード確認 |
+| b2011_lumpofsugar | [DiamicDays_Trial.zip](http://suezou.dyndns.org/dl2011/lumpofsugar/diamicdays/DiamicDays_Trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。ネイティブ (ethornell headless) で はじめから→本編→セーブ/ロード確認 |
+| b2013_lumpofsugar | [sekachu_trial_WEB2.zip](http://suezou.dyndns.org/dl2013/lumpofsugar/sekachu/sekachu_trial_WEB2.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。ethornell-rs 0010 (解放済みスプライトのフェード、VM メモリ 512MB) でセーブ/ロード画面が開くようになり、本編のセーブ/ロード確認 (ネイティブ) |
+| b2015_hooksoft | [トラベリングスターズ 体験版02 Ver1.00](http://suezou.dyndns.org/dl2015/hooksoft/traveling_stars/travelingstars_trial_02.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。ネイティブ (ethornell headless) で はじめから→本編→右クリックのメニューからセーブ/ロード確認 |
+| b2015_lump_of_sugar | [rensou_trial_WEB.zip](http://suezou.dyndns.org/dl2015/lump-of-sugar/rensourelation/rensou_trial_WEB.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。ethornell-rs 0010 (ネイティブの絶対パス) で 最初から→本編→歯車のメニューからセーブ/ロード確認 (ネイティブ) |
+| b2019_hooksoft | [どっちのｉが好きですか？　Ｈシーン体験版　Ver1.00](http://suezou.dyndns.org/dl2019/hooksoft/isuki/isuki_h_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。ethornell-rs 0010 (Sprite の GetProperty 0x10) でセーブ画面が開くようになった。Chromium で Start→H シーン選択→本編→S キーでセーブ、L キーでロードを確認 |
+| b2019_sukerasparo | [kudan_trial.zip](http://suezou.dyndns.org/dl2019/sukerasparo/kudan/kudan_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。ネイティブ (ethornell headless) で START→本編→SAVE&LOAD でセーブ/ロード確認 |
+| b2020_sukerasomero | [oshilove_trial.zip](http://suezou.dyndns.org/dl2020/sukerasomero/oshi_love/oshilove_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。ネイティブ (ethornell headless) で START→本編→右端のメニューからセーブ/ロード確認 (約 7000 フレーム、遅い) |
+| r1_bgi_kudan | [クダンノフォークロア 体験版](http://sukerasparo.com/data/kudan_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。b2019_sukerasparo と同じ作品 (クダンノフォークロア)。そちらで本編のセーブ/ロード確認 |
 | s2016_hooksoft_amenitys_life | [AmenitysLife Ver1.00](http://suezou.dyndns.org/dl2016/hooksoft/amenitys_life/AmenitysLife_trial_02.zip) | 本編 | f81eded 以降も本編まで |
 | s2022_hooksoft_houkago2 | [放課後シンデレラ２ 体験版 Ver1.01](http://suezou.dyndns.org/dl2022/hooksoft/houkago2/HoukagoCinderella2_trial_v1.01.zip) | 本編 | ethornell-rs 0013 (1.7x のグラデーション効果の種類 2〜5) でセーブ画面が開くようになり、Start→最初から始める→本編→S キーでセーブ、タイトルの Load からロード確認 (ネイティブ。入力は 1280x720 の座標) |
 | dl_VJ01004381 | [顔のない月 -待宵の双椿-](https://trial.dlsite.com/professional/VJ01005000/VJ01004381_trial.zip) | タイトル | ネイティブ (ethornell headless) で はじめから→本編の冒頭 (メッセージ枠) まで。初回は自動で環境設定が開く (戻るで閉じる)。1920x1080 でヘッドレスが遅く (4000 フレームで約 25 分)、セーブ/ロードは未確認 |
@@ -659,7 +659,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 | b2006_blackcyc | [EXTRAVAGANZA ～蟲愛でる少女～ 体験版2](http://suezou.dyndns.org/dl2006/blackcyc/extravaga/extravaganza_trial2.exe) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。System-NNN (vnrun) で自己展開 exe (LZH) からオープニング→タイトル→はじめから→チャート (chart/*.xtx のスロット選択)→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium) |
 | b2008_blackcyc | [ＢＤＤ 体験版Ⅱ](http://suezou.dyndns.org/dl2008/blackcyc/bdd/bdd_taiken2.exe) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。System-NNN (vnrun) でオープニング→タイトル→はじめから→依頼の掲示板 (bdd/irailist.xtx)→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium)。セーブ→ロードで本編に戻る (Chromium) |
 | b2011_blackcyc | [獄淫の尖塔 体験版](http://suezou.dyndns.org/dl2011/blackcyc/gokuin/gokuin_trial.exe) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。System-NNN (vnrun) でオープニング→タイトル→はじめから→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium) |
-| b2016_blackcyc | [EXTRAVAGANZA ～蟲愛でる少女～ 体験版 (幼虫)](http://suezou.dyndns.org/dl2016/blackcyc/extravaganza/EXTRAVAGANZA_trial_youtyu.zip) | 本編 | System-NNN (vnrun) で zip 内の自己展開 exe (RAR) からオープニング→タイトル→NEW GAME→チャート (chart/*.fxf)→Prologue の背景・文章・名前まで (nnn-run と Chromium) |
+| b2016_blackcyc | [EXTRAVAGANZA ～蟲愛でる少女～ 体験版 (幼虫)](http://suezou.dyndns.org/dl2016/blackcyc/extravaganza/EXTRAVAGANZA_trial_youtyu.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。System-NNN (vnrun) で zip 内の自己展開 exe (RAR) からオープニング→タイトル→NEW GAME→チャート (chart/*.fxf)→Prologue の背景・文章・名前まで (nnn-run と Chromium) |
 | b2021_metalogiq | [魔法少女消耗戦線 DEADΩAEGIS 体験版](http://suezou.dyndns.org/dl2021/metalogiq/dead_end_aegis/DeadendAegis_trial.exe) | 本編 | System-NNN (vnrun) で 1280x720 のロゴ→タイトル→新規スタート→本編の背景・立ち絵・文章・名前まで (nnn-run と Chromium)。ディスク容量のため ev0.gpk・cdvaw・movie を除いて展開して確認 |
 | b2023_cyc_rose | [薔薇ノ木ニ薔薇ノ花咲ク 体験版](http://suezou.dyndns.org/dl2023/cyc-rose/bara_re/baraRe_trial.zip) | 本編 | System-NNN (vnrun) で zip 内の自己展開 exe (RAR5) からオープニング→タイトル→本編の背景 (dwq/<xx>/ のばらの dwq)・文章・名前まで (nnn-run と Chromium) |
 
@@ -694,7 +694,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| dl_VJ01000787 | [神楽黎明記 参 ～紫の章～ 体験版](https://trial.dlsite.com/professional/VJ01001000/VJ01000787_trial.zip) | 本編 | DebonosuWorks (vnrun、crates/debonosu) でロゴ→注意書き→タイトル→最初から始める→プロローグ (01.scb) の背景・名前・文章・声・BGM まで (deb-run と Chromium)。ダンジョン (map) に入る所で止まり、Live2D の立ち絵・3D・戦闘はなし。自前のセーブ・ロード (Esc で保存、タイトルの「続きから始める」で読み込み) も Chromium で確認 |
+| dl_VJ01000787 | [神楽黎明記 参 ～紫の章～ 体験版](https://trial.dlsite.com/professional/VJ01001000/VJ01000787_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。DebonosuWorks (vnrun、crates/debonosu) でロゴ→注意書き→タイトル→最初から始める→プロローグ (01.scb) の背景・名前・文章・声・BGM まで (deb-run と Chromium)。ダンジョン (map) に入る所で止まり、Live2D の立ち絵・3D・戦闘はなし。自前のセーブ・ロード (Esc で保存、タイトルの「続きから始める」で読み込み) も Chromium で確認 |
 
 ### Cyberworks (vnrun)
 
@@ -823,7 +823,7 @@ vnbox に登録されている作品 (vnbox で Wine 上の動作を確かめた
 
 | ID | 作品 | 結果 | メモ |
 |---|---|---|---|
-| dl_VJ01002468 | [異世界娘と秘密のコンカフェえっち](https://trial.dlsite.com/professional/VJ01003000/VJ01002468_trial.zip) | 本編 | SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し .ui のビューと .ks の脚本を実行) でタイトル→Start→本編 (背景・名前・メッセージ窓・BGM・ボイス)。Chromium でタイトル→本編、クイックセーブ / セーブ欄に保存→ページを開き直してタイトルの Continue でロードし保存したページに戻る |
-| dl_VJ01004064 | [俺の電脳SEX性活 ‐ビッチな君となんちゃって恋愛‐](https://trial.dlsite.com/professional/VJ01005000/VJ01004064_trial.zip) | 本編 | SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し .ui のビューと .ks の脚本を実行) でタイトル→Start→本編 (背景・メッセージ窓・BGM)。Chromium でタイトル→本編、クイックセーブ / セーブ欄に保存→ページを開き直してタイトルの Continue でロードし保存したページに戻る |
-| r1_sakana | [でか乳巫女と巨乳シスター 体験版](http://calcite-soft.com/momohanasoft/mikosister/image/dekamikosistry.zip) | 本編 | SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し .ui のビューと .ks の脚本を実行) でタイトル→Start→本編 (背景・立ち絵・表情・名前・メッセージ窓・BGM・ボイス・選択肢)。Chromium でタイトル→本編、クイックセーブ / セーブ欄に保存→ページを開き直してタイトルの Continue でロードし保存したページに戻る |
+| dl_VJ01002468 | [異世界娘と秘密のコンカフェえっち](https://trial.dlsite.com/professional/VJ01003000/VJ01002468_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し .ui のビューと .ks の脚本を実行) でタイトル→Start→本編 (背景・名前・メッセージ窓・BGM・ボイス)。Chromium でタイトル→本編、クイックセーブ / セーブ欄に保存→ページを開き直してタイトルの Continue でロードし保存したページに戻る |
+| dl_VJ01004064 | [俺の電脳SEX性活 ‐ビッチな君となんちゃって恋愛‐](https://trial.dlsite.com/professional/VJ01005000/VJ01004064_trial.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し .ui のビューと .ks の脚本を実行) でタイトル→Start→本編 (背景・メッセージ窓・BGM)。Chromium でタイトル→本編、クイックセーブ / セーブ欄に保存→ページを開き直してタイトルの Continue でロードし保存したページに戻る |
+| r1_sakana | [でか乳巫女と巨乳シスター 体験版](http://calcite-soft.com/momohanasoft/mikosister/image/dekamikosistry.zip) | 本編 | 検証スレッドでも Chromium でタイトル画面まで確認。SakanaGL (vnrun、pkg/*.sx と .sxstorage を自前で展開し .ui のビューと .ks の脚本を実行) でタイトル→Start→本編 (背景・立ち絵・表情・名前・メッセージ窓・BGM・ボイス・選択肢)。Chromium でタイトル→本編、クイックセーブ / セーブ欄に保存→ページを開き直してタイトルの Continue でロードし保存したページに戻る |
 <!-- /matrix -->
